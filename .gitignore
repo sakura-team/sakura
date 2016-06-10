@@ -1,0 +1,4 @@
+*.so
+*.old
+*.pyc
+.DS_Store
