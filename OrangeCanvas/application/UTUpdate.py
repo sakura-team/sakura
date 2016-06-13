@@ -136,7 +136,7 @@ class UTUpdateDialog(QDialog):
             self.middle.setStyleSheet("QLabel { color : green; }");
             layout.addWidget( self.middle)
             
-        elif sys.platform == "darwin":
+        elif sys.platform == "darwin" or sys.platform.startswith('linux'):
             password_label = QLabel("Enter your os password")
             self.password_edit = LineEdit(self)
             self.password_edit.setPlaceholderText(self.tr("Password"))
@@ -286,7 +286,7 @@ class UTUpdateDialog(QDialog):
             for cat in category_list:
                 os.chdir(self.path+"/"+cat+"/")
                 import subprocess,getpass
-                if sys.platform == "darwin":
+                if sys.platform == "darwin" or sys.platform.startswith('linux'):
                     password = str(self.password_edit.text())
         
                     proc = subprocess.Popen(
