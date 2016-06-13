@@ -49,7 +49,7 @@ class UTWidgetPath(QDialog):
 		if (self.path != ""):
 			settings.setValue("ut-path/path",self.path)
 		
-			heading1 = self.tr("Path has been changed to : "+self.path)
+			heading1 = self.tr("Now the Widget path is : "+self.path)
 			heading2 = self.tr("For avoiding conflicts, please delete all the content of your last directory")
 			heading1 = "<h3>{0}</h3>".format(heading1)
 		

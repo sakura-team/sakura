@@ -274,6 +274,11 @@ def main(argv=None):
     if want_welcome and not args and not open_requests:
         canvas_window.welcome_dialog()
 
+    if not args and not open_requests:
+        versions = canvas_window.test_versions()
+        if versions[0] != versions[1]:
+            canvas_window.updateUTInfos_dialog()
+
     elif args:
         log.info("Loading a scheme from the command line argument %r",
                  args[0])

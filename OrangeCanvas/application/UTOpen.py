@@ -4,16 +4,13 @@ Widget for opening a scheme from UnderTracks Database.
 """
 
 from PyQt4.QtGui import (
-    QWidget, QDialog, QLabel, QTextEdit, QCheckBox, QFormLayout,
-    QVBoxLayout, QHBoxLayout, QDialogButtonBox, QSizePolicy, QComboBox
+    QWidget, QDialog, QLabel, QTextEdit, QFormLayout, QListWidget, QLineEdit,
+    QVBoxLayout, QDialogButtonBox, QSizePolicy,
 )
 
 from PyQt4.QtCore import Qt
 
-from ..gui.lineedit import LineEdit
-from ..gui.utils import StyledWidget_paintEvent, StyledWidget
-
-import sys
+from ..gui.utils import StyledWidget_paintEvent
 
 class UTOpenEdit(QWidget):
     """Widget for opening a scheme from the UnderTracks Database.
@@ -28,15 +25,17 @@ class UTOpenEdit(QWidget):
         layout = QFormLayout()
         layout.setRowWrapPolicy(QFormLayout.WrapAllRows)
         layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
-
-        self.name_list = QComboBox(self)
-        self.name_list.currentIndexChanged['int'].connect(self.update_desc)
+        self.name = QLineEdit(self)
+        self.name.textEdited.connect(self.name_changed)
+        self.names = QListWidget(self)
+        self.names.resize(300,120)
+        self.names.itemClicked.connect(self.names_clicked)
+        self.names.currentItemChanged.connect(self.names_clicked)
         self.desc_edit = QTextEdit(self)
         self.desc_edit.setTabChangesFocus(True)
-        
-        layout.addRow(self.tr("Name"),self.name_list)
+        layout.addRow(self.tr("Name"),self.name)
+        layout.addRow("",self.names)
         layout.addRow(self.tr("Description"), self.desc_edit)
-        
         self.setLayout(layout)
 
     def paintEvent(self, event):
@@ -46,17 +45,38 @@ class UTOpenEdit(QWidget):
         return self.scheme_index
 
     def setSchemeList(self,listN,listD):
-        for l in listN:
-            self.name_list.addItem(l)
-        self.desc_list = listD[:]  
-        self.desc_edit.setText(self.desc_list[0])
-        self.scheme_index = 0
+        self.study_list = listN[:]
+        self.desc_list = listD[:]
+        for n in self.study_list:
+            self.names.addItem(n)
 
-    def update_desc(self,index):    
-        if len(self.desc_list) > 0:
-            self.desc_edit.setText(self.desc_list[index])
-            self.scheme_index = index
-        
+    def name_changed(self):
+        self.names.clear()
+        s=str(self.name.text())
+        if s=="":
+            for n in self.study_list:
+                self.names.addItem(n)
+        else:
+            self.scheme_index=None
+            self.desc_edit.setText("")
+            for i,n in enumerate(self.study_list):
+                if n.upper().find(s.upper())>=0:
+                    self.names.addItem(n)
+                if n==s:
+                    self.scheme_index=i
+                    self.desc_edit.setText(self.desc_list[self.scheme_index])
+
+    def names_clicked(self,item):
+        if item:
+            s = str(item.text())
+            self.scheme_index=None
+            self.desc_edit.setText("")
+            for i,n in enumerate(self.study_list):
+                if n==s:
+                    self.name.setText(s)
+                    self.scheme_index=i
+                    self.desc_edit.setText(self.desc_list[self.scheme_index])
+
         
 class UTOpenDialog(QDialog):
     def __init__(self, *args, **kwargs):

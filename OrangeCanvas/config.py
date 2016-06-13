@@ -134,15 +134,21 @@ spec = \
 
      ("help/open-in-external-browser", bool, False,
       "Open help in an external browser"),
-      
+
      ("ut-login/login", unicode, "unknown",
       "The login of the user"),
-    
+
      ("ut-login/connected", bool, False,
       "Is the user already connected"),
-     
+
      ("ut-path/path", unicode, "unknown",
-      "Path for UT widgets")
+      "Path for UT widgets"),
+
+     ("ut-version/current", unicode, "unknown",
+      "Version number of the canvas"),
+
+     ("ut-version/forge", unicode, "unknown",
+      "Forge version number of the canvas")
      
      ]
 

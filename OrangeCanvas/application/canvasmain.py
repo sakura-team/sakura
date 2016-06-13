@@ -15,6 +15,8 @@ import pkg_resources
 import urllib	as	_u
 import urllib2 	as  _u2
 import zlib     as  _zlib
+
+from ..utils.qtcompat import QSettings
 ###UNDERTRACKS###END
 
 import Orange.utils.addons
@@ -27,7 +29,7 @@ from PyQt4.QtGui import (
 )
 
 from PyQt4.QtCore import (
-    Qt, QEvent, QSize, QUrl, QTimer, QFile, QByteArray, QObject
+    Qt, QEvent, QSize, QUrl, QTimer, QFile, QByteArray, QObject, QString
 )
 
 from PyQt4.QtNetwork import (QNetworkDiskCache,QSslConfiguration,QSslCertificate,QSsl)
@@ -59,8 +61,8 @@ from .UTlogin       import UTLoginDialog
 from .UTSave        import UTSaveDialog
 from .UTOpen        import UTOpenDialog
 from .UTUpdate      import UTUpdateDialog
+from .UTSvnDialog   import UTSvnDialog
 from .UTWidgetPath   import UTWidgetPath
-
 ###UNDERTRACKS###END
 
 from ..document.schemeedit import SchemeEditWidget
@@ -69,6 +71,8 @@ from ..scheme import widgetsscheme
 from ..scheme.readwrite import scheme_load, sniff_version
 
 from . import welcomedialog
+from . import updateUTInfos
+
 from ..preview import previewdialog, previewmodel
 
 from .. import config
@@ -492,20 +496,27 @@ class CanvasMainWindow(QMainWindow):
                     )
         
         self.widget_path_UT_action = \
-            QAction(self.tr("Change Widgets Path"), self,
+            QAction(self.tr("Change UT Operators Path"), self,
                     objectName="action-UT-Widgets-Path",
-                    toolTip=self.tr("Change the path where your widgets are stored"),
+                    toolTip=self.tr("Change the path where your UT operators are stored"),
                     triggered=self.widget_path_UT,
                     )            
             
         self.update_UT_widgets_action = \
-            QAction(self.tr("Update UT Widgets"), self,
+            QAction(self.tr("Update UT Operators"), self,
                     objectName="action-update-UT-Widgets",
-                    toolTip=self.tr("Recover updates of each (or one) of your UT widgets."),
+                    toolTip=self.tr("Recover updates of each (or one) of your UT operator."),
                     triggered=self.update_UT_widgets,
-                    )            
+                    )  
+        
+        self.updateUTInfos_action = \
+            QAction(self.tr("Update UT-Orange"), self,
+                    objectName="updateUTInfos-action",
+                    toolTip=self.tr("Show UT-Orange update screen."),
+                    triggered=self.updateUTInfos_dialog,
+                    )
 ###UNDERTRACKS###END
-			
+
         self.quit_action = \
             QAction(self.tr("Quit"), self,
                     objectName="quit-action",
@@ -689,7 +700,8 @@ class CanvasMainWindow(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self.widget_path_UT_action)
         file_menu.addAction(self.update_UT_widgets_action)
-        
+        file_menu.addAction(self.updateUTInfos_action)
+
 ###UNDERTRACKS###END	
         file_menu.addSeparator()
         file_menu.addAction(self.show_properties_action)
@@ -1293,19 +1305,86 @@ class CanvasMainWindow(QMainWindow):
                             )
                     return False
                 
+                #Operators parsing
+                ops = []
+                part1 = buffer.getvalue().split("<nodes>")[1]
+                nodes = part1.split("</nodes>")[0]
+                
+                tab = nodes.split("qualified_name=\"")
+                for e in tab[1:len(tab)]:
+                    tab2 = e.split("\"")
+                    tab3 = tab2[0].split(".")
+                    name = tab3[-1]
+                    if name.find("OWUT") != -1:
+                        ops.append(tab3[-1][4:len(tab3[-1])])
+                    else:
+                        ops.append(tab3[-1][2:len(tab3[-1])]+" (Orange)")
+                
+                ops = list(set(ops))
+                ops_txt = ops[0]
+                for o in ops[1:len(ops)]:
+                    ops_txt += "_!!_"+o
+                    
+                    
+                #Studies parsing
+                ops = []
+                part1 = buffer.getvalue().split("<nodes>")[1]
+                all_nodes = part1.split("</nodes>")[0]
+                
+                tab_nodes = all_nodes.split("/>")
+                
+                data_nodes_ids = []
+                for t in tab_nodes[0:-1]:
+                    if t.find("qualified_name=\"UTToolsManagement.OWUTData.OWUTData\"") != -1:
+                        tab = t.split("id=\"")
+                        tab = tab[1].split("\"")
+                        if tab[0].find(" (") == -1:
+                            data_nodes_ids.append(tab[0])
+                
+                
+                part1 = buffer.getvalue().split("<node_properties>")[1]
+                all_properties = part1.split("</nodes_properties>")[0]
+                
+                tab_properties = all_properties.split("</properties>")
+                
+                studies_n = []
+                for t in tab_properties[0:-1]:
+                    start = t.find("node_id=")+9
+                    end = t[start:-1].find("\"")
+                    #sys.stderr.write(str(start)+" : "+str(end)+" ")
+                    if t[start:start+end] in data_nodes_ids:
+                        start = t.find("(V")+2
+                        end = t[start:-1].find("\n")
+                        if start==1:
+                            start = t.find("nomExpe': u'")+12
+                            end = t[284:-1].find("'")
+                        studies_n.append(t[start:start+end])
+
+                studies_n = list(set(studies_n))
+                if len(studies_n):
+                    studies_txt = studies_n[0]
+                else:
+                    studies_txt = ""
+                for s in studies_n[1:len(studies_n)]:
+                    studies_txt += "_!!_"+s
+                
+                
                 # Now we send a zipped process to UT
                 z_process = _zlib.compress(buffer.getvalue())
-                z_description = _zlib.compress(description)
-                sys.stderr.write(z_process)
+                z_description = _zlib.compress(description.encode('utf-8'))
+                
                 url     = "https://undertracks.imag.fr/scripts/OrangeScripts/SaveOrangeProcess.php"
                 data    = _u.urlencode({"login":login,
                                         "name": title,
                                         "process":z_process,
                                         "description":z_description,
+                                        "operators": ops_txt,
+                                        "studies": studies_txt,
                                         "force":"false"})
                 req     = _u2.Request(url,data)
                 f       = _u2.urlopen(req)
                 res = f.read()
+                
                 if res == "Done":
                     message_information("Process "+title+" saved on UnderTracks Database")
                     done = True
@@ -1317,23 +1396,33 @@ class CanvasMainWindow(QMainWindow):
                                                 default_button=QMessageBox.Save,
                                                 parent=self)
                     if selected == QMessageBox.Save:
-                        data    = _u.urlencode({"login":login,
-                                                "name": title,
-                                                "process":z_process,
-                                                "description":z_description,
-                                                "force":"true"})
-                        req     = _u2.Request(url,data)
-                        f       = _u2.urlopen(req)
-                        res = f.read()
-                        if res == "Done":
-                            message_information("Process "+title+" saved on UnderTracks Database")
-                            done = True
-                        else:
-                            message_information("Error during the saving process !!")
-
+                        
+                        dialog = UTSvnDialog(self)
+                        status = dialog.exec_()
+                        mess = dialog.message_edit.text()
+                        if status == QDialog.Accepted:
+                            data    = _u.urlencode({"login":login,
+                                                    "name": title,
+                                                    "process":z_process,
+                                                    "description":z_description,
+                                                    "operators": ops_txt,
+                                                    "studies": studies_txt,
+                                                    "force":"true",
+                                                    "message": str("%s" % mess)
+                                                    })
+                            req     = _u2.Request(url,data)
+                            f       = _u2.urlopen(req)
+                            res = f.read()
+                            if res == "Done":
+                                message_information("Process "+title+" saved on UnderTracks Database")
+                                done = True
+                            else:
+                                message_information("Error during the saving process !!")
+                        
                 elif res == "Unkown User":
                     message_critical("Your login is not recognized by the UnderTracks Database!\nPlease check!")
-                
+                else:
+                    message_critical(res)
             else:
                 done = True
         return status
@@ -1355,7 +1444,8 @@ class CanvasMainWindow(QMainWindow):
         if "Unknown User" in res:
             message_critical("The login is not recognized by UnderTracks!\nPlease check !")
             return QDialog.Accepted
-
+        
+        
         tab = res.split("_!!!_")
         scheme_names    = tab[0].split("_!!_")
         scheme_descs    = tab[1].split("_!!_")
@@ -1382,7 +1472,8 @@ class CanvasMainWindow(QMainWindow):
             else:
                 path = "C:/Windows/Temp/tmpScheme.ow"
             f = open(path,"w")
-            f.write(_zlib.decompress(res))
+            tmp = _zlib.decompress(res)
+            f.write(tmp)
             f.close()
             self.load_scheme(path)
         
@@ -1617,13 +1708,40 @@ class CanvasMainWindow(QMainWindow):
             if doc.isModifiedStrict():
                 if self.ask_save_changes() == QDialog.Rejected:
                     return QDialog.Rejected
-
+            
             selected = model.item(index)
-
+            
             new_scheme = self.new_scheme_from(unicode(selected.path()))
             if new_scheme is not None:
                 self.set_new_scheme(new_scheme)
+        
+        return status
 
+
+    def test_versions(self):
+        #1 - Get the forge's version number 
+        url     = "http://undertracks.imag.fr/scripts/OrangeScripts/UTOrangeForgeVersionNumber.php"
+        req     = _u2.Request(url)
+        nv     = _u2.urlopen(req).read()
+        
+        #2 - The current version number
+        settings = QSettings()
+        cv = unicode(settings.value("ut-version/current","unknown", type=unicode))
+        
+        settings.setValue("ut-version/forge",nv)
+        return (nv, cv)
+
+
+    def updateUTInfos_dialog(self):
+        """Show information about UnderTracks, and more specifically updates about 
+        the canvas itself"""
+        dialog = updateUTInfos.UpdateUTInfosDialog(self)
+        dialog.setWindowTitle(self.tr("UT-Orange Update"))
+        
+        status = dialog.exec_()
+        
+        
+        dialog.deleteLater()
         return status
 
     def welcome_dialog(self):

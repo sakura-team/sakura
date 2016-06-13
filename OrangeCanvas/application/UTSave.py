@@ -21,21 +21,22 @@ class UTSaveEdit(QWidget):
         QWidget.__init__(self, *args, **kwargs)
         self.scheme = None
         self.__setupUi()
-
+    
+    
     def __setupUi(self):
         layout = QFormLayout()
         layout.setRowWrapPolicy(QFormLayout.WrapAllRows)
         layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
 
         self.name_edit = LineEdit(self)
-        self.name_edit.setPlaceholderText(self.tr("untitled"))
+        self.name_edit.setPlaceholderText(self.tr("untitledDD"))
         self.name_edit.setSizePolicy(QSizePolicy.Expanding,
                                      QSizePolicy.Fixed)
         self.desc_edit = QTextEdit(self)
         self.desc_edit.setTabChangesFocus(True)
 
-        layout.addRow(self.tr("Name"), self.name_edit)
-        layout.addRow(self.tr("Description"), self.desc_edit)
+        layout.addRow(self.tr("NameDD"), self.name_edit)
+        layout.addRow(self.tr("DescriptionDD"), self.desc_edit)
 
         self.__schemeIsUntitled = True
 
@@ -47,7 +48,7 @@ class UTSaveEdit(QWidget):
         """
         self.scheme = scheme
         if not scheme.title:
-            self.name_edit.setText(self.tr("untitled"))
+            self.name_edit.setText(self.tr("untitledDD"))
             self.name_edit.selectAll()
             self.__schemeIsUntitled = True
         else:
@@ -61,7 +62,7 @@ class UTSaveEdit(QWidget):
 
         """
         if self.__schemeIsUntitled and \
-            self.name_edit.text() == self.tr("untitled"):
+            self.name_edit.text() == self.tr("untitledDD"):
             # 'untitled' text was not changed
             name = ""
         else:
@@ -100,7 +101,7 @@ class UTSaveDialog(QDialog):
         self.editor.setSizePolicy(QSizePolicy.MinimumExpanding,
                                   QSizePolicy.MinimumExpanding)
 
-        heading = self.tr("Scheme Info")
+        heading = self.tr("Scheme InfoDD")
         heading = "<h3>{0}</h3>".format(heading)
         self.heading = QLabel(heading, self, objectName="heading")
 
@@ -120,7 +121,7 @@ class UTSaveDialog(QDialog):
         check_layout = QHBoxLayout()
         check_layout.setContentsMargins(20, 10, 20, 10)
         self.__showAtNewSchemeCheck = \
-            QCheckBox(self.tr("Show when I make a New Scheme."),
+            QCheckBox(self.tr("Show when I make a New SchemeDD."),
                       self,
                       objectName="auto-show-check",
                       checked=False,
@@ -128,7 +129,7 @@ class UTSaveDialog(QDialog):
 
         check_layout.addWidget(self.__showAtNewSchemeCheck)
         check_layout.addWidget(
-               QLabel(self.tr("You can also edit Scheme Info later "
+               QLabel(self.tr("You can also edit Scheme Info laterDD "
                               "(File -> Scheme Info)."),
                       self,
                       objectName="auto-show-info"),

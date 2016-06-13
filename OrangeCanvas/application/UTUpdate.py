@@ -4,24 +4,20 @@ UnderTracks updating UT widgets.
 """
 
 from PyQt4.QtGui import (
-    QWidget, QFileDialog, QDialog, QLabel, QTextEdit, QCheckBox, QFormLayout,
-    QVBoxLayout, QHBoxLayout, QDialogButtonBox, QSizePolicy, QGridLayout,QPushButton, QScrollArea
+ QFileDialog, QDialog, QLabel, QCheckBox, QVBoxLayout, QHBoxLayout, QGridLayout,QPushButton, QScrollArea, QMessageBox
 )
 
 from PyQt4.QtCore import Qt
 
 from ..utils.qtcompat import QSettings
 from ..gui.lineedit import LineEdit
-from ..gui.utils import StyledWidget_paintEvent, StyledWidget
 
 import os
 import sys
 import urllib	as	_u
 import urllib2 	as  _u2
-import zlib     as  _zlib
 import zipfile  as  _zfile
 from StringIO   import StringIO
-import subprocess
 
 def ecrire(s):
     sys.stderr.write(s)
@@ -97,7 +93,7 @@ class UTUpdateDialog(QDialog):
                 f.close()
                 
                 #Is the Forge revision more recent ?
-                if (c_revision >= res[i*2+2]):
+                if (int(c_revision) >= int(res[i*2+2])):
                     do_it = False
                     
             if do_it:
@@ -140,7 +136,7 @@ class UTUpdateDialog(QDialog):
             self.middle.setStyleSheet("QLabel { color : green; }");
             layout.addWidget( self.middle)
             
-        elif sys.platform == "darwin" or sys.platform.startswith('linux'):
+        elif sys.platform == "darwin":
             password_label = QLabel("Enter your os password")
             self.password_edit = LineEdit(self)
             self.password_edit.setPlaceholderText(self.tr("Password"))
@@ -279,7 +275,7 @@ class UTUpdateDialog(QDialog):
                         else:
                             data = zfile.read(fname)
                             f = open(self.path+"/"+category+"/UTTools"+category+"/"+fname,"w")
-                            f.write(data)
+                            f.write(data.replace('\r\n','\n'))
                             f.close() 
                             
                 #We add the revision file
@@ -290,7 +286,7 @@ class UTUpdateDialog(QDialog):
             for cat in category_list:
                 os.chdir(self.path+"/"+cat+"/")
                 import subprocess,getpass
-                if sys.platform == "darwin" or sys.platform.startswith('linux'):
+                if sys.platform == "darwin":
                     password = str(self.password_edit.text())
         
                     proc = subprocess.Popen(
@@ -311,7 +307,13 @@ class UTUpdateDialog(QDialog):
         layout_end = QVBoxLayout()
         layout_end.setContentsMargins(10,10,10, 10)
         layout_end.setSpacing(10)
-        
+
         self.accept()
+
+        if name and (len(name)>0):
+            msg = "New Operators installed !\n\n"
+            msg += "Restart UT-Orange for enjoying this update!!!\n"
+            reply2 = QMessageBox.information(self, 'Message', msg, QMessageBox.Ok)
+
 
         
