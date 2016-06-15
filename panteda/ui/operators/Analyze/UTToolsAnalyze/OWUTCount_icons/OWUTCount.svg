@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 13.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 14948)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="48px"
+   height="48px"
+   viewBox="0 0 48 48"
+   enable-background="new 0 0 48 48"
+   xml:space="preserve"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="OWUTCount.svg"><metadata
+   id="metadata31"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs29"><inkscape:perspective
+     sodipodi:type="inkscape:persp3d"
+     inkscape:vp_x="0 : 24 : 1"
+     inkscape:vp_y="0 : 1000 : 0"
+     inkscape:vp_z="48 : 24 : 1"
+     inkscape:persp3d-origin="24 : 16 : 1"
+     id="perspective33" /><inkscape:perspective
+     id="perspective2859"
+     inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+     inkscape:vp_z="1 : 0.5 : 1"
+     inkscape:vp_y="0 : 1000 : 0"
+     inkscape:vp_x="0 : 0.5 : 1"
+     sodipodi:type="inkscape:persp3d" /></defs><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="502"
+   id="namedview27"
+   showgrid="false"
+   inkscape:zoom="4.9166667"
+   inkscape:cx="24"
+   inkscape:cy="24"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="Layer_1" />
+<path
+   fill="#333333"
+   d="M6,6v36h13.625V6H6z M18.868,22L18.868,22v1l0,0v8l0,0v1l0,0v8l0,0h-3.785h-0.378H10.92h-0.378H6.757l0,0V14  l0,0h3.785h0.378h3.785h0.378h3.785l0,0V22z"
+   id="path3" />
+<path
+   fill="#666666"
+   d="M18.973,22v-8H17.85v8H6.625v-8l0,0v26l0,0v-8H17.85v8h1.123v-8 M17.85,31H6.625v-8H17.85V31z M18.973,31v-8  "
+   id="path5" />
+<rect
+   x="33.75"
+   y="15.75"
+   fill="none"
+   width="10.5"
+   height="7"
+   id="rect7" />
+<text
+   transform="matrix(1 0 0 1 33.75 20.0098)"
+   font-family="'MyriadPro-It'"
+   font-size="6"
+   id="text9">20</text>
+
+<rect
+   x="33.625"
+   y="24.375"
+   fill="none"
+   width="10.5"
+   height="7"
+   id="rect11" />
+<text
+   transform="matrix(1 0 0 1 33.625 28.6348)"
+   font-family="'MyriadPro-It'"
+   font-size="6"
+   id="text13">42</text>
+
+<rect
+   x="33.625"
+   y="31.75"
+   fill="none"
+   width="10.5"
+   height="7"
+   id="rect15" />
+<text
+   transform="matrix(1 0 0 1 33.625 36.0098)"
+   font-family="'MyriadPro-It'"
+   font-size="6"
+   id="text17">....</text>
+
+<g
+   id="g19">
+	<g
+   id="g21">
+		<line
+   fill="none"
+   stroke="#020000"
+   stroke-width="5"
+   x1="20.875"
+   y1="26.875"
+   x2="29"
+   y2="26.875"
+   id="line23" />
+		<polygon
+   fill="#020000"
+   points="25.137,30.266 28.529,26.875 25.137,23.482 28.015,23.482 31.406,26.875 28.015,30.266   "
+   id="polygon25" />
+	</g>
+</g>
+<rect
+   style="fill:#a8a8a8;stroke:#000000"
+   x="7.5783896"
+   y="23.050068"
+   width="9.25"
+   height="7.1880002"
+   id="rect35" />
+<rect style="fill:#00ff5e; fill-opacity:0.7;" x="0" y="42 " width="48" height="6" />
+</svg>

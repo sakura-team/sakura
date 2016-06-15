@@ -1,4 +1,5 @@
 *.so
 *.old
 *.pyc
+*.egg-info
 .DS_Store
