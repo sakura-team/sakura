@@ -6,6 +6,17 @@ from Orange.data.DelayedResultTable import DelayedResultTable
 
 from remote_pdb import RemotePdb
 
+TYPE_TO_FEATURE = {
+    'int': Orange.feature.Continuous,
+    'float': Orange.feature.Continuous,
+    'str': Orange.feature.String
+}
+
+def create_orange_domain(output_desc):
+    features = [ TYPE_TO_FEATURE[t](label) \
+            for label, t in output_desc ]
+    return Orange.data.Domain(features)
+
 class OWPantedaOperator(OWWidget):
     def __init__(self, ui_opname, server_opname, inputs, outputs,
                         gui, parent, signalManager):
@@ -60,8 +71,9 @@ class OWPantedaOperator(OWWidget):
             ########
             #!!!!!!!!!!TODO: GERER PLUSIEURS TABLES EN SORTIE
             ########
-            
-            res = DelayedResultTable(self)
+            domain = create_orange_domain(
+                  self.server.describe_outputs(self.op_id)[0])
+            res = DelayedResultTable(self, domain)
             sys.stderr.write('** DEBUG %s - results:\n' % self.ui_opname)
             for i in res:
                 sys.stderr.write(repr(i) + '\n')
@@ -72,6 +84,12 @@ class OWPantedaOperator(OWWidget):
 
     def __iter__(self):
         return self.server.get_operator_iterator(self.op_id)
+
+    def get_output_len(self):
+        return self.server.get_operator_output_len(self.op_id)
+
+    def get_output(self, i):
+        return self.server.get_operator_output(self.op_id, i)
         
     @staticmethod
     def createInputMethods(num):

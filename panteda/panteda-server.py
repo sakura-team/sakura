@@ -27,6 +27,15 @@ class PantedaService(rpyc.Service):
     def exposed_get_operator_iterator(self, op_id):
         operator = self.operators[op_id]
         return operator.get_iterator()
+    def exposed_get_operator_output_len(self, op_id):
+        operator = self.operators[op_id]
+        return operator.get_output_len()
+    def exposed_get_operator_output(self, op_id, i):
+        operator = self.operators[op_id]
+        return operator.get_result(i)
+    def exposed_describe_outputs(self, op_id):
+        operator = self.operators[op_id]
+        return operator.describe_outputs()
 
 class ServerPantedaIterator(object):
     def __init__(self, srv_op):
@@ -37,7 +46,7 @@ class ServerPantedaIterator(object):
         if res == None:
             raise StopIteration
         self.i += 1
-        return res
+        return tuple(res)
 
 class ServerPantedaStepByStepOperator(object):
     def __init__(self):
@@ -62,6 +71,10 @@ class ServerPantedaOneStepOperator(ServerPantedaStepByStepOperator):
 
 class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
     OP_TYPE = "OWPantedaMean"
+    def describe_outputs(self):
+        return ((("Mean", 'float'),),)
+    def get_output_len(self):
+        return 1
     def compute(self):
         source_op = self.source_ops[0]
         res = 0
@@ -69,21 +82,30 @@ class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
         for record in source_op:
             res += record[0]
             num += 1
-        return [ [ float(res)/num ] ]
+        return ((float(res)/num,),)
 
 class ServerPantedaSelectOperator(ServerPantedaStepByStepOperator):
     OP_TYPE = "OWPantedaSelect"
+    def describe_outputs(self):
+        source_op = self.source_ops[0]
+        return ((source_op.describe_outputs()[0][1],),)
+    def get_output_len(self):
+        return self.source_ops[0].get_output_len()
     def get_result(self, i):
         source_op = self.source_ops[0]
         record = source_op.get_result(i)
         if record == None:
             return None
         else:
-            return [record[1]]
+            return (record[1],)
 
 class ServerPantedaDataOperator(ServerPantedaStepByStepOperator):
     OP_TYPE = "OWPantedaData"
-    DATA = [[0, 1, 2], [4, 7, 5], [12, 0, 3]]
+    DATA = ((0, 1, 2), (4, 7, 5), (12, 0, 3))
+    def describe_outputs(self):
+        return ((('col1', 'int'), ('col2', 'int'), ('col3', 'int')),)
+    def get_output_len(self):
+        return len(ServerPantedaDataOperator.DATA)
     def get_result(self, i):
         if i < len(ServerPantedaDataOperator.DATA):
             return ServerPantedaDataOperator.DATA[i]
