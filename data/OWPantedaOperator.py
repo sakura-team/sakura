@@ -15,7 +15,7 @@ TYPE_TO_FEATURE = {
 def create_orange_domain(output_desc):
     features = [ TYPE_TO_FEATURE[t](label) \
             for label, t in output_desc ]
-    return Orange.data.Domain(features)
+    return Orange.data.Domain(features, False)
 
 class OWPantedaOperator(OWWidget):
     def __init__(self, ui_opname, server_opname, inputs, outputs,
