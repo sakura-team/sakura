@@ -7,7 +7,7 @@ from Orange.data.DelayedResultTable import DelayedResultTable
 from remote_pdb import RemotePdb
 
 TYPE_TO_FEATURE = {
-    'int': Orange.feature.Continuous,
+    'int': Orange.feature.Discrete,
     'float': Orange.feature.Continuous,
     'str': Orange.feature.String
 }
