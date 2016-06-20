@@ -72,7 +72,9 @@ class ServerPantedaOneStepOperator(ServerPantedaStepByStepOperator):
 class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
     OP_TYPE = "OWPantedaMean"
     def describe_outputs(self):
-        return ((("Mean", 'float'),),)
+        source_op = self.source_ops[0]
+        source_label = source_op.describe_outputs()[0][0][0]
+        return ((("Mean(%s)" % source_label, 'float'),),)
     def get_output_len(self):
         return 1
     def compute(self):
