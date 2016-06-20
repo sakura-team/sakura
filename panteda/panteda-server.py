@@ -35,7 +35,37 @@ class PantedaService(rpyc.Service):
         return operator.get_result(i)
     def exposed_describe_outputs(self, op_id):
         operator = self.operators[op_id]
-        return operator.describe_outputs()
+        return tuple([
+                tuple([
+                    (col_label, 'enum')
+                        if isinstance(col_type, AutoEnum)
+                    else (col_label, col_type)
+                for col_label, col_type in output])
+            for output in operator.describe_outputs()])
+    def exposed_describe_enum(self, op_id, out_id, name):
+        operator = self.operators[op_id]
+        for col_name, col_type in operator.describe_outputs()[out_id]:
+            if col_name == name:
+                return tuple(col_type.iterkeys())
+
+class AutoEnum(dict):
+    __all_enums = []
+    def __init__(self):
+        self.__enum_id = len(AutoEnum.__all_enums)
+        AutoEnum.__all_enums.append(self)
+        self.__i__ = -1
+    def __getattr__(self, name):
+        if self.has_key(name):
+            return dict.__getitem__(self, name)
+        else:
+            self.__i__ += 1
+            dict.__setitem__(self, name, self.__i__)
+            return self.__i__
+    def __getitem__(self, name):
+        return self.__getattr__(name)
+    @staticmethod
+    def get(enum_id):
+        return AutoEnum.__all_enums__[enum_id]
 
 class ServerPantedaIterator(object):
     def __init__(self, srv_op):
@@ -101,16 +131,27 @@ class ServerPantedaSelectOperator(ServerPantedaStepByStepOperator):
         else:
             return (record[1],)
 
+STATUS = AutoEnum()
+DATA = (    (0, 1, 2, STATUS.OK),
+            (4, 7, 5, STATUS.NOK),
+            (12, 0, 3, STATUS.BOF),
+            (13, 4, 4, STATUS.OK)
+)
+DATA_COLS = (   ('col1', 'int'),
+                ('col2', 'int'),
+                ('col3', 'int'),
+                ('status', STATUS)
+)
+
 class ServerPantedaDataOperator(ServerPantedaStepByStepOperator):
     OP_TYPE = "OWPantedaData"
-    DATA = ((0, 1, 2), (4, 7, 5), (12, 0, 3))
     def describe_outputs(self):
-        return ((('col1', 'int'), ('col2', 'int'), ('col3', 'int')),)
+        return (DATA_COLS,)
     def get_output_len(self):
-        return len(ServerPantedaDataOperator.DATA)
+        return len(DATA)
     def get_result(self, i):
-        if i < len(ServerPantedaDataOperator.DATA):
-            return ServerPantedaDataOperator.DATA[i]
+        if i < len(DATA):
+            return DATA[i]
         else:
             return None
 
