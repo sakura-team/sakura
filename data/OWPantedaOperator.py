@@ -33,6 +33,10 @@ class OWPantedaOperator(OWWidget):
         self.server = PantedaConnection.get()
         self.op_id = self.server.register_operator(server_opname)
         
+        # auto-start if no inputs
+        if len(self.inputs) == 0:
+            self.process()
+
         OWGUI.button(self.controlArea, self, 'Apply', callback=self.process)
         #self.gui = gui
         #self.gui.load(self.controlArea)
