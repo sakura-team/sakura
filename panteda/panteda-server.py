@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import rpyc
+from utils import *
 from rpyc.utils.server import ThreadedServer
+from PantedaData import ServerPantedaDataOperator
+
+DEBUG = False
 
 class PantedaService(rpyc.Service):
     def __init__(self, *args, **kwargs):
@@ -48,66 +52,19 @@ class PantedaService(rpyc.Service):
             if col_name == name:
                 return tuple(col_type.iterkeys())
 
-class AutoEnum(dict):
-    __all_enums = []
-    def __init__(self):
-        self.__enum_id = len(AutoEnum.__all_enums)
-        AutoEnum.__all_enums.append(self)
-        self.__i__ = -1
-    def __getattr__(self, name):
-        if self.has_key(name):
-            return dict.__getitem__(self, name)
-        else:
-            self.__i__ += 1
-            dict.__setitem__(self, name, self.__i__)
-            return self.__i__
-    def __getitem__(self, name):
-        return self.__getattr__(name)
-    @staticmethod
-    def get(enum_id):
-        return AutoEnum.__all_enums__[enum_id]
-
-class ServerPantedaIterator(object):
-    def __init__(self, srv_op):
-        self.srv_op = srv_op
-        self.i = 0
-    def next(self):
-        res = self.srv_op.get_result(self.i)
-        if res == None:
-            raise StopIteration
-        self.i += 1
-        return tuple(res)
-
-class ServerPantedaStepByStepOperator(object):
-    def __init__(self):
-        self.source_ops = None
-    def set_source_ops(self, source_ops):
-        self.source_ops = source_ops
-    def __iter__(self):
-        return self.get_iterator()
-    def get_iterator(self):
-        return ServerPantedaIterator(self)
-
-class ServerPantedaOneStepOperator(ServerPantedaStepByStepOperator):
-    def __init__(self):
-        self.result = None
-    def get_result(self, i):
-        if self.result == None:
-            self.result = self.compute()
-        if i < len(self.result):
-            return self.result[i]
-        else:
-            return None
 
 class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
     OP_TYPE = "OWPantedaMean"
     def describe_outputs(self):
+        if DEBUG: ecrire("Mean description")
         source_op = self.source_ops[0]
         source_label = source_op.describe_outputs()[0][0][0]
         return ((("Mean(%s)" % source_label, 'float'),),)
     def get_output_len(self):
+        if DEBUG: ecrire("Mean len")
         return 1
     def compute(self):
+        if DEBUG: ecrire("Mean compute")
         source_op = self.source_ops[0]
         res = 0
         num = 0
@@ -119,11 +76,14 @@ class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
 class ServerPantedaSelectOperator(ServerPantedaStepByStepOperator):
     OP_TYPE = "OWPantedaSelect"
     def describe_outputs(self):
+        if DEBUG: ecrire("Select description")
         source_op = self.source_ops[0]
         return ((source_op.describe_outputs()[0][1],),)
     def get_output_len(self):
+        if DEBUG: ecrire("Select len")
         return self.source_ops[0].get_output_len()
     def get_result(self, i):
+        if DEBUG: ecrire("Select get_r")
         source_op = self.source_ops[0]
         record = source_op.get_result(i)
         if record == None:
@@ -131,29 +91,6 @@ class ServerPantedaSelectOperator(ServerPantedaStepByStepOperator):
         else:
             return (record[1],)
 
-STATUS = AutoEnum()
-DATA = (    (0, 1, 2, STATUS.OK),
-            (4, 7, 5, STATUS.NOK),
-            (12, 0, 3, STATUS.BOF),
-            (13, 4, 4, STATUS.OK)
-)
-DATA_COLS = (   ('col1', 'int'),
-                ('col2', 'int'),
-                ('col3', 'int'),
-                ('status', STATUS)
-)
-
-class ServerPantedaDataOperator(ServerPantedaStepByStepOperator):
-    OP_TYPE = "OWPantedaData"
-    def describe_outputs(self):
-        return (DATA_COLS,)
-    def get_output_len(self):
-        return len(DATA)
-    def get_result(self, i):
-        if i < len(DATA):
-            return DATA[i]
-        else:
-            return None
 
 if __name__ == "__main__":
     SERVER_OPERATOR_CLASSES = [
