@@ -1,7 +1,7 @@
 from utils import *
 from db import *
 
-query = "select timestamp, cast(duree as float) from aplusix_exp93logs"
+query = "select timestamp, cast(duree as float) from aplusix_brasil_2003logs where duree not like '%-%'"
 DEBUG = False
 
 class ServerPantedaDataOperator(ServerPantedaStepByStepOperator):
