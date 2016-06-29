@@ -3,6 +3,8 @@ import rpyc
 from utils import *
 from rpyc.utils.server import ThreadedServer
 from PantedaData import ServerPantedaDataOperator
+from PantedaMean import ServerPantedaMeanOperator
+from PantedaSelect import ServerPantedaSelectOperator
 
 DEBUG = False
 
@@ -51,46 +53,6 @@ class PantedaService(rpyc.Service):
         for col_name, col_type in operator.describe_outputs()[out_id]:
             if col_name == name:
                 return tuple(col_type.iterkeys())
-
-
-class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
-    OP_TYPE = "OWPantedaMean"
-    def describe_outputs(self):
-        if DEBUG: ecrire("Mean description")
-        source_op = self.source_ops[0]
-        source_label = source_op.describe_outputs()[0][0][0]
-        return ((("Mean(%s)" % source_label, 'float'),),)
-    def get_output_len(self):
-        if DEBUG: ecrire("Mean len")
-        return 1
-    def compute(self):
-        if DEBUG: ecrire("Mean compute")
-        source_op = self.source_ops[0]
-        res = 0
-        num = 0
-        for record in source_op:
-            res += record[0]
-            num += 1
-        return ((float(res)/num,),)
-
-class ServerPantedaSelectOperator(ServerPantedaStepByStepOperator):
-    OP_TYPE = "OWPantedaSelect"
-    def describe_outputs(self):
-        if DEBUG: ecrire("Select description")
-        source_op = self.source_ops[0]
-        return ((source_op.describe_outputs()[0][1],),)
-    def get_output_len(self):
-        if DEBUG: ecrire("Select len")
-        return self.source_ops[0].get_output_len()
-    def get_result(self, i):
-        if DEBUG: ecrire("Select get_r")
-        source_op = self.source_ops[0]
-        record = source_op.get_result(i)
-        if record == None:
-            return None
-        else:
-            return (record[1],)
-
 
 if __name__ == "__main__":
     SERVER_OPERATOR_CLASSES = [
