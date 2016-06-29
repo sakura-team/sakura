@@ -65,10 +65,10 @@ class OWPantedaOperator(OWWidget):
             #!!!!!!!!!!TODO: GERER PLUSIEURS TABLES EN SORTIE
             ########
             res = DelayedResultTable(self, 0)
-            sys.stderr.write('** DEBUG %s - results:\n' % self.ui_opname)
-            for i in res:
-                sys.stderr.write(repr(i) + '\n')
-            sys.stderr.write('\n')
+            #sys.stderr.write('** DEBUG %s - results:\n' % self.ui_opname)
+            #for i in res:
+            #    sys.stderr.write(repr(i) + '\n')
+            #sys.stderr.write('\n')
             self.send(self.outputs[0][0], res)
             
             #self.gui.set_result_table(res)
