@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import rpyc, sys
+import rpyc, bottle, sys, os
 from utils import *
 from rpyc.utils.server import ThreadedServer
 from bottle import Bottle
@@ -8,6 +8,7 @@ from PantedaMean import ServerPantedaMeanOperator
 from PantedaSelect import ServerPantedaSelectOperator
 
 DEBUG = False
+CURDIR = os.path.dirname(os.path.abspath(__file__))
 
 class PantedaService(object):
     def __init__(self, *args, **kwargs):
@@ -74,6 +75,12 @@ class BottlePantedaService(PantedaService):
         @app.route('/operator/register/<op_type>')
         def register_operator(op_type):
             return { 'op_id': self.register_operator(op_type) }
+
+        # if no route was found above, look for static files in webapp subdir
+        @app.route('/')
+        @app.route('/<filepath:path>')
+        def server_static(filepath = 'index.html'):
+            return bottle.static_file(filepath, root = CURDIR + '/webapp')
 
         app.run()
 
