@@ -28,6 +28,10 @@ class PantedaService(object):
         self.operators[op_id] = operator
         print 'registered operator ' + op_type
         return op_id
+    def set_operator_source(self, op_id, in_id, source_op_id):
+        operator = self.operators[op_id]
+        source_op = self.operators[source_op_id]
+        operator.set_source_op(in_id, source_op)
     def set_operator_sources(self, op_id, source_op_ids):
         operator = self.operators[op_id]
         source_ops = [self.operators[i] for i in source_op_ids]
@@ -69,12 +73,51 @@ class RPyCPantedaService(PantedaService, rpyc.Service):
         self.exposed_describe_enum = self.describe_enum
 
 class BottlePantedaService(PantedaService):
+    def __init__(self):
+        PantedaService.__init__(self)
+        self.iterators = []
+
     def serve(self):
         app = Bottle()
 
         @app.route('/operator/register/<op_type>')
         def register_operator(op_type):
             return { 'op_id': self.register_operator(op_type) }
+
+        @app.route('/operator/<op_id:int>/outputs')
+        def describe_outputs(op_id):
+            return { 'desc': self.describe_outputs(op_id) }
+
+        @app.route('/link/<op_src_id:int>/<out_id:int>/to/<op_dst_id:int>/<in_id:int>')
+        def link(op_src_id, out_id, op_dst_id, in_id):
+            self.set_operator_source(op_dst_id, in_id, op_src_id)
+            return { }
+
+        @app.route('/operator/<op_id:int>/output/<out_id:int>/<col_label>/desc')
+        def describe_enum(op_id, out_id, enum_label):
+            return { 'desc': self.describe_enum(op_id, out_id, col_label) }
+
+        @app.route('/operator/<op_id:int>/result/<out_id:int>/row/<row_id:int>')
+        def get_operator_result_row(op_id, out_id, row_id):
+            return { 'row': self.get_operator_output(op_id, row_id) }
+
+        @app.route('/operator/<op_id:int>/result/<out_id:int>/len')
+        def get_operator_result_len(op_id, out_id):
+            return { 'len': self.get_operator_output_len(op_id) }
+
+        @app.route('/operator/<op_id:int>/iterate')
+        def get_operator_iterator(op_id):
+            iterator = self.get_operator_iterator(op_id)
+            iterator_id = len(self.iterators)
+            self.iterators.append(iterator)
+            return { 'it_id': iterator_id }
+
+        @app.route('/iterator/<it_id:int>/next')
+        def iterator_next(it_id):
+            try:
+                return { 'row': self.iterators[it_id].next() }
+            except StopIteration:
+                return { }
 
         # if no route was found above, look for static files in webapp subdir
         @app.route('/')

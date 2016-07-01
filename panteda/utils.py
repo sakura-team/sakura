@@ -42,6 +42,12 @@ class ServerPantedaIterator(object):
 class ServerPantedaStepByStepOperator(object):
     def __init__(self):
         self.source_ops = None
+    def set_source_op(self, in_id, source_op):
+        if not self.source_ops:
+            self.source_ops = [None] * (in_id+1)
+        elif len(self.source_ops) < in_id+1:
+            self.source_ops += [None] * (in_id+1 - len(self.source_ops))
+        self.source_ops[in_id] = source_op
     def set_source_ops(self, source_ops):
         self.source_ops = source_ops
     def __iter__(self):
@@ -52,6 +58,7 @@ class ServerPantedaStepByStepOperator(object):
 
 class ServerPantedaOneStepOperator(ServerPantedaStepByStepOperator):
     def __init__(self):
+        ServerPantedaStepByStepOperator.__init__(self)
         self.result = None
     def get_result(self, i):
         if self.result == None:
