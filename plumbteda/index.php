@@ -23,8 +23,9 @@
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                        <li><a href="#" onclick="not_yet();">Load</a></li>
-                        <li><a href="#" onclick="not_yet();">Save</a></li>
+                        <li><a href="#" onclick="new_project()">New</a></li>
+                        <li><a href="#" onclick="load_project()">Load</a></li>
+                        <li><a href="#" onclick="save_project()">Save</a></li>
                     </ul>
                 </div>
             </div>

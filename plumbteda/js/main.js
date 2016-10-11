@@ -36,6 +36,7 @@ var ops = [["Data", 01], ["Select", 11], ["Mean", 10], ["New", 10]];
 var ops_nb = 0;
 var opl = document.getElementById('ptda_main_div');
 
+var conns = []
 var ops_focus = null;
 
 
@@ -78,12 +79,46 @@ function create_modal(idn, i) {
 }
 
 
+function load_project() {
+    not_yet();
+}
+
+
+function save_project() {
+    not_yet();
+};
+
+
+function new_project() {
+    var res = confirm("Are you sure you want to erase the current project ?");
+    if (!res) 
+        return false;
+    
+    //we remove all the nodes but the last created, so the node with "moving" in their id
+    for (i=0; i<ops.length; i++)
+        for (j=0; j<ops_nb; j++) {
+            var tmp = document.getElementById("moving_"+i+"_"+j);
+            if (tmp != null) {
+                jsPlumb.remove(tmp.id);
+            }
+        }
+};
+
+
 /////////////////////////////////////////////////////////
 //Interaction
 
 $('#ptda_operator_contextMenu').on("click", "a", function() {
     $('#ptda_operator_contextMenu').hide();
     jsPlumb.remove(ops_focus.id);
+    ops_focus = null;
+});
+
+$('#ptda_main_div').on("click", function () {
+    if (ops_focus != null) {
+        $('#ptda_operator_contextMenu').hide();
+        ops_focus = null;
+    }
 });
 
 function open_op_params() {
@@ -165,9 +200,35 @@ $( window ).load(function() {
         Container: "ptda_main_div"
     });
     
-    //window.jsp = instance;
+    var instance = jsPlumb.getInstance()
     for (var i=0; i<ops.length; i++){
         var id = "static_"+i+"_"+i;
         jsPlumb.draggable(id, {containment:true, start: drag_start_cb, stop: drag_stop_cb});
     }
+    
+    jsPlumb.bind("beforeDrop", function(params) {
+        var found = false;
+        for (i=0; i<conns.length; i++) {
+            if (conns[i][0] == params.sourceId && conns[i][1] == params.targetId)
+                found = true;
+        }
+        
+        if (found == true) {
+            console.log("Connection already exists !");
+            return false;
+        }
+            
+        conns.push([params.sourceId, params.targetId])
+        return true;
+        /*
+        if (!( in conns)) {
+            console.log("new");
+            conns.push([params.sourceId, params.targetId])
+        }
+        else
+            console.log("old");
+        */
+        return true;
+    });
+
 });
