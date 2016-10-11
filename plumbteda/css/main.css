@@ -1,0 +1,55 @@
+/*Code started by Michael Ortega for the LIG*/
+/*October 10th, 2016*/
+
+body {
+    margin-left: 0px;
+    margin-top: 0px;
+}
+
+
+.ptda_main {
+    height: 550px;
+    width: 100%;
+    position:relative;          /*Critical !! for containing operators*/
+    border: 1px solid grey;
+}
+
+
+.ptda_menu_tab {
+    height: 22px;
+    background-color:lightgrey;
+}
+
+
+.ptda_operators_tab {
+    margin-top:-1px;
+    height: 548px;
+    width: 146px;
+    background-color:lightblue;
+}
+
+
+.ptda_graph_tab {
+    height: 550px;
+    width: 853px;
+    /*background-color:white;*/
+    top:0px;
+}
+
+
+.ptda_operator {
+    width: 34px;
+    height: 34px;
+    position:absolute;
+    /*background-color: white;*/
+    z-index:1;
+    cursor: default;
+    vertical-align: middle;
+    text-align: center;
+}
+
+
+#ptda_operator_contextMenu {
+  position: absolute;
+  display:none;
+}
