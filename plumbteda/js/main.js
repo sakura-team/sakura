@@ -178,6 +178,7 @@ function drag_stop_cb(e) {
         if (e.el.getBoundingClientRect().left < ot.getBoundingClientRect().right)
             e.el.style.left = ot.offsetWidth + 1 + "px";
     }
+    
     jsPlumb.repaintEverything();        //Very Important when dragging elements manually
 }
 
