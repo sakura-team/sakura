@@ -22,18 +22,10 @@ body {
 
 
 .ptda_operators_tab {
-    margin-top:-1px;
     height: 548px;
-    width: 146px;
+    width: 163px;
     background-color:lightblue;
-}
-
-
-.ptda_graph_tab {
-    height: 550px;
-    width: 853px;
-    /*background-color:white;*/
-    top:0px;
+    overflow-y:scroll;
 }
 
 
@@ -41,7 +33,6 @@ body {
     width: 34px;
     height: 34px;
     position:absolute;
-    /*background-color: white;*/
     z-index:1;
     cursor: default;
     vertical-align: middle;

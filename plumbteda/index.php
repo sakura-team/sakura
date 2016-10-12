@@ -17,24 +17,28 @@
             <h1><span class="label label-primary">Plumbteda</span></h1>
             <p> Plumbery for Panteda Analysis</p>
             <div id ="ptda_menu_div" class="ptda_menu_tab">
-                <div class="dropdown">
-                    <button class="btn btn-default btn-xs dropdown-toggle" type="button" id="dp_menu_project" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Project
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-                        <li><a href="#" onclick="new_project()">New</a></li>
-                        <li><a href="#" onclick="load_project()">Load</a></li>
-                        <li><a href="#" onclick="save_project()">Save</a></li>
-                    </ul>
-                </div>
+                <table width="100%">
+                    <tr><td>
+                        <div class="dropdown">
+                            <button class="btn btn-default btn-xs dropdown-toggle" type="button" id="dp_menu_project" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                Project
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                <li><a href="#" onclick="new_project()">New</a></li>
+                                <li><a href="#" onclick="load_project()">Load</a></li>
+                                <li><a href="#" onclick="save_project()">Save</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td align="right">
+                        <div><button class="btn btn-default btn-xs" type="button" id="dp_menu_help" onclick="not_yet()">help</button></div>
+                    </td>
+                </table>
             </div>
             
             <div id="ptda_main_div" class="ptda_main">
-                <table border=0 cellspacing=0 cellpadding=0>
-                <tr><td><div id="ptda_op_div" class="ptda_operators_tab"></div></td>
-                    <td><div id="ptda_graph_div" class="ptda_graph_tab"></div></td>
-                </table>
+                <div id="ptda_op_div" class="ptda_operators_tab"></div>
             </div>
         </div>
         

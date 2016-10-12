@@ -34,7 +34,8 @@ var modal_7 = '</div> \
 
 var ops = [["Data", 01], ["Select", 11], ["Mean", 10], ["New", 10]];
 var ops_nb = 0;
-var opl = document.getElementById('ptda_main_div');
+var op_div = document.getElementById('ptda_op_div');
+var main_div = document.getElementById('ptda_main_div');
 
 var conns = []
 var ops_focus = null;
@@ -55,8 +56,8 @@ function new_static_operator(x, y, idn) {
     ndiv.classList.add("ptda_operator");
     ndiv.style.left = x;
     ndiv.style.top = y
-    opl.appendChild(ndiv);
-    opl.appendChild(create_modal(idn, ops_nb));
+    op_div.appendChild(ndiv);
+    op_div.appendChild(create_modal(idn, ops_nb));
     ops_nb++;
     
     return ndiv;
@@ -114,12 +115,14 @@ $('#ptda_operator_contextMenu').on("click", "a", function() {
     ops_focus = null;
 });
 
+
 $('#ptda_main_div').on("click", function () {
     if (ops_focus != null) {
         $('#ptda_operator_contextMenu').hide();
         ops_focus = null;
     }
 });
+
 
 function open_op_params() {
     var tab = this.id.split("_");
@@ -147,8 +150,9 @@ function drag_start_cb(e) {
         
         //Changing the id of the dragged static element
         e.el.id = new_id;
-        e.el.ondblclick = open_op_params; 
-        e.el.oncontextmenu = open_op_menu; 
+        e.el.ondblclick = open_op_params;
+        
+        e.el.oncontextmenu = open_op_menu;
         jsPlumb.setIdChanged(old_id, new_id);
         
         //Create a new operator
@@ -162,6 +166,8 @@ function drag_start_cb(e) {
         if (anc == 10 || anc == 11)
             jsPlumb.addEndpoint(e.el.id, { anchor:[ "Left"], isTarget:true});
         e.el.style.zIndex = '2';
+        
+        main_div.appendChild(e.el);
     }
 }
 
@@ -181,7 +187,7 @@ function drag_stop_cb(e) {
 //Document Initialisation
 function readyCallBack() {
     for (var i=0; i<ops.length; i++){
-        new_static_operator(2+ i*(35+1) +"px", 2+ "px", i);
+        new_static_operator(2+ i*(35+1) +"px", 2+"px", i);
     };
 };
 
@@ -189,7 +195,6 @@ $(document).ready(readyCallBack);
 
 //jsPlumb initialisation
 $( window ).load(function() {
-//jsPlumb.ready(function() {
     
     // setup some defaults for jsPlumb.
     jsPlumb.importDefaults({
@@ -200,12 +205,14 @@ $( window ).load(function() {
         Container: "ptda_main_div"
     });
     
+    //First operators are draggable
     var instance = jsPlumb.getInstance()
     for (var i=0; i<ops.length; i++){
         var id = "static_"+i+"_"+i;
         jsPlumb.draggable(id, {containment:true, start: drag_start_cb, stop: drag_stop_cb});
     }
     
+    //This piece of code is for preventing two or more identical connections
     jsPlumb.bind("beforeDrop", function(params) {
         var found = false;
         for (i=0; i<conns.length; i++) {
@@ -217,18 +224,9 @@ $( window ).load(function() {
             console.log("Connection already exists !");
             return false;
         }
-            
+        
         conns.push([params.sourceId, params.targetId])
         return true;
-        /*
-        if (!( in conns)) {
-            console.log("new");
-            conns.push([params.sourceId, params.targetId])
-        }
-        else
-            console.log("old");
-        */
-        return true;
+        
     });
-
 });
