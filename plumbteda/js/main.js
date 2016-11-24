@@ -4,67 +4,181 @@
 /////////////////////////////////////////////////////////
 //Globals
 
-var modal_1 = '<div class="modal fade" id="';
-//here the modal id
-var modal_2 = '" tabindex="-1" role="dialog" aria-labelledby="';
-//here the label id
-var modal_3 = '" aria-hidden="true"> \
-                    <div class="modal-dialog" role="document"> \
-                        <div class="modal-content"> \
-                            <div class="modal-header"> \
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"> \
-                                    <span aria-hidden="true">&times;</span> \
-                                        </button> \
-                                            <table><tr><td><img src="img/';
-//here the svg image
-var modal_4 = '.svg"/></td><td><h4 class="modal-title" id="';
-//here the label id
-var modal_5 = '"><b>&nbsp;&nbsp;';
-//here the label
-var modal_6 = '</b></h4></td></table> \
-              </div> \
-              <div class="modal-body"> ';
-//here the blabla
-var modal_7 = '</div> \
-            </div> \
-          </div> \
-        </div> ';
-
-
-
 var ops = [["Data", 01], ["Select", 11], ["Mean", 10], ["New", 10]];
 var ops_nb = 0;
-var op_div = document.getElementById('ptda_op_div');
-var main_div = document.getElementById('ptda_main_div');
+var left_div = document.getElementById('sakura_left_div');
+var main_div = document.getElementById('sakura_main_div');
 
 var conns = []
 var ops_focus = null;
 
+var drag_delta = [0, 0];
+var drag_current_op = null;
+
 
 /////////////////////////////////////////////////////////
 //Basic Functions
+
+
+function showHint(str) {
+    if (str.length == 0) {
+        document.getElementById("txtHint").innerHTML = "";
+        return;
+    } else {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("txtHint").innerHTML = this.responseText;
+            }
+        };
+        xmlhttp.open("GET", "gethint.php?q=" + str, true);
+        xmlhttp.send();
+    }
+}
 
 function not_yet() {
     alert('Not implemented yet');
 }
 
 
+document.addEventListener("dragstart", function ( e ) {
+    var rect = e.target.parentNode.getBoundingClientRect();
+    drag_current_op = e.target.parentNode;
+    console.log(e.clientX, e.clientY);
+    
+    console.log(rect.x, rect.y);
+    drag_delta = [e.clientX - rect.x, e.clientY - rect.y];
+}, false);
+
+
+main_div.addEventListener("dragover", function( e ) {
+    e.preventDefault();
+}, false);
+
+
+main_div.addEventListener("drop", function( e ) {
+    e.preventDefault();
+    if (drag_current_op.id.includes("static")) {
+        var rect = main_div.getBoundingClientRect();
+        tab_name = drag_current_op.id.split("_");
+        new_dynamic_operator(   e.clientX - rect.x - drag_delta[0], 
+                                e.clientY - rect.y - drag_delta[1] + e.target.scrollTop, 
+                                tab_name[1]);
+    }
+    drag_current_op = null;
+}, false);
+
+
+function jsp_drag_stop(e) {
+    var ot = document.getElementById("sakura_main_div");
+    if (e.el.getBoundingClientRect().left < ot.getBoundingClientRect().left)
+        e.el.style.left = 20 + "px";
+    if (e.el.getBoundingClientRect().top < ot.getBoundingClientRect().top)
+        e.el.style.top = 20 + "px";
+    
+    jsPlumb.repaintEverything();        //Very Important when dragging elements manually
+    
+}
+
+
+function new_dynamic_operator(x, y, idn) {
+    var ndiv = document.createElement("div");
+    ndiv.innerHTML = "<img src='img/"+ops[idn][0]+".svg'></img>"
+    ndiv.id = "moving_"+idn+"_"+ops_nb;
+    ndiv.classList.add("sakura_dynamic_operator");
+    ndiv.style.left = x+"px";
+    ndiv.style.top = y+"px";
+    ndiv.draggable="false";
+    main_div.append(ndiv);
+    main_div.append(create_op_modal(idn, ops_nb));
+    
+    jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
+    
+    //Updating to the dragged operator
+    var anc = ops[idn][1];
+    if (anc == 1 || anc == 11)
+        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+    if (anc == 10 || anc == 11)
+        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
+    ndiv.style.zIndex = '2';
+    
+    //Changing the id of the dragged static element
+    ndiv.ondblclick = open_op_params;    
+    ndiv.oncontextmenu = open_op_menu;
+    ops_nb++;
+}
+
+
 function new_static_operator(x, y, idn) {
     var ndiv = document.createElement("div");
     ndiv.innerHTML = "<img src='img/"+ops[idn][0]+".svg'></img>"
-    ndiv.id = "static_"+idn+"_"+ops_nb;
-    ndiv.classList.add("ptda_operator");
-    ndiv.style.left = x;
-    ndiv.style.top = y
-    op_div.appendChild(ndiv);
-    op_div.appendChild(create_modal(idn, ops_nb));
+    ndiv.id = "static_"+idn;
+    ndiv.classList.add("sakura_static_operator");
+    ndiv.draggable="true";
     ops_nb++;
-    
     return ndiv;
 };
 
 
-function create_modal(idn, i) {
+function create_simple_modal (id, title, main_html) {
+    var m_1 = '<div class="modal fade" id="';
+    //here the modal id
+    var m_2 = '" tabindex="-1" role="dialog" aria-labelledby="';
+    //here the label id
+    var m_3 = '" aria-hidden="true"> \
+                    <div class="modal-dialog modal-lg" role="document"> \
+                        <div class="modal-content"> \
+                            <div class="modal-header"> \
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button> \
+                                <h4 class="modal-title"><b>';
+    //here the label
+    var m_4 = '</b></h4> \
+              </div> \
+              <div class="modal-body"> ';
+    //here the blabla
+    var m_5 = '</div> \
+            </div> \
+          </div> \
+        </div> ';
+    var s = m_1+id;
+    s = s + m_2+id+title;
+    s = s + m_3+title;
+    s = s + m_4+main_html;
+    s = s + m_5;
+    
+    var wrapper= document.createElement('div');
+    wrapper.innerHTML= s;
+    var ndiv= wrapper.firstChild;
+    return ndiv;
+}
+
+function create_op_modal(idn, i) {
+    var modal_1 = '<div class="modal fade" id="';
+    //here the modal id
+    var modal_2 = '" tabindex="-1" role="dialog" aria-labelledby="';
+    //here the label id
+    var modal_3 = '" aria-hidden="true"> \
+                        <div class="modal-dialog" role="document"> \
+                            <div class="modal-content"> \
+                                <div class="modal-header"> \
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"> \
+                                        <span aria-hidden="true">&times;</span> \
+                                            </button> \
+                                                <table><tr><td><img src="img/';
+    //here the svg image
+    var modal_4 = '.svg"/></td><td><h4 class="modal-title" id="';
+    //here the label id
+    var modal_5 = '"><b>&nbsp;&nbsp;';
+    //here the label
+    var modal_6 = '</b></h4></td></table> \
+                  </div> \
+                  <div class="modal-body"> ';
+    //here the blabla
+    var modal_7 = '</div> \
+                </div> \
+              </div> \
+            </div> ';
+    
     var s = modal_1+"modal_"+idn+"_"+i;
     s = s + modal_2+"modal_label_"+idn+"_"+i;
     s = s + modal_3+ops[idn][0]; 
@@ -109,16 +223,24 @@ function new_project() {
 /////////////////////////////////////////////////////////
 //Interaction
 
-$('#ptda_operator_contextMenu').on("click", "a", function() {
-    $('#ptda_operator_contextMenu').hide();
+$('#sakura_operator_contextMenu').on("click", "a", function() {
+    $('#sakura_operator_contextMenu').hide();
+    tn = ops_focus.id.split("_");
+    
+    //remove op
     jsPlumb.remove(ops_focus.id);
+    
+    //remove modal
+    mod = document.getElementById("modal_"+tn[1]+"_"+tn[2]);
+    mod.outerHTML = "";
+    delete mod;
     ops_focus = null;
 });
 
 
-$('#ptda_main_div').on("click", function () {
+$('#sakura_main_div').on("click", function () {
     if (ops_focus != null) {
-        $('#ptda_operator_contextMenu').hide();
+        $('#sakura_operator_contextMenu').hide();
         ops_focus = null;
     }
 });
@@ -132,7 +254,7 @@ function open_op_params() {
 
 
 function open_op_menu(e) {
-    $('#ptda_operator_contextMenu').css({
+    $('#sakura_operator_contextMenu').css({
       display: "block",
       left: e.clientX - e.layerX + 30,
       top: e.clientY - e.layerY + 30
@@ -142,54 +264,15 @@ function open_op_menu(e) {
 }
 
 
-function drag_start_cb(e) {
-    if (e.el.id.includes("static")) {
-        var idn = e.el.id.split("_")[1];
-        old_id = e.el.id;
-        new_id = e.el.id.replace("static", "moving")
-        
-        //Changing the id of the dragged static element
-        e.el.id = new_id;
-        e.el.ondblclick = open_op_params;
-        
-        e.el.oncontextmenu = open_op_menu;
-        jsPlumb.setIdChanged(old_id, new_id);
-        
-        //Create a new operator
-        ndiv = new_static_operator(e.el.style.left, e.el.style.top, idn);
-        jsPlumb.draggable(ndiv.id, {containment:true, start: drag_start_cb, stop: drag_stop_cb});
-        
-        //Updating to the dragged operator
-        var anc = ops[idn][1];
-        if (anc == 1 || anc == 11)
-            jsPlumb.addEndpoint(e.el.id, { anchor:[ "Right"], isSource:true});
-        if (anc == 10 || anc == 11)
-            jsPlumb.addEndpoint(e.el.id, { anchor:[ "Left"], isTarget:true});
-        e.el.style.zIndex = '2';
-        
-        main_div.appendChild(e.el);
-    }
-}
-
-
-function drag_stop_cb(e) {
-    if (e.el.id.includes("moving")) {
-        var ot = document.getElementById("ptda_op_div");
-        if (e.el.getBoundingClientRect().left < ot.getBoundingClientRect().right)
-            e.el.style.left = ot.offsetWidth + 1 + "px";
-    }
-    
-    jsPlumb.repaintEverything();        //Very Important when dragging elements manually
-}
-
 /////////////////////////////////////////////////////////
 //Init Functions
 
 //Document Initialisation
 function readyCallBack() {
-    for (var i=0; i<ops.length; i++){
-        new_static_operator(2+ i*(35+1) +"px", 2+"px", i);
+    /*for (var i=0; i<ops.length; i++){
+        $('#sakura_left_div').append(new_static_operator(0, i, i));
     };
+    */
 };
 
 $(document).ready(readyCallBack);
@@ -203,15 +286,9 @@ $( window ).load(function() {
         MaxConnections : 100,
         Endpoint : ["Dot", {radius:6}],
         EndpointStyle : { fillStyle:"#000000" },
-        Container: "ptda_main_div"
+        Container: "sakura_main_div"
     });
     
-    //First operators are draggable
-    var instance = jsPlumb.getInstance()
-    for (var i=0; i<ops.length; i++){
-        var id = "static_"+i+"_"+i;
-        jsPlumb.draggable(id, {containment:true, start: drag_start_cb, stop: drag_stop_cb});
-    }
     
     //This piece of code is for preventing two or more identical connections
     jsPlumb.bind("beforeDrop", function(params) {

@@ -7,29 +7,45 @@ body {
 }
 
 
-.ptda_main {
-    height: 550px;
+.panel-group .panel + .panel .panel-default{
+    margin-top: 0;
+}
+
+.sakura_main {
+    height: 600px;
     width: 100%;
     position:relative;          /*Critical !! for containing operators*/
     border: 1px solid grey;
+    overflow:auto;
 }
 
-
-.ptda_menu_tab {
+.sakura_menu {
     height: 22px;
     background-color:lightgrey;
 }
 
 
-.ptda_operators_tab {
-    height: 548px;
-    width: 163px;
+.sakura_left_tab {
+    height: 600px;
+    width: 200px;
     background-color:lightblue;
-    overflow-y:scroll;
+    overflow-y:auto;
+    padding:0px;
+    margin:0px;
 }
 
 
-.ptda_operator {
+.sakura_static_operator {
+    width: 34px;
+    height: 34px;
+    z-index:1;
+    cursor: default;
+    vertical-align: middle;
+    text-align: center;
+}
+
+
+.sakura_dynamic_operator {
     width: 34px;
     height: 34px;
     position:absolute;
@@ -40,7 +56,8 @@ body {
 }
 
 
-#ptda_operator_contextMenu {
+#sakura_operator_contextMenu {
   position: absolute;
   display:none;
 }
+
