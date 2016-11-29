@@ -4,8 +4,8 @@ from db import *
 query = "select timestamp, cast(duree as float) from aplusix_brasil_2003logs where duree not like '%-%'"
 DEBUG = False
 
-class ServerPantedaDataOperator(ServerPantedaStepByStepOperator):
-    OP_TYPE = "OWPantedaData"
+class ServerSakuraDataOperator(ServerSakuraStepByStepOperator):
+    OP_TYPE = "OWSakuraData"
     def __init__(self):
         self.cur_desc = DB_CONN.cursor()
         self.cur_main = DB_CONN.cursor()

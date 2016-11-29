@@ -3,14 +3,14 @@ import rpyc, bottle, sys, os
 from utils import *
 from rpyc.utils.server import ThreadedServer
 from bottle import Bottle
-from PantedaData import ServerPantedaDataOperator
-from PantedaMean import ServerPantedaMeanOperator
-from PantedaSelect import ServerPantedaSelectOperator
+from SakuraData import ServerSakuraDataOperator
+from SakuraMean import ServerSakuraMeanOperator
+from SakuraSelect import ServerSakuraSelectOperator
 
 DEBUG = False
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 
-class PantedaService(object):
+class SakuraService(object):
     def __init__(self, *args, **kwargs):
         self.next_op_id = 0
         self.operators = {}
@@ -60,10 +60,10 @@ class PantedaService(object):
             if col_name == name:
                 return tuple(col_type.iterkeys())
 
-class RPyCPantedaService(PantedaService, rpyc.Service):
+class RPyCSakuraService(SakuraService, rpyc.Service):
     def __init__(self, *args, **kwargs):
         rpyc.Service.__init__(self, *args, **kwargs)
-        PantedaService.__init__(self, *args, **kwargs)
+        SakuraService.__init__(self, *args, **kwargs)
         self.exposed_register_operator = self.register_operator
         self.exposed_set_operator_sources = self.set_operator_sources
         self.exposed_get_operator_iterator = self.get_operator_iterator
@@ -72,9 +72,9 @@ class RPyCPantedaService(PantedaService, rpyc.Service):
         self.exposed_describe_outputs = self.describe_outputs
         self.exposed_describe_enum = self.describe_enum
 
-class BottlePantedaService(PantedaService):
+class BottleSakuraService(SakuraService):
     def __init__(self, webapp_dir):
-        PantedaService.__init__(self)
+        SakuraService.__init__(self)
         self.webapp_path = CURDIR + '/' + webapp_dir
         self.iterators = []
 
@@ -131,18 +131,18 @@ class BottlePantedaService(PantedaService):
 
 if __name__ == "__main__":
     SERVER_OPERATOR_CLASSES = [
-        ServerPantedaMeanOperator,
-        ServerPantedaSelectOperator,
-        ServerPantedaDataOperator
+        ServerSakuraMeanOperator,
+        ServerSakuraSelectOperator,
+        ServerSakuraDataOperator
     ]
     if len(sys.argv) > 1 and sys.argv[1] == '--rpyc':
-        server = ThreadedServer(RPyCPantedaService, port = 12345)
+        server = ThreadedServer(RPyCSakuraService, port = 12345)
         server.start()
     else:
         if len(sys.argv) == 1:
             webapp_dir = 'basic_webapp'
         else:
             webapp_dir = sys.argv[1]
-        service = BottlePantedaService(webapp_dir)
+        service = BottleSakuraService(webapp_dir)
         service.serve()
 

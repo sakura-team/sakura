@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-from utils import ServerPantedaStepByStepOperator
+from utils import ServerSakuraStepByStepOperator
 DEBUG = False
 
-class ServerPantedaSelectOperator(ServerPantedaStepByStepOperator):
-    OP_TYPE = "OWPantedaSelect"
+class ServerSakuraSelectOperator(ServerSakuraStepByStepOperator):
+    OP_TYPE = "OWSakuraSelect"
     def describe_outputs(self):
         if DEBUG: ecrire("Select description")
         source_op = self.source_ops[0]

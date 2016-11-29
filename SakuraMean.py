@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-from utils import ServerPantedaOneStepOperator
+from utils import ServerSakuraOneStepOperator
 DEBUG = False
 
-class ServerPantedaMeanOperator(ServerPantedaOneStepOperator):
-    OP_TYPE = "OWPantedaMean"
+class ServerSakuraMeanOperator(ServerSakuraOneStepOperator):
+    OP_TYPE = "OWSakuraMean"
     def describe_outputs(self):
         if DEBUG: ecrire("Mean description")
         source_op = self.source_ops[0]

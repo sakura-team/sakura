@@ -27,7 +27,7 @@ class AutoEnum(dict):
         return AutoEnum.__all_enums__[enum_id]
 
 
-class ServerPantedaIterator(object):
+class ServerSakuraIterator(object):
     def __init__(self, srv_op):
         self.srv_op = srv_op
         self.i = 0
@@ -39,7 +39,7 @@ class ServerPantedaIterator(object):
         return tuple(res)
 
 
-class ServerPantedaStepByStepOperator(object):
+class ServerSakuraStepByStepOperator(object):
     def __init__(self):
         self.source_ops = None
     def set_source_op(self, in_id, source_op):
@@ -53,12 +53,12 @@ class ServerPantedaStepByStepOperator(object):
     def __iter__(self):
         return self.get_iterator()
     def get_iterator(self):
-        return ServerPantedaIterator(self)
+        return ServerSakuraIterator(self)
 
 
-class ServerPantedaOneStepOperator(ServerPantedaStepByStepOperator):
+class ServerSakuraOneStepOperator(ServerSakuraStepByStepOperator):
     def __init__(self):
-        ServerPantedaStepByStepOperator.__init__(self)
+        ServerSakuraStepByStepOperator.__init__(self)
         self.result = None
     def get_result(self, i):
         if self.result == None:

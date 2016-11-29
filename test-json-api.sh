@@ -9,9 +9,9 @@ req()
 }
 
 # create operators
-req /operator/register/OWPantedaData    # -> op_id 0
-req /operator/register/OWPantedaSelect  # -> op_id 1
-req /operator/register/OWPantedaMean    # -> op_id 2
+req /operator/register/OWSakuraData    # -> op_id 0
+req /operator/register/OWSakuraSelect  # -> op_id 1
+req /operator/register/OWSakuraMean    # -> op_id 2
 
 # link operators
 req /link/0/0/to/1/0
