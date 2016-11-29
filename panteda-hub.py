@@ -73,8 +73,9 @@ class RPyCPantedaService(PantedaService, rpyc.Service):
         self.exposed_describe_enum = self.describe_enum
 
 class BottlePantedaService(PantedaService):
-    def __init__(self):
+    def __init__(self, webapp_dir):
         PantedaService.__init__(self)
+        self.webapp_path = CURDIR + '/' + webapp_dir
         self.iterators = []
 
     def serve(self):
@@ -123,7 +124,7 @@ class BottlePantedaService(PantedaService):
         @app.route('/')
         @app.route('/<filepath:path>')
         def server_static(filepath = 'index.html'):
-            return bottle.static_file(filepath, root = CURDIR + '/webapp')
+            return bottle.static_file(filepath, root = self.webapp_path)
 
         app.run()
 
@@ -138,6 +139,10 @@ if __name__ == "__main__":
         server = ThreadedServer(RPyCPantedaService, port = 12345)
         server.start()
     else:
-        service = BottlePantedaService()
+        if len(sys.argv) == 1:
+            webapp_dir = 'basic_webapp'
+        else:
+            webapp_dir = sys.argv[1]
+        service = BottlePantedaService(webapp_dir)
         service.serve()
 
