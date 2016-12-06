@@ -1,6 +1,6 @@
 
 // websocket management
-var ws_gui = new WebSocket("ws://localhost:8080/websockets/gui");
+var ws_gui = new WebSocket("ws://localhost:8081/websockets/gui");
 var callbacks = {};
 var next_cb_idx = 0;
 

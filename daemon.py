@@ -7,7 +7,7 @@ from common.wsapi import get_remote_api, LocalAPIHandler, get_client_wsock
 from daemon.init import init_connexion_to_hub
 from daemon.api import HubToDaemonAPI
     
-wsock = get_client_wsock("ws://localhost:8080/websockets/daemon")
+wsock = get_client_wsock("ws://localhost:8081/websockets/daemon")
 remote_api = get_remote_api(wsock, pickle)
 local_api = HubToDaemonAPI()
 

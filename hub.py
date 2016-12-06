@@ -33,7 +33,7 @@ def run(webapp_path):
     def server_static(filepath = 'index.html'):
         return bottle.static_file(filepath, root = webapp_path)
 
-    server = WSGIServer(("0.0.0.0", 8080), app,
+    server = WSGIServer(("0.0.0.0", 8081), app,
                         handler_class=WebSocketHandler)
     server.serve_forever()
 
