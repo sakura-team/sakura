@@ -32,7 +32,7 @@
                                 </ul>
                             </li>
                             <li>
-                                <a onclick="open_op_select_modal();" style="cursor: pointer;">Operators</a>
+                                <a onclick="select_op_open_modal();" style="cursor: pointer;">Operators</a>
                             </li>
                             <li>
                                 <a onclick="not_yet()" style="cursor: pointer;">Help</a>
@@ -69,21 +69,48 @@
                         <h2>Operators Selection</h2>
                     </div>
                     <div class="modal-body">
-                        <select class="selectpicker" multiple id="op_tags_select" onchange="op_on_change_tag();" data-width="100%" data-style="btn-info"> 
-                        </select>
-                        <!--<div id="op_selected_tags_list" class="btn-group" style="data-width: 400px;"></div>-->
-                        
-                        <hr width="50%" align="left">
+                        <table width="100%">
+                            <tr>
+                                <td width="40%" style="padding: 5px; vertical-align: top; background-color: #EEEEEE;" >
+                                    <table class="table" style="border: none;">
+                                        <tr>
+                                            <td>
+                                                <label>Select by tag</label>
+                                            </td>
+                                            <td>
+                                                <select class="selectpicker" multiple id="op_tags_select" onchange="select_op_on_change_tag();" data-width="200px">
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <label>Select by Name </label>
+                                            </td>
+                                            <td>
+                                                <input type="text"></input>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="padding: 5px;">
+                                    <input type="text" class="form-control" placeholder="Enter a panel title" id="select_op_panel_title"></input>
+                                    <br>
+                                    <div width="100%" style="height: 400px; overflow-y: auto;">Operators
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-primary" onclick="add_accordion();">Make a panel</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
         </div>
         <script src="js/general.js"></script>
         <script src="js/interaction.js"></script>
+        <script src="js/select_operator.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>

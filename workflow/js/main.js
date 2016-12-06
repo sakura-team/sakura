@@ -26,45 +26,6 @@ function add_tag_in_templist(tagname) {
     }
 }
 
-function op_on_change_tag() {
-    var ops = document.getElementById("op_tags_select").options;
-    for (var i=0;i<ops.length;i++) {
-        console.log(ops[i].selected);
-    }
-}
-
-
-function open_op_select_modal() {
-    //Before opening the modal, we have to ask about the existing operators, and then make the tags list
-    /*$.getJSON("/opclasses", function (data) {
-        console.log(data);
-        });
-    */
-    
-    //var ws_echo = new WebSocket("ws:")
-    
-    var ostl = document.getElementById('op_tags_select');
-    console.log(ostl);
-    var option1 = document.createElement("option");
-    option1.text = "Tag1";
-    ostl.add(option1);
-    
-    var option2 = document.createElement("option");
-    option2.text = "Tag2";
-    ostl.add(option2);
-    
-    var option3 = document.createElement("option");
-    option3.text = "Tag3";
-    ostl.add(option3);
-    
-    var option4 = document.createElement("option");
-    option4.text = "Tag4";
-    ostl.add(option4);
-    
-    $('#op_tags_select').selectpicker('refresh');
-    $('#modal_op_selector').modal();
-}
-
 
 document.addEventListener("dragstart", function ( e ) {
     var rect = e.target.parentNode.getBoundingClientRect();
@@ -107,20 +68,15 @@ function jsp_drag_stop(e) {
 
 function add_accordion() {
     
-    var ops = document.getElementById("op_tags_select").options;
-    var n_tag = '';
-    var nb_tags = 0;
-    for (var i=0;i<ops.length;i++) {
-        if (ops[i].selected)
-            n_tag += ops[i].text + '_';
-            nb_tags++;
+    var title = document.getElementById('select_op_panel_title').value;
+    if (title == '') {
+        alert("Need a title for your operators panel");
+        return;
     }
     
-    if (nb_tags > 0) {
-        var new_acc = create_accordion(n_tag, "titi");
-        var acc_div = document.getElementById('op_left_accordion');
-        acc_div.appendChild(new_acc);
-    }
+    var new_acc = create_accordion(title, "titi");
+    var acc_div = document.getElementById('op_left_accordion');
+    acc_div.appendChild(new_acc);
 }
 
 function create_accordion(title, ops) {
@@ -231,9 +187,6 @@ function load_project() {
 
 
 function save_project() {
-    ws_request('list_daemons', [], {}, function (result) {
-        console.log(JSON.stringify(result));
-    });
     not_yet();
 };
 
