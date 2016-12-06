@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import collections
 from geventwebsocket import WebSocketError
 from websocket import create_connection
 
@@ -10,6 +11,9 @@ def get_remote_api(wsock, protocol):
         return protocol.loads(res)
     remote_api = AttrCallAggregator(remote_api_handler)
     return remote_api
+
+ParsedRequest = collections.namedtuple('ParsedRequest',
+                    ('path', 'args', 'kwargs'))
 
 class LocalAPIHandler(object):
     def __init__(self, wsock, protocol, local_api):
@@ -26,12 +30,18 @@ class LocalAPIHandler(object):
             req = self.wsock.receive()
             if req == None:
                 return False
-            path, args, kwargs = self.protocol.loads(req)
-            res = self.api_runner.do(path, args, kwargs)
-            self.wsock.send(self.protocol.dumps(res))
+            parsed = self.parse_request(req)
+            res = self.api_runner.do(
+                parsed.path, parsed.args, parsed.kwargs)
+            res = self.format_result(parsed, res)
+            self.wsock.send(res)
         except WebSocketError:
             return False
         return True
+    def parse_request(self, req):
+        return ParsedRequest(*self.protocol.loads(req))
+    def format_result(self, parsed_request, res):
+        return self.protocol.dumps(res)
 
 def get_client_wsock(url):
     wsock = create_connection(url)
