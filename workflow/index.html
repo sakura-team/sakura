@@ -45,12 +45,10 @@
                 <tr>
                     <td width="250px">
                         <div id="sakura_left_div" class="sakura_left_tab">
-                            <div class="panel-group" id="op_left_accordion">
-                            </div>
+                            <div class="panel-group" id="op_left_accordion"/>
                         </div>
                     <td width="100%">
-                        <div id="sakura_main_div" class="sakura_main">
-                        </div>
+                        <div id="sakura_main_div" class="sakura_main"/>
                     </td>
                 </tr>
             </table>
@@ -78,8 +76,7 @@
                                                 <label>Select by tag</label>
                                             </td>
                                             <td>
-                                                <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change_tag();" data-width="200px" data-live-search="true">
-                                                </select>
+                                                <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -87,17 +84,15 @@
                                                 <label>Select by Name </label>
                                             </td>
                                             <td>
-                                                <select class="selectpicker" multiple id="select_op_names_select" onchange="select_op_on_change_name();" data-width="200px" data-live-search="true">
-                                                </select>
+                                                <select class="selectpicker" multiple id="select_op_names_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
                                             </td>
                                         </tr>
                                     </table>
                                 </td>
                                 <td style="padding: 5px;">
-                                    <input type="text" class="form-control" placeholder="Enter a panel title" id="select_op_panel_title"></input>
+                                    <input type="text" class="form-control" placeholder="Enter a panel title" id="select_op_panel_title"/>
                                     <br>
-                                    <div width="100%" style="height: 400px; overflow-y: auto;">Operators
-                                    </div>
+                                    <div id="select_op_panel" width="100%" style="height: 400px; overflow-y: auto;"/>
                                 </td>
                             </tr>
                         </table>

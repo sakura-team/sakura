@@ -2,6 +2,7 @@
 //December 06th, 2016
 
 
+select_op_ops = []
 //This function ask about all the operators, and then update the "operators selection" modal
 function select_op_open_modal() {
     
@@ -16,9 +17,14 @@ function select_op_open_modal() {
         var sostl = document.getElementById('select_op_tags_select');
         var sosnl = document.getElementById('select_op_names_select');
         
-        var arr = JSON.parse(JSON.stringify(result));
-        for (var i=0; i<arr.length; i++) {
-            arr[i][3].forEach( function (item) {
+        var div = document.getElementById('select_op_panel');
+        while(div.firstChild){
+            div.removeChild(div.firstChild);
+        }
+        
+        select_op_ops = JSON.parse(JSON.stringify(result));
+        for (var i=0; i<select_op_ops.length; i++) {
+            select_op_ops[i][3].forEach( function (item) {
                     if (tags_list.indexOf(item) == -1) {
                         tags_list.push(item);
                         var option = document.createElement("option");
@@ -27,9 +33,9 @@ function select_op_open_modal() {
                     }
                 });
             var option = document.createElement("option");
-            option.text = arr[i][1];
-            option.setAttribute("data-subtext", arr[i][2]);
-            console.log(option);
+            option.text = select_op_ops[i][1];
+            option.value = select_op_ops[i][0];
+            option.setAttribute("data-subtext", select_op_ops[i][2]);
             sosnl.add(option);
         }
         $('#select_op_tags_select').selectpicker('refresh');
@@ -39,17 +45,42 @@ function select_op_open_modal() {
 }
 
 
-function select_op_on_change_tag() {
-    var ops = document.getElementById("select_op_tags_select").options;
-    for (var i=0;i<ops.length;i++) {
-        console.log(ops[i].selected);
+function select_op_on_change() {
+    var ops_t = document.getElementById("select_op_tags_select").options;
+    var ops_n = document.getElementById("select_op_names_select").options;
+    
+    //cleaning
+    var pdiv = document.getElementById('select_op_panel');
+    while(pdiv.firstChild){
+        pdiv.removeChild(pdiv.firstChild);
+    }
+    displayed = [];
+    
+    //tags
+    for (var o=0; o<ops_t.length; o++) {
+        if (ops_t[o].selected) {
+            select_op_ops.forEach( function (item) {
+                if (item[3].indexOf(ops_t[o].text) >= 0 && displayed.indexOf(item[0]) == -1) {
+                    select_op_new_div(item[4], item[1], pdiv);
+                    displayed.push(parseInt(item[0]));
+                }
+            });
+        }
+    }
+    
+    //names
+    for (var o=0; o<ops_n.length; o++) {
+        if (ops_n[o].selected && displayed.indexOf(parseInt(ops_n[o].value)) == -1) {
+            var ndiv = select_op_new_div(select_op_ops[ops_n[o].value][4], select_op_ops[ops_n[o].value][1] , pdiv);
+            displayed.push(select_op_ops[ops_n[o].value][0]);
+        }
     }
 }
 
 
-function select_op_on_change_name() {
-    var ops = document.getElementById("select_op_names_select").options;
-    for (var i=0;i<ops.length;i++) {
-        console.log(ops[i].selected);
-    }
+function select_op_new_div(svg, name, div) {
+    var ndiv = document.createElement('div');
+    ndiv.innerHTML = '<table><tr><td>'+svg +'<td>' +name+'</table>';
+    ndiv.id = "select_op_icon_"+name;
+    div.appendChild(ndiv);
 }
