@@ -78,7 +78,7 @@
                                                 <label>Select by tag</label>
                                             </td>
                                             <td>
-                                                <select class="selectpicker" multiple id="op_tags_select" onchange="select_op_on_change_tag();" data-width="200px">
+                                                <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change_tag();" data-width="200px" data-live-search="true">
                                                 </select>
                                             </td>
                                         </tr>
@@ -87,7 +87,8 @@
                                                 <label>Select by Name </label>
                                             </td>
                                             <td>
-                                                <input type="text"></input>
+                                                <select class="selectpicker" multiple id="select_op_names_select" onchange="select_op_on_change_name();" data-width="200px" data-live-search="true">
+                                                </select>
                                             </td>
                                         </tr>
                                     </table>
