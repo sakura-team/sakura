@@ -80,7 +80,28 @@ function select_op_on_change() {
 
 function select_op_new_div(svg, name, div) {
     var ndiv = document.createElement('div');
-    ndiv.innerHTML = '<table><tr><td>'+svg +'<td>' +name+'</table>';
+    ndiv.innerHTML = '<table> \
+                        <tr> \
+                            <td align="center">'+svg+ ' \
+                        <tr> \
+                            <td align="center"> \
+                                <div class="panel panel-default"> \
+                                    <div class="panel-body-sm"> \
+                                        <table width="100%"> \
+                                            <tr> \
+                                                <td> &nbsp; \
+                                                <td style="padding: 1px;">'+name+' &nbsp;\
+                                                <td style="padding: 1px;" align="right"> \
+                                                    <span class="glyphicon glyphicon-remove" onclick="not_yet();" style="cursor: pointer;"/> \
+                                                <td> &nbsp; \
+                                        </table> \
+                                    </div> \
+                                </div> \
+                            </table>';
     ndiv.id = "select_op_icon_"+name;
     div.appendChild(ndiv);
+    
+    //var tab = document.getElementById('select_op_panel_table');
+    //console.log(tab);
+    
 }
