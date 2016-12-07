@@ -83,17 +83,14 @@ function select_op_new_div(svg, name, div) {
     ndiv.innerHTML = '<table> \
                         <tr> \
                             <td align="center">'+svg+ ' \
+                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="not_yet();" style="cursor: pointer;"/> \
                         <tr> \
-                            <td align="center"> \
+                            <td align="center" colspan="2"> \
                                 <div class="panel panel-default"> \
                                     <div class="panel-body-sm"> \
                                         <table width="100%"> \
                                             <tr> \
-                                                <td> &nbsp; \
-                                                <td style="padding: 1px;">'+name+' &nbsp;\
-                                                <td style="padding: 1px;" align="right"> \
-                                                    <span class="glyphicon glyphicon-remove" onclick="not_yet();" style="cursor: pointer;"/> \
-                                                <td> &nbsp; \
+                                                <td align="center" style="padding: 1px;">&nbsp;'+name+' &nbsp;\
                                         </table> \
                                     </div> \
                                 </div> \
