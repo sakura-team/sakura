@@ -8,12 +8,16 @@ class GuiToHubAPI(object):
         return daemons
     
     def list_operators_classes(self):
-        from random import randrange
         global svgs
         
         def generate_icon():
+            global index
             color = ['yellow', 'blue', 'green', 'white', 'grey', 'pink', 'red', 'purple']
-            return '<svg width="38" height="38"><circle cx="19" cy="19" r="17" stroke="black" stroke-width="2" fill="'+color[randrange(0,len(color))]+'" /></svg>'
+            if not 'index' in globals():
+                index = 0
+            else:
+                index = (index+1)%len(color)
+            return '<svg width="38" height="38"><circle cx="19" cy="19" r="17" stroke="black" stroke-width="2" fill="'+color[index]+'" /></svg>'
         
         if not 'svgs' in globals():
             svgs = []

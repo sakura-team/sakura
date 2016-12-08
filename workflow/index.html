@@ -61,7 +61,7 @@
         </div>
         
         <div class="modal fade" id="modal_op_selector" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2>Operators Selection</h2>
@@ -72,19 +72,25 @@
                                 <td width="40%" style="padding: 5px; vertical-align: top; background-color: #EEEEEE;" >
                                     <table class="table" style="border: none;">
                                         <tr>
-                                            <td>
-                                                <label>Select by tag</label>
+                                            <td style="vertical-align: middle;">
+                                                <label>Tag</label>
                                             </td>
                                             <td>
                                                 <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>
-                                                <label>Select by Name </label>
+                                            <td style="vertical-align: middle;">
+                                                    <label>Name </label>
                                             </td>
-                                            <td>
+                                            <td valign="middle">
                                                 <select class="selectpicker" multiple id="select_op_names_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <hr>
+                                                Give an helping explanation here about how to select from tags and name, and what making a panel is about ...
                                             </td>
                                         </tr>
                                     </table>
@@ -92,16 +98,13 @@
                                 <td style="padding: 5px;">
                                     <input type="text" class="form-control" placeholder="Enter a panel title" id="select_op_panel_title"/>
                                     <br>
-                                    <div id="select_op_panel" width="100%" style="height: 400px; overflow-y: auto;">
-                                        <table id="select_op_panel_table">
-                                        </table>
-                                    <div>
+                                    <div id="select_op_panel" width="100%" style="height: 400px; overflow-y: auto;"/>
                                 </td>
                             </tr>
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" onclick="add_accordion();">Make a panel</button>
+                        <button type="button" class="btn btn-primary" onclick="add_accordion();" data-dismiss="modal">Make a panel</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>

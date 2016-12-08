@@ -55,13 +55,13 @@ function select_op_on_change() {
         pdiv.removeChild(pdiv.firstChild);
     }
     displayed = [];
-    
+    divs = []
     //tags
     for (var o=0; o<ops_t.length; o++) {
         if (ops_t[o].selected) {
             select_op_ops.forEach( function (item) {
                 if (item[3].indexOf(ops_t[o].text) >= 0 && displayed.indexOf(item[0]) == -1) {
-                    select_op_new_div(item[4], item[1], pdiv);
+                    divs.push(select_op_new_div(item[4], item[1]));
                     displayed.push(parseInt(item[0]));
                 }
             });
@@ -71,14 +71,41 @@ function select_op_on_change() {
     //names
     for (var o=0; o<ops_n.length; o++) {
         if (ops_n[o].selected && displayed.indexOf(parseInt(ops_n[o].value)) == -1) {
-            var ndiv = select_op_new_div(select_op_ops[ops_n[o].value][4], select_op_ops[ops_n[o].value][1] , pdiv);
+            divs.push(select_op_new_div(select_op_ops[ops_n[o].value][4], select_op_ops[ops_n[o].value][1]));
             displayed.push(select_op_ops[ops_n[o].value][0]);
         }
     }
+    
+    //table creation
+    var nb_cols = 4;
+    var tbl = document.createElement('table');
+    tbl.style.width = '100%';
+    var tbdy = document.createElement('tbody');
+    var nb_rows = Math.ceil(divs.length/nb_cols);
+    console.log(nb_rows);
+    
+    var index = 0;
+    for (var i=0; i< nb_rows; i++) {
+        var tr = document.createElement('tr');
+        for (var j=0; j<nb_cols; j++) {
+            if (divs[index]) {
+                var td = document.createElement('td');
+                td.setAttribute('align', 'center');
+                td.style.width = '20px';
+                td.appendChild(divs[index]);
+                tr.appendChild(td);
+                index = index + 1;
+            }
+        }
+        tbdy.appendChild(tr);
+    }
+    
+    tbl.appendChild(tbdy);
+    pdiv.appendChild(tbl);
 }
 
 
-function select_op_new_div(svg, name, div) {
+function select_op_new_div(svg, name) {
     var ndiv = document.createElement('div');
     ndiv.innerHTML = '<table> \
                         <tr> \
@@ -96,9 +123,5 @@ function select_op_new_div(svg, name, div) {
                                 </div> \
                             </table>';
     ndiv.id = "select_op_icon_"+name;
-    div.appendChild(ndiv);
-    
-    //var tab = document.getElementById('select_op_panel_table');
-    //console.log(tab);
-    
+    return (ndiv);
 }
