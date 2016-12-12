@@ -2,7 +2,11 @@
 //December 06th, 2016
 
 
-select_op_ops = []
+var select_op_ops       = []
+var select_op_divs      = []
+var select_op_selected  = []
+var nb_cols_in_displayed_table = 4
+
 //This function ask about all the operators, and then update the "operators selection" modal
 function select_op_open_modal() {
     
@@ -45,50 +49,20 @@ function select_op_open_modal() {
 }
 
 
-function select_op_on_change() {
-    var ops_t = document.getElementById("select_op_tags_select").options;
-    var ops_n = document.getElementById("select_op_names_select").options;
-    
-    //cleaning
-    var pdiv = document.getElementById('select_op_panel');
-    while(pdiv.firstChild){
-        pdiv.removeChild(pdiv.firstChild);
-    }
-    displayed = [];
-    divs = []
-    //tags
-    for (var o=0; o<ops_t.length; o++) {
-        if (ops_t[o].selected) {
-            select_op_ops.forEach( function (item) {
-                if (item[3].indexOf(ops_t[o].text) >= 0 && displayed.indexOf(item[0]) == -1) {
-                    divs.push(select_op_new_div(item[4], item[1]));
-                    displayed.push(parseInt(item[0]));
-                }
-            });
-        }
-    }
-    
-    //names
-    for (var o=0; o<ops_n.length; o++) {
-        if (ops_n[o].selected && displayed.indexOf(parseInt(ops_n[o].value)) == -1) {
-            divs.push(select_op_new_div(select_op_ops[ops_n[o].value][4], select_op_ops[ops_n[o].value][1]));
-            displayed.push(select_op_ops[ops_n[o].value][0]);
-        }
-    }
+function select_op_make_table(nb_cols, ids, divs) {
     
     //table creation
-    var nb_cols = 4;
     var tbl = document.createElement('table');
-    tbl.style.width = '100%';
     var tbdy = document.createElement('tbody');
-    var nb_rows = Math.ceil(divs.length/nb_cols);
-    console.log(nb_rows);
+    var nb_rows = Math.ceil(ids.length/nb_cols);
+    
+    tbl.style.width = '100%';
     
     var index = 0;
     for (var i=0; i< nb_rows; i++) {
         var tr = document.createElement('tr');
         for (var j=0; j<nb_cols; j++) {
-            if (divs[index]) {
+            if (ids[index] != null) {
                 var td = document.createElement('td');
                 td.setAttribute('align', 'center');
                 td.style.width = '20px';
@@ -99,29 +73,144 @@ function select_op_on_change() {
         }
         tbdy.appendChild(tr);
     }
-    
     tbl.appendChild(tbdy);
-    pdiv.appendChild(tbl);
+    return tbl;
 }
 
 
-function select_op_new_div(svg, name) {
+function select_op_on_change(from) {
+    //'from' is in ['tags, 'names'], not used for now ....
+    
+    var ops_to = document.getElementById("select_op_tags_select").options;
+    var ops_no = document.getElementById("select_op_names_select").options;
+    
+    //cleaning
+    var pdiv = document.getElementById('select_op_panel');
+    select_op_selected = []
+    select_op_divs = []
+    
+    //tags
+    for (var o=0; o<ops_to.length; o++) {
+        if (ops_to[o].selected) {
+            select_op_ops.forEach( function (item) {
+                if (item[3].indexOf(ops_to[o].text) >= 0 && select_op_selected.indexOf(item[0]) == -1) {
+                    select_op_divs.push(select_op_new_div(item[4], item[1], item[0], true));
+                    select_op_selected.push(parseInt(item[0]));
+                }
+            });
+        }
+    }
+    
+    console.log(select_op_selected);
+    
+    //names
+    for (var o=0; o<ops_no.length; o++) {
+        if (ops_no[o].selected && select_op_selected.indexOf(parseInt(ops_no[o].value)) == -1) {
+            select_op_divs.push(select_op_new_div(select_op_ops[ops_no[o].value][4], select_op_ops[ops_no[o].value][1], select_op_ops[ops_no[o].value][0], true));
+            select_op_selected.push(parseInt(select_op_ops[ops_no[o].value][0]));
+        }
+    }
+    
+    //Cleaning
+    while(pdiv.firstChild){
+        pdiv.removeChild(pdiv.firstChild);
+    }
+    pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_selected, select_op_divs));
+}
+
+
+function select_op_new_div(svg, name, id, removable) {
     var ndiv = document.createElement('div');
-    ndiv.innerHTML = '<table> \
-                        <tr> \
-                            <td align="center">'+svg+ ' \
-                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="not_yet();" style="cursor: pointer;"/> \
-                        <tr> \
-                            <td align="center" colspan="2"> \
-                                <div class="panel panel-default"> \
-                                    <div class="panel-body-sm"> \
-                                        <table width="100%"> \
-                                            <tr> \
-                                                <td align="center" style="padding: 1px;">&nbsp;'+name+' &nbsp;\
-                                        </table> \
-                                    </div> \
-                                </div> \
-                            </table>';
-    ndiv.id = "select_op_icon_"+name;
+    if (removable) {
+        ndiv.id = "select_op_selected_"+id+'rem';
+        ndiv.innerHTML = '<table> \
+                            <tr> \
+                                <td align="center">'+svg+ ' \
+                                <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+id+'\');" style="cursor: pointer;"/> \
+                            <tr> \
+                                <td align="center" style="padding: 1px;">'+name+' \
+                        </table>';
+    }
+    else {
+        ndiv.id = "select_op_selected_"+id;
+        ndiv.innerHTML = '<table> \
+                            <tr> \
+                                <td align="center">'+svg+ ' \
+                            <tr> \
+                                <td align="center" style="padding: 1px;">'+name+' \
+                        </table>';
+    }
     return (ndiv);
+}
+
+
+function select_op_delete_op(id) {
+    
+    var index = select_op_selected.indexOf(parseInt(id));
+    
+    select_op_selected.splice(index, 1);
+    select_op_divs.splice(index, 1);
+    
+    var pdiv = document.getElementById('select_op_panel');
+    //Cleaning
+    while(pdiv.firstChild){
+        pdiv.removeChild(pdiv.firstChild);
+    }
+    pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_selected, select_op_divs));
+}
+
+
+function select_op_add_panel() {
+    
+    var title = document.getElementById('select_op_panel_title').value;
+    if (title == '') {
+        alert("Need a title for your operators panel");
+        return;
+    }
+    
+    title = title.replace(" ", "_");
+    
+    var divs = []
+    select_op_selected.forEach( function(item) {
+        var op = select_op_ops[item]
+        divs.push(select_op_new_div(op[4], op[1], op[0], false));
+    });
+    
+    var tbl = select_op_make_table(3, select_op_selected, divs);
+    var tmp_el = document.createElement("div");
+    tmp_el.appendChild(tbl);
+    
+    var new_acc = select_op_create_accordion(title, tmp_el.innerHTML);
+    var acc_div = document.getElementById('op_left_accordion');
+    acc_div.appendChild(new_acc);
+    
+    $('#modal_op_selector').modal('hide');
+}
+
+
+function select_op_create_accordion(title, ops) {
+    var s = '<div class="panel panel-primary" id="div_acc_'+title+'"> \
+                <div class="panel-heading"> \
+                    <h6 class="panel-title"> \
+                        <table width="100%"> \
+                            <tr> \
+                                <td> \
+                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title+'">'+title+'</a> \
+                                </td> \
+                                <td align="right"> \
+                                    <a><span class="glyphicon glyphicon-remove" onclick="not_yet();" style="color: white; cursor: pointer;"></span></a> \
+                                </td> \
+                            </tr> \
+                        </table> \
+                    </h6> \
+                </div> \
+                <div id="acc_'+title+'" class="panel-collapse collapse"> \
+                    <div class="panel-body">'+ops+'</div> \
+                </div> \
+            </div>';
+    
+    var wrapper= document.createElement('div');
+    wrapper.innerHTML= s;
+    var ndiv= wrapper.firstChild;
+    return ndiv;
 }

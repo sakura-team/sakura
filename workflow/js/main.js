@@ -66,47 +66,6 @@ function jsp_drag_stop(e) {
 }
 
 
-function add_accordion() {
-    
-    var title = document.getElementById('select_op_panel_title').value;
-    if (title == '') {
-        alert("Need a title for your operators panel");
-        return;
-    }
-    
-    var new_acc = create_accordion(title, "titi");
-    var acc_div = document.getElementById('op_left_accordion');
-    acc_div.appendChild(new_acc);
-}
-
-function create_accordion(title, ops) {
-    var s = '<div class="panel panel-primary" id="div_acc_'+title+'"> \
-                <div class="panel-heading"> \
-                    <h6 class="panel-title"> \
-                        <table width="100%"> \
-                            <tr> \
-                                <td> \
-                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title+'">'+title+'</a> \
-                                </td> \
-                                <td align="right"> \
-                                    <a><span class="glyphicon glyphicon-remove" onclick="not_yet();" style="color: white; cursor: pointer;"></span></a> \
-                                </td> \
-                            </tr> \
-                        </table> \
-                    </h6> \
-                </div> \
-                <div id="acc_'+title+'" class="panel-collapse collapse"> \
-                    <div class="panel-body">'+ops+'</div> \
-                </div> \
-            </div>';
-    
-    var wrapper= document.createElement('div');
-    wrapper.innerHTML= s;
-    var ndiv= wrapper.firstChild;
-    return ndiv;
-}
-
-
 function create_simple_modal (id, title, main_html) {
     var m_1 = '<div class="modal fade" id="';
     //here the modal id
