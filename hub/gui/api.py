@@ -36,7 +36,7 @@ opcl.append({'id': 0, 'name': "AllData", 'daemon': "geotweet", 'tags': ["data", 
 opcl.append({'id': 1, 'name': "Mean", 'daemon': "geotweet", 'tags': ["mean", "geotweet", "bigdata"], 'svg': svgs[1], 'inputs': 1, 'outputs': 1})
 opcl.append({'id': 2, 'name': "Select", 'daemon': "sakura", 'tags': ["select", "sakura", "management"], 'svg': svgs[2], 'inputs': 1, 'outputs': 0})
 opcl.append({'id': 3, 'name': "Mean", 'daemon': "sakura", 'tags': ["mean", "sakura", "management"], 'svg': svgs[3], 'inputs': 4, 'outputs': 0})
-opcl.append({'id': 4, 'name': "Toto", 'daemon': "sakura", 'tags': ["toto", "sakura", "weird"], 'svg': svgs[4], 'inputs': 1, 'outputs': 4})
+opcl.append({'id': 4, 'name': "Tototututiti", 'daemon': "sakura", 'tags': ["toto", "sakura", "weird"], 'svg': svgs[4], 'inputs': 1, 'outputs': 4})
 opcl.append({'id': 5, 'name': "Visu", 'daemon': "IIHM", 'tags': ["visualisation", "IIHM"], 'svg': svgs[5], 'inputs': 2, 'outputs': 3})
 opcl.append({'id': 6, 'name': "Acp", 'daemon': "IIHM", 'tags': ["acp", "statistics", "IIHM"], 'svg': svgs[6], 'inputs': 1, 'outputs': 1})
 

@@ -127,18 +127,19 @@ function select_op_new_div(svg, name, id, removable) {
                                 <td align="center">'+svg+ ' \
                                 <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+id+'\');" style="cursor: pointer;"/> \
                             <tr> \
-                                <td align="center" style="padding: 1px;">'+name+' \
+                                <td align="center">'+name+' \
                         </table>';
     }
     else {
         ndiv.id = "select_op_selected_"+id+"_static";
         ndiv.setAttribute('draggable', 'true');
+        ndiv.style.zIndex = '2';
         ndiv.classList.add("sakura_static_operator");
         ndiv.innerHTML = '<table> \
                             <tr> \
                                 <td align="center">'+svg+ ' \
                             <tr> \
-                                <td align="center" style="padding: 1px;">'+name+' \
+                                <td align="center">'+name+' \
                         </table>';
     }
     return (ndiv);

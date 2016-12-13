@@ -1,6 +1,6 @@
 $('#sakura_operator_contextMenu').on("click", "a", function() {
+    
     $('#sakura_operator_contextMenu').hide();
-    console.log(ops_focus);
     jsPlumb.remove(ops_focus.id);
     
     //remove modal
