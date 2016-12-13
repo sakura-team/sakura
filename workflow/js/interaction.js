@@ -1,5 +1,6 @@
 $('#sakura_operator_contextMenu').on("click", "a", function() {
     $('#sakura_operator_contextMenu').hide();
+    console.log(ops_focus);
     tn = ops_focus.id.split("_");
     
     //remove op

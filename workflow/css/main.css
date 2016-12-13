@@ -40,8 +40,8 @@ body {
 
 
 .sakura_static_operator {
-    width: 34px;
-    height: 34px;
+    /*width: 34px;
+    height: 34px;*/
     z-index:1;
     cursor: default;
     vertical-align: middle;
@@ -50,8 +50,8 @@ body {
 
 
 .sakura_dynamic_operator {
-    width: 34px;
-    height: 34px;
+    /*width: 34px;
+    height: 34px;*/
     position:absolute;
     z-index:1;
     cursor: default;

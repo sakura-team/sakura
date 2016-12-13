@@ -31,9 +31,11 @@
                                     <li><a href="#" onclick="save_project()">Save</a></li>
                                 </ul>
                             </li>
+                            <!--
                             <li>
                                 <a onclick="select_op_open_modal();" style="cursor: pointer;">Operators</a>
                             </li>
+                            -->
                             <li>
                                 <a onclick="not_yet()" style="cursor: pointer;">Help</a>
                             </li>
@@ -45,7 +47,9 @@
                 <tr>
                     <td width="250px">
                         <div id="sakura_left_div" class="sakura_left_tab">
-                            <div class="panel-group" id="op_left_accordion"/>
+                            <div class="panel-group" name="op_left_accordion" id="op_left_accordion">
+                            <button type="button" class="btn btn-secondary btn-xs" id="select_op_add_button" onclick="select_op_open_modal();"><span class="glyphicon glyphicon-plus" style="color: grey; cursor: pointer;"></span></button>
+                            </div>
                         </div>
                     <td width="100%">
                         <div id="sakura_main_div" class="sakura_main"/>

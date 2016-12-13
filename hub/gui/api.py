@@ -8,28 +8,41 @@ class GuiToHubAPI(object):
         return daemons
     
     def list_operators_classes(self):
-        global svgs
-        
-        def generate_icon():
-            global index
-            color = ['yellow', 'blue', 'green', 'white', 'grey', 'pink', 'red', 'purple']
-            if not 'index' in globals():
-                index = 0
-            else:
-                index = (index+1)%len(color)
-            return '<svg width="38" height="38"><circle cx="19" cy="19" r="17" stroke="black" stroke-width="2" fill="'+color[index]+'" /></svg>'
-        
-        if not 'svgs' in globals():
-            svgs = []
-            for i in range(20):
-                svgs.append(generate_icon())
-        
-        opcl = []
-        opcl.append([0, "AllData", "geotweet", ["data", "geotweet", "bigdata"], svgs[0]])
-        opcl.append([1, "Mean", "geotweet", ["mean", "geotweet", "bigdata"], svgs[1]])
-        opcl.append([2, "Select", "sakura", ["select", "sakura", "management"], svgs[2]])
-        opcl.append([3, "Mean", "sakura", ["mean", "sakura", "management"], svgs[3]])
-        opcl.append([4, "Toto", "sakura", ["toto", "sakura", "weird"], svgs[4]])
-        opcl.append([5, "Visu", "IIHM", ["visualisation", "IIHM"], svgs[5]])
-        opcl.append([6, "Acp", "IIHM", ["acp", "statistics", "IIHM"], svgs[6]])
         return opcl
+    
+    def instantiate_operator(self, *args, **kwargs):
+        id = args[0]
+        return ("not yet")
+    
+###########################MIKE#############################
+svgs = []
+opcl = []
+
+def generate_icon():
+    global index
+    color = ['yellow', 'blue', 'green', 'white', 'grey', 'pink', 'red', 'purple']
+    if not 'index' in globals():
+        index = 0
+    else:
+        index = (index+1)%len(color)
+    return '<svg width="38" height="38"><circle cx="19" cy="19" r="17" stroke="black" stroke-width="2" fill="'+color[index]+'" /></svg>'
+
+
+for i in range(20):
+    svgs.append(generate_icon())
+
+#id, name, daemon, [tags], svg code, nb inputs, nb outputs
+opcl.append({'id': 0, 'name': "AllData", 'daemon': "geotweet", 'tags': ["data", "geotweet", "bigdata"], 'svg': svgs[0], 'inputs': 0, 'outputs': 4})
+opcl.append({'id': 1, 'name': "Mean", 'daemon': "geotweet", 'tags': ["mean", "geotweet", "bigdata"], 'svg': svgs[1], 'inputs': 1, 'outputs': 1})
+opcl.append({'id': 2, 'name': "Select", 'daemon': "sakura", 'tags': ["select", "sakura", "management"], 'svg': svgs[2], 'inputs': 1, 'outputs': 0})
+opcl.append({'id': 3, 'name': "Mean", 'daemon': "sakura", 'tags': ["mean", "sakura", "management"], 'svg': svgs[3], 'inputs': 4, 'outputs': 0})
+opcl.append({'id': 4, 'name': "Toto", 'daemon': "sakura", 'tags': ["toto", "sakura", "weird"], 'svg': svgs[4], 'inputs': 1, 'outputs': 4})
+opcl.append({'id': 5, 'name': "Visu", 'daemon': "IIHM", 'tags': ["visualisation", "IIHM"], 'svg': svgs[5], 'inputs': 2, 'outputs': 3})
+opcl.append({'id': 6, 'name': "Acp", 'daemon': "IIHM", 'tags': ["acp", "statistics", "IIHM"], 'svg': svgs[6], 'inputs': 1, 'outputs': 1})
+
+
+
+
+
+
+############################################################

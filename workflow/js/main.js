@@ -10,30 +10,11 @@ function not_yet() {
     alert('Not implemented yet');
 }
 
-function suppr_tag_in_templist(tagname) {
-    var ostl = document.getElementById('op_selected_tags_list');
-    var child_ = document.getElementById(tagname+'_button');
-    ostl.removeChild(child_);
-    curr_op_tags.splice(curr_op_tags.indexOf(tagname), 1);
-}
-
-
-function add_tag_in_templist(tagname) {
-    if (curr_op_tags.indexOf(tagname) == -1) {
-        var ostl = document.getElementById('op_selected_tags_list');
-        ostl.innerHTML += '<button type="button" id="'+tagname+'_button" style="color: white;background-color:#008CBA;" class="btn btn-default btn-ms" onclick="suppr_tag_in_templist(\''+tagname+'\');">'+tagname+' <span class="glyphicon glyphicon-remove"></span></button>';
-        curr_op_tags.push(tagname);
-    }
-}
-
 
 document.addEventListener("dragstart", function ( e ) {
-    var rect = e.target.parentNode.getBoundingClientRect();
-    drag_current_op = e.target.parentNode;
-    console.log(e.clientX, e.clientY);
-    
-    console.log(rect.x, rect.y);
-    drag_delta = [e.clientX - rect.x, e.clientY - rect.y];
+    var rect = e.target.getBoundingClientRect();
+    drag_current_op = e.target;
+    drag_delta = [e.clientX - rect.left, e.clientY - rect.top];
 }, false);
 
 
@@ -46,13 +27,40 @@ main_div.addEventListener("drop", function( e ) {
     e.preventDefault();
     if (drag_current_op.id.includes("static")) {
         var rect = main_div.getBoundingClientRect();
-        tab_name = drag_current_op.id.split("_");
-        new_dynamic_operator(   e.clientX - rect.x - drag_delta[0], 
-                                e.clientY - rect.y - drag_delta[1] + e.target.scrollTop, 
-                                tab_name[1]);
+        new_dynamic_operator(   e.clientX - rect.left - drag_delta[0], 
+                                e.clientY - rect.top - drag_delta[1] + e.target.scrollTop, 
+                                drag_current_op.id);
     }
     drag_current_op = null;
 }, false);
+
+
+function new_dynamic_operator(x, y, idiv_id) {
+    var id_index = idiv_id.split("_").slice(-2)[0];
+    var idiv = document.getElementById(idiv_id);
+    
+    //New div creation (cloning)
+    var ndiv = idiv.cloneNode(true);
+    ndiv.id = "op_" + id_index + "_" + global_ops_inst.length
+    ndiv.classList.add("sakura_dynamic_operator");
+    ndiv.style.left = x+"px";
+    ndiv.style.top = y+"px";
+    ndiv.setAttribute('draggable', 'false');
+    //ndiv.style.zIndex = '2';
+    ndiv.ondblclick = open_op_params;    
+    ndiv.oncontextmenu = open_op_menu;
+    
+    main_div.append(ndiv);
+    
+    //Plumbery: draggable + connections
+    jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
+    var nb_o = global_ops_cl[id_index]['outputs'];
+    
+    if ( global_ops_cl[id_index]['inputs'] > 0)
+        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
+    if (global_ops_cl[id_index]['outputs'] > 0)
+        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+}
 
 
 function jsp_drag_stop(e) {
@@ -146,7 +154,15 @@ function load_project() {
 
 
 function save_project() {
-    not_yet();
+    //not_yet();
+    
+    //sandbox/begin
+    
+     ws_request('operator_input_info', [0], {}, function (result) {
+        var res = JSON.parse(JSON.stringify(result));
+        console.log(res);
+    });
+    //sansbox/end
 };
 
 
