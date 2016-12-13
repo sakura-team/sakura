@@ -12,6 +12,7 @@ function not_yet() {
 
 
 document.addEventListener("dragstart", function ( e ) {
+    e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
     drag_current_op = e.target;
     drag_delta = [e.clientX - rect.left, e.clientY - rect.top];
