@@ -51,6 +51,7 @@ function new_dynamic_operator(x, y, idiv_id) {
     ndiv.ondblclick = open_op_params;    
     ndiv.oncontextmenu = open_op_menu;
     
+    global_ops_inst.push(ndiv.id);
     main_div.append(ndiv);
     
     //Plumbery: draggable + connections
@@ -163,21 +164,13 @@ function save_project() {
 
 
 function new_project() {
-    not_yet();
-    /*
     var res = confirm("Are you sure you want to erase the current project ?");
     if (!res) 
         return false;
-    
-    //we remove all the nodes but the last created, so the node with "moving" in their id
-    for (i=0; i<global_ops_inst.length; i++)
-        for (j=0; j<ops_nb; j++) {
-            var tmp = document.getElementById("moving_"+i+"_"+j);
-            if (tmp != null) {
-                jsPlumb.remove(tmp.id);
-            }
-        }
-        */
+    global_ops_inst.forEach( function (id) {
+        jsPlumb.remove(id);
+    });
+    global_ops_inst = [];
 };
 
 
