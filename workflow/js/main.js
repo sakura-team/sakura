@@ -155,31 +155,29 @@ function load_project() {
 
 
 function save_project() {
-    //not_yet();
+    not_yet();
     
     //sandbox/begin
-    
-     ws_request('operator_input_info', [0], {}, function (result) {
-        var res = JSON.parse(JSON.stringify(result));
-        console.log(res);
-    });
     //sansbox/end
 };
 
 
 function new_project() {
+    not_yet();
+    /*
     var res = confirm("Are you sure you want to erase the current project ?");
     if (!res) 
         return false;
     
     //we remove all the nodes but the last created, so the node with "moving" in their id
-    for (i=0; i<ops.length; i++)
+    for (i=0; i<global_ops_inst.length; i++)
         for (j=0; j<ops_nb; j++) {
             var tmp = document.getElementById("moving_"+i+"_"+j);
             if (tmp != null) {
                 jsPlumb.remove(tmp.id);
             }
         }
+        */
 };
 
 
