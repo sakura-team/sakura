@@ -1,16 +1,15 @@
 $('#sakura_operator_contextMenu').on("click", "a", function() {
     $('#sakura_operator_contextMenu').hide();
     console.log(ops_focus);
-    tn = ops_focus.id.split("_");
-    
-    //remove op
     jsPlumb.remove(ops_focus.id);
     
     //remove modal
-    mod = document.getElementById("modal_"+tn[1]+"_"+tn[2]);
+    var mod = document.getElementById("modal_"+ops_focus.id);
     mod.outerHTML = "";
     delete mod;
+    
     ops_focus = null;
+    
 });
 
 
@@ -23,7 +22,6 @@ $('#sakura_main_div').on("click", function () {
 
 
 function open_op_params() {
-    var tab = this.id.split("_");
-    var modal_id = "modal_"+tab[1]+"_"+tab[2];
-    $('#'+modal_id).modal();
+    var modal_name = "modal_"+this.id;
+    $('#'+modal_name).modal();
 }
