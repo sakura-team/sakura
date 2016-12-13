@@ -42,7 +42,8 @@ function new_dynamic_operator(x, y, idiv_id) {
     
     //New div creation (cloning)
     var ndiv = idiv.cloneNode(true);
-    ndiv.id = "op_" + id_index + "_" + global_ops_inst.length
+    ndiv.id = "op_" + id_index + "_" + global_ops_id;
+    global_ops_id++;
     ndiv.classList.add("sakura_dynamic_operator");
     ndiv.style.left = x+"px";
     ndiv.style.top = y+"px";
@@ -129,6 +130,7 @@ function new_project() {
         jsPlumb.remove(id);
     });
     global_ops_inst = [];
+    global_ops_id = 0;
 };
 
 
