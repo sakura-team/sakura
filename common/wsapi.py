@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import collections
 from geventwebsocket import WebSocketError
 from websocket import create_connection

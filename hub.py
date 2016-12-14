@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os, sys, bottle, gevent
 from gevent.pywsgi import WSGIServer
@@ -31,6 +31,7 @@ def run(webapp_path):
     @app.route('/')
     @app.route('/<filepath:path>')
     def server_static(filepath = 'index.html'):
+        print('serving ' + filepath)
         return bottle.static_file(filepath, root = webapp_path)
 
     server = WSGIServer(("0.0.0.0", 8081), app,

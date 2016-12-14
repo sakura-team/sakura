@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import json, collections
 from common.wsapi import LocalAPIHandler
 from hub.gui.api import GuiToHubAPI
@@ -13,17 +12,17 @@ ParsedGuiRequest = collections.namedtuple('ParsedGuiRequest',
 class LocalGuiAPIHandler(LocalAPIHandler):
     def parse_request(self, req):
         parsed_request = ParsedGuiRequest(*self.protocol.loads(req))
-        print parsed_request
+        print(parsed_request)
         return parsed_request
     def format_result(self, parsed_request, res):
         full_res = (parsed_request.cb_id, res)
-        print full_res
+        print(full_res)
         return self.protocol.dumps(full_res)
 
 def gui_manager(context, wsock):
-    print 'GUI connected.'
+    print('GUI connected.')
     local_api = GuiToHubAPI(context)
     handler = LocalGuiAPIHandler(wsock, json, local_api)
     handler.loop()
-    print 'GUI disconnected.'
+    print('GUI disconnected.')
 
