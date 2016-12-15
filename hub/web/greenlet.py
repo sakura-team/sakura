@@ -3,11 +3,13 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from hub.web.manager import web_manager
 from hub.web.bottle import bottle_get_wsock
+from hub.tools import monitored
 
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
 
     @app.route('/websockets/gui')
+    @monitored
     def handle_gui_websocket():
         wsock = bottle_get_wsock(bottle.request)
         web_manager(context, wsock)
@@ -21,4 +23,5 @@ def web_greenlet(context, webapp_path):
 
     server = WSGIServer(("0.0.0.0", 8081), app,
                         handler_class=WebSocketHandler)
-    server.serve_forever()
+    server.start()
+    handle_gui_websocket.catch_issues()

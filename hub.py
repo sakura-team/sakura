@@ -8,14 +8,17 @@ from hub.daemons.greenlet import daemons_greenlet
 
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 
+def wait_greenlets(*greenlets):
+    gevent.joinall(greenlets, count=1)
+
 def run(webapp_path):
     # create shared context
     context = HubContext()
     # run greenlets and wait until they end.
-    gevent.joinall((
-            Greenlet.spawn(daemons_greenlet, context),
-            Greenlet.spawn(web_greenlet, context, webapp_path),
-    ))
+    g1 = Greenlet.spawn(daemons_greenlet, context)
+    g2 = Greenlet.spawn(web_greenlet, context, webapp_path)
+    wait_greenlets(g1,g2)
+    print('**out**')
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
