@@ -2,12 +2,11 @@ import collections
 from geventwebsocket import WebSocketError
 from websocket import create_connection
 
-def get_remote_api(wsock, protocol):
+def get_remote_api(f, protocol):
     def remote_api_handler(path, args, kwargs):
-        msg = protocol.dumps((path, args, kwargs))
-        wsock.send(msg)
-        res = wsock.recv()
-        return protocol.loads(res)
+        protocol.dump((path, args, kwargs), f)
+        f.flush()
+        return protocol.load(f)
     remote_api = AttrCallAggregator(remote_api_handler)
     return remote_api
 
@@ -15,8 +14,8 @@ ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('path', 'args', 'kwargs'))
 
 class LocalAPIHandler(object):
-    def __init__(self, wsock, protocol, local_api):
-        self.wsock = wsock
+    def __init__(self, f, protocol, local_api):
+        self.f = f
         self.protocol = protocol
         self.api_runner = AttrCallRunner(local_api)
     def loop(self):
@@ -26,29 +25,25 @@ class LocalAPIHandler(object):
                 break
     def handle_next_request(self):
         try:
-            req = self.wsock.receive()
+            req = self.receive_request()
+            print('received',req)
             if req == None:
                 return False
-            parsed = self.parse_request(req)
             res = self.api_runner.do(
-                parsed.path, parsed.args, parsed.kwargs)
-            res = self.format_result(parsed, res)
-            self.wsock.send(res)
-        except WebSocketError:
+                req.path, req.args, req.kwargs)
+            self.send_result(req, res)
+            print("sent",res)
+            self.f.flush()
+        except BaseException:
             return False
         return True
-    def parse_request(self, req):
-        return ParsedRequest(*self.protocol.loads(req))
-    def format_result(self, parsed_request, res):
-        return self.protocol.dumps(res)
-
-def get_client_wsock(url):
-    wsock = create_connection(url)
-    # server side is implemented using gevent.geventwebsocket
-    # client side is implemented using [stdlib].websocket
-    # the recv methods do not have the same name, let's fix that
-    wsock.receive = wsock.recv
-    return wsock
+    def receive_request(self):
+        raw_req = self.protocol.load(self.f)
+        if raw_req == None:
+            return None
+        return ParsedRequest(*raw_req)
+    def send_result(self, req, res):
+        self.protocol.dump(res, self.f)
 
 # The following pair of classes allows to pass API calls efficiently
 # over a network socket.

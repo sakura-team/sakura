@@ -4,7 +4,6 @@ class GuiToHubAPI(object):
     
     def list_daemons(self, *args, **kwargs):
         daemons = self.context.list_daemons()
-        print(("list_daemons:", args, kwargs, '->', daemons))
         return daemons
     
     def list_operators_classes(self):
