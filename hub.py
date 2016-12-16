@@ -5,6 +5,7 @@ from gevent import Greenlet
 from hub.context import HubContext
 from hub.web.greenlet import web_greenlet
 from hub.daemons.greenlet import daemons_greenlet
+from common.tools import set_unbuffered_stdout
 
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,6 +22,8 @@ def run(webapp_path):
     print('**out**')
 
 if __name__ == "__main__":
+    set_unbuffered_stdout()
+    print('Started.')
     if len(sys.argv) == 1:
         webapp_dir = 'basic_webapp'
     else:
