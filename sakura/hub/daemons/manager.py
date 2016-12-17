@@ -1,6 +1,6 @@
 import pickle
-from common.wsapi import LocalAPIHandler
-from hub.daemons.api import DaemonToHubAPI
+from sakura.common.wsapi import LocalAPIHandler
+from sakura.hub.daemons.api import DaemonToHubAPI
 
 def daemon_manager(daemon_id, context, sock_file):
     print('daemon connected.')

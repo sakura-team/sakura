@@ -1,6 +1,6 @@
 import json, collections
-from common.wsapi import LocalAPIHandler
-from hub.web.api import GuiToHubAPI
+from sakura.common.wsapi import LocalAPIHandler
+from sakura.hub.web.api import GuiToHubAPI
 
 # the GUI passes a callback ID when issuing a request,
 # and expects this ID to be returned with the result.

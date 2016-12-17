@@ -2,10 +2,10 @@
 
 import os, sys, gevent
 from gevent import Greenlet
-from hub.context import HubContext
-from hub.web.greenlet import web_greenlet
-from hub.daemons.greenlet import daemons_greenlet
-from common.tools import set_unbuffered_stdout
+from sakura.hub.context import HubContext
+from sakura.hub.web.greenlet import web_greenlet
+from sakura.hub.daemons.greenlet import daemons_greenlet
+from sakura.common.tools import set_unbuffered_stdout
 
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 

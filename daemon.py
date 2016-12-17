@@ -4,10 +4,10 @@ import pickle
 from gevent.socket import create_connection
 #from gevent import monkey
 #monkey.patch_all()
-from common.wsapi import get_remote_api, LocalAPIHandler
-from common.tools import set_unbuffered_stdout
-from daemon.init import init_connexion_to_hub
-from daemon.api import HubToDaemonAPI
+from sakura.common.wsapi import get_remote_api, LocalAPIHandler
+from sakura.common.tools import set_unbuffered_stdout
+from sakura.daemon.init import init_connexion_to_hub
+from sakura.daemon.api import HubToDaemonAPI
 
 set_unbuffered_stdout()
 print('Started.')

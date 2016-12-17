@@ -1,7 +1,7 @@
 
 from gevent.server import StreamServer
-from hub.daemons.manager import daemon_manager
-from hub.tools import monitored
+from sakura.hub.daemons.manager import daemon_manager
+from sakura.hub.tools import monitored
 
 def daemons_greenlet(context):
     @monitored

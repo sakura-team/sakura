@@ -1,9 +1,9 @@
 import bottle
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
-from hub.web.manager import web_manager
-from hub.web.bottle import bottle_get_wsock
-from hub.tools import monitored
+from sakura.hub.web.manager import web_manager
+from sakura.hub.web.bottle import bottle_get_wsock
+from sakura.hub.tools import monitored
 
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()

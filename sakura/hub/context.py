@@ -11,4 +11,4 @@ class HubContext(object):
         self.daemons[daemon_id] = metadata
     def list_daemons(self):
         return self.daemons
-        
+
