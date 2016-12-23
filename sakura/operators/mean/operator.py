@@ -5,6 +5,7 @@ from sakura.daemon.processing.parameter import NumericColumnSelection
 class MeanOperator(Operator):
     NAME = "Mean"
     SHORT_DESC = "Get the mean value of a numeric column."
+    TAGS = [ "statistics", "aggregate" ]
     def construct(self):
         # inputs
         self.input_table = self.register_input('Input table')

@@ -13,6 +13,7 @@ DATA = (
 class DataSampleOperator(Operator):
     NAME = "Data Sample"
     SHORT_DESC = "Data Sample."
+    TAGS = [ "testing", "datasource" ]
     def construct(self):
         # no inputs
         pass
