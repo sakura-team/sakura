@@ -18,8 +18,10 @@ def web_greenlet(context, webapp_path):
     @app.route('/')
     @app.route('/<filepath:path>')
     def server_static(filepath = 'index.html'):
-        print('serving ' + filepath)
-        return bottle.static_file(filepath, root = webapp_path)
+        print('serving ' + filepath, end="")
+        resp = bottle.static_file(filepath, root = webapp_path)
+        print(' ->', resp)
+        return resp
 
     server = WSGIServer(("0.0.0.0", 8081), app,
                         handler_class=WebSocketHandler)
