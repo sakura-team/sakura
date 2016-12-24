@@ -23,4 +23,9 @@ class Operator(Registry):
             if not parameter.selected():
                 return False
         return True
+    def descriptor(op_cls):
+        # instanciate an operator, to check its number of inputs/outputs
+        op = op_cls()
+        op.construct()
+        return op_cls.NAME, op_cls.TAGS, op_cls.ICON, len(op.input_tables), len(op.output_tables)
 

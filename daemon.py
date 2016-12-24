@@ -10,16 +10,17 @@ from sakura.daemon.loading import load_operator_classes
 from sakura.daemon.loading import init_connexion_to_hub
 from sakura.daemon.api import HubToDaemonAPI
 
-op_classes = load_operator_classes()
 set_unbuffered_stdout()
 print('Started.')
+op_classes = load_operator_classes()
+
 sock = create_connection(('localhost', 1234))
 sock_file = sock.makefile(mode='rwb')
 
 remote_api = get_remote_api(sock_file, pickle)
 local_api = HubToDaemonAPI()
 
-init_connexion_to_hub(remote_api)
+init_connexion_to_hub(remote_api, op_classes)
 handler = LocalAPIHandler(sock_file, pickle, local_api)
 handler.loop()
 
