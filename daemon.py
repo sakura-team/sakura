@@ -6,9 +6,11 @@ from gevent.socket import create_connection
 #monkey.patch_all()
 from sakura.common.wsapi import get_remote_api, LocalAPIHandler
 from sakura.common.tools import set_unbuffered_stdout
-from sakura.daemon.init import init_connexion_to_hub
+from sakura.daemon.loading import load_operator_classes
+from sakura.daemon.loading import init_connexion_to_hub
 from sakura.daemon.api import HubToDaemonAPI
 
+op_classes = load_operator_classes()
 set_unbuffered_stdout()
 print('Started.')
 sock = create_connection(('localhost', 1234))
