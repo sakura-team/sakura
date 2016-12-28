@@ -11,8 +11,8 @@ class Operator(Registry):
         self.parameters = []
     def register_input(self, input_table_label):
         return self.register(self.input_tables, InputTable, input_table_label)
-    def register_output(self, output_table_label):
-        return self.register(self.output_tables, OutputTable, self, output_table_label)
+    def register_output(self, output_table_label, compute_cb):
+        return self.register(self.output_tables, OutputTable, self, output_table_label, compute_cb)
     def register_parameter(self, param_label, cls):
         return self.register(self.parameters, cls, param_label)
     def ready(self):

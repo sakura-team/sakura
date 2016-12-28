@@ -18,14 +18,12 @@ class DataSampleOperator(Operator):
         # no inputs
         pass
         # outputs
-        self.output_table = self.register_output('Data')
+        self.output_table = self.register_output('Data', self.compute)
         self.output_table.length = len(DATA)
         for colname, coltype in DATA_COLUMNS:
             self.output_table.add_column(colname, coltype)
         # no parameters
         pass
-    def compute_output_table(self, output_table, row_start, row_end):
-        # * we have only 1 output table, thus output_table = self.output_table
-        row_end = min(row_end, len(DATA))
-        for row_idx in range(row_start, row_end):
+    def compute(self):
+        for row_idx in range(len(DATA)):
             yield DATA[row_idx]

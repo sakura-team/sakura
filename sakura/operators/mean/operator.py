@@ -10,16 +10,13 @@ class MeanOperator(Operator):
         # inputs
         self.input_table = self.register_input('Input table')
         # outputs
-        self.output_table = self.register_output('Mean result')
+        self.output_table = self.register_output('Mean result', self.compute)
         self.output_table.add_column('Mean', float)
         self.output_table.length = 1
         # parameters
         self.input_column = self.register_parameter('Input column',
                 NumericColumnSelection(self.input_table))
-    def compute_output_table(self, output_table, row_start, row_end):
-        # * we have only 1 output table, thus output_table = self.output_table
-        # * we declared a static length of 1,
-        #   thus we assume row_start = 0 & row_end = 1
+    def compute(self):
         res = 0
         num = 0
         idx = self.input_column.index

@@ -30,21 +30,14 @@ class InputTable(object):
 CHUNK_SIZE = 1000
 
 class OutputTable(Registry):
-    def __init__(self, operator, label):
+    def __init__(self, operator, label, compute_cb):
         self.columns = []
         self.operator = operator
         self.label = label
+        self.compute_cb = compute_cb
         self.length = None
     def add_column(self, col_label, col_type):
         return self.register(self.columns, Column, col_label, col_type, len(self.columns))
     def __iter__(self):
-        row_idx = 0
-        while True:
-            if row_idx == self.length:
-                break
-            if self.length:
-                chunk_len = min(self.length - row_idx, CHUNK_SIZE)
-            for row in self.operator.compute_output_table(self, row_idx, row_idx + chunk_len):
-                yield row
-                row_idx += 1
-
+        for row in self.compute_cb():
+            yield row
