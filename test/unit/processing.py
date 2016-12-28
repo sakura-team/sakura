@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import sys
+import os, sys
+os.environ['UNIT_TEST'] = 'yes'
 sys.path.insert(0, '.')
 from sakura.operators.datasample.operator import DataSampleOperator
 from sakura.operators.mean.operator import MeanOperator
