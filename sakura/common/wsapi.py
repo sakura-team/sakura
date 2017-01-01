@@ -26,15 +26,19 @@ class LocalAPIHandler(object):
     def handle_next_request(self):
         try:
             req = self.receive_request()
-            print('received',req)
-            if req == None:
-                return False
-            res = self.api_runner.do(
-                req.path, req.args, req.kwargs)
+            path, args, kwargs = req.path, req.args, req.kwargs
+            print('received', req)
+        except BaseException:
+            print('malformed request. closing.')
+            return False
+        res = self.api_runner.do(
+            path, args, kwargs)
+        try:
             self.send_result(req, res)
             print("sent",res)
             self.f.flush()
         except BaseException:
+            print('could not send response. closing.')
             return False
         return True
     def receive_request(self):
