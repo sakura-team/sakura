@@ -1,6 +1,5 @@
 import collections
 from geventwebsocket import WebSocketError
-from websocket import create_connection
 
 def get_remote_api(f, protocol):
     def remote_api_handler(path, args, kwargs):
