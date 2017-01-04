@@ -1,7 +1,7 @@
 /*Code started by Michael Ortega for the LIG*/
 /*November 14th, 2016*/
 
-var sakura_web_site = 'http://localhost/~ortega/panteda/sakura';
+//var sakura_web_site = 'http://localhost/~ortega/panteda/sakura';
 
 
 /////////////////////////////////////////////////////////
@@ -12,7 +12,6 @@ var sakura_web_site = 'http://localhost/~ortega/panteda/sakura';
 var global_op_panels        = [];
 var global_ops_cl           = [];
 var global_ops_inst         = [];
-var global_ops_id           = 0;
 
 var main_div = document.getElementById('sakura_main_div');
 

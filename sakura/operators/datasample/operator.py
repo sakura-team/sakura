@@ -2,12 +2,12 @@
 from sakura.daemon.processing.operator import Operator
 
 DATA_COLUMNS = (
-    ("Name", str), ("Age", int),  ("Gender", str))
+    ("Name", str), ("Age", int),  ("Gender", str), ("Height", int))
 DATA = (
-    ("John", 52, "male"),
-    ("Alice", 34, "female"),
-    ("Bob", 31, "male"),
-    ("Jane", 38, "female")
+    ("John", 52, "male", 175),
+    ("Alice", 34, "female", 184),
+    ("Bob", 31, "male", 156),
+    ("Jane", 38, "female", 164)
 )
 
 class DataSampleOperator(Operator):

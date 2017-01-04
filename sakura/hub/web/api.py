@@ -1,6 +1,9 @@
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
+        ###MIKE START###
+        self.operator_instance_ids = -1
+        ###MIKE END#####
 
     def list_daemons(self, *args, **kwargs):
         return self.context.list_daemons()
@@ -8,13 +11,21 @@ class GuiToHubAPI(object):
     def list_operators_classes(self):
         return self.context.list_op_classes()
 
-    # instanciate an operator and return the instance id
-    def create_operator(self, cls_id):
-        raise NotImplementedError
+    # instantiate an operator and return the instance id
+    def create_operator_instance(self, cls_id):
+        ###MIKE START###
+        self.operator_instance_ids += 1
+        return self.operator_instance_ids
+        ###MIKE END#####
 
     # delete operator instance and links involved
-    def delete_operator(self, op_id):
-        raise NotImplementedError
+    def delete_operator_instance(self, op_id):
+        ###MIKE START###
+        if True:
+            return 1
+        else:
+            return 0
+        ###MIKE END#####
 
     def get_operator_input_info(self, op_id):
         raise NotImplementedError

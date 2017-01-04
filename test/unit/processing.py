@@ -21,10 +21,8 @@ op1 = MeanOperator()
 op1.construct()
 op1.input_tables[0].connect(op0.output_tables[0])
 print(op1.parameters[0].get_possible_values())
-op1.parameters[0].select(1)
+op1.parameters[0].select(3)
 op1.ready()
 for row in op1.output_tables[0]:
     print(row)
-
-
 

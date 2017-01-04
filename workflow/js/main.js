@@ -10,73 +10,67 @@ function not_yet() {
     alert('Not implemented yet');
 }
 
-
-document.addEventListener("dragstart", function ( e ) {
-    e.dataTransfer.setData('text/plain', null);
-    var rect = e.target.getBoundingClientRect();
-    drag_current_op = e.target;
-    drag_delta = [e.clientX - rect.left, e.clientY - rect.top];
-}, false);
-
-
-main_div.addEventListener("dragover", function( e ) {
-    e.preventDefault();
-}, false);
-
-
-main_div.addEventListener("drop", function( e ) {
-    e.preventDefault();
-    if (drag_current_op.id.includes("static")) {
-        var rect = main_div.getBoundingClientRect();
-        new_dynamic_operator(   e.clientX - rect.left - drag_delta[0], 
-                                e.clientY - rect.top - drag_delta[1] + e.target.scrollTop, 
-                                drag_current_op.id);
-    }
-    drag_current_op = null;
-}, false);
-
-
-function new_dynamic_operator(x, y, idiv_id) {
+function create_operator_instance(x, y, idiv_id) {
+    
     var id_index = idiv_id.split("_").slice(-2)[0];
-    var idiv = document.getElementById(idiv_id);
     
-    //New div creation (cloning)
-    var ndiv = idiv.cloneNode(true);
-    ndiv.id = "op_" + id_index + "_" + global_ops_id;
-    global_ops_id++;
-    ndiv.classList.add("sakura_dynamic_operator");
-    ndiv.style.left = x+"px";
-    ndiv.style.top = y+"px";
-    ndiv.setAttribute('draggable', 'false');
-    //ndiv.style.zIndex = '2';
-    ndiv.ondblclick = open_op_params;    
-    ndiv.oncontextmenu = open_op_menu;
-    
-    global_ops_inst.push(ndiv.id);
-    main_div.append(ndiv);
-    
-    //Plumbery: draggable + connections
-    jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
-    var nb_o = global_ops_cl[id_index]['outputs'];
-    
-    if ( global_ops_cl[id_index]['inputs'] > 0)
-        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
-    if (global_ops_cl[id_index]['outputs'] > 0)
-        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
-    
-    //Now the modal for parameters/creation/visu/...
-    main_div.append(create_op_modal(ndiv.id, global_ops_cl[id_index]['name'], global_ops_cl[id_index]['svg']));
+    //We first create send the creation command to the sakura hub
+    ws_request('create_operator_instance', [id_index], {}, function (result) {
+        var instance_id = result;
+        
+        //Then we create the instance here
+        var idiv = document.getElementById(idiv_id);
+        
+        //New div creation (cloning)
+        var ndiv = idiv.cloneNode(true);
+        ndiv.id = "op_" + id_index + "_" + instance_id;
+        ndiv.classList.add("sakura_dynamic_operator");
+        ndiv.style.left = x+"px";
+        ndiv.style.top = y+"px";
+        ndiv.setAttribute('draggable', 'false');
+        ndiv.ondblclick = open_op_params;    
+        ndiv.oncontextmenu = open_op_menu;
+        
+        global_ops_inst.push(ndiv.id);
+        main_div.append(ndiv);
+        
+        //Plumbery: draggable + connections
+        jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
+        var nb_o = global_ops_cl[id_index]['outputs'];
+        
+        if ( global_ops_cl[id_index]['inputs'] > 0)
+            jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
+        if (global_ops_cl[id_index]['outputs'] > 0)
+            jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+        
+        //Now the modal for parameters/creation/visu/...
+        main_div.append(create_op_modal(ndiv.id, global_ops_cl[id_index]['name'], global_ops_cl[id_index]['svg']));
+    });
 }
 
 
-function jsp_drag_stop(e) {
-    var ot = document.getElementById("sakura_main_div");
-    if (e.el.getBoundingClientRect().left < ot.getBoundingClientRect().left)
-        e.el.style.left = 20 + "px";
-    if (e.el.getBoundingClientRect().top < ot.getBoundingClientRect().top)
-        e.el.style.top = 20 + "px";
+function remove_operator_instance(id) {
     
-    jsPlumb.repaintEverything();        //Very Important when dragging elements manually
+    tab = id.split("_");
+    op_inst = tab[2];
+    
+    //First we send the command to the hub
+    ws_request('delete_operator_instance', [op_inst], {}, function (result) {
+        if (result) {
+            //Then remove form the list of instances
+            var index = global_ops_inst.indexOf(id);
+            global_ops_inst.splice(index, 1);
+            
+            //remove from jsPlumb
+            jsPlumb.remove(id);
+            
+            //remove modal
+            var mod = document.getElementById("modal_"+id);
+            mod.outerHTML = "";
+            delete mod;
+            ops_focus = null;
+        }
+    });
 }
 
 
@@ -116,9 +110,6 @@ function load_project() {
 
 function save_project() {
     not_yet();
-    
-    //sandbox/begin
-    //sansbox/end
 };
 
 
@@ -127,10 +118,9 @@ function new_project() {
     if (!res) 
         return false;
     global_ops_inst.forEach( function (id) {
-        jsPlumb.remove(id);
+        remove_operator_instance(id)
     });
     global_ops_inst = [];
-    global_ops_id = 0;
 };
 
 
@@ -150,10 +140,6 @@ function open_op_menu(e) {
 
 //Document Initialisation
 function readyCallBack() {
-    /*for (var i=0; i<ops.length; i++){
-        $('#sakura_left_div').append(new_static_operator(0, i, i));
-    };
-    */
 };
 
 $(document).ready(readyCallBack);
