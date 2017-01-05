@@ -24,7 +24,6 @@ main_div.addEventListener("drop", function( e ) {
 
 
 $('#sakura_operator_contextMenu').on("click", "a", function() {
-    
     $('#sakura_operator_contextMenu').hide();
     remove_operator_instance(ops_focus.id);
 });

@@ -6,8 +6,11 @@
 //Basic Functions
 
 
-function not_yet() {
-    alert('Not implemented yet');
+function not_yet(s = '') {
+    if (s == '')
+        alert('Not implemented yet');
+    else
+        alert('Not implemented yet: '+ s);
 }
 
 function create_operator_instance(x, y, idiv_id) {
@@ -58,7 +61,7 @@ function remove_operator_instance(id) {
     ws_request('delete_operator_instance', [op_inst], {}, function (result) {
         if (result) {
             //Then remove form the list of instances
-            var index = global_ops_inst.indexOf(id);
+            var index = global_ops_instk
             global_ops_inst.splice(index, 1);
             
             //remove from jsPlumb
@@ -94,7 +97,46 @@ function create_op_modal(id, name, svg) {
                     </div> \
                 </div> \
               </div> \
-            </div> ';
+            </div>';
+    
+    var wrapper= document.createElement('div');
+    wrapper.innerHTML= s;
+    var ndiv= wrapper.firstChild;
+    return ndiv;
+}
+
+function create_link_modal(id, source_id, target_id) {
+    
+    var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
+                <div class="modal-dialog" role="document"> \
+                    <div class="modal-content"> \
+                        <div class="modal-body"> \
+                            <table width="100%"> \
+                                <tr><td width="45%"> \
+                                    <div class="panel panel-default"> \
+                                        <table> \
+                                            <tr><td> <div class="panel-body">'+global_ops_cl[source_id]['svg']+'</div> \
+                                            <td> Outputs \
+                                        </table> \
+                                    </div> \
+                                <td width="10%"> \
+                                <td width="45%"> \
+                                    <div class="panel panel-default"> \
+                                        <table> \
+                                            <tr><td> Inputs \
+                                            <td> <div class="panel-body">'+global_ops_cl[target_id]['svg']+'</div> \
+                                        </table> \
+                                    </div> \
+                            </table> \
+                            <br>WE\'RE STILL WORKING ON THIS !!! FINISHED SOON ...\
+                        </div> \
+                        <div class="modal-footer"> \
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
+                            <button type="button" class="btn btn-primary">Apply</button> \
+                        </div> \
+                    </div> \
+                </div> \
+            </div>';
     
     var wrapper= document.createElement('div');
     wrapper.innerHTML= s;
@@ -147,9 +189,9 @@ $(document).ready(readyCallBack);
 //jsPlumb initialisation
 $( window ).load(function() {
     
-    // setup some defaults for jsPlumb.
+    ///////////////DEFAULTS
     jsPlumb.importDefaults({
-        PaintStyle : { lineWidth : 1, strokeStyle : "#333333" },
+        PaintStyle : { lineWidth : 3, strokeStyle : "#333333" },
         MaxConnections : 100,
         Endpoint : ["Dot", {radius:6}],
         EndpointStyle : { fillStyle:"#000000" },
@@ -157,21 +199,59 @@ $( window ).load(function() {
     });
     
     
-    //This piece of code is for preventing two or more identical connections
+    ///////////////LINKS EVENTS
+    //This piece of code is for preventing two or more identical links
     jsPlumb.bind("beforeDrop", function(params) {
+        console.log("here");
         var found = false;
-        for (i=0; i<conns.length; i++) {
-            if (conns[i][0] == params.sourceId && conns[i][1] == params.targetId)
+        for (i=0; i<global_links.length; i++) {
+            if (global_links[i][2] == params.sourceId && global_links[i][3] == params.targetId)
                 found = true;
         }
         
+        //we test the link existence from our side
         if (found == true) {
-            console.log("Connection already exists !");
+            console.log("link already exists !");
             return false;
         }
         
-        conns.push([params.sourceId, params.targetId])
+        //here we validate the jsPlumb link creation
         return true;
-        
+    });
+    
+    //A connection is established
+    jsPlumb.bind("connection", function(params) {
+        //First we send the link creation command to the hub
+        var source_inst_id = params.sourceId.split("_")[2];
+        var target_inst_id = params.targetId.split("_")[2];
+        ws_request('create_link', [source_inst_id, 0, target_inst_id, 0], {}, function (result) {
+            var link_id = result;
+            global_links.push([link_id, params.connection.id, source_inst_id, target_inst_id]);
+            
+            //modal creation
+            main_div.append(create_link_modal("link_"+link_id, source_inst_id, target_inst_id));
+        });
+    });
+    
+    //When the target of a link changes
+    jsPlumb.bind("connectionMoved", function(params) {
+        not_yet('connectionMoved Event');
+    });
+    
+    //On double click we open the link parameters
+    jsPlumb.bind("dblclick", function(connection) {
+        var index = index_in_array_of_tuples(global_links, 1, connection.id);
+        var id = global_links[index][0];
+        $('#modal_link_'+id).modal();
+    });
+    
+    //Context Menu is one of the ways for deleting the link
+    jsPlumb.bind("contextmenu", function(params) {
+        not_yet('contextmenu Event');
+    });
+    
+    //Another way to delete the link
+    jsPlumb.bind("connectionDetached", function(params) {
+        not_yet('connectionDetached Event');
     });
 });
