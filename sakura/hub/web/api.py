@@ -6,12 +6,12 @@ class GuiToHubAPI(object):
         self.link_ids               = -1
         #MIKE SEND
     
-    def list_daemons(self, *args, **kwargs):
-        return self.context.list_daemons()
-    
+    def list_daemons(self):
+        return list(self.context.list_daemons_serializable())
+
     def list_operators_classes(self):
-        return self.context.list_op_classes()
-    
+        return self.context.list_op_classes_serializable()
+
     # instantiate an operator and return the instance id
     def create_operator_instance(self, cls_id):
         #MIKE START

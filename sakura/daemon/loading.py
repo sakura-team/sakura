@@ -24,10 +24,3 @@ def load_operator_classes():
             op_classes.append(op_cls)
     sys.path = sys.path[1:]
     return op_classes
-
-def init_connexion_to_hub(remote_api, op_classes):
-    remote_api.register_daemon(name=conf.daemon_desc)
-    for ext_info in conf.external_datasets:
-        remote_api.register_external_dataset(**ext_info)
-    for op_cls in op_classes:
-        remote_api.register_op_class(*Operator.descriptor(op_cls))

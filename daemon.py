@@ -4,10 +4,9 @@ import pickle
 from gevent.socket import create_connection
 #from gevent import monkey
 #monkey.patch_all()
-from sakura.common.wsapi import get_remote_api, LocalAPIHandler
+from sakura.common.wsapi import LocalAPIHandler
 from sakura.common.tools import set_unbuffered_stdout
 from sakura.daemon.loading import load_operator_classes
-from sakura.daemon.loading import init_connexion_to_hub
 from sakura.daemon.api import HubToDaemonAPI
 
 set_unbuffered_stdout()
@@ -16,11 +15,14 @@ op_classes = load_operator_classes()
 
 sock = create_connection(('localhost', 1234))
 sock_file = sock.makefile(mode='rwb')
+sock_file.write(b'GETID\n')
+sock_file.flush()
+daemon_id = int(sock_file.readline().strip())
+sock_file.write(b'RPC_SERVER\n')
+sock_file.flush()
 
-remote_api = get_remote_api(sock_file, pickle)
-local_api = HubToDaemonAPI()
+local_api = HubToDaemonAPI(op_classes)
 
-init_connexion_to_hub(remote_api, op_classes)
 handler = LocalAPIHandler(sock_file, pickle, local_api)
 handler.loop()
 

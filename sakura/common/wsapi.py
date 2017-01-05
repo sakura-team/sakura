@@ -1,5 +1,6 @@
 import collections
-from geventwebsocket import WebSocketError
+from gevent.queue import Queue
+from gevent.event import AsyncResult
 
 def get_remote_api(f, protocol):
     def remote_api_handler(path, args, kwargs):
@@ -8,6 +9,23 @@ def get_remote_api(f, protocol):
         return protocol.load(f)
     remote_api = AttrCallAggregator(remote_api_handler)
     return remote_api
+
+class APIForwarder:
+    def __init__(self, remote_api):
+        self.remote_api = remote_api
+        self.queue = Queue()
+    def run(self):
+        while True:
+            path, args, kwargs, async_res = self.queue.get()
+            res = self.remote_api.handler(path, args, kwargs)
+            async_res.set(res)
+    def get_access_point(self):
+        def ap_handler(path, args, kwargs):
+            async_res = AsyncResult()
+            self.queue.put((path, args, kwargs, async_res))
+            return async_res.get()
+        ap = AttrCallAggregator(ap_handler)
+        return ap
 
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('path', 'args', 'kwargs'))
