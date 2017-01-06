@@ -61,7 +61,7 @@ function remove_operator_instance(id) {
     ws_request('delete_operator_instance', [op_inst], {}, function (result) {
         if (result) {
             //Then remove form the list of instances
-            var index = global_ops_instk
+            var index = global_ops_inst;
             global_ops_inst.splice(index, 1);
             
             //remove from jsPlumb
@@ -105,27 +105,58 @@ function create_op_modal(id, name, svg) {
     return ndiv;
 }
 
-function create_link_modal(id, source_id, target_id) {
+function create_link_modal(id, source_cl_id, target_cl_id) {
+    var source = global_ops_cl[source_cl_id];
+    var target = global_ops_cl[target_cl_id];
     
-    var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
+    var source_nb_out = parseInt(source['outputs']);
+    var target_nb_in = parseInt(target['inputs']);
+    var modal_id = "modal_"+id;
+    
+    var s = '<div class="modal fade" name="'+modal_id+'" id="'+modal_id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
                 <div class="modal-dialog" role="document"> \
                     <div class="modal-content"> \
                         <div class="modal-body"> \
                             <table width="100%"> \
-                                <tr><td width="45%"> \
+                                <tr><td width="45%" valign="top"> \
                                     <div class="panel panel-default"> \
-                                        <table> \
-                                            <tr><td> <div class="panel-body">'+global_ops_cl[source_id]['svg']+'</div> \
-                                            <td> Outputs \
-                                        </table> \
+                                         <div class="panel-heading"> \
+                                            <table width="100%"> \
+                                                <tr><td align="center">'+ source['svg']+'</td> \
+                                                <tr><td align="center">'+ source['name']+ '</td> \
+                                            </table> \
+                                        </div> \
+                                        <div class="panel-body"> \
+                                            <table align="right"> \
+                                                <tr><td> \
+                                                    <table> ';
+    for (var i = 0; i < source_nb_out; i++) {
+        s += '                                          <tr><td valign="middle"> param </td><td id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px">'+svg_round_square+'</td>';
+    }
+    s += '                                          </table> \
+                                                </td> \
+                                            </table> \
+                                        </div> \
                                     </div> \
                                 <td width="10%"> \
-                                <td width="45%"> \
+                                <td width="45%" valign="top"> \
                                     <div class="panel panel-default"> \
-                                        <table> \
-                                            <tr><td> Inputs \
-                                            <td> <div class="panel-body">'+global_ops_cl[target_id]['svg']+'</div> \
-                                        </table> \
+                                        <div class="panel-heading"> \
+                                            <table width="100%"> \
+                                                <tr><td align="center">'+ target['svg']+'</td> \
+                                                <tr><td align="center">'+ target['name']+ '</td> \
+                                            </table> \
+                                        </div> \
+                                        <div class="panel-body"> \
+                                            <table align="left"> \
+                                                <tr><td> \
+                                                    <table>';
+    for (var i = 0; i < target_nb_in; i++)
+        s += '                                          <tr><td id="'+modal_id+"_in_"+i+'"align="left" valign="middle" width="40px">'+svg_round_square+' </td><td valign="middle"> param </td>';
+    s += '                                          </table> </td>\
+                                                </td>\
+                                            </table> \
+                                        </div> \
                                     </div> \
                             </table> \
                             <br>WE\'RE STILL WORKING ON THIS !!! FINISHED SOON ...\
@@ -202,7 +233,6 @@ $( window ).load(function() {
     ///////////////LINKS EVENTS
     //This piece of code is for preventing two or more identical links
     jsPlumb.bind("beforeDrop", function(params) {
-        console.log("here");
         var found = false;
         for (i=0; i<global_links.length; i++) {
             if (global_links[i][2] == params.sourceId && global_links[i][3] == params.targetId)
@@ -219,17 +249,22 @@ $( window ).load(function() {
         return true;
     });
     
+    
     //A connection is established
     jsPlumb.bind("connection", function(params) {
         //First we send the link creation command to the hub
         var source_inst_id = params.sourceId.split("_")[2];
         var target_inst_id = params.targetId.split("_")[2];
+        var source_cl_id = params.sourceId.split("_")[1];
+        var target_cl_id = params.targetId.split("_")[1];
+        
         ws_request('create_link', [source_inst_id, 0, target_inst_id, 0], {}, function (result) {
             var link_id = result;
             global_links.push([link_id, params.connection.id, source_inst_id, target_inst_id]);
             
             //modal creation
-            main_div.append(create_link_modal("link_"+link_id, source_inst_id, target_inst_id));
+            var ndiv = create_link_modal("link_"+link_id, source_cl_id, target_cl_id)
+            main_div.append(ndiv);
         });
     });
     
@@ -242,6 +277,7 @@ $( window ).load(function() {
     jsPlumb.bind("dblclick", function(connection) {
         var index = index_in_array_of_tuples(global_links, 1, connection.id);
         var id = global_links[index][0];
+        
         $('#modal_link_'+id).modal();
     });
     

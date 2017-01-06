@@ -26,7 +26,7 @@ function select_op_open_modal() {
         }
         
         global_ops_cl = JSON.parse(JSON.stringify(result));
-        console.log(global_ops_cl);
+        
         global_ops_cl.forEach( function (op) {
             op['tags'].forEach( function (tag) {
                 if (tags_list.indexOf(tag) == -1) {
@@ -195,7 +195,6 @@ function select_op_add_panel() {
     var butt = document.getElementById('select_op_add_button');
     
     acc_div.insertBefore(new_acc, butt);
-    
     
     //update global variable
     global_op_panels.push([acc_id, title, select_op_selected]);
