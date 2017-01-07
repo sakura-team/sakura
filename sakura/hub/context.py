@@ -43,3 +43,5 @@ class HubContext(object):
         daemon_info = self.daemons[cls_info.daemon_id]
         op_id = self.op_instances.create(daemon_info, cls_info)
         return op_id
+    def delete_operator_instance(self, op_id):
+        self.op_instances.delete(op_id)

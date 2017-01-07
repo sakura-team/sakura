@@ -13,6 +13,10 @@ class OpInstanceRegistry(object):
         desc = OpInstanceInfo(op_id, daemon_info, cls_info)
         self.info_per_op_id[op_id] = desc
         return op_id
+    def delete(self, op_id):
+        op_info = self.info_per_op_id[op_id]
+        op_info.daemon_info.api.delete_operator_instance(op_id)
+        del self.info_per_op_id[op_id]
     def get_op_info(self, op_id):
         return self.info_per_op_id[op_id]
 

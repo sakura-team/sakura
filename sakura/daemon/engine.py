@@ -18,3 +18,6 @@ class DaemonEngine(object):
         op.construct()
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (cls_name, op_id))
+    def delete_operator_instance(self, op_id):
+        print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
+        del self.op_instances[op_id]

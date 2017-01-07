@@ -17,12 +17,7 @@ class GuiToHubAPI(object):
     
     # delete operator instance and links involved
     def delete_operator_instance(self, op_id):
-        #MIKE START
-        if True:
-            return 1
-        else:
-            return 0
-        #MIKE SEND
+        return self.context.delete_operator_instance(op_id)
     
     def get_operator_input_info(self, op_id):
         raise NotImplementedError
