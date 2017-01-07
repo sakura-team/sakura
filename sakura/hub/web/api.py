@@ -1,9 +1,6 @@
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
-        #MIKE START
-        self.link_ids               = -1
-        #MIKE SEND
     
     def list_daemons(self):
         return list(self.context.list_daemons_serializable())
@@ -31,18 +28,10 @@ class GuiToHubAPI(object):
     #MIKE SEND
     
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
-        #MIKE START
-        self.link_ids += 1
-        return self.link_ids
-        #MIKE SEND
+        return self.context.create_link(src_op_id, src_out_id, dst_op_id, dst_in_id)
     
     def delete_link(self, link_id):
-        #MIKE START
-        if True:
-            return 1
-        else:
-            return 0
-        #MIKE SEND
+        return self.context.delete_link(link_id)
     
     #MIKE START
     def list_links(self):

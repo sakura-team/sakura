@@ -7,3 +7,7 @@ class HubToDaemonAPI(object):
         self.engine.create_operator_instance(cls_name, op_id)
     def delete_operator_instance(self, op_id):
         self.engine.delete_operator_instance(op_id)
+    def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
+        self.engine.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
+    def disconnect_operators(self, dst_op_id, dst_in_id):
+        self.engine.disconnect_operators(dst_op_id, dst_in_id)

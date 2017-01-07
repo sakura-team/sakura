@@ -1,6 +1,7 @@
 from collections import namedtuple
 from sakura.hub.opclasses import OpClassRegistry
 from sakura.hub.opinstances import OpInstanceRegistry
+from sakura.hub.links import LinkRegistry
 
 class HubContext(object):
     def __init__(self):
@@ -8,6 +9,7 @@ class HubContext(object):
         self.daemons = {}
         self.op_classes = OpClassRegistry()
         self.op_instances = OpInstanceRegistry()
+        self.links = LinkRegistry()
     def get_daemon_id(self):
         daemon_id = self.next_daemon_id
         self.next_daemon_id += 1
@@ -45,3 +47,9 @@ class HubContext(object):
         return op_id
     def delete_operator_instance(self, op_id):
         self.op_instances.delete(op_id)
+    def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
+        src_op = self.op_instances[src_op_id]
+        dst_op = self.op_instances[dst_op_id]
+        return self.links.create(src_op, src_out_id, dst_op, dst_in_id)
+    def delete_link(self, link_id):
+        self.links.delete(link_id)

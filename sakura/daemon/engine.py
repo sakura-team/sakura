@@ -21,3 +21,14 @@ class DaemonEngine(object):
     def delete_operator_instance(self, op_id):
         print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
         del self.op_instances[op_id]
+    def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
+        src_op = self.op_instances[src_op_id]
+        dst_op = self.op_instances[dst_op_id]
+        dst_op.input_tables[dst_in_id].connect(src_op.output_tables[src_out_id])
+        print("connected %s op_id=%d out%d -> %s op_id=%d in%d" % \
+                (src_op.NAME, src_op_id, src_out_id, dst_op.NAME, dst_op_id, dst_in_id))
+    def disconnect_operators(self, dst_op_id, dst_in_id):
+        dst_op = self.op_instances[dst_op_id]
+        dst_op.input_tables[dst_in_id].disconnect()
+        print("disconnected [...] -> %s op_id=%d in%d" % \
+                (dst_op.NAME, dst_op_id, dst_in_id))
