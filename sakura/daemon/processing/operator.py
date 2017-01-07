@@ -15,7 +15,7 @@ class Operator(Registry):
         return self.register(self.output_tables, OutputTable, self, output_table_label, compute_cb)
     def register_parameter(self, param_label, cls):
         return self.register(self.parameters, cls, param_label)
-    def ready(self):
+    def is_ready(self):
         for table in self.input_tables:
             if not table.connected():
                 return False
