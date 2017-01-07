@@ -9,12 +9,14 @@ from sakura.common.tools import set_unbuffered_stdout
 from sakura.daemon.loading import load_operator_classes
 from sakura.daemon.api import HubToDaemonAPI
 from sakura.daemon.tools import get_daemon_id
+from sakura.daemon.engine import DaemonEngine
 
 set_unbuffered_stdout()
 print('Started.')
 
-# load data
+# load data, create engine
 op_classes = load_operator_classes()
+engine = DaemonEngine(op_classes)
 
 # connect to the hub
 sock = create_connection(('localhost', 1234))
@@ -28,7 +30,7 @@ sock_file.write(b'RPC_SERVER\n')
 sock_file.flush()
 
 # handle this RPC API
-local_api = HubToDaemonAPI(op_classes)
+local_api = HubToDaemonAPI(engine)
 handler = LocalAPIHandler(sock_file, pickle, local_api)
 handler.loop()
 

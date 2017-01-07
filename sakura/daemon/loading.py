@@ -3,7 +3,7 @@ from sakura.daemon.processing.operator import Operator
 import sakura.daemon.conf as conf
 
 def load_operator_classes():
-    op_classes = []
+    op_classes = {}
     sys.path.insert(0, conf.operators_dir)
     # for each operator directory
     for op_dir in os.listdir(conf.operators_dir):
@@ -21,6 +21,6 @@ def load_operator_classes():
         for name, op_cls in matches:
             with open(conf.operators_dir + '/' + op_dir + '/icon.svg', 'r') as icon_file:
                 op_cls.ICON = icon_file.read()
-            op_classes.append(op_cls)
+            op_classes[op_cls.NAME] = op_cls
     sys.path = sys.path[1:]
     return op_classes

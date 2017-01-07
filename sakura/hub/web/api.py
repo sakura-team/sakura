@@ -2,7 +2,6 @@ class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
         #MIKE START
-        self.operator_instance_ids  = -1
         self.link_ids               = -1
         #MIKE SEND
     
@@ -14,10 +13,7 @@ class GuiToHubAPI(object):
 
     # instantiate an operator and return the instance id
     def create_operator_instance(self, cls_id):
-        #MIKE START
-        self.operator_instance_ids += 1
-        return self.operator_instance_ids
-        #MIKE SEND
+        return self.context.create_operator_instance(cls_id)
     
     # delete operator instance and links involved
     def delete_operator_instance(self, op_id):
