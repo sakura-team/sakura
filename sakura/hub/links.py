@@ -17,13 +17,18 @@ class LinkRegistry(object):
                 src_op.op_id, src_out_id, dst_op.op_id, dst_in_id)
         desc = LinkInfo(link_id, src_op, src_out_id, dst_op, dst_in_id)
         self.info_per_link_id[link_id] = desc
+        src_op.attached_links.add(link_id)
+        dst_op.attached_links.add(link_id)
         return link_id
     def delete(self, link_id):
         link = self.info_per_link_id[link_id]
+        src_op = link.src_op
         dst_op = link.dst_op
         dst_op.daemon_info.api.disconnect_operators(
                     dst_op.op_id, link.dst_in_id)
         del self.info_per_link_id[link_id]
+        src_op.attached_links.remove(link_id)
+        dst_op.attached_links.remove(link_id)
     def __getitem__(self, link_id):
         return self.info_per_link_id[link_id]
 

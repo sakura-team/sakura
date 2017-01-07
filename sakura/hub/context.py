@@ -46,6 +46,13 @@ class HubContext(object):
         op_id = self.op_instances.create(daemon_info, cls_info)
         return op_id
     def delete_operator_instance(self, op_id):
+        # first: delete links attached to this operator.
+        # we get a copy of the set, because we will iterate over it
+        # and delete its elements.
+        attached_links = set(self.op_instances[op_id].attached_links)
+        for link_id in attached_links:
+            self.delete_link(link_id)
+        # second: delete the operator itself.
         self.op_instances.delete(op_id)
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         src_op = self.op_instances[src_op_id]
