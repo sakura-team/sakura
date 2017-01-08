@@ -13,3 +13,5 @@ class HubToDaemonAPI(object):
         self.engine.disconnect_operators(dst_op_id, dst_in_id)
     def get_operator_instance_info_serializable(self, op_id):
         return self.engine.get_operator_instance_info_serializable(op_id)
+    def set_parameter_value(self, op_id, param_id, value):
+        return self.engine.set_parameter_value(op_id, param_id, value)

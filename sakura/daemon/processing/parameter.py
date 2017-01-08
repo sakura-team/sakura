@@ -23,6 +23,10 @@ class Parameter(object):
         print('get_info_serializable() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
+    # override in subclass if needed.
+    def set_value(self, value):
+        self.value = value
+
 class ComboParameter(Parameter):
     def __init__(self, label):
         super().__init__('COMBO', label)
@@ -57,7 +61,7 @@ class ColumnSelectionParameter(ComboParameter):
             return possible
         else:
             return ParameterIssue.InputNotConnected
-    def select(self, idx):
+    def set_value(self, idx):
         self.value = self.table.columns[idx]
 
 def NumericColumnSelection(table):

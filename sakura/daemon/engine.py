@@ -40,3 +40,5 @@ class DaemonEngine(object):
             inputs = [ table.get_info_serializable() for table in op.input_tables ],
             outputs = [ table.get_info_serializable() for table in op.output_tables ]
         )
+    def set_parameter_value(self, op_id, param_id, value):
+        return self.op_instances[op_id].parameters[param_id].set_value(value)

@@ -22,3 +22,6 @@ class OpInstanceRegistry(object):
     def get_info_serializable(self, op_id):
         op_info = self.info_per_op_id[op_id]
         return op_info.daemon_info.api.get_operator_instance_info_serializable(op_id)
+    def set_parameter_value(self, op_id, param_id, value):
+        op_info = self.info_per_op_id[op_id]
+        return op_info.daemon_info.api.set_parameter_value(op_id, param_id, value)
