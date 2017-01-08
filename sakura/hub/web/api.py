@@ -16,11 +16,9 @@ class GuiToHubAPI(object):
     def delete_operator_instance(self, op_id):
         return self.context.delete_operator_instance(op_id)
     
-    def get_operator_input_info(self, op_id):
-        raise NotImplementedError
-    
-    def get_operator_output_info(self, op_id):
-        raise NotImplementedError
+    # returns info about operator instance: cls_name, inputs, outputs & parameters
+    def get_operator_instance_info(self, op_id):
+        return self.context.get_operator_instance_info_serializable(op_id)
     
     #MIKE START
     def list_operator_instances(self):

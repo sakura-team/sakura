@@ -5,6 +5,8 @@ class Column(object):
         self.label = col_label
         self.type = col_type
         self.index = col_index
+    def get_info_serializable(self):
+        return (self.label, self.type.__name__)
 
 class InputTable(object):
     def __init__(self, label):
@@ -21,13 +23,24 @@ class InputTable(object):
         return self.source_table != None
     def columns(self):
         return self.columns
+    def get_info_serializable(self):
+        info = dict(label = self.label)
+        if self.connected():
+            info.update(
+                connected = True,
+                columns = [ col.get_info_serializable() for col in self.columns ],
+                length = self.source_table.length
+            )
+        else:
+            info.update(
+                connected = False
+            )
+        return info
     def __iter__(self):
         if self.connected():
             return self.source_table.__iter__()
         else:
             return None
-
-CHUNK_SIZE = 1000
 
 class OutputTable(Registry):
     def __init__(self, operator, label, compute_cb):
@@ -38,6 +51,10 @@ class OutputTable(Registry):
         self.length = None
     def add_column(self, col_label, col_type):
         return self.register(self.columns, Column, col_label, col_type, len(self.columns))
+    def get_info_serializable(self):
+        return dict(label = self.label,
+                    columns = [ col.get_info_serializable() for col in self.columns ],
+                    length = self.length)
     def __iter__(self):
         for row in self.compute_cb():
             yield row

@@ -54,6 +54,8 @@ class HubContext(object):
             self.delete_link(link_id)
         # second: delete the operator itself.
         self.op_instances.delete(op_id)
+    def get_operator_instance_info_serializable(self, op_id):
+        return self.op_instances.get_info_serializable(op_id)
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         src_op = self.op_instances[src_op_id]
         dst_op = self.op_instances[dst_op_id]

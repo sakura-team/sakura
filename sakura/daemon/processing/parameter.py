@@ -1,16 +1,12 @@
 import numbers
+from enum import Enum
 
-class ParameterIssue(object):
-    InputNotConnected = 0
-    def __init__(self, issue_type):
-        self.issue_type = issue_type
-
+ParameterIssue = Enum('ParameterIssue', 'InputNotConnected')
 
 # Parameter implementation.
 class Parameter(object):
-    IssueInputNotConnected = ParameterIssue(ParameterIssue.InputNotConnected)
-
-    def __init__(self, label):
+    def __init__(self, gui_type, label):
+        self.gui_type = gui_type
         self.label = label
         self.value = None
 
@@ -23,8 +19,28 @@ class Parameter(object):
             return None
         return getattr(self.value, attr)
 
+    def get_info_serializable(self):
+        print('get_info_serializable() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
+
 class ComboParameter(Parameter):
-    pass
+    def __init__(self, label):
+        super().__init__('COMBO', label)
+    def get_info_serializable(self):
+        info = dict(
+            gui_type = self.gui_type,
+            label = self.label
+        )
+        possible_values = self.get_possible_values()
+        if isinstance(possible_values, ParameterIssue):
+            # get the name of the ParameterIssue enum
+            info.update(issue = possible_values.name)
+        else:
+            info.update(possible_values = possible_values)
+        return info
+    def get_possible_values(self):
+        print('get_possible_values() must be implemented in ComboParameter subclasses.')
+        raise NotImplementedError
 
 class ColumnSelectionParameter(ComboParameter):
     def __init__(self, label, table, condition):
@@ -40,7 +56,7 @@ class ColumnSelectionParameter(ComboParameter):
                     possible.append((idx, label))
             return possible
         else:
-            return Parameter.IssueInputNotConnected
+            return ParameterIssue.InputNotConnected
     def select(self, idx):
         self.value = self.table.columns[idx]
 

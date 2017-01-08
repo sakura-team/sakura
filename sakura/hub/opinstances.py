@@ -19,3 +19,6 @@ class OpInstanceRegistry(object):
         del self.info_per_op_id[op_id]
     def __getitem__(self, op_id):
         return self.info_per_op_id[op_id]
+    def get_info_serializable(self, op_id):
+        op_info = self.info_per_op_id[op_id]
+        return op_info.daemon_info.api.get_operator_instance_info_serializable(op_id)
