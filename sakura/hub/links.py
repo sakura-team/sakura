@@ -9,11 +9,11 @@ class LinkRegistry(object):
     def create(self, src_op, src_out_id, dst_op, dst_in_id):
         link_id = self.next_link_id
         self.next_link_id += 1
-        if src_op.daemon_info.daemon_id != dst_op.daemon_info.daemon_id:
+        if src_op.daemon.daemon_id != dst_op.daemon.daemon_id:
             print('Linking operators of 2 different daemons is not implemented yet.')
             # when implementing this, do not forget the deletion below
             raise NotImplementedError
-        src_op.daemon_info.api.connect_operators(
+        src_op.daemon.api.connect_operators(
                 src_op.op_id, src_out_id, dst_op.op_id, dst_in_id)
         desc = LinkInfo(link_id, src_op, src_out_id, dst_op, dst_in_id)
         self.info_per_link_id[link_id] = desc
@@ -24,7 +24,7 @@ class LinkRegistry(object):
         link = self.info_per_link_id[link_id]
         src_op = link.src_op
         dst_op = link.dst_op
-        dst_op.daemon_info.api.disconnect_operators(
+        dst_op.daemon.api.disconnect_operators(
                     dst_op.op_id, link.dst_in_id)
         del self.info_per_link_id[link_id]
         src_op.attached_links.remove(link_id)

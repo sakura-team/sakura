@@ -7,7 +7,6 @@ from gevent.socket import create_connection
 from sakura.common.wsapi import LocalAPIHandler
 from sakura.common.tools import set_unbuffered_stdout
 from sakura.daemon.loading import load_operator_classes
-from sakura.daemon.api import HubToDaemonAPI
 from sakura.daemon.tools import get_daemon_id
 from sakura.daemon.engine import DaemonEngine
 
@@ -30,7 +29,7 @@ sock_file.write(b'RPC_SERVER\n')
 sock_file.flush()
 
 # handle this RPC API
-local_api = HubToDaemonAPI(engine)
+local_api = engine
 handler = LocalAPIHandler(sock_file, pickle, local_api)
 handler.loop()
 

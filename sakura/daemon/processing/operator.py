@@ -28,4 +28,11 @@ class Operator(Registry):
         op = op_cls()
         op.construct()
         return op_cls.NAME, op_cls.TAGS, op_cls.ICON, len(op.input_tables), len(op.output_tables)
+    def get_info_serializable(self):
+        return dict(
+            cls_name = self.NAME,
+            parameters = [ param.get_info_serializable() for param in self.parameters ],
+            inputs = [ table.get_info_serializable() for table in self.input_tables ],
+            outputs = [ table.get_info_serializable() for table in self.output_tables ]
+        )
 

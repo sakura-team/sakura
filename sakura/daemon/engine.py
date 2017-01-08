@@ -32,13 +32,3 @@ class DaemonEngine(object):
         dst_op.input_tables[dst_in_id].disconnect()
         print("disconnected [...] -> %s op_id=%d in%d" % \
                 (dst_op.NAME, dst_op_id, dst_in_id))
-    def get_operator_instance_info_serializable(self, op_id):
-        op = self.op_instances[op_id]
-        return dict(
-            cls_name = op.NAME,
-            parameters = [ param.get_info_serializable() for param in op.parameters ],
-            inputs = [ table.get_info_serializable() for table in op.input_tables ],
-            outputs = [ table.get_info_serializable() for table in op.output_tables ]
-        )
-    def set_parameter_value(self, op_id, param_id, value):
-        return self.op_instances[op_id].parameters[param_id].set_value(value)

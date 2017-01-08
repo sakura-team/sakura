@@ -1,6 +1,13 @@
 from collections import namedtuple
 
-OpInstanceInfo = namedtuple('OpInstanceInfo', ['op_id','daemon_info','cls_info','attached_links'])
+OpInstanceInfo = namedtuple('OpInstanceInfo',
+                ['op_id','daemon','cls_info','attached_links','remote_instance'])
+
+class OpInstance(OpInstanceInfo):
+    def __getattr__(self, attr):
+        # if we cannot find the attr locally, let's look at the real operator
+        # instance on the daemon side.
+        return getattr(self.remote_instance, attr)
 
 class OpInstanceRegistry(object):
     def __init__(self):
@@ -10,18 +17,12 @@ class OpInstanceRegistry(object):
         op_id = self.next_op_id
         self.next_op_id += 1
         daemon_info.api.create_operator_instance(cls_info.name, op_id)
-        desc = OpInstanceInfo(op_id, daemon_info, cls_info, set())
+        remote_instance = daemon_info.api.op_instances[op_id]
+        desc = OpInstance(op_id, daemon_info, cls_info, set(), remote_instance)
         self.info_per_op_id[op_id] = desc
         return op_id
     def delete(self, op_id):
-        op_info = self.info_per_op_id[op_id]
-        op_info.daemon_info.api.delete_operator_instance(op_id)
+        self[op_id].daemon.api.delete_operator_instance(op_id)
         del self.info_per_op_id[op_id]
     def __getitem__(self, op_id):
         return self.info_per_op_id[op_id]
-    def get_info_serializable(self, op_id):
-        op_info = self.info_per_op_id[op_id]
-        return op_info.daemon_info.api.get_operator_instance_info_serializable(op_id)
-    def set_parameter_value(self, op_id, param_id, value):
-        op_info = self.info_per_op_id[op_id]
-        return op_info.daemon_info.api.set_parameter_value(op_id, param_id, value)
