@@ -9,7 +9,7 @@ function ws_request(func_name, args, kwargs, callback)
     var cb_idx = next_cb_idx;
     next_cb_idx += 1;
     callbacks[cb_idx] = callback;
-    var msg = JSON.stringify([ cb_idx, func_name, args, kwargs ]);
+    var msg = JSON.stringify([ cb_idx, [func_name], args, kwargs ]);
     ws_gui.send(msg);
 }
 

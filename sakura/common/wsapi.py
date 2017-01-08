@@ -101,16 +101,20 @@ class AttrCallAggregator(object):
         self.handler = handler
     def __getattr__(self, attr):
         return AttrCallAggregator(self.handler, self.path + (attr,))
+    def __getitem__(self, index):
+        return AttrCallAggregator(self.handler, self.path + ((index,),))
     def __call__(self, *args, **kwargs):
-        path = '.'.join(self.path)
-        return self.handler(path, args, kwargs)
+        return self.handler(self.path, args, kwargs)
 
 class AttrCallRunner(object):
     def __init__(self, handler):
         self.handler = handler
     def do(self, path, args, kwargs):
         obj = self.handler
-        for attr in path.split('.'):
-            obj = getattr(obj, attr)
+        for attr in path:
+            if isinstance(attr, str):
+                obj = getattr(obj, attr)
+            else:
+                obj = obj[attr[0]]  # getitem
         return obj(*args, **kwargs)
 
