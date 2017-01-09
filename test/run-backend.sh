@@ -30,7 +30,7 @@ trap on_exit EXIT
 # run the commands in the background and prefix their
 # output.
 prefix_out HUB ./hub.py workflow &
-sleep 0.1
+sleep 1
 prefix_out DAEMON ./daemon.py -f test/conf/daemon.conf &
 
 # wait for background processes to complete
