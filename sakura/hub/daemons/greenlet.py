@@ -15,7 +15,7 @@ def daemons_greenlet(context):
             req = sock_file.readline().strip()
             if req == b'GETID':
                 daemon_id = context.get_daemon_id()
-                sock_file.write(b'%d\n' % daemon_id)
+                sock_file.write(("%d\n" % daemon_id).encode("ascii"))
                 sock_file.flush()
             elif req == b'SETID':
                 daemon_id = int(sock_file.readline().strip())
