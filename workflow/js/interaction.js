@@ -1,7 +1,7 @@
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
-    drag_current_op = e.target;
+    currently_dragged = e.target;
     drag_delta = [e.clientX - rect.left, e.clientY - rect.top];
 }, false);
 
@@ -13,13 +13,18 @@ main_div.addEventListener("dragover", function( e ) {
 
 main_div.addEventListener("drop", function( e ) {
     e.preventDefault();
-    if (drag_current_op.id.includes("static")) {
+    if (currently_dragged.id.includes("static")) {
         var rect = main_div.getBoundingClientRect();
         create_operator_instance(   e.clientX - rect.left - drag_delta[0], 
                                     e.clientY - rect.top - drag_delta[1] + e.target.scrollTop, 
-                                    drag_current_op.id);
+                                    currently_dragged.id);
     }
-    drag_current_op = null;
+    else if (currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
+        console.log("HERE");
+    }
+    else
+        console.log("NOT HERE");
+    currently_dragged = null;
 }, false);
 
 

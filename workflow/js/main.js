@@ -18,7 +18,7 @@ function create_operator_instance(x, y, idiv_id) {
     var id_index = idiv_id.split("_").slice(-2)[0];
     
     //We first create send the creation command to the sakura hub
-    ws_request('create_operator_instance', [id_index], {}, function (result) {
+    ws_request('create_operator_instance', [parseInt(id_index)], {}, function (result) {
         var instance_id = result;
         
         //Then we create the instance here
@@ -47,7 +47,7 @@ function create_operator_instance(x, y, idiv_id) {
             jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
         
         //Now the modal for parameters/creation/visu/...
-        main_div.append(create_op_modal(ndiv.id, global_ops_cl[id_index]['name'], global_ops_cl[id_index]['svg']));
+        main_div.append(create_op_modal(ndiv.id, global_ops_cl[parseInt(id_index)]['name'], global_ops_cl[id_index]['svg']));
     });
 }
 
@@ -109,29 +109,29 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
     var source = global_ops_cl[source_cl_id];
     var target = global_ops_cl[target_cl_id];
     
-    var source_nb_out = parseInt(source['outputs']);
-    var target_nb_in = parseInt(target['inputs']);
+    var source_nb_out = 3;//parseInt(source['outputs']);
+    var target_nb_in = 4;//parseInt(target['inputs']);
     var modal_id = "modal_"+id;
     
     var s = '<div class="modal fade" name="'+modal_id+'" id="'+modal_id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
-                <div class="modal-dialog" role="document"> \
+                <div class="modal-dialog" role="document" name="'+modal_id+'_dialog" id="'+modal_id+'_dialog"> \
                     <div class="modal-content"> \
                         <div class="modal-body"> \
                             <table width="100%"> \
                                 <tr><td width="45%" valign="top"> \
-                                    <div class="panel panel-default"> \
+                                    <div class="panel panel-default" name="'+modal_id+'_panel" id="'+modal_id+'_panel"> \
                                          <div class="panel-heading"> \
                                             <table width="100%"> \
                                                 <tr><td align="center">'+ source['svg']+'</td> \
                                                 <tr><td align="center">'+ source['name']+ '</td> \
                                             </table> \
                                         </div> \
-                                        <div class="panel-body"> \
+                                        <div class="panel-body" name="'+modal_id+'_body" id="'+modal_id+'_body"> \
                                             <table align="right"> \
                                                 <tr><td> \
                                                     <table> ';
     for (var i = 0; i < source_nb_out; i++) {
-        s += '                                          <tr><td valign="middle"> param </td><td id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px">'+svg_round_square+'</td>';
+        s += '                                          <tr><td valign="middle"> param </td><td name="'+modal_id+"_out_"+i+'"= id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"><div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_out_'+i+'">'+svg_round_square("")+'</div></td>';
     }
     s += '                                          </table> \
                                                 </td> \
@@ -152,7 +152,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                                                 <tr><td> \
                                                     <table>';
     for (var i = 0; i < target_nb_in; i++)
-        s += '                                          <tr><td id="'+modal_id+"_in_"+i+'"align="left" valign="middle" width="40px">'+svg_round_square+' </td><td valign="middle"> param </td>';
+        s += '                                          <tr><td name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"><div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_in_'+i+'">'+svg_round_square("")+'</div></td><td valign="middle"> param </td>';
     s += '                                          </table> </td>\
                                                 </td>\
                                             </table> \
@@ -163,6 +163,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                         </div> \
                         <div class="modal-footer"> \
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+id+'\');">Delete Link</button> \
                             <button type="button" class="btn btn-primary">Apply</button> \
                         </div> \
                     </div> \
@@ -173,6 +174,23 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
     wrapper.innerHTML= s;
     var ndiv= wrapper.firstChild;
     return ndiv;
+}
+
+
+function remove_link(nid) {
+    var id = nid.split("_")[1];
+    var index = index_in_array_of_tuples(global_links, 0, id);
+    var jsPConnId = global_links[index][1];
+    
+    //Now we send the removing command to the hub
+    
+    
+    //Then to jsPlumb
+    
+    
+    //Then to us :) (for the modal)
+    
+    
 }
 
 
@@ -222,7 +240,7 @@ $( window ).load(function() {
     
     ///////////////DEFAULTS
     jsPlumb.importDefaults({
-        PaintStyle : { lineWidth : 3, strokeStyle : "#333333" },
+        PaintStyle : { lineWidth : 4, strokeStyle : "#333333" },
         MaxConnections : 100,
         Endpoint : ["Dot", {radius:6}],
         EndpointStyle : { fillStyle:"#000000" },
@@ -258,13 +276,13 @@ $( window ).load(function() {
         var source_cl_id = params.sourceId.split("_")[1];
         var target_cl_id = params.targetId.split("_")[1];
         
-        ws_request('create_link', [source_inst_id, 0, target_inst_id, 0], {}, function (result) {
+        ws_request('create_link', [parseInt(source_inst_id), 0, parseInt(target_inst_id), 0], {}, function (result) {
             var link_id = result;
             global_links.push([link_id, params.connection.id, source_inst_id, target_inst_id]);
             
             //modal creation
             var ndiv = create_link_modal("link_"+link_id, source_cl_id, target_cl_id)
-            main_div.append(ndiv);
+            main_div.append(ndiv);            
         });
     });
     
@@ -278,13 +296,45 @@ $( window ).load(function() {
         var index = index_in_array_of_tuples(global_links, 1, connection.id);
         var id = global_links[index][0];
         
+        
+        //console.log("svg_"+modal_id+'_out_0');
+        //console.log($('#svg_'+modal_id+'_out_0').position());
+        //console.log($('#svg_'+modal_id+'_out_0').getBBox());
+            
         $('#modal_link_'+id).modal();
+        setTimeout(function() {
+            var rect0 = document.getElementById("modal_link_"+id+"_dialog").getBoundingClientRect();
+            var rect1 = document.getElementById("svg_modal_link_"+id+'_out_0').getBoundingClientRect();
+            var rect2 = document.getElementById("svg_modal_link_"+id+'_in_1').getBoundingClientRect();
+            
+            console.log(rect0);
+            console.log(rect1);
+            console.log(rect2);
+            var w = rect2.x-rect1.x-24;
+            var h = rect2.y-rect1.y;
+            
+            //Making a fake connection
+            var modal_id = "modal_link_"+id;
+            var mdiv = document.getElementById(modal_id+"_body");
+            
+            var svg_div = document.createElement('div');
+            svg_div.style.position = 'absolute';
+            svg_div.style.left = (rect1.x-rect0.x+24)+'px';
+            svg_div.style.top = (rect1.y-rect0.y+12)+'px';
+            svg_div.innerHTML= '<svg height="'+(h)+'" width="'+(w)+'"> \
+                                    <line x1="0" y1="0" x2="'+(w)+'" y2="'+(h)+'" style="stroke:rgb(33,256,33);stroke-width:3" /> \
+                                </svg> ';
+            mdiv.appendChild(svg_div);
+            
+        }, 200);
+        
     });
     
-    //Context Menu is one of the ways for deleting the link
+    /*//Context Menu is one of the ways for deleting the link
     jsPlumb.bind("contextmenu", function(params) {
         not_yet('contextmenu Event');
     });
+    */
     
     //Another way to delete the link
     jsPlumb.bind("connectionDetached", function(params) {

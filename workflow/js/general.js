@@ -16,7 +16,7 @@ var global_links        = [];
 
 //interaction
 var drag_delta = [0, 0];
-var drag_current_op = null;
+var currently_dragged = null;
 
 //main
 var main_div = document.getElementById('sakura_main_div');
@@ -30,10 +30,10 @@ function index_in_array_of_tuples(arr, col, e) {
     return -1;
 }
 
-
-var svg_round_square = ' \
-    <svg width="24" height="24" viewBox="0 0 24 24"> \
-        <rect x="2" y="2" width="20" height="20" rx="4" ry="4" \
-         style="fill: grey; stroke: black; stroke-width: 2"/> \
-    </svg>'
+function svg_round_square(id) {
+    return '<svg width="24" height="24" viewBox="0 0 24 24" id="'+id+'" name="'+id+'"> \
+                <rect x="2" y="2" width="20" height="20" rx="4" ry="4" \
+                    style="fill: grey; stroke: black; stroke-width: 2"/> \
+            </svg>';
+}
 
