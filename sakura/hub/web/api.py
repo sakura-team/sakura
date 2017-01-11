@@ -26,7 +26,7 @@ class GuiToHubAPI(object):
     #MIKE START
     def list_operator_instances(self):
         raise NotImplementedError
-    #MIKE SEND
+    #MIKE END
     
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         return self.context.create_link(src_op_id, src_out_id, dst_op_id, dst_in_id)

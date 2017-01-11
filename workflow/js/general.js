@@ -11,12 +11,14 @@ var global_ops_inst     = [];
 var ops_focus           = null;
 
 //links
-var global_link_panels  = [];
-var global_links        = [];
+var global_links        = []; //[local_id, jsPlumb_id, src_inst_id (from hub), dst_inst_id (from hub)]
+var global_links_params = []; //[local_id, src_param_id, dst_param_id, hub_link_id]
+var global_links_inc    = 0;  // for the links' local ids
 
 //interaction
-var drag_delta = [0, 0];
-var currently_dragged = null;
+var drag_delta          = [0, 0];
+var currently_dragged   = null;
+var current_modal_id    = null;
 
 //main
 var main_div = document.getElementById('sakura_main_div');
@@ -30,9 +32,34 @@ function index_in_array_of_tuples(arr, col, e) {
     return -1;
 }
 
+function tuple_in_array_of_tuples(arr, tuple) {
+    for (var i = 0; i< arr.length; i++) {
+        
+        var is_the_one = true;
+        for (var j = 0; j< tuple.length; j++)
+            if (arr[i][j] != tuple[j])
+                is_the_one = false;
+        
+        if (is_the_one)
+            return i;
+    } 
+    return -1;
+}
+
 function svg_round_square(id) {
     return '<svg width="24" height="24" viewBox="0 0 24 24" id="'+id+'" name="'+id+'"> \
                 <rect x="2" y="2" width="20" height="20" rx="4" ry="4" \
+                    style="fill: grey; stroke: black; stroke-width: 2"/> \
+            </svg>';
+}
+
+function svg_round_square_crossed(id) {
+    return '<svg width="24" height="24" viewBox="0 0 24 24" id="'+id+'" name="'+id+'"> \
+                <rect x="2" y="2" width="20" height="20" rx="4" ry="4" \
+                    style="fill: grey; stroke: black; stroke-width: 2"/> \
+                <line x1="3" y1="3" x2="21" y2="21" \
+                    style="fill: grey; stroke: black; stroke-width: 2"/> \
+                <line x1="3" y1="21" x2="21" y2="3" \
                     style="fill: grey; stroke: black; stroke-width: 2"/> \
             </svg>';
 }

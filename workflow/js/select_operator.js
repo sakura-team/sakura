@@ -45,6 +45,7 @@ function select_op_open_modal() {
             
         $('#select_op_tags_select').selectpicker('refresh');
         $('#select_op_names_select').selectpicker('refresh');
+        current_modal_id = 'modal_op_selector';
         $('#modal_op_selector').modal();
     });
 }
@@ -198,6 +199,7 @@ function select_op_add_panel() {
     
     //update global variable
     global_op_panels.push([acc_id, title, select_op_selected]);
+    current_modal_id = null;
     $('#modal_op_selector').modal('hide');
 }
 
