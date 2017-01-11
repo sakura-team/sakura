@@ -3,8 +3,11 @@ document.addEventListener("dragstart", function ( e ) {
     var rect = e.target.getBoundingClientRect();
     currently_dragged = e.target;
     
-    if (currently_dragged.id.includes("svg_modal_link"))
-        currently_dragged.innerHTML = svg_round_square("")
+    if (currently_dragged.id.includes("svg_modal_link")) {
+        //currently_dragged.innerHTML = svg_round_square("");
+        var modal_id = currently_dragged.id.split("_")[3];
+        var bdiv = document.getElementById("modal_link_"+modal_id+"_body");
+    }
     drag_delta = [e.clientX - rect.left, e.clientY - rect.top];
 }, false);
 
@@ -31,7 +34,9 @@ main_div.addEventListener("drop", function( e ) {
         var _out_id = parseInt(tab1[5]);
         var _in_id = parseInt(e.target.parentElement.parentElement.id.split("_")[5]);
         
-        if (tuple_in_array_of_tuples(global_links_params, [modal_id, _out_id, _in_id]) == -1) {
+        //if (tuple_in_array_of_tuples(global_links_params, [modal_id, _out_id, _in_id]) == -1) {
+        if (index_in_array_of_tuples(global_links_params, 1, _out_id) == -1 &&
+            index_in_array_of_tuples(global_links_params, 2, _in_id) == -1 ) {
             
             //we first retrieve the objects instance ids
             var index = index_in_array_of_tuples(global_links, 0, modal_id)
@@ -167,7 +172,7 @@ function create_link_line(id, _out, _in) {
     
     var svg_div = document.createElement('div');
     svg_div.id = "line_modal_link_"+id+"_"+_out+"_"+_in;
-    console.log("line id", svg_div.id);
+    //console.log("line id", svg_div.id);
     
     svg_div.style.position = 'absolute';
     

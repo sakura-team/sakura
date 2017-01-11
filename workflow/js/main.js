@@ -109,8 +109,8 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
     var source = global_ops_cl[source_cl_id];
     var target = global_ops_cl[target_cl_id];
     
-    var source_nb_out = 3;//parseInt(source['outputs']);
-    var target_nb_in = 4;//parseInt(target['inputs']);
+    var source_nb_out = parseInt(source['outputs']);
+    var target_nb_in = parseInt(target['inputs']);
     var modal_id = "modal_"+id;
     
     var s = '<div class="modal fade" name="'+modal_id+'" id="'+modal_id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
@@ -132,7 +132,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                                                     <table> ';
     for (var i = 0; i < source_nb_out; i++) {
         s += '                                          <tr><td valign="middle"> param </td> \
-                                                            <td onclick="delete_link_param(\''+modal_id+"_out_"+i+'\');" name="'+modal_id+"_out_"+i+'" id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"> \
+                                                            <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_out_"+i+'\');" name="'+modal_id+"_out_"+i+'" id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"> \
                                                                 <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_out_'+i+'">'+svg_round_square("")+' \
                                                                 </div></td>';
     }
@@ -155,7 +155,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                                                 <tr><td> \
                                                     <table>';
     for (var i = 0; i < target_nb_in; i++)
-        s += '                                          <tr><td onclick="delete_link_param(\''+modal_id+"_in_"+i+'\');" name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"> \
+        s += '                                          <tr><td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_in_"+i+'\');" name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"> \
                                                                 <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_in_'+i+'">'+svg_round_square("")+' \
                                                                 </div></td> \
                                                             <td valign="middle"> param </td>';
@@ -165,16 +165,20 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                                         </div> \
                                     </div> \
                             </table> \
-                            <br>WE\'RE STILL WORKING ON THIS !!! FINISHED SOON ...\
                         </div> \
                         <div class="modal-footer"> \
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
                             <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+id+'\');">Delete Link</button> \
-                            <button type="button" class="btn btn-primary">Apply</button> \
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button> \
                         </div> \
                     </div> \
                 </div> \
             </div>';
+    
+    
+    //Here we automatically connect tables into the link
+    if (source_nb_out == 1 && target_nb_in == source_nb_out) {
+        console.log("Could be Automatically connected");
+    }
     
     var wrapper= document.createElement('div');
     wrapper.innerHTML= s;
@@ -184,6 +188,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
 
 
 function remove_link(nid) {
+    not_yet();
     var id = nid.split("_")[1];
     var index = index_in_array_of_tuples(global_links, 0, id);
     var jsPConnId = global_links[index][1];
@@ -282,8 +287,8 @@ $( window ).load(function() {
         var source_cl_id = params.sourceId.split("_")[1];
         var target_cl_id = params.targetId.split("_")[1];
         
-        
         global_links.push([global_links_inc, params.connection.id, source_inst_id, target_inst_id]);
+        
         //modal creation
         var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id)
         main_div.append(ndiv);            
