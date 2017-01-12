@@ -38,13 +38,13 @@ class FileWSock(object):
         self.wsock.send(self.msg)
         self.msg = ''
 
-def web_manager(context, wsock):
-    print('GUI connected.')
+def rpc_manager(context, wsock):
+    print('New GUI RPC connection.')
     # make wsock a file-like object
     f = FileWSock(wsock)
     # manage api requests
     local_api = GuiToHubAPI(context)
     handler = LocalGuiAPIHandler(f, json, local_api)
     handler.loop()
-    print('GUI disconnected.')
+    print('GUI RPC disconnected.')
 

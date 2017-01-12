@@ -31,7 +31,7 @@ class FileWSock(object):
         self.wsock.send(self.msg)
         self.msg = ''
 
-wsock = create_connection("ws://localhost:8081/websockets/gui")
+wsock = create_connection("ws://localhost:8081/websockets/rpc")
 f = FileWSock(wsock)
 remote_api = get_gui_api(f, json)
 # read-eval-loop
