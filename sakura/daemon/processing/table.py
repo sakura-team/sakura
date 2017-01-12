@@ -41,6 +41,11 @@ class InputTable(object):
             return self.source_table.__iter__()
         else:
             return None
+    def get_range(self, *args):
+        if self.connected():
+            return self.source_table.get_range(*args)
+        else:
+            return None
 
 class OutputTable(Registry):
     def __init__(self, operator, label, compute_cb):
@@ -58,3 +63,13 @@ class OutputTable(Registry):
     def __iter__(self):
         for row in self.compute_cb():
             yield row
+    def get_range(self, row_start, row_end):
+        rows = []
+        row_idx = 0
+        for row in self:
+            if row_idx == row_end:
+                break
+            if row_start <= row_idx:
+                rows.append(row)
+            row_idx += 1
+        return rows
