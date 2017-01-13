@@ -8,8 +8,7 @@ def rpc_client_manager(daemon_id, context, sock_file):
     remote_api = get_remote_api(sock_file, pickle)
     daemon_info = remote_api.get_daemon_info_serializable()
     api_forwarder = APIForwarder(remote_api)
-    api_forwarder_ap = api_forwarder.get_access_point()
-    context.register_daemon(daemon_id, daemon_info, api_forwarder_ap)
+    context.register_daemon(daemon_id, daemon_info, api_forwarder.ap)
     api_forwarder.run()
     print('rpc connection hub (client) -> daemon %d (server) disconnected.' % daemon_id)
 

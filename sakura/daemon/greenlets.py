@@ -23,6 +23,5 @@ def rpc_client_greenlet(sock_file, engine):
     # the connection towards the hub.
     remote_api = get_remote_api(sock_file, pickle)
     api_forwarder = APIForwarder(remote_api)
-    api_forwarder_ap = api_forwarder.get_access_point()
-    engine.register_hub_api(api_forwarder_ap)
+    engine.register_hub_api(api_forwarder.ap)
     api_forwarder.run()

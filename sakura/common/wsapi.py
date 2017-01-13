@@ -10,22 +10,27 @@ def get_remote_api(f, protocol):
     remote_api = AttrCallAggregator(remote_api_handler)
     return remote_api
 
+# This object allows a greenlet to forward api calls
+# from other greenlets on a remote API (typically
+# over a socket connection).
+# * The forwarder greenlet should call the run() method.
+# * The other greenlets should perform API calls by using
+#   the access point at 'self.ap', for example:
+#   result = forwarder.ap.remote_func(<args>)
 class APIForwarder:
     def __init__(self, remote_api):
         self.remote_api = remote_api
         self.queue = Queue()
+        self.ap = AttrCallAggregator(self.ap_handler)
     def run(self):
         while True:
             path, args, kwargs, async_res = self.queue.get()
             res = self.remote_api.handler(path, args, kwargs)
             async_res.set(res)
-    def get_access_point(self):
-        def ap_handler(path, args, kwargs):
-            async_res = AsyncResult()
-            self.queue.put((path, args, kwargs, async_res))
-            return async_res.get()
-        ap = AttrCallAggregator(ap_handler)
-        return ap
+    def ap_handler(self, path, args, kwargs):
+        async_res = AsyncResult()
+        self.queue.put((path, args, kwargs, async_res))
+        return async_res.get()
 
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('path', 'args', 'kwargs'))
