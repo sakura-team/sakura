@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 
-import os, sys, gevent
+import os, sys
 from gevent import Greenlet
 from sakura.hub.context import HubContext
 from sakura.hub.web.greenlet import web_greenlet
 from sakura.hub.daemons.greenlet import daemons_greenlet
-from sakura.common.tools import set_unbuffered_stdout
+from sakura.common.tools import set_unbuffered_stdout, \
+                                wait_greenlets
 
 CURDIR = os.path.dirname(os.path.abspath(__file__))
-
-def wait_greenlets(*greenlets):
-    gevent.joinall(greenlets, count=1)
 
 def run(webapp_path):
     # create shared context

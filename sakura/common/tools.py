@@ -1,4 +1,4 @@
-import sys
+import sys, gevent
 
 class StdoutProxy(object):
     def __init__(self, stdout):
@@ -11,3 +11,6 @@ class StdoutProxy(object):
 
 def set_unbuffered_stdout():
     sys.stdout = StdoutProxy(sys.stdout)
+
+def wait_greenlets(*greenlets):
+    gevent.joinall(greenlets, count=1)

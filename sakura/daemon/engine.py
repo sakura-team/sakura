@@ -5,6 +5,9 @@ class DaemonEngine(object):
     def __init__(self, op_classes):
         self.op_classes = op_classes
         self.op_instances = {}
+        self.hub = None
+    def register_hub_api(self, hub_api):
+        self.hub = hub_api
     def get_daemon_info_serializable(self):
         op_classes_desc = list(
             Operator.descriptor(op_cls) for op_cls in self.op_classes.values()

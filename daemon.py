@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import pickle
-from gevent.socket import create_connection
-#from gevent import monkey
-#monkey.patch_all()
-from sakura.common.wsapi import LocalAPIHandler
-from sakura.common.tools import set_unbuffered_stdout
+from gevent import Greenlet
+from sakura.common.tools import set_unbuffered_stdout, \
+                                wait_greenlets
 from sakura.daemon.loading import load_operator_classes
-from sakura.daemon.tools import get_daemon_id
+from sakura.daemon.tools import connect_to_hub, \
+            get_daemon_id, set_daemon_id
 from sakura.daemon.engine import DaemonEngine
+from sakura.daemon.greenlets import \
+            rpc_server_greenlet, rpc_client_greenlet
 
 set_unbuffered_stdout()
 print('Started.')
@@ -17,22 +17,23 @@ print('Started.')
 op_classes = load_operator_classes()
 engine = DaemonEngine(op_classes)
 
-# connect to the hub
-sock = create_connection(('localhost', 1234))
-sock_file = sock.makefile(mode='rwb')
+# connect twice to the hub
+srv_sock, srv_sock_file = connect_to_hub()
+clt_sock, clt_sock_file = connect_to_hub()
 
 # let the hub allocate a daemon id for us
-daemon_id = get_daemon_id(sock_file)
+daemon_id = get_daemon_id(srv_sock_file)
 
-# instruct the hub to use this connection as a RPC server
-sock_file.write(b'RPC_SERVER\n')
-sock_file.flush()
+# let the hub know that the other connection
+# comes from us too
+set_daemon_id(clt_sock_file, daemon_id)
 
-# handle this RPC API
-local_api = engine
-handler = LocalAPIHandler(sock_file, pickle, local_api)
-handler.loop()
+# run greenlets and wait until they end.
+g1 = Greenlet.spawn(rpc_server_greenlet, srv_sock_file, engine)
+g2 = Greenlet.spawn(rpc_client_greenlet, clt_sock_file, engine)
+wait_greenlets(g1,g2)
+print('**out**')
 
 # cleanup
-sock_file.close()
-sock.close()
+for obj in [srv_sock_file, srv_sock, clt_sock_file, clt_sock]:
+    obj.close()
