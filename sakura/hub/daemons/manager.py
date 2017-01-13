@@ -1,5 +1,5 @@
 import pickle
-from sakura.common.wsapi import APIForwarder, get_remote_api, \
+from sakura.common.io import APIForwarder, get_remote_api, \
                                 LocalAPIHandler
 from sakura.hub.daemons.api import DaemonToHubAPI
 

@@ -1,5 +1,5 @@
 import json, collections
-from sakura.common.wsapi import LocalAPIHandler
+from sakura.common.io import LocalAPIHandler
 from sakura.hub.web.api import GuiToHubAPI
 
 # the GUI passes a callback ID when issuing a request,

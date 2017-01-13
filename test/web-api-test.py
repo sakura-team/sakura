@@ -2,7 +2,7 @@
 
 import json, code, sys
 sys.path.insert(0, '.')
-from sakura.common.wsapi import AttrCallAggregator
+from sakura.common.io import AttrCallAggregator
 from websocket import create_connection
 
 # the real GUI sends a callback id, which is echo-ed by

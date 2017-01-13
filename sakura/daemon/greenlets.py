@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pickle
-from sakura.common.wsapi import LocalAPIHandler, \
+from sakura.common.io import LocalAPIHandler, \
                     APIForwarder, get_remote_api
 
 def rpc_server_greenlet(sock_file, engine):
