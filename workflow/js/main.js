@@ -103,11 +103,27 @@ function create_op_modal(id, name, svg) {
                                 <td><h4 class="modal-title"><b>&nbsp;&nbsp;'+name+'</b></h4></td> \
                             </table> \
                         </div> \
-                    <div class="modal-body"> \
-                        <br>Here the operators parameters. <br>Soon :) \
+                        <div class="modal-body"> \
+                            <ul class="nav nav-tabs"> \
+                                <li class="active"> \
+                                    <a data-toggle="tab" href="#modal_'+id+'_tab_inputs" onclick="fill_inputs(\''+id+'\')">Inputs</a></li> \
+                                <li><a data-toggle="tab" href="#modal_'+id+'_tab_params" onclick="fill_params(\''+id+'\')">Params</a></li> \
+                                <li><a data-toggle="tab" href="#modal_'+id+'_tab_outputs" onclick="fill_outputs(\''+id+'\')">Outputs</a></li> \
+                                <li class="disabled"><a data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li> \
+                            </ul> \
+                            <div class="tab-content"> \
+                                <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"> \
+                                </div> \
+                                <div id="modal_'+id+'_tab_params" class="tab-pane fade"> \
+                                </div> \
+                                <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"> \
+                                </div> \
+                                <div id="modal_'+id+'_tab_code" class="tab-pane fade"> \
+                                </div> \
+                            </div> \
+                        </div> \
                     </div> \
                 </div> \
-              </div> \
             </div>';
     
     var wrapper= document.createElement('div');
@@ -115,6 +131,7 @@ function create_op_modal(id, name, svg) {
     var ndiv= wrapper.firstChild;
     return ndiv;
 }
+
 
 function create_link_modal(id, source_cl_id, target_cl_id) {
     var source = global_ops_cl[source_cl_id];
