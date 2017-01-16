@@ -104,7 +104,7 @@ $('#sakura_main_div').on("click", function () {
         op_focus_id = null;
     }
     else if (link_focus_id != null) {
-        $('#sakura_operator_contextMenu').hide();
+        $('#sakura_link_contextMenu').hide();
         op_focus_id = null;
     }
 });
@@ -113,7 +113,7 @@ $('#sakura_main_div').on("click", function () {
 function open_op_params() {
     var modal_name = "modal_"+this.id;
     current_modal_id = "modal_"+this.id;
-    fill_inputs(this.id);
+    fill_all(this.id);
     $('#'+modal_name).modal();
 }
 
