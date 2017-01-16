@@ -6,10 +6,15 @@ ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
 
 class LocalAPIHandler(object):
-    def __init__(self, f, protocol, local_api):
+    def __init__(self, f, protocol, local_api, greenlets_pool = None):
         self.f = f
         self.protocol = protocol
         self.api_runner = AttrCallRunner(local_api)
+        if greenlets_pool == None:
+            self.handle_request = self.handle_request_base
+        else:
+            self.pool = greenlets_pool
+            self.handle_request = self.handle_request_pool
     def loop(self):
         while True:
             should_continue = self.handle_next_request()
@@ -23,16 +28,18 @@ class LocalAPIHandler(object):
         except BaseException:
             print('malformed request. closing.')
             return False
-        res = self.api_runner.do(
-            req.path, req.args, req.kwargs)
+        self.handle_request(*req)
+        return True
+    def handle_request_base(self, req_id, path, args, kwargs):
+        res = self.api_runner.do(path, args, kwargs)
         try:
-            self.protocol.dump((req.req_id, res), self.f)
+            self.protocol.dump((req_id, res), self.f)
             print("sent",res)
             self.f.flush()
         except BaseException:
-            print('could not send response. closing.')
-            return False
-        return True
+            print('could not send response.')
+    def handle_request_pool(self, *args):
+        self.pool.spawn(self.handle_request_base, *args)
 
 # The following pair of classes allows to pass API calls efficiently
 # over a network socket.
