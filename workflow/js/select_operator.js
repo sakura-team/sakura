@@ -220,7 +220,7 @@ function select_op_create_accordion(title, id, ops) {
                         </table> \
                     </h6> \
                 </div> \
-                <div id="acc_'+title+'" class="panel-collapse collapse"> \
+                <div id="acc_'+title+'" class="panel-collapse collapse in"> \
                     <div class="panel-body">'+ops+'</div> \
                 </div> \
             </div>';

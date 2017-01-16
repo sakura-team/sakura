@@ -22,22 +22,12 @@ class GuiToHubAPI(object):
     
     def set_parameter_value(self, op_id, param_id, value):
         return self.context.op_instances[op_id].parameters[param_id].set_value(value)
-
-    #MIKE START
-    def list_operator_instances(self):
-        raise NotImplementedError
-    #MIKE END
     
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         return self.context.create_link(src_op_id, src_out_id, dst_op_id, dst_in_id)
     
     def delete_link(self, link_id):
         return self.context.delete_link(link_id)
-    
-    #MIKE START
-    def list_links(self):
-        raise NotImplementedError
-    #MIKE END
     
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
         return self.context.op_instances[op_id].input_tables[in_id].get_range(row_start, row_end)

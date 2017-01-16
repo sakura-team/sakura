@@ -55,23 +55,34 @@ function create_operator_instance(x, y, idiv_id) {
 function remove_operator_instance(id) {
     
     tab = id.split("_");
-    op_inst = tab[2];
+    op_inst = parseInt(tab[2]);
+    
+    //First we remove the connections
+    var sub_array_links = sub_array_of_tuples(global_links, 2, op_inst).concat(sub_array_of_tuples(global_links, 3, op_inst));
+    sub_array_links.forEach( function (item) {
+        remove_link(item[0]);
+    });
     
     //First we send the command to the hub
     ws_request('delete_operator_instance', [op_inst], {}, function (result) {
-        if (result) {
-            //Then remove form the list of instances
-            var index = global_ops_inst;
+        if (!result) {
+            
+            //Then remove from the list of instances
+            var index = index_in_array_of_tuples(global_ops_inst, 2, op_inst);
             global_ops_inst.splice(index, 1);
             
             //remove from jsPlumb
             jsPlumb.remove(id);
+            jsPlumb.repaintEverything();
             
             //remove modal
             var mod = document.getElementById("modal_"+id);
             mod.outerHTML = "";
             delete mod;
             op_focus_id = null;
+            
+            console.log(global_links);
+            console.log(global_ops_inst);
         }
     });
 }
