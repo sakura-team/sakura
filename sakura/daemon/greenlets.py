@@ -2,7 +2,7 @@
 
 import pickle
 from sakura.common.io import LocalAPIHandler, \
-                    APIForwarder, get_remote_api
+                    RemoteAPIForwarder
 
 def rpc_server_greenlet(sock_file, engine):
     # instruct the hub that we will manage this connection
@@ -21,7 +21,6 @@ def rpc_client_greenlet(sock_file, engine):
     sock_file.flush()
     # this greenlet should forward API calls over
     # the connection towards the hub.
-    remote_api = get_remote_api(sock_file, pickle)
-    api_forwarder = APIForwarder(remote_api)
-    engine.register_hub_api(api_forwarder.ap)
-    api_forwarder.run()
+    remote_api = RemoteAPIForwarder(sock_file, pickle)
+    engine.register_hub_api(remote_api)
+    remote_api.loop()

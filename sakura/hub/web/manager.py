@@ -2,22 +2,6 @@ import json, collections
 from sakura.common.io import LocalAPIHandler
 from sakura.hub.web.api import GuiToHubAPI
 
-# the GUI passes a callback ID when issuing a request,
-# and expects this ID to be returned with the result.
-# we have to specialize the LocalAPIHandler for this.
-
-ParsedGuiRequest = collections.namedtuple('ParsedGuiRequest',
-                    ('cb_id', 'path', 'args', 'kwargs'))
-
-class LocalGuiAPIHandler(LocalAPIHandler):
-    def receive_request(self):
-        raw_req = self.protocol.load(self.f)
-        if raw_req == None:
-            return None
-        return ParsedGuiRequest(*raw_req)
-    def send_result(self, req, res):
-        self.protocol.dump((req.cb_id, res), self.f)
-
 # caution: the object should be sent all at once,
 # otherwise it will be received as several messages
 # on the websocket. Thus we buffer possibly several
@@ -44,7 +28,7 @@ def rpc_manager(context, wsock):
     f = FileWSock(wsock)
     # manage api requests
     local_api = GuiToHubAPI(context)
-    handler = LocalGuiAPIHandler(f, json, local_api)
+    handler = LocalAPIHandler(f, json, local_api)
     handler.loop()
     print('GUI RPC disconnected.')
 
