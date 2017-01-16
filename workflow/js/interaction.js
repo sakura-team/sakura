@@ -29,14 +29,30 @@ main_div.addEventListener("drop", function( e ) {
     
     //Link params
     else if (currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
-        var tab1 = currently_dragged.id.split("_");
+        var param_out = currently_dragged;
+        var param_in = e.target.parentElement.parentElement;
+        
+        //Make sure the two links are from two objects
+        if (    (param_out.id.includes("_in_") && param_in.id.includes("_in_")) ||
+                (param_out.id.includes("_out_") && param_in.id.includes("_out_")) ) {
+            return ;
+        }
+        //Make sure out is from object out
+        else if (param_out.id.includes("_in_") && param_out.id.includes("_in_")) {
+            param_in = currently_dragged;
+            param_out = e.target.parentElement.parentElement;
+        }
+        
+        var tab1 = param_out.id.split("_");
         var modal_id = parseInt(tab1[3]);
         var _out_id = parseInt(tab1[5]);
-        var _in_id = parseInt(e.target.parentElement.parentElement.id.split("_")[5]);
+        var _in_id = parseInt(param_in.id.split("_")[5]);
+        
+        var params_for_this_modal = sub_array_of_tuples(global_links_params, 0, modal_id);
         
         //if (tuple_in_array_of_tuples(global_links_params, [modal_id, _out_id, _in_id]) == -1) {
-        if (index_in_array_of_tuples(global_links_params, 1, _out_id) == -1 &&
-            index_in_array_of_tuples(global_links_params, 2, _in_id) == -1 ) {
+        if (index_in_array_of_tuples(params_for_this_modal, 1, _out_id) == -1 &&
+            index_in_array_of_tuples(params_for_this_modal, 2, _in_id) == -1 ) {
             
             //we first retrieve the objects instance ids
             var index = index_in_array_of_tuples(global_links, 0, modal_id)
@@ -51,8 +67,8 @@ main_div.addEventListener("drop", function( e ) {
                 global_links_params.push([modal_id, _out_id, _in_id, parseInt(link_id_from_hub)]);
                 
                 //changing svgs
-                var div_out = document.getElementById(currently_dragged.id)
-                var div_in  = document.getElementById(e.target.parentElement.parentElement.id);
+                var div_out = document.getElementById(param_out.id)
+                var div_in  = document.getElementById(param_in.id);
                 div_in.innerHTML = svg_round_square_crossed("");
                 div_out.innerHTML = svg_round_square_crossed("");
                 
@@ -73,14 +89,23 @@ main_div.addEventListener("drop", function( e ) {
 
 $('#sakura_operator_contextMenu').on("click", "a", function() {
     $('#sakura_operator_contextMenu').hide();
-    remove_operator_instance(ops_focus.id);
+    remove_operator_instance(op_focus_id);
+});
+
+$('#sakura_link_contextMenu').on("click", "a", function() {
+    $('#sakura_link_contextMenu').hide();
+    remove_link(link_focus_id);
 });
 
 
 $('#sakura_main_div').on("click", function () {
-    if (ops_focus != null) {
+    if (op_focus_id != null) {
         $('#sakura_operator_contextMenu').hide();
-        ops_focus = null;
+        op_focus_id = null;
+    }
+    else if (link_focus_id != null) {
+        $('#sakura_operator_contextMenu').hide();
+        op_focus_id = null;
     }
 });
 
@@ -104,6 +129,7 @@ function jsp_drag_stop(e) {
 
 
 function delete_link_param(id) {
+    console.log(id);
     var tab         = id.split("_");
     var modal_id    = parseInt(tab[2]);
     var div_type    = tab[3];
@@ -115,12 +141,11 @@ function delete_link_param(id) {
     }
         
     var indexes = [];
-    console.log(global_links_params);
     for (var i = 0; i < global_links_params.length; i++) {
         if (global_links_params[i][0] == modal_id && global_links_params[i][col] == param_id) {
             indexes.push(i);
             
-            console.log("Delete link param:", global_links_params[i]);
+            //console.log("Delete link param:", global_links_params[i]);
             
             var mdiv = document.getElementById("modal_link_"+modal_id+"_body");
             var line = "";
@@ -141,6 +166,7 @@ function delete_link_param(id) {
             //change the svgs
             div_in.innerHTML = svg_round_square("");
             div_out.innerHTML = svg_round_square("");
+            
             //delete the line
             mdiv.removeChild(line);
             

@@ -71,7 +71,7 @@ function remove_operator_instance(id) {
             var mod = document.getElementById("modal_"+id);
             mod.outerHTML = "";
             delete mod;
-            ops_focus = null;
+            op_focus_id = null;
         }
     });
 }
@@ -167,7 +167,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                             </table> \
                         </div> \
                         <div class="modal-footer"> \
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+id+'\');">Delete Link</button> \
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+id.split("_")[1]+'\');">Delete Link</button> \
                             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button> \
                         </div> \
                     </div> \
@@ -188,20 +188,33 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
 
 
 function remove_link(nid) {
-    not_yet();
-    var id = nid.split("_")[1];
-    var index = index_in_array_of_tuples(global_links, 0, id);
-    var jsPConnId = global_links[index][1];
+    var link_index = index_in_array_of_tuples(global_links, 0, parseInt(nid));
+    var modal_id = "modal_link_"+nid;
     
-    //Now we send the removing command to the hub
-    
+    //Now we send the removing commands to the hub, for each params
+    var sub_params = sub_array_of_tuples(global_links_params, 0, nid);
+    sub_params.forEach( function(row) {
+        delete_link_param(modal_id+"_out_"+row[1]);
+    });
     
     //Then to jsPlumb
+    var jsPConn = null;
+    jsPlumb.getConnections().forEach (function (item) {
+        if (item.id == global_links[link_index][1])
+            jsPConn = item;
+    });
     
+    jsPlumb.detach(jsPConn);
+    jsPlumb.repaintEverything();
     
-    //Then to us :) (for the modal)
+    //Then to us :) (removing the modal and the link)
+    global_links.splice(link_index, 1)
     
-    
+    //remove modal
+    var mod = document.getElementById(modal_id);
+    mod.outerHTML = "";
+    delete mod;
+    link_focus_id = null;
 }
 
 
@@ -232,7 +245,7 @@ function open_op_menu(e) {
       left: e.clientX - e.layerX + 30,
       top: e.clientY - e.layerY + 30
     });
-    ops_focus = this;
+    op_focus_id = this.id;
     return false;
 }
 
@@ -318,14 +331,22 @@ $( window ).load(function() {
         
     });
     
-    /*//Context Menu is one of the ways for deleting the link
-    jsPlumb.bind("contextmenu", function(params) {
-        not_yet('contextmenu Event');
+    //Context Menu is one of the ways for deleting the link
+    jsPlumb.bind("contextmenu", function(params, e) {
+        e.preventDefault();
+        $('#sakura_link_contextMenu').css({
+            display: "block",
+            left: e.clientX - e.layerX + 30,
+            top: e.clientY - e.layerY + 30
+        });
+        var index = index_in_array_of_tuples(global_links, 1, params.id);
+        link_focus_id = global_links[index][0];
     });
-    */
+    
     
     //Another way to delete the link
-    jsPlumb.bind("connectionDetached", function(params) {
+    /*jsPlumb.bind("connectionDetached", function(params) {
         not_yet('connectionDetached Event');
     });
+    */
 });
