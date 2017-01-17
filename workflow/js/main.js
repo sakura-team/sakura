@@ -133,14 +133,13 @@ function create_op_modal(id, name, svg) {
 }
 
 
-function create_link_modal(id, source_cl_id, target_cl_id) {
+function create_link_modal(id, source_cl_id, target_cl_id, source_inst_info, target_inst_info) {
     var source = global_ops_cl[source_cl_id];
     var target = global_ops_cl[target_cl_id];
     
-    var source_nb_out = parseInt(source['outputs']);
-    var target_nb_in = parseInt(target['inputs']);
     var modal_id = "modal_"+id;
     
+    //we ask for instances info
     var s = '<div class="modal fade" name="'+modal_id+'" id="'+modal_id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
                 <div class="modal-dialog" role="document" name="'+modal_id+'_dialog" id="'+modal_id+'_dialog"> \
                     <div class="modal-content"> \
@@ -158,8 +157,8 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                                             <table align="right"> \
                                                 <tr><td> \
                                                     <table> ';
-    for (var i = 0; i < source_nb_out; i++) {
-        s += '                                          <tr><td valign="middle"> param </td> \
+    for (var i = 0; i < source_inst_info['outputs'].length; i++) {
+        s += '                                          <tr><td valign="middle"> '+source_inst_info['outputs'][i]['label']+' </td> \
                                                             <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_out_"+i+'\');" name="'+modal_id+"_out_"+i+'" id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"> \
                                                                 <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_out_'+i+'">'+svg_round_square("")+' \
                                                                 </div></td>';
@@ -182,11 +181,11 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
                                             <table align="left"> \
                                                 <tr><td> \
                                                     <table>';
-    for (var i = 0; i < target_nb_in; i++)
+    for (var i = 0; i < target_inst_info['inputs'].length; i++)
         s += '                                          <tr><td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_in_"+i+'\');" name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"> \
                                                                 <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_in_'+i+'">'+svg_round_square("")+' \
                                                                 </div></td> \
-                                                            <td valign="middle"> param </td>';
+                                                            <td valign="middle"> '+target_inst_info['inputs'][i]['label']+' </td>';
     s += '                                          </table> </td>\
                                                 </td>\
                                             </table> \
@@ -204,7 +203,7 @@ function create_link_modal(id, source_cl_id, target_cl_id) {
     
     
     //Here we automatically connect tables into the link
-    if (source_nb_out == 1 && target_nb_in == source_nb_out) {
+    if (source_inst_info['outputs'].length == 1 && target_inst_info['inputs'].length == source_inst_info['outputs'].length) {
         console.log("Could be Automatically connected");
     }
     
@@ -331,9 +330,14 @@ $( window ).load(function() {
         global_links.push([global_links_inc, params.connection.id, source_inst_id, target_inst_id]);
         
         //modal creation
-        var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id)
-        main_div.append(ndiv);            
-        global_links_inc++;
+        ws_request('get_operator_instance_info', [source_inst_id], {}, function (source_inst_info) {
+            ws_request('get_operator_instance_info', [target_inst_id], {}, function (target_inst_info) {
+                var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id, source_inst_info, target_inst_info)
+                main_div.append(ndiv);            
+                global_links_inc++;
+            });
+        });
+        
     });
     
     //When the target of a link changes

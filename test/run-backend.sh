@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd $(dirname $0)/..
-TMPDIR=$(mktemp -d)
+TMPDIR=$(mktemp -d /tmp/tmp.XXXXXXXX)
 
 prefix_out()
 {
