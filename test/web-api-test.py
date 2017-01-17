@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 
-import json, code, sys
+import json, code, sys, readline, os.path, atexit
 sys.path.insert(0, '.')
 from sakura.common.io import AttrCallAggregator
 from websocket import create_connection
+
+# Persistent command history.
+histfile = os.path.join(os.environ["HOME"], ".web-api-history")
+try:
+    readline.read_history_file(histfile)
+except IOError:
+    # Existing history file can't be read.
+    pass
+atexit.register(readline.write_history_file, histfile)
 
 # the real GUI sends a callback id, which is echo-ed by
 # the hub together with the result.
