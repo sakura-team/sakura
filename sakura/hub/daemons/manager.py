@@ -1,4 +1,5 @@
 import pickle
+import gevent.pool
 from sakura.common.io import RemoteAPIForwarder, \
                                 LocalAPIHandler
 from sakura.hub.daemons.api import DaemonToHubAPI
@@ -13,8 +14,9 @@ def rpc_client_manager(daemon_id, context, sock_file):
 
 def rpc_server_manager(daemon_id, context, sock_file):
     print('new rpc connection hub (server) <- daemon %d (client).' % daemon_id)
+    pool = gevent.pool.Group()
     local_api = DaemonToHubAPI(daemon_id, context)
-    handler = LocalAPIHandler(sock_file, pickle, local_api)
+    handler = LocalAPIHandler(sock_file, pickle, local_api, pool)
     handler.loop()
     print('rpc connection hub (server) <- daemon %d (client) disconnected.' % daemon_id)
 
