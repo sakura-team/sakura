@@ -27,6 +27,10 @@ class Parameter(object):
     def set_value(self, value):
         self.value = value
 
+    # override in subclass if needed.
+    def get_value_serializable(self):
+        return self.value
+
 class ComboParameter(Parameter):
     def __init__(self, label):
         super().__init__('COMBO', label)
@@ -41,6 +45,8 @@ class ComboParameter(Parameter):
             info.update(issue = possible_values.name)
         else:
             info.update(possible_values = possible_values)
+        if self.selected():
+            info.update(selected = self.get_value_serializable())
         return info
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
@@ -62,7 +68,10 @@ class ColumnSelectionParameter(ComboParameter):
         else:
             return ParameterIssue.InputNotConnected
     def set_value(self, idx):
+        self.raw_value = idx
         self.value = self.table.columns[idx]
+    def get_value_serializable(self):
+        return self.raw_value
 
 def NumericColumnSelection(table):
     class CustomParameterClass(ColumnSelectionParameter):
