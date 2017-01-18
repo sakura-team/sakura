@@ -8,19 +8,19 @@ class MeanOperator(Operator):
     TAGS = [ "statistics", "aggregate" ]
     def construct(self):
         # inputs
-        self.input_table = self.register_input('Input table')
+        self.input = self.register_input('Mean input data')
         # outputs
-        self.output_table = self.register_output('Mean result', self.compute)
-        self.output_table.add_column('Mean', float)
-        self.output_table.length = 1
+        output = self.register_output('Mean result', self.compute)
+        output.add_column('Mean', float)
+        output.length = 1
         # parameters
         self.input_column = self.register_parameter('Input column',
-                NumericColumnSelection(self.input_table))
+                NumericColumnSelection(self.input))
     def compute(self):
         res = 0
         num = 0
         idx = self.input_column.index
-        for row in self.input_table:
+        for row in self.input:
             res += row[idx]
             num += 1
         return ((float(res)/num,),)
