@@ -4,6 +4,16 @@ var callbacks = {};
 var next_cb_idx = 0;
 var free_ws = [];
 
+function get_ws_url() {
+    var loc = window.location, proto;
+    if (loc.protocol === "https:") {
+        proto = "wss:";
+    } else {
+        proto = "ws:";
+    }
+    return proto + "//" + loc.host + "/websockets/rpc";
+}
+
 function ws_onmessage(evt) {
     // parse the message
     var json = JSON.parse(evt.data);
@@ -24,7 +34,7 @@ function ws_request(func_name, args, kwargs, callback)
     // check if we have at least one websocket free
     if (free_ws.length == 0)
     {   // existing websockets are busy, create new one
-        ws = new WebSocket("ws://localhost:8081/websockets/rpc");
+        ws = new WebSocket(get_ws_url());
         ws.onmessage = ws_onmessage;
         ws.onopen = function() {
             free_ws.push(ws);
