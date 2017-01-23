@@ -5,6 +5,12 @@ sys.path.insert(0, '.')
 from sakura.common.io import AttrCallAggregator
 from websocket import create_connection
 
+if len(sys.argv) < 2:
+    print('Usage: %s <hub_web_port>' % sys.argv[0])
+    sys.exit()
+
+web_port = int(sys.argv[1])
+
 # Persistent command history.
 histfile = os.path.join(os.environ["HOME"], ".web-api-history")
 try:
@@ -40,7 +46,7 @@ class FileWSock(object):
         self.wsock.send(self.msg)
         self.msg = ''
 
-wsock = create_connection("ws://localhost:8081/websockets/rpc")
+wsock = create_connection("ws://localhost:%d/websockets/rpc" % web_port)
 f = FileWSock(wsock)
 remote_api = get_gui_api(f, json)
 # read-eval-loop

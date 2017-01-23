@@ -7,6 +7,7 @@ from sakura.hub.web.greenlet import web_greenlet
 from sakura.hub.daemons.greenlet import daemons_greenlet
 from sakura.common.tools import set_unbuffered_stdout, \
                                 wait_greenlets
+import sakura.hub.conf as conf
 
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,9 +23,5 @@ def run(webapp_path):
 if __name__ == "__main__":
     set_unbuffered_stdout()
     print('Started.')
-    if len(sys.argv) == 1:
-        webapp_dir = 'basic_webapp'
-    else:
-        webapp_dir = sys.argv[1]
-    webapp_path = CURDIR + '/' + webapp_dir
+    webapp_path = CURDIR + '/' + conf.WEBAPP
     run(webapp_path)

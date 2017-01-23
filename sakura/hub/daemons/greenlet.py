@@ -3,6 +3,7 @@ from gevent.server import StreamServer
 from sakura.hub.daemons.manager import \
             rpc_client_manager, rpc_server_manager
 from sakura.hub.tools import monitored
+import sakura.hub.conf as conf
 from enum import Enum
 
 GreenletModes = Enum('GreenletModes', 'RPC_CLIENT RPC_SERVER')
@@ -33,7 +34,7 @@ def daemons_greenlet(context):
             rpc_client_manager(daemon_id, context, sock_file)
         if mode == GreenletModes.RPC_SERVER:
             rpc_server_manager(daemon_id, context, sock_file)
-    server = StreamServer(('0.0.0.0', 1234), handle)
+    server = StreamServer(('0.0.0.0', conf.hub_port), handle)
     server.start()
     # wait for end or exception
     handle.catch_issues()

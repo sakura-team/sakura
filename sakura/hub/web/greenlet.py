@@ -4,6 +4,7 @@ from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
 from sakura.hub.tools import monitored
+import sakura.hub.conf as conf
 
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
@@ -23,7 +24,7 @@ def web_greenlet(context, webapp_path):
         print(' ->', resp)
         return resp
 
-    server = WSGIServer(("0.0.0.0", 8081), app,
+    server = WSGIServer(("0.0.0.0", conf.web_port), app,
                         handler_class=WebSocketHandler)
     server.start()
     handle_rpc_websocket.catch_issues()
