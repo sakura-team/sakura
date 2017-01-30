@@ -332,8 +332,9 @@ $( window ).load(function() {
         //modal creation
         ws_request('get_operator_instance_info', [source_inst_id], {}, function (source_inst_info) {
             ws_request('get_operator_instance_info', [target_inst_id], {}, function (target_inst_info) {
-                var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id, source_inst_info, target_inst_info)
-                main_div.append(ndiv);            
+                var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id, source_inst_info, target_inst_info);
+                main_div.append(ndiv);
+                $('#modal_link_'+global_links_inc).modal();
                 global_links_inc++;
             });
         });
