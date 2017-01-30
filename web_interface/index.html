@@ -1,0 +1,64 @@
+<!--Code started by Michael Ortega for the LIG-->
+<!--Started on: January 30th, 2017-->
+
+<!doctype html>
+    <head> 
+    <meta charset="UTF-8" />
+    
+    <script src="js/w3data.js"></script>
+    <script src="js/jquery-2.2.4.min.js"></script>
+    <script src="bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="bootstrap-3.3.7/js/bootstrap-select.min.js"></script>
+    <link href="css/main.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap-select.min.css">
+    </head>
+    
+    <body>
+        <div class="container">
+            <h1> Sakura </h1>
+            <p>Store and Analyse Data
+            <script >
+                var maindivs_array = [  'maindivs_home',
+                                        'maindivs_protocol',
+                                        'maindivs_datasets',
+                                        'maindivs_operators',
+                                        'maindivs_analysis',
+                                        'maindivs_results' ];
+            </script>
+            <nav class="navbar navbar-default">
+                <ul id="navbar_ul" class="nav navbar-nav">
+                  <li class="active"><a onclick="show_div(0);" style="cursor: pointer;">Home</a></li>
+                  <li><a onclick="show_div(1);" style="cursor: pointer;">Protocol</a></li>
+                  <li><a onclick="show_div(2);" style="cursor: pointer;">Datasets</a></li>
+                  <li><a onclick="show_div(3);" style="cursor: pointer;">Operators</a></li>
+                  <li><a onclick="show_div(4);" style="cursor: pointer;">Analysis</a></li>
+                  <li><a onclick="show_div(5);" style="cursor: pointer;">Results</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a onclick="not_yet();">Connexion </a></li>
+                </ul>
+            </nav>
+        
+            <div class="container" id="main_div">
+                <div w3-include-html="divs/home/index.html"></div>
+                <div w3-include-html="divs/protocol/index.html"></div>
+                <div w3-include-html="divs/datasets/index.html"></div>
+                <div w3-include-html="divs/operators/index.html"></div>
+                <div w3-include-html="divs/analysis/index.html"></div>
+                <div w3-include-html="divs/results/index.html"></div>
+            </div>
+            <br>
+            <footer class="footer">
+                <div class="container">
+                    <p align="center" class="text-muted">Last Update by Michael Ortega, for the LIG<br>30th January 2017</p>
+                </div>
+            </footer>
+    
+            <script>
+                w3IncludeHTML();
+            </script>
+            <script src="js/main.js"></script>
+        </div>
+    </body>
+</html>
