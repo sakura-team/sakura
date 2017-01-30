@@ -7,6 +7,7 @@ function fill_all(id) {
     fill_outputs(id);
 }
 
+
 function fill_inputs(id) {
     var cl_id = id.split("_")[1];
     var inst_id = parseInt(id.split("_")[2]);
@@ -18,22 +19,28 @@ function fill_inputs(id) {
         d.innerHTML = '<br><p align="center"> No Inputs</p>';
     }
     else {
-        ws_request('get_operator_input_range', [inst_id, 0, 0, 1000], {}, function (result) {
-            if (result) {
-                s = '<table border=1>\n';
-                result.forEach( function(row) {
-                    s += '<tr>\n';
-                    row.forEach( function(col) {
-                        s += '<td>'+col; 
+        ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
+            ws_request('get_operator_input_range', [inst_id, 0, 0, 1000], {}, function (result_input) {
+                if (result_input) {
+                    s = '<table class="table table-hover table-striped">\n<thead><tr>';
+                    result_info['outputs'][0]['columns'].forEach( function(item) {
+                        s+= '<th>'+item[0]+'</th>';
                     });
-                });
-                s += '</table>';
-                d.innerHTML = '<br>'+s;
-            }
-            else
-                d.innerHTML = '<br><p align="center"> No Inputs for Now !!</p>';
+                    s += '</tr></thead><tbody>';
+                    result_input.forEach( function(row) {
+                        s += '<tr>\n';
+                        row.forEach( function(col) {
+                            s += '<td>'+col+'</td>'; 
+                        });
+                        s += '</tr>';
+                    });
+                    s += '</tbody></table>';
+                    d.innerHTML = '<br>'+s;
+                }
+                else
+                    d.innerHTML = '<br><p align="center"> No Inputs for Now !!</p>';
+            });
         });
-        
     }
 }
 
@@ -87,11 +94,10 @@ function params_onChange(op_id, param_index, select_id) {
     ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
         //var options = document.getElementById(select_id).options;
         var param_value = result['parameters'][param_index]['possible_values'][index-1][0];
-        
         //var param_value = options[index].index;
-        ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result) {
-            if (result)
-                console.log(result);
+        ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
+            if (result2)
+                console.log(result2);
             else
                 fill_outputs(op_id);
         });
@@ -104,22 +110,101 @@ function fill_outputs(id) {
     var inst_id = parseInt(id.split("_")[2]);
     var nb_outputs = global_ops_cl[cl_id]['outputs'];
     
-    var d = document.getElementById('modal_'+id+'_tab_outputs');
-    if (nb_outputs == 0) {
-        d.innerHTML = '<br><p align="center"> No Outputs</p>';
-    }
-    else {
-        ws_request('get_operator_output_range', [inst_id, 0, 0, 1000], {}, function (result) {
-            s = '<table border=1>\n';
-            result.forEach( function(row) {
+    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
+        var d = document.getElementById('modal_'+id+'_tab_outputs');
+        //console.log(result_info['outputs'][0]['label']);
+        if (nb_outputs == 0) {
+            d.innerHTML = '<br><p align="center"> No Outputs</p>';
+        }
+        else if (nb_outputs == 1) {
+            ws_request('get_operator_output_range', [inst_id, 0, 0, 1000], {}, function (result_output) {
+                s = '<table class="table table-hover table-striped">\n<thead><tr>';
+                
+                result_info['outputs'][0]['columns'].forEach( function(item) {
+                    s+= '<th>'+item[0]+'</th>';
+                });
+                s += '</tr></thead><tbody>';
+
+                result_output.forEach( function(row) {
+                    s += '<tr>\n';
+                    row.forEach( function(col) {
+                        s += '<td>'+col+'</td>'; 
+                    });
+                    s += '</tr>';
+                });
+                s += '</tbody></table>';
+                d.innerHTML = '<br>'+s;
+            });
+        }
+        else {
+            var div_tab = document.createElement('div');
+            div_tab.className = 'modal-body';
+            div_tab.id = id+'_outputs';
+            
+            var ul          = document.createElement('ul');
+            var tab_content = document.createElement('div');
+            ul.className            = "nav nav-tabs";
+            tab_content.className   = "tab-content";
+            s = '<li class="active"> \
+                    <a data-toggle="tab" href="#'+id+'_output_'+0+'" onclick="fill_one_output('+id+','+0+');">'+result_info['outputs'][0]['label']+'</a></li>';
+            for (var i =1; i < nb_outputs; i++) {
+                s += '<li><a data-toggle="tab" href="#'+id+'_output_'+i+'" onclick="fill_one_output('+id+','+i+');">'+result_info['outputs'][i]['label']+'</a></li>';
+            }
+            ul.innerHTML = s;
+            
+            s = '<div id="'+id+'_output_'+0+'" class="tab-pane fade in active"></div>';
+            for (var i =1; i < nb_outputs; i++)
+                s += '<div id="'+id+'_output_'+i+'" class="tab-pane fade in active"></div>';
+            tab_content.innerHTML = s;
+            
+            div_tab.appendChild(ul);
+            div_tab.appendChild(tab_content);
+            d.appendChild(div_tab);
+            
+            ws_request('get_operator_output_range', [inst_id, 0, 0, 1000], {}, function (result_output) {
+                var d = document.getElementById(id+'_output_'+0);
+                
+                s = '<table class="table table-hover table-striped">\n<thead><tr>';
+                result_info['outputs'][0]['columns'].forEach( function(item) {
+                    s+= '<th>'+item[0]+'</th>';
+                });
+                s += '</tr></thead><tbody>';
+
+                result_output.forEach( function(row) {
+                    s += '<tr>\n';
+                    row.forEach( function(col) {
+                        s += '<td>'+col+'</td>'; 
+                    });
+                    s += '</tr>';
+                });
+                s += '</tbody></table>';
+                d.innerHTML = s;
+            });
+        }
+    });
+}
+
+function fill_one_output(op, id_output) {
+    var div = document.getElementById(op.id+'_output_'+id_output);
+    var inst_id = parseInt(op.id.split("_")[2]);
+    
+    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
+        ws_request('get_operator_output_range', [inst_id, id_output, 0, 1000], {}, function (result_output) {        
+            s = '<table class="table table-hover table-striped">\n<thead><tr>';
+            result_info['outputs'][id_output]['columns'].forEach( function(item) {
+                s+= '<th>'+item[0]+'</th>';
+            });
+            s += '</tr></thead><tbody>';
+
+            result_output.forEach( function(row) {
                 s += '<tr>\n';
                 row.forEach( function(col) {
-                    s += '<td>'+col; 
+                    s += '<td>'+col+'</td>'; 
                 });
+                s += '</tr>';
             });
-            s += '</table>';
-            d.innerHTML = '<br>'+s;
+            s += '</tbody></table>';
+            div.innerHTML = s;
         });
-        
-    }
+    });
 }
