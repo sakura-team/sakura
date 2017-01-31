@@ -201,7 +201,6 @@ function create_link_modal(id, source_cl_id, target_cl_id, source_inst_info, tar
                 </div> \
             </div>';
     
-    
     //Here we automatically connect tables into the link
     if (source_inst_info['outputs'].length == 1 && target_inst_info['inputs'].length == source_inst_info['outputs'].length) {
         console.log("Could be Automatically connected");
@@ -318,7 +317,6 @@ $( window ).load(function() {
         return true;
     });
     
-    
     //A connection is established
     jsPlumb.bind("connection", function(params) {
         //First we send the link creation command to the hub
@@ -350,18 +348,11 @@ $( window ).load(function() {
     jsPlumb.bind("dblclick", function(connection) {
         var index = index_in_array_of_tuples(global_links, 1, connection.id);
         var id = global_links[index][0];
-        
-        
-        //console.log("svg_"+modal_id+'_out_0');
-        //console.log($('#svg_'+modal_id+'_out_0').position());
-        //console.log($('#svg_'+modal_id+'_out_0').getBBox());
-            
         current_modal_id = 'modal_link_'+id;
         $('#modal_link_'+id).modal();
         
         setTimeout(function() {
         }, 200);
-        
     });
     
     //Context Menu is one of the ways for deleting the link
@@ -375,11 +366,4 @@ $( window ).load(function() {
         var index = index_in_array_of_tuples(global_links, 1, params.id);
         link_focus_id = global_links[index][0];
     });
-    
-    
-    //Another way to delete the link
-    /*jsPlumb.bind("connectionDetached", function(params) {
-        not_yet('connectionDetached Event');
-    });
-    */
 });
