@@ -73,11 +73,17 @@ class ColumnSelectionParameter(ComboParameter):
     def get_value_serializable(self):
         return self.raw_value
 
-def NumericColumnSelection(table):
+def TypeBasedColumnSelection(table, cls):
     class CustomParameterClass(ColumnSelectionParameter):
         def __init__(self, label):
             def condition(column):
-                return issubclass(column.type, numbers.Number)
+                return issubclass(column.type, cls)
             ColumnSelectionParameter.__init__(self, label, table, condition)
     return CustomParameterClass
+
+def NumericColumnSelection(table):
+    return TypeBasedColumnSelection(table, numbers.Number)
+
+def StrColumnSelection(table):
+    return TypeBasedColumnSelection(table, str)
 
