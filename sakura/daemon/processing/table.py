@@ -48,18 +48,20 @@ class InputTable(object):
             return None
 
 class OutputTable(Registry):
-    def __init__(self, operator, label, compute_cb):
+    def __init__(self, operator, label, compute_cb, internal):
         self.columns = []
         self.operator = operator
         self.label = label
         self.compute_cb = compute_cb
         self.length = None
+        self.internal = internal
     def add_column(self, col_label, col_type):
         return self.register(self.columns, Column, col_label, col_type, len(self.columns))
     def get_info_serializable(self):
         return dict(label = self.label,
                     columns = [ col.get_info_serializable() for col in self.columns ],
-                    length = self.length)
+                    length = self.length,
+                    internal = self.internal)
     def __iter__(self):
         for row in self.compute_cb():
             yield row
