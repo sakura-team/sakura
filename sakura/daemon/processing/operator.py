@@ -44,3 +44,6 @@ class Operator(Registry):
         abs_file_path = os.path.join(op_root_path, file_path)
         with open(abs_file_path) as f:
             return f.read()
+    def auto_fill_parameters(self):
+        for param in self.parameters:
+            param.auto_fill()

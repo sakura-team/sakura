@@ -21,6 +21,7 @@ class DaemonEngine(object):
         op_cls = self.op_classes[cls_name]
         op = op_cls()
         op.construct()
+        op.auto_fill_parameters()
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (cls_name, op_id))
     def delete_operator_instance(self, op_id):
@@ -45,6 +46,8 @@ class DaemonEngine(object):
             src_label = '%s op_id=%d out%d' % (src_op.NAME, src_op_id, src_out_id)
         dst_op = self.op_instances[dst_op_id]
         dst_op.input_tables[dst_in_id].connect(src_op.output_tables[src_out_id])
+        # auto select unselected parameters, if possible
+        dst_op.auto_fill_parameters()
         print("connected %s -> %s op_id=%d in%d" % \
                 (src_label, dst_op.NAME, dst_op_id, dst_in_id))
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
