@@ -19,8 +19,23 @@ class Parameter(object):
             return None
         return getattr(self.value, attr)
 
+    def get_info_serializable_base(self):
+        info = dict(
+            gui_type = self.gui_type,
+            label = self.label
+        )
+        if self.selected():
+            info.update(value = self.get_value_serializable())
+        else:
+            info.update(value = None)
+        return info
+
     def get_info_serializable(self):
         print('get_info_serializable() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
+
+    def auto_fill(self):
+        print('auto_fill() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
     # override in subclass if needed.
@@ -35,19 +50,20 @@ class ComboParameter(Parameter):
     def __init__(self, label):
         super().__init__('COMBO', label)
     def get_info_serializable(self):
-        info = dict(
-            gui_type = self.gui_type,
-            label = self.label
-        )
+        info = self.get_info_serializable_base()
         possible_values = self.get_possible_values()
         if isinstance(possible_values, ParameterIssue):
             # get the name of the ParameterIssue enum
             info.update(issue = possible_values.name)
         else:
             info.update(possible_values = possible_values)
-        if self.selected():
-            info.update(selected = self.get_value_serializable())
         return info
+    def auto_fill(self):
+        if not self.selected():
+            possible = self.get_possible_values()
+            if not isinstance(possible, ParameterIssue) and \
+                    len(possible) > 0:
+                self.set_value(possible[0][0])
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError
@@ -57,6 +73,7 @@ class ColumnSelectionParameter(ComboParameter):
         super().__init__(label)
         self.table = table
         self.condition = condition
+        self.raw_value = None
     def get_possible_values(self):
         if self.table.connected():
             possible = []
