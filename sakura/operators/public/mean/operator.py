@@ -19,8 +19,9 @@ class MeanOperator(Operator):
     def compute(self):
         res = 0
         num = 0
-        idx = self.input_column.index
-        for row in self.input:
-            res += row[idx]
+        for val in self.input_column:
+            res += val
             num += 1
-        return ((float(res)/num,),)
+        mean = float(res)/num
+        # our output has only 1 row and 1 column
+        yield (mean,)

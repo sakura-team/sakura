@@ -1,7 +1,7 @@
 import numbers
 from enum import Enum
 
-ParameterIssue = Enum('ParameterIssue', 'InputNotConnected')
+ParameterIssue = Enum('ParameterIssue', 'InputNotConnected NotSelected')
 
 # Parameter implementation.
 class Parameter(object):
@@ -16,8 +16,17 @@ class Parameter(object):
     # redirect other accesses to the selected value
     def __getattr__(self, attr):
         if not self.selected():
-            return None
+            raise AttributeError
         return getattr(self.value, attr)
+
+    # for case where self.value is iterable, we explicitly
+    # forward the __iter__() method.
+    # (by default it is not catched by __getattr__ because
+    # it is a 'special method'.)
+    def __iter__(self):
+        if not self.selected():
+            raise ParameterIssue.NotSelected
+        return self.value.__iter__()
 
     def get_info_serializable_base(self):
         info = dict(
