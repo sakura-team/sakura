@@ -1,12 +1,16 @@
 from sakura.daemon.processing.tools import Registry
 
 class Column(object):
-    def __init__(self, col_label, col_type, col_index):
+    def __init__(self, col_label, col_type, output_table, col_index):
         self.label = col_label
         self.type = col_type
+        self.output_table = output_table
         self.index = col_index
     def get_info_serializable(self):
         return (self.label, self.type.__name__)
+    def __iter__(self):
+        for row in self.output_table:
+            yield row[self.index]
 
 class InputTable(object):
     def __init__(self, label):
@@ -56,7 +60,7 @@ class OutputTable(Registry):
         self.length = None
         self.internal = internal
     def add_column(self, col_label, col_type):
-        return self.register(self.columns, Column, col_label, col_type, len(self.columns))
+        return self.register(self.columns, Column, col_label, col_type, self, len(self.columns))
     def get_info_serializable(self):
         return dict(label = self.label,
                     columns = [ col.get_info_serializable() for col in self.columns ],
