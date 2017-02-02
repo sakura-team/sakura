@@ -23,48 +23,18 @@ on_exit()
     # we wait again to make sure the background processes
     # have completed there cleanup procedure and exited.
     wait
-    #rm -rf $TMPDIR
 }
 
-# whatever happens, call at_exit() at the end.
+# whatever happens, call on_exit() at the end.
 trap on_exit EXIT
-
-# prepare hub conf
-mkdir -p $TMPDIR/hub
-cat > $TMPDIR/hub/hub.conf << EOF
-{
-    "web-port": 8081,
-    "hub-port": 10432,
-    "external-datasets": [ ]
-}
-EOF
-
-# prepare daemon0 and daemon1 conf and operators
-mkdir -p $TMPDIR/daemon0/operators $TMPDIR/daemon1/operators
-cp -r sakura/operators/public/datasample $TMPDIR/daemon0/operators
-cp -r sakura/operators/public/mean $TMPDIR/daemon1/operators
-cp -r sakura/operators/public/map $TMPDIR/daemon1/operators
-for i in 0 1
-do
-    cat > $TMPDIR/daemon$i/daemon.conf << EOF
-{
-    "hub-host": "localhost",
-    "hub-port": 10432,
-    "daemon-desc": "daemon $i",
-    "operators-dir": "$TMPDIR/daemon$i/operators",
-    "external-datasets": [ ]
-}
-EOF
-done
 
 # run the commands in the background and prefix their
 # output.
-prefix_out HUB ./hub.py -f $TMPDIR/hub/hub.conf workflow &
+prefix_out HUB test/run-hub.sh &
 sleep 1
-for i in 0 1
-do
-    prefix_out DAEMON$i ./daemon.py -f $TMPDIR/daemon$i/daemon.conf &
-done
+prefix_out DAEMON0 test/run-daemon.sh 0 datasample &
+sleep 0.2
+prefix_out DAEMON1 test/run-daemon.sh 1 mean map &
 
 # wait for background processes to complete
 wait
