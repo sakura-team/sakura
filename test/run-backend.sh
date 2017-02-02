@@ -43,6 +43,7 @@ EOF
 mkdir -p $TMPDIR/daemon0/operators $TMPDIR/daemon1/operators
 cp -r sakura/operators/public/datasample $TMPDIR/daemon0/operators
 cp -r sakura/operators/public/mean $TMPDIR/daemon1/operators
+cp -r sakura/operators/public/map $TMPDIR/daemon1/operators
 for i in 0 1
 do
     cat > $TMPDIR/daemon$i/daemon.conf << EOF
