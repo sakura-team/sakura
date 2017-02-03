@@ -38,7 +38,7 @@ function fill_params(id) {
                         var select_id = 'modal_'+id+'_tab_params_select_'+index;
                         var s = '<br>'+item['label']+' <select id="'+select_id+'" onChange="params_onChange(\''+id+'\', '+index+',\''+select_id+'\');"><option></option>';
                         item['possible_values'].forEach( function (item2) {
-                            s += ' <option> '+item2[0]+' - '+item2[1]+'</option>';
+                            s += ' <option> '+item2+'</option>';
                         });
                         s += ' </select>';
                         ndiv.innerHTML = s;
@@ -59,7 +59,7 @@ function params_onChange(op_id, param_index, select_id) {
     
     ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
         //var options = document.getElementById(select_id).options;
-        var param_value = result['parameters'][param_index]['possible_values'][index-1][0];
+        var param_value = index-1;
         //var param_value = options[index].index;
         ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
             if (result2)

@@ -72,7 +72,7 @@ class ComboParameter(Parameter):
             possible = self.get_possible_values()
             if not isinstance(possible, ParameterIssue) and \
                     len(possible) > 0:
-                self.set_value(possible[0][0])
+                self.set_value(0)
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError
@@ -83,19 +83,22 @@ class ColumnSelectionParameter(ComboParameter):
         self.table = table
         self.condition = condition
         self.raw_value = None
+    def matching_columns(self):
+        for idx, column in enumerate(self.table.columns):
+            if self.condition(column):
+                yield column
     def get_possible_values(self):
-        if self.table.connected():
-            possible = []
-            for idx, column in enumerate(self.table.columns):
-                if self.condition(column):
-                    label = '%s (of %s)' % (column.label, self.table.label)
-                    possible.append((idx, label))
-            return possible
-        else:
+        if not self.table.connected():
             return ParameterIssue.InputNotConnected
+        return list('%s (of %s)' % (column.label, self.table.label) \
+                    for column in self.matching_columns())
     def set_value(self, idx):
+        if not self.table.connected():
+            raise ParameterIssue.InputNotConnected
+        # raw_value is the index of the column in the possible values
         self.raw_value = idx
-        self.value = self.table.columns[idx]
+        # value is the selected column
+        self.value = tuple(self.matching_columns())[idx]
     def get_value_serializable(self):
         return self.raw_value
 
