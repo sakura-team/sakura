@@ -27,12 +27,13 @@ class HubContext(object):
             d = dict(daemon._asdict())
             del d['api']
             yield d
-    def register_op_class(self, daemon_id, name, tags, icon, nb_inputs, nb_outputs):
-        self.op_classes.store(daemon_id, name, tags, icon, nb_inputs, nb_outputs)
+    def register_op_class(self, *args):
+        self.op_classes.store(*args)
     def list_op_classes_serializable(self):
         return [ dict(
                     id = info.cls_id,
                     name = info.name,
+                    short_desc = info.short_desc,
                     daemon = self.daemons[info.daemon_id].name,
                     tags = info.tags,
                     svg = info.icon,
