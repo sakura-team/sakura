@@ -29,7 +29,8 @@ class Operator(Registry):
         # instanciate an operator, to check its number of inputs/outputs
         op = op_cls()
         op.construct()
-        return op_cls.NAME, op_cls.TAGS, op_cls.ICON, len(op.input_tables), len(op.output_tables)
+        return op_cls.NAME, op_cls.SHORT_DESC, op_cls.TAGS, op_cls.ICON, \
+                len(op.input_tables), len(op.output_tables)
     def get_info_serializable(self):
         return dict(
             cls_name = self.NAME,
