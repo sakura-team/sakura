@@ -35,7 +35,7 @@ function create_operator_instance(x, y, idiv_id) {
         ndiv.oncontextmenu = open_op_menu;
         
         global_ops_inst.push(ndiv.id);
-        main_div.append(ndiv);
+        main_div.appendChild(ndiv);
         
         //Plumbery: draggable + connections
         jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
@@ -47,7 +47,7 @@ function create_operator_instance(x, y, idiv_id) {
             jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
         
         //Now the modal for parameters/creation/visu/...
-        main_div.append(create_op_modal(ndiv.id, global_ops_cl[parseInt(id_index)]['name'], global_ops_cl[id_index]['svg']));
+        main_div.appendChild(create_op_modal(ndiv.id, global_ops_cl[parseInt(id_index)]['name'], global_ops_cl[id_index]['svg']));
     });
 }
 
