@@ -187,10 +187,29 @@ function fill_one_output(id, id_output, min, max) {
                 var nb_pages = parseInt(result_info['outputs'][id_output]['length']/(max-min));
                 if (nb_pages*(max-min) < result_info['outputs'][id_output]['length'])
                     nb_pages++;
-                if (nb_pages > 1) {
+                if (nb_pages > 1 && nb_pages < 10) {
                     s+= '   <ul class="pagination pagination-sm">\n';
                     for (var i=0; i< nb_pages; i++)
                         s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
+                    s+= '   </ul>';
+                }
+                else if (nb_pages > 10) {
+                    var current_page = Math.floor(min/(max-min));
+                    s+= '   <ul class="pagination pagination-sm">\n';
+                    if (current_page > 0) {
+                        s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+0+','+(max-min)+');\'>'+'<<'+'</a></li>\n';
+                        s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(min - (max-min))+','+(max - (max-min))+');\'>'+'<'+'</a></li>\n';
+                    }
+                    var up_limit = current_page+10;
+                    if (up_limit > nb_pages) {
+                        up_limit = nb_pages;
+                    }
+                    for (var i=current_page; i< up_limit; i++)
+                        s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
+                    if (up_limit < nb_pages) {
+                        s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+((current_page+1)*(max-min))+','+((current_page+2)*(max-min))+');\'>'+'>'+'</a></li>\n';
+                        s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+((nb_pages-1)*(max-min))+','+((nb_pages)*(max-min))+');\'>'+'>>'+'</a></li>\n';
+                    }
                     s+= '   </ul>';
                 }
             }
@@ -204,15 +223,6 @@ function fill_one_output(id, id_output, min, max) {
                     s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(min + (max-min))+','+(max + (max-min))+');\'>'+'>'+'</a></li>\n';
                 s+= '   </ul>';
             }
-            
-            /*s += '  <ul class="pagination pagination-sm"> \
-                        <li class="active"><a style="cursor: pointer;" onclick="not_yet();">1</a></li> \
-                        <li><a style="cursor: pointer;" onclick="not_yet();">2</a></li> \
-                        <li><a style="cursor: pointer;" onclick="not_yet();">3</a></li> \
-                        <li><a style="cursor: pointer;" onclick="not_yet();">...</a></li> \
-                        <li><a style="cursor: pointer;" onclick="not_yet();">54</a></li> \
-                    </ul>';
-            */
             div.innerHTML = s;
         });
     });
