@@ -1,6 +1,9 @@
 //Code started by Michael Ortega for the LIG
 //January 16th, 2017
 
+
+var max_rows = 20;
+
 function fill_all(id) {
     fill_inputs(id);
     fill_params(id);
@@ -129,9 +132,9 @@ function fill_outputs(id) {
             ul.className            = "nav nav-tabs";
             tab_content.className   = "tab-content";
             s = '<li class="active"> \
-                    <a data-toggle="tab" href="#'+id+'_output_'+0+'" onclick=\'fill_one_output(\"'+id+'\",'+0+');\'>'+result_info['outputs'][0]['label']+'</a></li>';
+                    <a data-toggle="tab" href="#'+id+'_output_'+0+'" onclick=\'fill_one_output(\"'+id+'\",'+0+','+0+','+max_rows+');\'>'+result_info['outputs'][0]['label']+'</a></li>';
             for (var i =1; i < nb_outputs; i++) {
-                s += '<li><a data-toggle="tab" href="#'+id+'_output_'+i+'" onclick=\'fill_one_output(\"'+id+'\",'+i+');\'>'+result_info['outputs'][i]['label']+'</a></li>';
+                s += '<li><a data-toggle="tab" href="#'+id+'_output_'+i+'" onclick=\'fill_one_output(\"'+id+'\",'+i+','+0+','+max_rows+');\'>'+result_info['outputs'][i]['label']+'</a></li>';
             }
             ul.innerHTML = s;
             
@@ -144,29 +147,34 @@ function fill_outputs(id) {
             div_tab.appendChild(tab_content);
             d.appendChild(div_tab);
             
-            fill_one_output(id, 0);
+            fill_one_output(id, 0, 0, max_rows);
         }
     });
 }
 
 
-function fill_one_output(id, id_output) {
+function fill_one_output(id, id_output, min, max) {
     var div = document.getElementById(id+'_output_'+id_output);
     var inst_id = parseInt(id.split("_")[2]);
     
-    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
-        ws_request('get_operator_output_range', [inst_id, id_output, 0, 1000], {}, function (result_output) {
+    //Emptying the div
+    while (div.firstChild) {
+        div.removeChild(div.firstChild);
+    }
+    
+    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {        
+        ws_request('get_operator_output_range', [inst_id, id_output, min, max], {}, function (result_output) {
             s = '<table class="table table-sm table-hover table-striped">\n<thead><tr>';
             s += '<th>#</th>';
             result_info['outputs'][id_output]['columns'].forEach( function(item) {
                 s+= '<th>'+item[0]+'</th>';
             });
             s += '</tr></thead><tbody>';
-
+            
             var index = 0;
             result_output.forEach( function(row) {
                 s += '<tr>\n';
-                s += '<td>'+index+'</td>';
+                s += '<td>'+parseInt(index+min)+'</td>';
                 row.forEach( function(col) {
                     s += '<td>'+col+'</td>'; 
                 });
@@ -174,13 +182,37 @@ function fill_one_output(id, id_output) {
                 index += 1;
             });
             s += '</tbody></table>';
-            s += '  <ul class="pagination pagination-sm"> \
-                            <li class="active"><a style="cursor: pointer;" onclick="not_yet();">1</a></li> \
-                            <li><a style="cursor: pointer;" onclick="not_yet();">2</a></li> \
-                            <li><a style="cursor: pointer;" onclick="not_yet();">3</a></li> \
-                            <li><a style="cursor: pointer;" onclick="not_yet();">...</a></li> \
-                            <li><a style="cursor: pointer;" onclick="not_yet();">54</a></li> \
-                        </ul>';
+            
+            if (result_info['outputs'][id_output]['length'] != null) {
+                var nb_pages = parseInt(result_info['outputs'][id_output]['length']/(max-min));
+                if (nb_pages*(max-min) < result_info['outputs'][id_output]['length'])
+                    nb_pages++;
+                if (nb_pages > 1) {
+                    s+= '   <ul class="pagination pagination-sm">\n';
+                    for (var i=0; i< nb_pages; i++)
+                        s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
+                    s+= '   </ul>';
+                }
+            }
+            else {
+                s+= '   <ul class="pagination pagination-sm">\n';
+                if (min > 0) {
+                    s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+0+','+(max-min)+');\'>'+'<<'+'</a></li>\n';
+                    s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(min - (max-min))+','+(max - (max-min))+');\'>'+'<'+'</a></li>\n';
+                }
+                if (!(result_output.length < max-min))
+                    s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(min + (max-min))+','+(max + (max-min))+');\'>'+'>'+'</a></li>\n';
+                s+= '   </ul>';
+            }
+            
+            /*s += '  <ul class="pagination pagination-sm"> \
+                        <li class="active"><a style="cursor: pointer;" onclick="not_yet();">1</a></li> \
+                        <li><a style="cursor: pointer;" onclick="not_yet();">2</a></li> \
+                        <li><a style="cursor: pointer;" onclick="not_yet();">3</a></li> \
+                        <li><a style="cursor: pointer;" onclick="not_yet();">...</a></li> \
+                        <li><a style="cursor: pointer;" onclick="not_yet();">54</a></li> \
+                    </ul>';
+            */
             div.innerHTML = s;
         });
     });
