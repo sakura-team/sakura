@@ -123,25 +123,35 @@ function select_op_new_div(svg, name, id, removable) {
     var ndiv = document.createElement('div');
     if (removable) {
         ndiv.id = "select_op_selected_"+id+'rem';
-        ndiv.innerHTML = '<table> \
-                            <tr> \
-                                <td align="center">'+svg+ ' \
-                                <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+id+'\');" style="cursor: pointer;"/> \
-                            <tr> \
-                                <td align="center">'+name+' \
-                        </table>';
+        var s = '   <table> \
+                        <tr> \
+                            <td align="center">'+svg+ ' \
+                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+id+'\');" style="cursor: pointer;"/> \
+                        <tr>';
+        var l = name.length;
+        if (l > 7) {
+            name = name.substring(0,7)+'.';
+        }
+        s += '<td align="center"> <font size="1">'+name+'</font>';
+        s += '</table>';
+        ndiv.innerHTML = s;
     }
     else {
         ndiv.id = "select_op_selected_"+id+"_static";
         ndiv.setAttribute('draggable', 'true');
         ndiv.style.zIndex = '2';
         ndiv.classList.add("sakura_static_operator");
-        ndiv.innerHTML = '<table> \
-                            <tr> \
-                                <td align="center">'+svg+ ' \
-                            <tr> \
-                                <td align="center">'+name+' \
-                        </table>';
+        var s = '   <table> \
+                        <tr> \
+                            <td align="center">'+svg+ ' \
+                        <tr>';
+        var l = name.length;
+        if (l > 7) {
+            name = name.substring(0,7)+'.';
+        }
+        s += '<td align="center"> <font size="1">'+name+'</font>';
+        s += '</table>';
+        ndiv.innerHTML = s;
     }
     return (ndiv);
 }
