@@ -10,7 +10,6 @@ var global_ops_cl       = [];
 var global_ops_inst     = [];
 var op_focus_id         = null;
 var link_focus_id       = null;
-//var modal_tabs_to_udate = [];   //[op_inst, inputs, params, outputs, code]. ex: [op_1_23, fasle, true, false, false]
 
 //links
 var global_links        = []; //[local_id, jsPlumb_id, src_inst_id (from hub), dst_inst_id (from hub)]

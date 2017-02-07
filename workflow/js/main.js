@@ -17,7 +17,7 @@ function create_operator_instance(x, y, idiv_id) {
     
     var id_index = idiv_id.split("_").slice(-2)[0];
     
-    //We first create send the creation command to the sakura hub
+    //We first send the creation command to the sakura hub
     ws_request('create_operator_instance', [parseInt(id_index)], {}, function (result) {
         var instance_id = result;
         
@@ -47,7 +47,7 @@ function create_operator_instance(x, y, idiv_id) {
             jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
         
         //Now the modal for parameters/creation/visu/...
-        main_div.appendChild(create_op_modal(ndiv.id, global_ops_cl[parseInt(id_index)]['name'], global_ops_cl[id_index]['svg']));
+        main_div.appendChild(create_op_modal(ndiv.id, id_index));
     });
 }
 
@@ -88,7 +88,11 @@ function remove_operator_instance(id) {
 }
 
 
-function create_op_modal(id, name, svg) {
+function create_op_modal(id, id_index) {
+    var name    = global_ops_cl[id_index].name;
+    var svg     = global_ops_cl[id_index].svg;
+    var desc    = global_ops_cl[id_index].short_desc;
+    var daemon  = global_ops_cl[id_index].daemon;
     
     var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
                 <div class="modal-dialog" role="document"> \
@@ -97,10 +101,11 @@ function create_op_modal(id, name, svg) {
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close"> \
                                 <span aria-hidden="true">&times;</span> \
                             </button> \
-                            <table> \
+                            <table width="100%"> \
                                 <tr> \
-                                <td>'+svg+'</td> \
-                                <td><h4 class="modal-title"><b>&nbsp;&nbsp;'+name+'</b></h4></td> \
+                                <td width="38px">'+svg+'</td> \
+                                <td class="modal-title" align="left"><b><font size=4>&nbsp;&nbsp;'+name+'&nbsp;&nbsp;</font></b><font size="2" color="grey">'+daemon+'</font></td> \
+                                <tr><td colspan="2"><font size="2">'+desc+'</font></td> \
                             </table> \
                         </div> \
                         <div class="modal-body"> \

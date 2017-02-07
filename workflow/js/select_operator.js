@@ -26,7 +26,6 @@ function select_op_open_modal() {
         }
         
         global_ops_cl = JSON.parse(JSON.stringify(result));
-        
         global_ops_cl.forEach( function (op) {
             op['tags'].forEach( function (tag) {
                 if (tags_list.indexOf(tag) == -1) {
