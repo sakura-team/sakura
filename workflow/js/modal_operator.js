@@ -200,12 +200,22 @@ function fill_one_output(id, id_output, min, max) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+0+','+(max-min)+');\'>'+'<<'+'</a></li>\n';
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(min - (max-min))+','+(max - (max-min))+');\'>'+'<'+'</a></li>\n';
                     }
+                    else {
+                        s += '<li class="disabled"><a style="cursor: pointer;">'+'<<'+'</a></li>\n';
+                        s += '<li class="disabled"><a style="cursor: pointer;">'+'<'+'</a></li>\n';
+                    }
                     var up_limit = current_page+10;
                     if (up_limit > nb_pages) {
                         up_limit = nb_pages;
                     }
                     for (var i=current_page; i< up_limit; i++)
-                        s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
+                        if (i == current_page) {
+                            s+= '<li class="disabled"><a style="cursor: pointer;");\'>'+(i+1)+'</a></li>\n';
+                        }
+                        else {
+                            s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
+                        }
+                    
                     if (up_limit < nb_pages) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+((current_page+1)*(max-min))+','+((current_page+2)*(max-min))+');\'>'+'>'+'</a></li>\n';
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_output(\"'+id+'\",'+id_output+','+((nb_pages-1)*(max-min))+','+((nb_pages)*(max-min))+');\'>'+'>>'+'</a></li>\n';
