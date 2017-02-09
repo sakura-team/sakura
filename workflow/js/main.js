@@ -111,10 +111,10 @@ function create_op_modal(id, id_index) {
                         <div class="modal-body"> \
                             <ul class="nav nav-tabs"> \
                                 <li class="active"> \
-                                    <a data-toggle="tab" href="#modal_'+id+'_tab_inputs">Inputs</a></li> \
-                                <li><a data-toggle="tab" href="#modal_'+id+'_tab_params">Params</a></li> \
-                                <li><a data-toggle="tab" href="#modal_'+id+'_tab_outputs">Outputs</a></li> \
-                                <li class="disabled"><a data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li> \
+                                    <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_inputs">Inputs</a></li> \
+                                <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_params">Params</a></li> \
+                                <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_outputs">Outputs</a></li> \
+                                <li class="disabled"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li> \
                             </ul> \
                             <div class="tab-content"> \
                                 <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"> \
