@@ -2,7 +2,7 @@
 //January 16th, 2017
 
 
-var max_rows = 20;
+var max_rows = 15;
 
 function fill_all(id) {
     fill_in_out('input', id);
@@ -98,9 +98,9 @@ function fill_in_out(in_out, id) {
         ul.className            = "nav nav-tabs";
         tab_content.className   = "tab-content";
         s = '<li class="active"> \
-                <a data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+max_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
+                <a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+max_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
         for (var i =1; i < nb_in_out; i++) {
-            s += '<li><a data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+max_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
+            s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+max_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
         }
         ul.innerHTML = s;
     
@@ -131,7 +131,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
     ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {        
         ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
-                s = '<table class="table table-sm table-hover table-striped">\n<thead><tr>';
+                s = '<table class="table table-condensed table-hover table-striped">\n<thead><tr>';
                 s += '<th>#</th>';
             
                 result_info[in_out+'s'][id_in_out]['columns'].forEach( function(item) {
@@ -149,8 +149,8 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     s += '</tr>';
                     index += 1;
                 });
-                s += '</tbody></table>';
-            
+
+                s += '<tr><td colspan="100%" style="background-color: "white";">';
                 if (result_info[in_out+'s'][id_in_out]['length'] != null) {
                     var nb_pages = parseInt(result_info[in_out+'s'][id_in_out]['length']/(max-min));
                     if (nb_pages*(max-min) < result_info[in_out+'s'][id_in_out]['length'])
@@ -205,6 +205,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+(min + (max-min))+','+(max + (max-min))+');\'><span class="glyphicon glyphicon-forward" style="color: grey; cursor: pointer;"></a></li>\n';
                     s+= '   </ul>';
                 }
+                s += '</tbody></table>';
                 d.innerHTML = s;
             }
         });
