@@ -131,27 +131,30 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
     ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {        
         ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
+                var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
+                console.log(nb_cols);
                 s = '<table class="table table-condensed table-hover table-striped">\n<thead><tr>';
-                s += '<th>#</th>';
+                s += '<tr><th colspan='+nb_cols+'">&nbsp<tr>';
+                s += '<th style="padding: 1px;">#</th>';
             
                 result_info[in_out+'s'][id_in_out]['columns'].forEach( function(item) {
-                    s+= '<th>'+item[0]+'</th>';
+                    s+= '<th style="padding: 1px;">'+item[0]+'</th>';
                 });
                 s += '</tr></thead><tbody>';
             
                 var index = 0;
                 result_in_out.forEach( function(row) {
                     s += '<tr>\n';
-                    s += '<td>'+parseInt(index+min)+'</td>';
+                    s += '<td style="padding: 1px;">'+parseInt(index+min)+'</td>';
                     row.forEach( function(col) {
-                        s += '<td>'+col+'</td>'; 
+                        s += '<td style="padding: 1px;">'+col+'</td>'; 
                     });
                     s += '</tr>';
                     index += 1;
                 });
 
-                s += '<tr><td colspan="100%" style="background-color: "white";">';
                 if (result_info[in_out+'s'][id_in_out]['length'] != null) {
+                    
                     var nb_pages = parseInt(result_info[in_out+'s'][id_in_out]['length']/(max-min));
                     if (nb_pages*(max-min) < result_info[in_out+'s'][id_in_out]['length'])
                         nb_pages++;
@@ -162,6 +165,8 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                         s+= '   </ul>';
                     }
                     else if (nb_pages > 10) {
+                        s += '<tr><td colspan="100%" style="background-color: "white";">';
+                        
                         var current_page = Math.floor(min/(max-min));
                         s+= '   <ul class="pagination pagination-sm">\n';
                         if (current_page > 0) {
@@ -192,6 +197,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     }
                 }
                 else {
+                    s += '<tr><td colspan="100%" style="background-color: "white";">';
                     s+= '   <ul class="pagination pagination-sm">\n';
                     if (min > 0) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+0+','+(max-min)+');\'><span class="glyphicon glyphicon-fast-backward" style="color: grey; cursor: pointer;"></a></li>\n';
