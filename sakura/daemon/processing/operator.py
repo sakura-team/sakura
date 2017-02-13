@@ -46,3 +46,9 @@ class Operator(Registry):
     def auto_fill_parameters(self):
         for param in self.parameters:
             param.auto_fill()
+
+class InternalOperator(Operator):
+    def __init__(self):
+        # internal operators do not need to record an operator id,
+        # let's call the base constructor with 0
+        super().__init__(0)
