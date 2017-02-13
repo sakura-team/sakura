@@ -37,15 +37,12 @@ class HubContext(object):
                     daemon = self.daemons[info.daemon_id].name,
                     tags = info.tags,
                     svg = info.icon,
-                    inputs = info.nb_inputs,
-                    outputs = info.nb_outputs
                 ) for info in self.op_classes.list() ]
     # instanciate an operator and return the instance id
     def create_operator_instance(self, cls_id):
         cls_info = self.op_classes.get_cls_info(cls_id)
         daemon_info = self.daemons[cls_info.daemon_id]
-        op_id = self.op_instances.create(daemon_info, cls_info)
-        return op_id
+        return self.op_instances.create(daemon_info, cls_info)
     def delete_operator_instance(self, op_id):
         # first: delete links attached to this operator.
         # we get a copy of the set, because we will iterate over it
