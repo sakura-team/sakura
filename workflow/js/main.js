@@ -19,7 +19,7 @@ function create_operator_instance(x, y, idiv_id) {
     
     //We first send the creation command to the sakura hub
     ws_request('create_operator_instance', [parseInt(id_index)], {}, function (result) {
-        var instance_id = result;
+        var instance_id = result.op_id;
         
         //Then we create the instance here
         var idiv = document.getElementById(idiv_id);
@@ -39,15 +39,20 @@ function create_operator_instance(x, y, idiv_id) {
         
         //Plumbery: draggable + connections
         jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
-        var nb_o = global_ops_cl[id_index]['outputs'];
         
-        if ( global_ops_cl[id_index]['inputs'] > 0)
+        /*if ( global_ops_cl[id_index]['inputs'] > 0)
             jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
         if (global_ops_cl[id_index]['outputs'] > 0)
             jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+        */
+        if ( result.inputs.length > 0)
+            jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
+        if (result.outputs.length > 0)
+            jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+        
         
         //Now the modal for parameters/creation/visu/...
-        main_div.appendChild(create_op_modal(ndiv.id, id_index));
+        main_div.appendChild(create_op_modal(ndiv.id, id_index, result.tabs));
     });
 }
 
@@ -81,18 +86,19 @@ function remove_operator_instance(id) {
             delete mod;
             op_focus_id = null;
             
-            console.log(global_links);
-            console.log(global_ops_inst);
+            //console.log(global_links);
+            //console.log(global_ops_inst);
         }
     });
 }
 
 
-function create_op_modal(id, id_index) {
+function create_op_modal(id, id_index, tabs) {
     var name    = global_ops_cl[id_index].name;
     var svg     = global_ops_cl[id_index].svg;
     var desc    = global_ops_cl[id_index].short_desc;
     var daemon  = global_ops_cl[id_index].daemon;
+    console.log(tabs);
     
     var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
                 <div class="modal-dialog" role="document"> \
@@ -114,17 +120,19 @@ function create_op_modal(id, id_index) {
                                     <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_inputs">Inputs</a></li> \
                                 <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_params">Params</a></li> \
                                 <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_outputs">Outputs</a></li> \
-                                <li class="disabled"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li> \
-                            </ul> \
+                                <li class="disabled"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li>';
+    tabs.forEach( function (tab) {
+        s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_'+tab.label+'">'+tab.label+'</a></li>';
+    });
+    s += '                  </ul> \
                             <div class="tab-content"> \
-                                <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"> \
-                                </div> \
-                                <div id="modal_'+id+'_tab_params" class="tab-pane fade"> \
-                                </div> \
-                                <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"> \
-                                </div> \
-                                <div id="modal_'+id+'_tab_code" class="tab-pane fade"> \
-                                </div> \
+                                <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"></div> \
+                                <div id="modal_'+id+'_tab_params" class="tab-pane fade"></div> \
+                                <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"></div>';
+    tabs.forEach( function (tab) {
+        s += '<div id="modal_'+id+'_tab_'+tab.label+'" class="tab-pane fade"></div>';
+    });
+    s += '                      <div id="modal_'+id+'_tab_code" class="tab-pane fade"></div> \
                             </div> \
                         </div> \
                     </div> \

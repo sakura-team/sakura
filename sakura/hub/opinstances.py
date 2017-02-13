@@ -20,7 +20,7 @@ class OpInstanceRegistry(object):
         remote_instance = daemon_info.api.op_instances[op_id]
         desc = OpInstance(op_id, daemon_info, cls_info, set(), remote_instance)
         self.info_per_op_id[op_id] = desc
-        return op_id
+        return remote_instance.get_info_serializable()
     def delete(self, op_id):
         self[op_id].daemon.api.delete_operator_instance(op_id)
         del self.info_per_op_id[op_id]

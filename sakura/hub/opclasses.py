@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 OpClsInfo = namedtuple('OpClsInfo',
-        ['cls_id', 'daemon_id', 'name', 'short_desc', 'tags', 'icon', 'nb_inputs', 'nb_outputs'])
+        ['cls_id', 'daemon_id', 'name', 'short_desc', 'tags', 'icon'])
 
 class OpClassRegistry(object):
     def __init__(self):

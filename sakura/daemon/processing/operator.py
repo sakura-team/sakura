@@ -4,7 +4,8 @@ from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
 
 class Operator(Registry):
-    def __init__(self):
+    def __init__(self, op_id):
+        self.op_id = op_id
         self.input_tables = []
         self.output_tables = []
         self.parameters = []
@@ -26,13 +27,10 @@ class Operator(Registry):
                 return False
         return True
     def descriptor(op_cls):
-        # instanciate an operator, to check its number of inputs/outputs
-        op = op_cls()
-        op.construct()
-        return op_cls.NAME, op_cls.SHORT_DESC, op_cls.TAGS, op_cls.ICON, \
-                len(op.input_tables), len(op.output_tables)
+        return op_cls.NAME, op_cls.SHORT_DESC, op_cls.TAGS, op_cls.ICON
     def get_info_serializable(self):
         return dict(
+            op_id = self.op_id,
             cls_name = self.NAME,
             parameters = [ param.get_info_serializable() for param in self.parameters ],
             inputs = [ table.get_info_serializable() for table in self.input_tables ],

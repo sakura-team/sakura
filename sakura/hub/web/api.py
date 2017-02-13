@@ -8,7 +8,7 @@ class GuiToHubAPI(object):
     def list_operators_classes(self):
         return self.context.list_op_classes_serializable()
     
-    # instantiate an operator and return the instance id
+    # instantiate an operator and return the instance info
     def create_operator_instance(self, cls_id):
         return self.context.create_operator_instance(cls_id)
     
