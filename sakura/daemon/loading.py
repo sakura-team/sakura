@@ -3,6 +3,7 @@ from sakura.daemon.processing.operator import Operator
 import sakura.daemon.conf as conf
 
 def load_operator_classes():
+    print('Loading operators at %s' % conf.operators_dir)
     op_classes = {}
     sys.path.insert(0, conf.operators_dir)
     # for each operator directory
