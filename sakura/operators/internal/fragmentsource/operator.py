@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from sakura.daemon.processing.operator import Operator
+from sakura.daemon.processing.operator import InternalOperator
 
 # This internal operator (not accessible from users)
 # is used when a user links 2 operators running in
@@ -15,7 +15,7 @@ from sakura.daemon.processing.operator import Operator
 
 FRAGMENT_BUFFER = 1000
 
-class FragmentSourceOperator(Operator):
+class FragmentSourceOperator(InternalOperator):
     def __init__(self, hub, remote_op_id, remote_out_id):
         super().__init__()
         remote_op = hub.context.op_instances[remote_op_id]
