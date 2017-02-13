@@ -33,7 +33,7 @@ class DaemonEngine(object):
         if self.is_foreign_operator(src_op_id):
             # the source is a remote operator.
             # we replace this source operator by an internal FragmentSourceOperator
-            # that will pull data from the hub and feed its unique output table.
+            # that will pull data from the hub and feed its unique output stream.
             src_label = 'remote(op_id=%d,out%d)' % (src_op_id, src_out_id)
             src_op = FragmentSourceOperator(self.hub, src_op_id, src_out_id)
             src_op.construct()
@@ -45,14 +45,14 @@ class DaemonEngine(object):
             src_op = self.op_instances[src_op_id]
             src_label = '%s op_id=%d out%d' % (src_op.NAME, src_op_id, src_out_id)
         dst_op = self.op_instances[dst_op_id]
-        dst_op.input_tables[dst_in_id].connect(src_op.output_tables[src_out_id])
+        dst_op.input_streams[dst_in_id].connect(src_op.output_streams[src_out_id])
         # auto select unselected parameters, if possible
         dst_op.auto_fill_parameters()
         print("connected %s -> %s op_id=%d in%d" % \
                 (src_label, dst_op.NAME, dst_op_id, dst_in_id))
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         dst_op = self.op_instances[dst_op_id]
-        dst_op.input_tables[dst_in_id].disconnect()
+        dst_op.input_streams[dst_in_id].disconnect()
         if self.is_foreign_operator(src_op_id):
             # discard the fragment source operator
             del self.fragment_sources[(dst_op_id, dst_in_id)]

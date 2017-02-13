@@ -78,22 +78,22 @@ class ComboParameter(Parameter):
         raise NotImplementedError
 
 class ColumnSelectionParameter(ComboParameter):
-    def __init__(self, label, table, condition):
+    def __init__(self, label, stream, condition):
         super().__init__(label)
-        self.table = table
+        self.stream = stream
         self.condition = condition
         self.raw_value = None
     def matching_columns(self):
-        for idx, column in enumerate(self.table.columns):
+        for idx, column in enumerate(self.stream.columns):
             if self.condition(column):
                 yield column
     def get_possible_values(self):
-        if not self.table.connected():
+        if not self.stream.connected():
             return ParameterIssue.InputNotConnected
-        return list('%s (of %s)' % (column.label, self.table.label) \
+        return list('%s (of %s)' % (column.label, self.stream.label) \
                     for column in self.matching_columns())
     def set_value(self, idx):
-        if not self.table.connected():
+        if not self.stream.connected():
             raise ParameterIssue.InputNotConnected
         # raw_value is the index of the column in the possible values
         self.raw_value = idx
@@ -102,17 +102,17 @@ class ColumnSelectionParameter(ComboParameter):
     def get_value_serializable(self):
         return self.raw_value
 
-def TypeBasedColumnSelection(table, cls):
+def TypeBasedColumnSelection(stream, cls):
     class CustomParameterClass(ColumnSelectionParameter):
         def __init__(self, label):
             def condition(column):
                 return issubclass(column.type, cls)
-            ColumnSelectionParameter.__init__(self, label, table, condition)
+            ColumnSelectionParameter.__init__(self, label, stream, condition)
     return CustomParameterClass
 
-def NumericColumnSelection(table):
-    return TypeBasedColumnSelection(table, numbers.Number)
+def NumericColumnSelection(stream):
+    return TypeBasedColumnSelection(stream, numbers.Number)
 
-def StrColumnSelection(table):
-    return TypeBasedColumnSelection(table, str)
+def StrColumnSelection(stream):
+    return TypeBasedColumnSelection(stream, str)
 
