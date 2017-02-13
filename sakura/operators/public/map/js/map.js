@@ -1,4 +1,4 @@
 function init_tab(div, op) {
     // TODO
-    div.html("<span class='red'>Hello world</span>");
+    div.innerHTML = "<h1>Hello world</h1>";
 }
