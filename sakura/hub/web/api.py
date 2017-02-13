@@ -30,10 +30,10 @@ class GuiToHubAPI(object):
         return self.context.delete_link(link_id)
     
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
-        return self.context.op_instances[op_id].input_tables[in_id].get_range(row_start, row_end)
+        return self.context.op_instances[op_id].input_streams[in_id].get_range(row_start, row_end)
     
     def get_operator_output_range(self, op_id, out_id, row_start, row_end):
-        return self.context.op_instances[op_id].output_tables[out_id].get_range(row_start, row_end)
+        return self.context.op_instances[op_id].output_streams[out_id].get_range(row_start, row_end)
 
     def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):
         return self.context.op_instances[op_id].internal_streams[intern_id].get_range(row_start, row_end)

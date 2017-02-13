@@ -1,30 +1,30 @@
 from sakura.daemon.processing.tools import Registry
 
 class Column(object):
-    def __init__(self, col_label, col_type, output_table, col_index):
+    def __init__(self, col_label, col_type, output_stream, col_index):
         self.label = col_label
         self.type = col_type
-        self.output_table = output_table
+        self.output_stream = output_stream
         self.index = col_index
     def get_info_serializable(self):
         return (self.label, self.type.__name__)
     def __iter__(self):
-        for row in self.output_table:
+        for row in self.output_stream:
             yield row[self.index]
 
-class InputTable(object):
+class InputStream(object):
     def __init__(self, label):
-        self.source_table = None
+        self.source_stream = None
         self.columns = None
         self.label = label
-    def connect(self, output_table):
-        self.source_table = output_table
-        self.columns = self.source_table.columns
+    def connect(self, output_stream):
+        self.source_stream = output_stream
+        self.columns = self.source_stream.columns
     def disconnect(self):
-        self.source_table = None
+        self.source_stream = None
         self.columns = None
     def connected(self):
-        return self.source_table != None
+        return self.source_stream != None
     def columns(self):
         return self.columns
     def get_info_serializable(self):
@@ -33,7 +33,7 @@ class InputTable(object):
             info.update(
                 connected = True,
                 columns = [ col.get_info_serializable() for col in self.columns ],
-                length = self.source_table.length
+                length = self.source_stream.length
             )
         else:
             info.update(
@@ -42,16 +42,16 @@ class InputTable(object):
         return info
     def __iter__(self):
         if self.connected():
-            return self.source_table.__iter__()
+            return self.source_stream.__iter__()
         else:
             return None
     def get_range(self, *args):
         if self.connected():
-            return self.source_table.get_range(*args)
+            return self.source_stream.get_range(*args)
         else:
             return None
 
-class OutputTable(Registry):
+class OutputStream(Registry):
     def __init__(self, operator, label, compute_cb):
         self.columns = []
         self.operator = operator
@@ -78,8 +78,8 @@ class OutputTable(Registry):
             row_idx += 1
         return rows
 
-# internal streams and output tables are the same
+# internal streams and output streams are the same
 # object.
-class InternalStream(OutputTable):
+class InternalStream(OutputStream):
     pass
 
