@@ -26,7 +26,7 @@ class MapOperator(Operator):
         #self.input_markers = self.register_input('Markers')
 
         # outputs
-        markers = self.register_output('Markers', self.compute_markers, internal=True)
+        markers = self.register_internal_stream('Markers', self.compute_markers)
         markers.add_column('GeoJSON', str)
 
         # parameters
