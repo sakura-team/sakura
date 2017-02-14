@@ -34,9 +34,12 @@ class GuiToHubAPI(object):
     
     def get_operator_output_range(self, op_id, out_id, row_start, row_end):
         return self.context.op_instances[op_id].output_streams[out_id].get_range(row_start, row_end)
-
+    
     def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):
         return self.context.op_instances[op_id].internal_streams[intern_id].get_range(row_start, row_end)
-
+    
     def get_operator_file_content(self, op_id, file_path):
         return self.context.op_instances[op_id].get_file_content(file_path)
+        
+    def fire_operator_event(self, op_id, event):
+        return self.context.op_instances[op_id].handle_event(event)

@@ -129,7 +129,7 @@ function create_op_modal(id, id_index, tabs) {
                                 <div id="modal_'+id+'_tab_params" class="tab-pane fade"></div> \
                                 <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"></div>';
     tabs.forEach( function (tab) {
-        s += '<div id="modal_'+id+'_tab_'+tab.label+'" class="tab-pane fade"></div>';
+        s += '<iframe frameborder="0" width="100%" id="modal_'+id+'_tab_'+tab.label+'" class="tab-pane fade" sandbox="allow-pointer-lock allow-same-origin allow-scripts"></iframe>';
     });
     s += '                      <div id="modal_'+id+'_tab_code" class="tab-pane fade"></div> \
                             </div> \

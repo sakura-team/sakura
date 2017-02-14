@@ -116,3 +116,6 @@ def NumericColumnSelection(stream):
 def StrColumnSelection(stream):
     return TypeBasedColumnSelection(stream, str)
 
+def FloatColumnSelection(stream):
+    return TypeBasedColumnSelection(stream, float)
+

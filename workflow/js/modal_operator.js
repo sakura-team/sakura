@@ -46,13 +46,24 @@ function fill_tabs(id) {
     ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
         instance_info.tabs.forEach( function(tab) {
             var label = tab.label;
-            var d = document.getElementById('modal_'+id+'_tab_'+label);
+            var iframe = $(document.getElementById('modal_'+id+'_tab_'+label));
+            var iframe_body = iframe.contents().find("body");
+            var iframe_head = iframe.contents().find("head");
+            //TODO: add css and js as in the main head
+            
             ws_request('get_operator_file_content', [op_hub_id, tab.js_path], {}, function (js_code) {
-                
                 var op = create_operator_proxy(instance_info);
                 
+                function require_external_css(path) {
+                    iframe_head.append('<link rel="stylesheet" href="'+path+'"/>');
+                }
+                
+                function require_external_js(path) {
+                    iframe_head.append('<script src="'+path+'"></script>');
+                }
+                
                 eval(js_code);
-                init_tab(d, op);
+                init_tab(iframe_body, op);
             });
         });
     });
