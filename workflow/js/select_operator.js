@@ -225,9 +225,10 @@ function select_op_create_accordion(title, id, ops) {
                         <table width="100%"> \
                             <tr> \
                                 <td> \
-                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'">'+title+'</a> \
+                                    <span>'+title+'</span> \
                                 </td> \
                                 <td align="right"> \
+                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'"><span class="glyphicon glyphicon-chevron-up style="color: white; cursor: pointer;"></span></a> \
                                     <a><span class="glyphicon glyphicon-remove" onclick="select_op_delete_accordion(\''+id+'\');" style="color: white; cursor: pointer;"></span></a> \
                                 </td> \
                             </tr> \
@@ -238,6 +239,14 @@ function select_op_create_accordion(title, id, ops) {
                     <div class="panel-body">'+ops+'</div> \
                 </div> \
             </div>';
+    
+    /*$('span').bind('dblclick', function() {
+        $(this).attr('contentEditable', true);
+    }).blur(
+        function() {
+            $(this).attr('contentEditable', false);
+        });
+    */
     
     var wrapper= document.createElement('div');
     wrapper.innerHTML= s;
