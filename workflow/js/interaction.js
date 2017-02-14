@@ -87,6 +87,12 @@ main_div.addEventListener("drop", function( e ) {
 }, false);
 
 
+$(window).bind('keypress', function(e){
+    if ( $("#modal_op_selector").is(':visible') && (e.keyCode == 13 || e.which == 13))
+        select_op_add_panel();
+});
+
+
 $('#sakura_operator_contextMenu').on("click", "a", function() {
     $('#sakura_operator_contextMenu').hide();
     remove_operator_instance(op_focus_id);
