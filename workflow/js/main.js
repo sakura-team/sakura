@@ -98,7 +98,6 @@ function create_op_modal(id, id_index, tabs) {
     var svg     = global_ops_cl[id_index].svg;
     var desc    = global_ops_cl[id_index].short_desc;
     var daemon  = global_ops_cl[id_index].daemon;
-    console.log(tabs);
     
     var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
                 <div class="modal-dialog" role="document"> \

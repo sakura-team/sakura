@@ -175,12 +175,16 @@ function select_op_delete_op(id) {
 function select_op_add_panel() {
     
     var title = document.getElementById('select_op_panel_title').value;
-    if (title == '') {
-        alert("Need a title for your operators panel");
-        return;
-    }
     
-    title = title.replace(" ", "_");
+    //Here we manage a panel title by default
+    if (title == '') { 
+        title  = "Panel 0";
+        var cpt = 0;
+        while (index_in_array_of_tuples(global_op_panels, 1, title) >= 0) {
+             cpt += 1;
+             title = "Panel "+cpt;
+        }
+    }
     
     var divs = []
     select_op_selected.forEach( function(item) {
@@ -214,13 +218,14 @@ function select_op_add_panel() {
 
 
 function select_op_create_accordion(title, id, ops) {
-    var s = '<div id="'+id+'" class="panel panel-primary" id="div_acc_'+title+'"> \
+    var title_for_id = title.replace(" ", "_");
+    var s = '<div id="'+id+'" class="panel panel-primary" id="div_acc_'+title_for_id+'"> \
                 <div class="panel-heading"> \
                     <h6 class="panel-title"> \
                         <table width="100%"> \
                             <tr> \
                                 <td> \
-                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title+'">'+title+'</a> \
+                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'">'+title+'</a> \
                                 </td> \
                                 <td align="right"> \
                                     <a><span class="glyphicon glyphicon-remove" onclick="select_op_delete_accordion(\''+id+'\');" style="color: white; cursor: pointer;"></span></a> \
@@ -229,7 +234,7 @@ function select_op_create_accordion(title, id, ops) {
                         </table> \
                     </h6> \
                 </div> \
-                <div id="acc_'+title+'" class="panel-collapse collapse in"> \
+                <div id="acc_'+title_for_id+'" class="panel-collapse collapse in"> \
                     <div class="panel-body">'+ops+'</div> \
                 </div> \
             </div>';
