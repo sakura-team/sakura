@@ -12,14 +12,47 @@ function fill_all(id) {
 }
 
 
+function create_stream_proxy(instance_info, stream_index) {
+    return {
+        get_range: function (row_start, row_end, cb) {
+            ws_request('get_operator_internal_range', [instance_info.op_id, stream_index, row_start, row_end], {}, function (res_stream) {
+                cb(res_stream);
+            });
+        }
+    }
+}
+
+
+function create_operator_proxy(instance_info) {
+    return {     
+        get_stream: function (stream_label) {
+            var result = null;
+            for (id in instance_info.internal_streams) {
+                if (instance_info.internal_streams[id].label == stream_label)
+                    return create_stream_proxy(instance_info, parseInt(id));
+            };
+        },
+        fire_event: function (event, cb) {
+            ws_request('fire_operator_event', [instance_info.op_id, event], {}, function (event_result) {
+                cb(event_result);
+            });
+        }
+    };
+}
+
+
 function fill_tabs(id) {
-    ws_request('get_operator_instance_info', [parseInt(id.split("_")[2])], {}, function (result) {
-        result.tabs.forEach( function(tab) {
+    var op_hub_id = parseInt(id.split("_")[2]);
+    ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
+        instance_info.tabs.forEach( function(tab) {
             var label = tab.label;
             var d = document.getElementById('modal_'+id+'_tab_'+label);
-            ws_request('get_operator_file_content', [parseInt(id.split("_")[2]), tab.js_path], {}, function (js_code) {
+            ws_request('get_operator_file_content', [op_hub_id, tab.js_path], {}, function (js_code) {
+                
+                var op = create_operator_proxy(instance_info);
+                
                 eval(js_code);
-                init_tab(d, {});
+                init_tab(d, op);
             });
         });
     });
