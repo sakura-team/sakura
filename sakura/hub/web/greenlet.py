@@ -21,7 +21,7 @@ def web_greenlet(context, webapp_path):
     def server_static(filepath = 'index.html'):
         print('serving ' + filepath, end="")
         resp = bottle.static_file(filepath, root = webapp_path)
-        print(' ->', resp)
+        print(' ->', resp.status_line)
         return resp
 
     server = WSGIServer(("0.0.0.0", conf.web_port), app,
