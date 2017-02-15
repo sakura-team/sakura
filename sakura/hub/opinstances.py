@@ -26,3 +26,6 @@ class OpInstanceRegistry(object):
         del self.info_per_op_id[op_id]
     def __getitem__(self, op_id):
         return self.info_per_op_id[op_id]
+    def __iter__(self):
+        # iterate over op_id values
+        return self.info_per_op_id.__iter__()
