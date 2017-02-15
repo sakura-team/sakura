@@ -36,8 +36,8 @@ class LocalAPIHandler(object):
             self.protocol.dump((req_id, res), self.f)
             print("sent",res)
             self.f.flush()
-        except BaseException:
-            print('could not send response.')
+        except BaseException as e:
+            print('could not send response:', e)
     def handle_request_pool(self, *args):
         self.pool.spawn(self.handle_request_base, *args)
 
