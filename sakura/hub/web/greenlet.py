@@ -15,6 +15,10 @@ def web_greenlet(context, webapp_path):
         wsock = bottle_get_wsock(bottle.request)
         rpc_manager(context, wsock)
 
+    @app.route('/opfiles/<op_id:int>/<filepath:path>')
+    def server_static(op_id, filepath):
+        return context.serve_operator_file(op_id, filepath)
+
     # if no route was found above, look for static files in webapp subdir
     @app.route('/')
     @app.route('/<filepath:path>')

@@ -1,7 +1,9 @@
+import bottle
 from collections import namedtuple
 from sakura.hub.opclasses import OpClassRegistry
 from sakura.hub.opinstances import OpInstanceRegistry
 from sakura.hub.links import LinkRegistry
+from sakura.common.bottle import PicklableFileRequest
 
 class HubContext(object):
     def __init__(self):
@@ -58,3 +60,11 @@ class HubContext(object):
         return self.links.create(src_op, src_out_id, dst_op, dst_in_id)
     def delete_link(self, link_id):
         self.links.delete(link_id)
+    def serve_operator_file(self, op_id, filepath):
+        if op_id in self.op_instances:
+            request = PicklableFileRequest(bottle.request, filepath)
+            resp = self.op_instances[op_id].serve_file(request)
+            return bottle.HTTPResponse(*resp)
+        else:
+            return bottle.HTTPError(404, "No such operator instance.")
+

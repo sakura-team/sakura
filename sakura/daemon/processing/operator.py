@@ -11,6 +11,8 @@ class Operator(Registry):
         self.internal_streams = []
         self.parameters = []
         self.tabs = []
+        operator_py_path = inspect.getabsfile(self.__class__)
+        self.op_root_path = os.path.split(operator_py_path)[0]
     def register_input(self, input_stream_label):
         return self.register(self.input_streams, InputStream, input_stream_label)
     def register_output(self, output_stream_label, compute_cb):
@@ -41,15 +43,19 @@ class Operator(Registry):
             internal_streams = [ stream.get_info_serializable() for stream in self.internal_streams ],
             tabs = [ tab.get_info_serializable() for tab in self.tabs ]
         )
+    def get_abs_file_path(self, file_path):
+        return os.path.join(self.op_root_path, file_path)
     def get_file_content(self, file_path):
-        operator_py_path = inspect.getabsfile(self.__class__)
-        op_root_path = os.path.split(operator_py_path)[0]
-        abs_file_path = os.path.join(op_root_path, file_path)
-        with open(abs_file_path) as f:
+        with open(self.get_abs_file_path(file_path)) as f:
             return f.read()
     def auto_fill_parameters(self):
         for param in self.parameters:
             param.auto_fill()
+    def serve_file(self, request):
+        print('serving ' + request.filepath, end="")
+        resp = request.serve(self.op_root_path)
+        print(' ->', resp)
+        return resp
 
 class InternalOperator(Operator):
     def __init__(self):
