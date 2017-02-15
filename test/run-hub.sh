@@ -3,6 +3,12 @@
 cd $(dirname $0)/..
 TMPDIR=$(mktemp -d /tmp/hub.XXXXXXXX)
 
+WEBAPP="workflow"
+if [ "$1" != "" ]
+then
+    WEBAPP="$1"
+fi
+
 on_exit()
 {
     rm -rf $TMPDIR
@@ -20,5 +26,5 @@ cat > $TMPDIR/hub.conf << EOF
 }
 EOF
 
-./hub.py -f $TMPDIR/hub.conf workflow
+./hub.py -f $TMPDIR/hub.conf $WEBAPP
 
