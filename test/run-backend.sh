@@ -3,6 +3,8 @@
 cd $(dirname $0)/..
 TMPDIR=$(mktemp -d /tmp/tmp.XXXXXXXX)
 
+args="$@"
+
 prefix_out()
 {
     echo "$*"
@@ -30,7 +32,7 @@ trap on_exit EXIT
 
 # run the commands in the background and prefix their
 # output.
-prefix_out HUB test/run-hub.sh &
+prefix_out HUB test/run-hub.sh $args &
 sleep 1
 prefix_out DAEMON0 test/run-daemon.sh 0 datasample &
 sleep 0.2
