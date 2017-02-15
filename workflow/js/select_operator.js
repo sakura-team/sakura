@@ -217,6 +217,15 @@ function select_op_add_panel() {
 }
 
 
+function change_chevron(a) {
+    var span_class = a.find('span').attr('class');
+    if (span_class == "glyphicon glyphicon-chevron-up")
+        a.find('span').removeClass('glyphicon glyphicon-chevron-up').addClass('glyphicon glyphicon-chevron-down');
+    else
+        a.find('span').removeClass('glyphicon glyphicon-chevron-down').addClass('glyphicon glyphicon-chevron-up');
+}
+
+
 function select_op_create_accordion(title, id, ops) {
     var title_for_id = title.replace(" ", "_");
     var s = '<div id="'+id+'" class="panel panel-primary" id="div_acc_'+title_for_id+'"> \
@@ -225,11 +234,14 @@ function select_op_create_accordion(title, id, ops) {
                         <table width="100%"> \
                             <tr> \
                                 <td> \
-                                    <span>'+title+'</span> \
+                                    <span id="panel_title_'+title_for_id+'" ondblclick="change_panel_title(\''+title_for_id+'\');">'+title+'</span> \
                                 </td> \
                                 <td align="right"> \
-                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'"><span class="glyphicon glyphicon-chevron-up style="color: white; cursor: pointer;"></span></a> \
+                                    <small> \
+                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'" onclick="change_chevron($(this));"><span class="glyphicon glyphicon-chevron-up" style="color: white; cursor: pointer;"></span></a> \
+                                    <a style="color: white; cursor: pointer;"><span class="glyphicon glyphicon-pencil" onclick="not_yet();"></span></a> \
                                     <a><span class="glyphicon glyphicon-remove" onclick="select_op_delete_accordion(\''+id+'\');" style="color: white; cursor: pointer;"></span></a> \
+                                    </small> \
                                 </td> \
                             </tr> \
                         </table> \
@@ -240,19 +252,24 @@ function select_op_create_accordion(title, id, ops) {
                 </div> \
             </div>';
     
-    /*$('span').bind('dblclick', function() {
-        $(this).attr('contentEditable', true);
-    }).blur(
-        function() {
-            $(this).attr('contentEditable', false);
-        });
-    */
-    
     var wrapper= document.createElement('div');
     wrapper.innerHTML= s;
     var ndiv= wrapper.firstChild;
     return ndiv;
 }
+
+
+function change_panel_title(id) {
+    console.log($("#"+id));
+    $("#"+id).attr('contentEditable', true);
+
+/*}).blur(
+    function() {
+        $(this).attr('contentEditable', false);
+    };
+*/
+}
+
 
 function select_op_delete_accordion(id) {
     document.getElementById('op_left_accordion').removeChild(document.getElementById(id));
