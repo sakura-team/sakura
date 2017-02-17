@@ -24,9 +24,9 @@ class PicklableFileRequest:
         filename = os.path.join(root_path, self.filepath)
         headers = dict()
         if not os.path.exists(filename) or not os.path.isfile(filename):
-            return '', 404, "File does not exist."
+            return False, 404, "File does not exist."
         if not os.access(filename, os.R_OK):
-            return '', 403, "You do not have permission to access this file."
+            return False, 403, "You do not have permission to access this file."
 
         mimetype, encoding = mimetypes.guess_type(filename)
         if encoding: headers['Content-Encoding'] = encoding
@@ -50,7 +50,7 @@ class PicklableFileRequest:
             ims = bottle.parse_date(ims.split(";")[0].strip())
         if ims is not None and ims >= int(stats.st_mtime):
             headers['Date'] = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
-            return '', 304, headers
+            return True, '', 304, headers
 
         if self.method == 'HEAD':
             body = ''
@@ -58,4 +58,4 @@ class PicklableFileRequest:
             with open(filename, 'rb') as f:
                 body = f.read()
 
-        return body, None, headers
+        return True, body, None, headers

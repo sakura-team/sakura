@@ -64,7 +64,10 @@ class HubContext(object):
         if op_id in self.op_instances:
             request = PicklableFileRequest(bottle.request, filepath)
             resp = self.op_instances[op_id].serve_file(request)
-            return bottle.HTTPResponse(*resp)
+            if resp[0] == True:
+                return bottle.HTTPResponse(*resp[1:])
+            else:
+                return bottle.HTTPError(*resp[1:])
         else:
             return bottle.HTTPError(404, "No such operator instance.")
 
