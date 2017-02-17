@@ -1,8 +1,7 @@
 #!/usr/bin/env python
+from itertools import islice
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import FloatColumnSelection
-
-# TODO: final version should remove the following
 
 class MapOperator(Operator):
     NAME = "Map"
@@ -17,7 +16,7 @@ class MapOperator(Operator):
         # TODO: final version should add this:
         self.input_markers = self.register_input('Markers')
         
-        # outputs
+        # internal streams
         markers = self.register_internal_stream('Markers', self.compute_markers)
         markers.add_column('GeoJSON', str)
         
@@ -28,10 +27,13 @@ class MapOperator(Operator):
                 FloatColumnSelection(self.input_markers))
         
         # additional tabs
-        self.register_tab('Map', 'js/map.js')
+        self.register_tab('Map', 'map.html')
     
     def compute_markers(self):
-        yield from zip(self.input_longitude_column, self.input_latitude_column)
+        yield from islice(
+                zip(self.input_longitude_column, self.input_latitude_column),
+                self.index,
+                None)
     
     def handle_event(self, e):
         self.index += 1
