@@ -9,9 +9,13 @@
     <script src="js/jquery-2.2.4.min.js"></script>
     <script src="bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="bootstrap-3.3.7/js/bootstrap-select.min.js"></script>
+    <script src="js/websocket.js"></script>
+	<script src="js/jsPlumb-2.1.7.js"></script>
+	
     <link href="css/main.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap-select.min.css">
+
     </head>
     
     <body>
@@ -19,20 +23,23 @@
             <h1> Sakura </h1>
             <p>Store and Analyse Data
             <script >
-                var maindivs_array = [  'maindivs_home',
+                var maindivs_array = [  'maindivs_home',                     // 0
                                         'maindivs_protocol',
                                         'maindivs_datasets',
                                         'maindivs_operators',
                                         'maindivs_analysis',
-                                        'maindivs_results',
+                                        'maindivs_results',                  // 5
                                         'maindivs_tmpProtocolDescription',
                                         'maindivs_tmpProtocolWorkingZone',
                                         'maindivs_tmpProtocolHistoric',
                                         'maindivs_tmpXXXDescription',
-                                        'maindivs_tmpXXXWorkingZone',
+                                        'maindivs_tmpXXXWorkingZone',        //10
                                         'maindivs_tmpXXXHistoric',
                                         'maindivs_XXX',
-                                        'maindivs_documentation'];
+                                        'maindivs_documentation',
+                                        'maindivs_tmpAnalysisDescription',
+										'maindivs_workflow'                  //15
+										];
             </script>
             <nav class="navbar navbar-default">
                 <ul id="navbar_ul" class="nav navbar-nav">
@@ -64,6 +71,8 @@
                 <div w3-include-html="divs/tmpXXXWorkingZone/index.html"></div>				
                 <div w3-include-html="divs/tmpXXXHistoric/index.html"></div>				
                 <div w3-include-html="divs/XXX/index.html"></div>				
+                <div w3-include-html="divs/tmpAnalysisDescription/index.html"></div>				
+                <div w3-include-html="divs/workflow/index.html"></div>				
             </div>
             <br>
             <footer class="footer" style="position:absolute; top:600px;">
@@ -77,5 +86,10 @@
             </script>
             <script src="js/main.js"></script>
         </div>
+        <script src="js/general.js"></script>
+        <script src="js/interaction.js"></script>
+        <script src="js/select_operator.js"></script>
+        <script src="js/modal_operator.js"></script>
+        <script src="js/main.js"></script>
     </body>
 </html>
