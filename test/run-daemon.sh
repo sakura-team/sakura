@@ -19,7 +19,7 @@ trap on_exit EXIT
 mkdir -p $TMPDIR/operators
 for operator in $operators
 do
-    cp -r sakura/operators/public/$operator $TMPDIR/operators
+    ln -s $PWD/sakura/operators/public/$operator $TMPDIR/operators/$operator
 done
 cat > $TMPDIR/daemon.conf << EOF
 {
