@@ -20,5 +20,5 @@ cat > $TMPDIR/hub.conf << EOF
 }
 EOF
 
-./hub.py -f $TMPDIR/hub.conf workflow
+./hub.py -f $TMPDIR/hub.conf web_interface
 
