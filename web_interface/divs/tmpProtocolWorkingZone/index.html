@@ -1,7 +1,7 @@
 <!--Code started by Michael Ortega for the LIG-->
 <!--Started on: January 30th, 2017-->
 
-<div style="position: absolute; visibility: hidden;" id="maindivs_tmpProtocolWorkingZone">
+<div style="display:none;" id="maindivs_tmpProtocolWorkingZone">
     <!--Fil d'ariane : <a onclick="show_div(0);">Sakura</a> / <a onclick="show_div(1);">Protocol</a> / <a onclick="show_div(6);">tmpProtocol</a> / <a onclick="show_div(7);">Working Zone</a>-->
     <ol class="breadcrumb">
       <li><a onclick="show_div(0);" title="Sakura">Sakura</a></li>
@@ -10,13 +10,11 @@
       <li class="active">Working Zone</li>
     </ol>
 
-<div style="left:-50px; position:absolute;">
-<a onclick="show_div(6);">Desc.</a>
-<br />	
-<a onclick="show_div(7);">Work.</a>
-<br />
-<a onclick="show_div(8);">Hist.</a>
-</div>
+	  <ul class="nav nav-tabs">
+    <li><a onclick="show_div(6);">Main</a></li>
+    <li class="active"><a onclick="show_div(7);">Work</a></li>
+    <li><a onclick="show_div(8);">Historic</a></li>
+  </ul>
 
 		<h2>Experiment Protocol Working Zone Div</h2>
 		

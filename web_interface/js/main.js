@@ -17,10 +17,12 @@ function not_yet(s = '') {
 function show_div(id) {
     //Hide all
     maindivs_array.forEach( function(item) {
-        document.getElementById(item).style.visibility='hidden';
+        //document.getElementById(item).style.visibility='hidden';
+        document.getElementById(item).style.display='none';
     });
     //Show the one
-    document.getElementById(maindivs_array[id]).style.visibility='visible';
+    //document.getElementById(maindivs_array[id]).style.visibility='visible';
+    document.getElementById(maindivs_array[id]).style.display='inline';
     
     var d = document.getElementById("navbar_ul");
     for (var i=0; i< d.children.length; i++)
