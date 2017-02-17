@@ -1,41 +1,23 @@
-<!--Code started by Michael Ortega for the LIG-->
-<!--Started on: January 30th, 2017-->
-<!--Maintained by Denis Bouhineau, February 1st, 2017 ...--> 
+<!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
+<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
 
 <!doctype html>
     <head> 
     <meta charset="UTF-8" />
-    
     <script src="js/w3data.js"></script>
     <script src="js/jquery-2.2.4.min.js"></script>
     <script src="bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="bootstrap-3.3.7/js/bootstrap-select.min.js"></script>
     <script src="js/websocket.js"></script>
 	<script src="js/jsPlumb-2.1.7.js"></script>
-	
     <link href="css/main.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap-select.min.css">
-
-	<script>
-function funFun(n) {
- ws_request('list_nObjets', [10,'etude_'], {}, function (result) {
-   //alert(result);
-   s="<ul>"
-   for(i=0;i<result.length;i++) {
-     s += "<li>Etude : "+result[i].nom+", valeur :"+result[i].valeur+"</li>\n";}
-   s+="</ul>"	 
-   document.getElementById("dFF").innerHTML = s;
-   return ;});
- return ;}
-</script>
-	
     </head>
-    
     <body>
         <div class="container">
             <h1> Sakura </h1>
-            <p>Store and Analyse Data
+            <p>Store and Analyse Data            
             <script >
                 var maindivs_array = [  'maindivs_home',                     // 0
                                         'maindivs_protocol',
@@ -67,9 +49,8 @@ function funFun(n) {
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                   <li><a href="http://panteda.imag.fr/" targer="_blank">About Sakura</a></li>
-                  <li><a onclick="not_yet();">Connexion </a></li></ul>
-            </nav>
-        
+                  <li><a onclick="not_yet();">Connexion&nbsp;&nbsp;&nbsp;&nbsp;</a></li></ul>
+            </nav>        
             <div class="container" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
                 <div w3-include-html="divs/protocol/index.html"></div>
@@ -88,24 +69,15 @@ function funFun(n) {
                 <div w3-include-html="divs/tmpAnalysisDescription/index.html"></div>				
                 <div w3-include-html="divs/workflow/index.html"></div>				
             </div>
- 
-
-            
-    
             <script>
                 w3IncludeHTML();
             </script>
-			
-		
-			
         </div>
-                <div class="container" id="divfooter" style="position:absolute; bottom:10px">
-                    <p align="center" class="text-muted">Maintained by the LIG, Last Update: February 2017.</p>					
-                </div>
         <script src="js/general.js"></script>
         <script src="js/interaction.js"></script>
         <script src="js/select_operator.js"></script>
         <script src="js/modal_operator.js"></script>
+        <script src="js/simulation.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>
