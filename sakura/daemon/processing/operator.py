@@ -21,8 +21,8 @@ class Operator(Registry):
         return self.register(self.internal_streams, InternalStream, self, internal_stream_label, compute_cb)
     def register_parameter(self, param_label, cls):
         return self.register(self.parameters, cls, param_label)
-    def register_tab(self, tab_label, js_path):
-        return self.register(self.tabs, Tab, tab_label, js_path)
+    def register_tab(self, tab_label, html_path):
+        return self.register(self.tabs, Tab, tab_label, html_path)
     def is_ready(self):
         for stream in self.input_streams:
             if not stream.connected():

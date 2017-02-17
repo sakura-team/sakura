@@ -1,12 +1,12 @@
 # Tab implementation.
 class Tab(object):
-    def __init__(self, label, js_path):
+    def __init__(self, label, html_path):
         self.label = label
-        self.js_path = js_path
+        self.html_path = html_path
 
     def get_info_serializable(self):
         info = dict(
             label = self.label,
-            js_path = self.js_path
+            html_path = self.html_path
         )
         return info
