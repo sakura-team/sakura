@@ -9,8 +9,7 @@ class MapOperator(Operator):
     TAGS = [ "geo", "map", "selection" ]
     def construct(self):
         
-        #for testing
-        self.index = 0
+        self.user_markers = []
         
         # inputs
         # TODO: final version should add this:
@@ -18,7 +17,8 @@ class MapOperator(Operator):
         
         # internal streams
         markers = self.register_internal_stream('Markers', self.compute_markers)
-        markers.add_column('GeoJSON', str)
+        markers.add_column('longitude', float)
+        markers.add_column('latitude', float)
         
         # parameters
         self.input_longitude_column = self.register_parameter('input longitude',
@@ -30,11 +30,10 @@ class MapOperator(Operator):
         self.register_tab('Map', 'map.html')
     
     def compute_markers(self):
-        yield from islice(
-                zip(self.input_longitude_column, self.input_latitude_column),
-                self.index,
-                None)
+        yield from zip(self.input_longitude_column, self.input_latitude_column)
+        yield from self.user_markers
     
-    def handle_event(self, e):
-        self.index += 1
-        print("New index:", self.index)
+    def handle_event(self, event):
+        ev_type, latlng = event
+        if ev_type == 'map_clicked':
+            self.user_markers.append((latlng['lng'], latlng['lat']))

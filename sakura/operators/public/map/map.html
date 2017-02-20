@@ -3,7 +3,7 @@
 
 <!DOCTYPE html>
 
-<html>
+<html style="height:100%;">
     <head>
         <meta charset="UTF-8" />
         <script src="/js/sakura-common.js"></script>
@@ -11,17 +11,14 @@
 
         <!-- operator-specific includes ... -->
 
-        <link rel="stylesheet" type="text/css" href="css/leaflet.css">
-        <script src="js/leaflet.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+        <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
         <script src="js/map.js"></script>
 
         <!-- ... done. -->
     </head>
-    <body>
-        <div class="container theme-showcase" role="main">
-            <button onclick="map_test_clicked()">Test</button>
-            <label id="label">vide</label>
-        </div>
+    <body onload="init_map()" style="height:100%; margin:0;">
+        <div id="map" style="height:100%;"></div>
     </body>
 </html>
 
