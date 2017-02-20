@@ -31,7 +31,7 @@ function create_operator_instance(x, y, idiv_id) {
         ndiv.style.left = x+"px";
         ndiv.style.top = y+"px";
         ndiv.setAttribute('draggable', 'false');
-        ndiv.ondblclick = open_op_params;    
+        ndiv.ondblclick = open_op_modal;    
         ndiv.oncontextmenu = open_op_menu;
         
         global_ops_inst.push(ndiv.id);
@@ -93,6 +93,16 @@ function remove_operator_instance(id) {
 }
 
 
+function full_width(elt) {
+    console.log($('#'+elt+"_dialog"));
+    $('#'+elt+"_dialog").toggleClass('full_width');
+    if ($('#'+elt+"_dialog").attr('class').includes("full_width"))
+        $('#'+elt+"_body").css("height", ($(window).height()-$('#'+elt+"_header").height()-80)+"px");
+    else
+        $('#'+elt+"_body").css("height", "100%");
+}
+
+
 function create_op_modal(id, id_index, tabs) {
     var name    = global_ops_cl[id_index].name;
     var svg     = global_ops_cl[id_index].svg;
@@ -100,20 +110,30 @@ function create_op_modal(id, id_index, tabs) {
     var daemon  = global_ops_cl[id_index].daemon;
     
     var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
-                <div class="modal-dialog" role="document"> \
+                <div class="modal-dialog" role="document" id="modal_'+id+'_dialog"> \
                     <div class="modal-content"> \
-                        <div class="modal-header"> \
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"> \
-                                <span aria-hidden="true">&times;</span> \
-                            </button> \
+                        <div class="modal-header" id="modal_'+id+'_header"> \
                             <table width="100%"> \
                                 <tr> \
                                 <td width="38px">'+svg+'</td> \
                                 <td class="modal-title" align="left"><b><font size=4>&nbsp;&nbsp;'+name+'&nbsp;&nbsp;</font></b><font size="2" color="grey">'+daemon+'</font></td> \
-                                <tr><td colspan="2"><font size="2">'+desc+'</font></td> \
+                                <td align="right"> \
+                                    <table> \
+                                        <tr> \
+                                            <td> \
+                                                <button type="button" class="btn btn-xs" style="background-color: transparent; border-color: transparent;" onclick="full_width(\'modal_'+id+'\');"> \
+                                                    <span class="glyphicon glyphicon-resize-full"></span>\
+                                                </button> \
+                                            <td> \
+                                                <button type="button" class="btn btn-xs" style="background-color: transparent; border-color: transparent;" data-dismiss="modal" aria-label="Close"> \
+                                                    <span class="glyphicon glyphicon-remove"></span>\
+                                                </button> \
+                                    </table> \
+                                </td> \
+                                <tr><td colspan="3"><font size="2">'+desc+'</font></td> \
                             </table> \
                         </div> \
-                        <div class="modal-body"> \
+                        <div class="modal-body" id="modal_'+id+'_body"> \
                             <ul class="nav nav-tabs"> \
                                 <li class="active"> \
                                     <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_inputs">Inputs</a></li> \
