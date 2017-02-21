@@ -118,8 +118,11 @@ $('#sakura_main_div').on("click", function () {
 
 function open_op_modal() {
     var modal_name = "modal_"+this.id;
-    current_modal_id = "modal_"+this.id;
     fill_all(this.id);
+    if ($('#'+modal_name+"_dialog").attr('class').includes("full_width")) {
+        $('#'+modal_name+"_dialog").toggleClass("full_width");
+        $('#'+modal_name+"_body").css("height", "100%");
+    }
     $('#'+modal_name).modal();
 }
 

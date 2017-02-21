@@ -94,7 +94,6 @@ function remove_operator_instance(id) {
 
 
 function full_width(elt) {
-    console.log($('#'+elt+"_dialog"));
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width"))
         $('#'+elt+"_body").css("height", ($(window).height()-$('#'+elt+"_header").height()-80)+"px");
