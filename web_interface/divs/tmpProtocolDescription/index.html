@@ -1,7 +1,7 @@
 <!--Code started by Michael Ortega for the LIG-->
 <!--Started on: January 30th, 2017-->
 
-<div style="position: absolute; visibility: hidden;" id="maindivs_tmpProtocolDescription">
+<div style="display:none;" id="maindivs_tmpProtocolDescription">
     <!--Fil d'ariane : <a onclick="show_div(0);">Sakura</a> / <a onclick="show_div(1);">Protocol</a> / <a onclick="show_div(6);">tmpProtocol</a> / <a onclick="show_div(6);">Description</a>-->
     <ol class="breadcrumb">
       <li><a onclick="show_div(0);" title="Sakura">Sakura</a></li>
@@ -10,14 +10,12 @@
       <li class="active">Description</li>
     </ol>
 	
-<div style="left:-50px; position:absolute;">	
-<a onclick="show_div(6);">Desc.</a>
-<br />	
-<a onclick="show_div(7);">Work.</a>
-<br />
-<a onclick="show_div(8);">Hist.</a>
-</div>
-
+  <ul class="nav nav-tabs">
+    <li class="active"><a onclick="show_div(6);">Main</a></li>
+    <li><a onclick="show_div(7);">Work</a></li>
+    <li><a onclick="show_div(8);">Historic</a></li>
+  </ul>
+	
 		<span style="float:right;"><h3>About tmpProtocol</h3>
 		<ul>
 		<li>Volumetric indicator: 10</li>
