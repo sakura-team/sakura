@@ -1,10 +1,10 @@
-function print_markers() {
+function update_markers() {
     var old_markers_layer = markers_layer;
     markers_layer = new L.FeatureGroup();
-    var markers = sakura.operator.get_internal_stream('Markers');
-    markers.get_range(0, 1000, function (markers) {
+    var markers_stream = sakura.operator.get_internal_stream('Markers');
+    markers_stream.get_range(0, 1000, function (markers) {
         markers.forEach(function(lnglat) {
-            var marker = L.marker([lnglat[1], lnglat[0]]).addTo(markers_layer);
+            add_marker([lnglat[1], lnglat[0]]);
         });
     });
     map.addLayer(markers_layer);
@@ -13,11 +13,24 @@ function print_markers() {
     }
 }
 
+function add_marker(latlng) {
+    L.marker(latlng).addTo(markers_layer);
+}
+
 function map_clicked(e) {
     // send event, then update map
     sakura.operator.fire_event(["map_clicked", e.latlng],
         function(result) {
-            print_markers();
+            add_marker(e.latlng);
+        });
+}
+
+function map_move(e) {
+    // send event, then update map
+    var bounds = map.getBounds();
+    sakura.operator.fire_event(["map_move", bounds.getSouthWest(), bounds.getNorthEast()],
+        function(result) {
+            update_markers();
         });
 }
 
@@ -34,5 +47,6 @@ function init_map() {
 
     map.setView(new L.LatLng(51.3, 0.7),9);
     map.on('click', map_clicked);
+    map.on('moveend', map_move);
     //print_markers();
 }

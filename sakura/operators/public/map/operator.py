@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from itertools import islice
+import itertools
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import FloatColumnSelection
 
@@ -30,10 +30,21 @@ class MapOperator(Operator):
         self.register_tab('Map', 'map.html')
     
     def compute_markers(self):
-        yield from zip(self.input_longitude_column, self.input_latitude_column)
-        yield from self.user_markers
+        input_markers = zip(self.input_longitude_column, self.input_latitude_column)
+        all_markers = itertools.chain(input_markers, self.user_markers)
+        visible_markers = filter(
+                    lambda lnglat: \
+                        self.lng_bounds[0] < lnglat[0] <self.lng_bounds[1] and \
+                        self.lat_bounds[0] < lnglat[1] <self.lat_bounds[1],
+                    all_markers)
+        yield from visible_markers
     
     def handle_event(self, event):
-        ev_type, latlng = event
+        ev_type = event[0]
         if ev_type == 'map_clicked':
+            latlng = event[1]
             self.user_markers.append((latlng['lng'], latlng['lat']))
+        elif ev_type == 'map_move':
+            southwest, northeast = event[1], event[2]
+            self.lat_bounds = southwest['lat'], northeast['lat']
+            self.lng_bounds = southwest['lng'], northeast['lng']
