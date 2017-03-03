@@ -96,7 +96,7 @@ function remove_operator_instance(id) {
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
-    var h = ($(window).height()-$('#'+elt+"_header").height()-80);
+        var h = ($(window).height()-$('#'+elt+"_header").height()-80);
         $('#'+elt+"_body").css("height", h+"px");
         $('#'+elt+"_body").children().eq(1).css("height", (h-60)+"px");
     }

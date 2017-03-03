@@ -50,10 +50,13 @@ function fill_params(id) {
                         ndiv.setAttribute('align', 'center');
                         ndiv.id = 'modal_'+id+'_tab_params_'+index;
                         var select_id = 'modal_'+id+'_tab_params_select_'+index;
-                        var s = '<br>'+item['label']+' <select id="'+select_id+'" onChange="params_onChange(\''+id+'\', '+index+',\''+select_id+'\');"><option></option>';
-                        item['possible_values'].forEach( function (item2) {
-                            s += ' <option> '+item2+'</option>';
-                        });
+                        var s = '<br>'+item['label']+' <select id="'+select_id+'" onChange="params_onChange(\''+id+'\', '+index+',\''+select_id+'\');">';
+                        for (var i =0; i< item['possible_values'].length; i++) {
+                            if (i == item['value'])
+                                s += ' <option selected> '+item['possible_values'][i]+'</option>';
+                            else
+                                s += ' <option> '+item['possible_values'][i]+'</option>';
+                        };
                         s += ' </select>';
                         ndiv.innerHTML = s;
                         d.appendChild(ndiv);
@@ -72,9 +75,7 @@ function params_onChange(op_id, param_index, select_id) {
         return;
     
     ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
-        //var options = document.getElementById(select_id).options;
-        var param_value = index-1;
-        //var param_value = options[index].index;
+        var param_value = index;
         ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
             if (result2)
                 console.log(result2);
