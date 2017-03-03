@@ -122,6 +122,7 @@ function open_op_modal() {
     if ($('#'+modal_name+"_dialog").attr('class').includes("full_width")) {
         $('#'+modal_name+"_dialog").toggleClass("full_width");
         $('#'+modal_name+"_body").css("height", "100%");
+        $('#'+modal_name+"_body").children().eq(1).css("height", "100%");
     }
     $('#'+modal_name).modal();
 }

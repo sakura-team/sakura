@@ -95,10 +95,15 @@ function remove_operator_instance(id) {
 
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
-    if ($('#'+elt+"_dialog").attr('class').includes("full_width"))
-        $('#'+elt+"_body").css("height", ($(window).height()-$('#'+elt+"_header").height()-80)+"px");
-    else
+    if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
+    var h = ($(window).height()-$('#'+elt+"_header").height()-80);
+        $('#'+elt+"_body").css("height", h+"px");
+        $('#'+elt+"_body").children().eq(1).css("height", (h-60)+"px");
+    }
+    else {
         $('#'+elt+"_body").css("height", "100%");
+        $('#'+elt+"_body").children().eq(1).css("height", "100%");
+    }
 }
 
 
@@ -143,12 +148,12 @@ function create_op_modal(id, id_index, tabs) {
         s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_'+tab.label+'">'+tab.label+'</a></li>';
     });
     s += '                  </ul> \
-                            <div class="tab-content"> \
+                            <div class="tab-content" style="width:100%; height:100%;"> \
                                 <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"></div> \
                                 <div id="modal_'+id+'_tab_params" class="tab-pane fade"></div> \
                                 <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"></div>';
     tabs.forEach( function (tab) {
-        s += '<iframe frameborder="0" width="100%" id="modal_'+id+'_tab_'+tab.label+'" class="tab-pane fade" sandbox="allow-scripts"></iframe>';
+        s += '<iframe frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:100%;" id="modal_'+id+'_tab_'+tab.label+'" class="tab-pane fade" sandbox="allow-scripts"></iframe>';
     });
     s += '                      <div id="modal_'+id+'_tab_code" class="tab-pane fade"></div> \
                             </div> \
