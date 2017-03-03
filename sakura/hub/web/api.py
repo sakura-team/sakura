@@ -14,7 +14,7 @@ class GuiToHubAPI(object):
     def list_operators_classes(self):
         return self.context.list_op_classes_serializable()
     
-    def list_operators_instance_ids(self):      // TODO
+    def list_operators_instance_ids(self):      # TODO
         return self.context.list_op_instance_ids()
     
     # instantiate an operator and return the instance info
@@ -50,10 +50,10 @@ class GuiToHubAPI(object):
     
     ########################################
     # Links
-    def list_link_ids(self):      // TODO
+    def list_link_ids(self):      # TODO
         return self.context.list_link_ids()
     
-    def get_link_info(self, link_id):      // TODO
+    def get_link_info(self, link_id):      # TODO
         return self.context.get_link_info(link_id)
     
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
