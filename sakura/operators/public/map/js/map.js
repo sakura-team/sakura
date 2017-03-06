@@ -48,5 +48,6 @@ function init_map() {
     map.setView(new L.LatLng(51.3, 0.7),9);
     map.on('click', map_clicked);
     map.on('moveend', map_move);
-    //print_markers();
 }
+
+sakura.operator.onready(init_map);
