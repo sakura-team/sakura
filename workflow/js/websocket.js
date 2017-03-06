@@ -3,6 +3,7 @@
 var callbacks = {};
 var next_cb_idx = 0;
 var free_ws = [];
+var window_loaded = false;
 
 function get_ws_url() {
     var loc = window.location, proto;
@@ -31,6 +32,16 @@ function ws_onmessage(evt) {
 function ws_request(func_name, args, kwargs, callback)
 {
     var ws;
+    // firefox fails if we call ws API too early
+    if (window_loaded == false)
+    {
+        // restart the call when window is loaded
+        add_window_onload(function() {
+            ws_request(func_name, args, kwargs, callback)
+        });
+        return;
+    }
+
     // check if we have at least one websocket free
     if (free_ws.length == 0)
     {   // existing websockets are busy, create new one
@@ -40,6 +51,9 @@ function ws_request(func_name, args, kwargs, callback)
             free_ws.push(ws);
             // restart the call
             ws_request(func_name, args, kwargs, callback)
+        }
+        ws.onerror = function() {
+            console.log("ws error!");
         }
         return;
     }
@@ -57,3 +71,19 @@ function ws_request(func_name, args, kwargs, callback)
     var msg = JSON.stringify([ cb_idx, [func_name], args, kwargs ]);
     ws.send(msg);
 }
+
+function add_window_onload(cb)
+{
+    var prev_onload = window.onload;
+    window.onload = function () {
+        if (prev_onload) {
+            prev_onload();
+        }
+        cb();
+    };
+}
+
+add_window_onload(function() {
+    window_loaded = true;
+});
+
