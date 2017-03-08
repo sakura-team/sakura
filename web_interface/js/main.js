@@ -7,29 +7,25 @@
 
 
 function not_yet(s = '') {
-    if (s == '')
-        alert('Not implemented yet');
-    else
-        alert('Not implemented yet: '+ s);
-}
+  if (s == '') {
+    alert('Not implemented yet');}
+  else {
+    alert('Not implemented yet: '+ s);}}
 
-
+//Deprecated use showDiv/3 from web_interface.js
 function show_div(id) {
     //Hide all
     maindivs_array.forEach( function(item) {
-        //document.getElementById(item).style.visibility='hidden';
-        document.getElementById(item).style.display='none';
+        document.getElementById(item).style.visibility='hidden';
     });
     //Show the one
-    //document.getElementById(maindivs_array[id]).style.visibility='visible';
-    document.getElementById(maindivs_array[id]).style.display='inline';
+    document.getElementById(maindivs_array[id]).style.visibility='visible';
     
     var d = document.getElementById("navbar_ul");
     for (var i=0; i< d.children.length; i++)
         d.children[i].className = "";
     d.children[id].className = "active";
 }
-
 
 function create_operator_instance(x, y, idiv_id) {
     
