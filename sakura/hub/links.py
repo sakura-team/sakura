@@ -2,6 +2,16 @@ from collections import namedtuple
 
 LinkInfo = namedtuple('LinkInfo', ['link_id', 'src_op', 'src_out_id', 'dst_op', 'dst_in_id'])
 
+class Link(LinkInfo):
+    def get_info_serializable(self):
+        return dict(
+            link_id = self.link_id,
+            src_id = self.src_op.op_id,
+            src_out_id = self.src_out_id,
+            dst_id = self.dst_op.op_id,
+            dst_in_id = self.dst_in_id
+        )
+
 class LinkRegistry(object):
     def __init__(self):
         self.next_link_id = 0
@@ -11,7 +21,7 @@ class LinkRegistry(object):
         self.next_link_id += 1
         dst_op.daemon.api.connect_operators(
                 src_op.op_id, src_out_id, dst_op.op_id, dst_in_id)
-        desc = LinkInfo(link_id, src_op, src_out_id, dst_op, dst_in_id)
+        desc = Link(link_id, src_op, src_out_id, dst_op, dst_in_id)
         self.info_per_link_id[link_id] = desc
         src_op.attached_links.add(link_id)
         dst_op.attached_links.add(link_id)
@@ -27,4 +37,7 @@ class LinkRegistry(object):
         dst_op.attached_links.remove(link_id)
     def __getitem__(self, link_id):
         return self.info_per_link_id[link_id]
+    def __iter__(self):
+        # iterate over link_id values
+        return self.info_per_link_id.__iter__()
 

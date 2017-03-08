@@ -14,8 +14,8 @@ class GuiToHubAPI(object):
     def list_operators_classes(self):
         return self.context.list_op_classes_serializable()
     
-    def list_operators_instance_ids(self):      # TODO
-        return self.context.list_op_instance_ids()
+    def list_operators_instance_ids(self):
+        return list(self.context.op_instances)
     
     # instantiate an operator and return the instance info
     def create_operator_instance(self, cls_id):
@@ -50,11 +50,11 @@ class GuiToHubAPI(object):
     
     ########################################
     # Links
-    def list_link_ids(self):      # TODO
-        return self.context.list_link_ids()
+    def list_link_ids(self):
+        return list(self.context.links)
     
-    def get_link_info(self, link_id):      # TODO
-        return self.context.get_link_info(link_id)
+    def get_link_info(self, link_id):
+        return self.context.links[link_id].get_info_serializable()
     
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         return self.context.create_link(src_op_id, src_out_id, dst_op_id, dst_in_id)
@@ -65,14 +65,14 @@ class GuiToHubAPI(object):
     
     ########################################
     # Gui
-    def set_operator_instance_gui_data(self, op_id, gui_data):      # TODO
-        return self.context.op_instances[op_id].set_gui_data(gui_data)
+    def set_operator_instance_gui_data(self, op_id, gui_data):
+        self.context.op_instances[op_id].gui_data = gui_data
     
-    def get_operator_instance_gui_data(self, op_id):      # TODO
-        return self.context.op_instances[op_id].get_gui_data()
+    def get_operator_instance_gui_data(self, op_id):
+        return self.context.op_instances[op_id].gui_data
     
-    def set_project_gui_data(self, project_gui_data):      # TODO
-        return self.context.set_project(project_gui_data)
+    def set_project_gui_data(self, project_gui_data):
+        self.context.project_gui_data = project_gui_data
     
-    def get_project_gui_data(self):      # TODO
-        return self.context.get_project_gui_data()
+    def get_project_gui_data(self):
+        return self.context.project_gui_data

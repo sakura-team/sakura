@@ -1,9 +1,9 @@
-from collections import namedtuple
+from sakura.common.tools import SimpleAttrContainer
 
-OpInstanceInfo = namedtuple('OpInstanceInfo',
-                ['op_id','daemon','cls_info','attached_links','remote_instance'])
+OpInstanceBase = SimpleAttrContainer(
+        'op_id','daemon','cls_info','attached_links','remote_instance','gui_data')
 
-class OpInstance(OpInstanceInfo):
+class OpInstance(OpInstanceBase):
     def __getattr__(self, attr):
         # if we cannot find the attr locally, let's look at the real operator
         # instance on the daemon side.
@@ -18,7 +18,7 @@ class OpInstanceRegistry(object):
         self.next_op_id += 1
         daemon_info.api.create_operator_instance(cls_info.name, op_id)
         remote_instance = daemon_info.api.op_instances[op_id]
-        desc = OpInstance(op_id, daemon_info, cls_info, set(), remote_instance)
+        desc = OpInstance(op_id, daemon_info, cls_info, set(), remote_instance, None)
         self.info_per_op_id[op_id] = desc
         return remote_instance.get_info_serializable()
     def delete(self, op_id):

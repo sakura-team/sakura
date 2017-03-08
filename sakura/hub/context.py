@@ -12,6 +12,7 @@ class HubContext(object):
         self.op_classes = OpClassRegistry()
         self.op_instances = OpInstanceRegistry()
         self.links = LinkRegistry()
+        self.project_gui_data = None
     def get_daemon_id(self):
         daemon_id = self.next_daemon_id
         self.next_daemon_id += 1
