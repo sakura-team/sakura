@@ -17,13 +17,13 @@ function showDiv(event,dir) {
   if (dir=="") {
     dir="Home";}
   var dirs = dir.split("/");
-  if (dirs.length==2) {
-	  dirs.push("Main");}
 //show div
   mainDivs=document.getElementsByClassName('classMainDiv');
   for(i=0;i<mainDivs.length;i++) {
 	mainDivs[i].style.display='none';}  
   var idDir = "idDiv"+dirs.join("");
+  if (dirs.length==2) {
+	  idDir = idDir+"Main";}
   document.getElementById(idDir).style.display='inline';
 //activate navbar   
   var d = document.getElementById("navbar_ul");
