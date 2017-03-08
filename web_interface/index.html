@@ -18,39 +18,26 @@
         <div class="container">
             <h1> Sakura </h1>
             <p>Store and Analyse Data            
-            <script >
-                var maindivs_array = [  'maindivs_home',                     // 0
-                                        'maindivs_protocol',
-                                        'maindivs_datasets',
-                                        'maindivs_operators',
-                                        'maindivs_analysis',
-                                        'maindivs_results',                  // 5
-                                        'maindivs_tmpProtocolDescription',
-                                        'maindivs_tmpProtocolWorkingZone',
-                                        'maindivs_tmpProtocolHistoric',
-                                        'maindivs_tmpXXXDescription',
-                                        'maindivs_tmpXXXWorkingZone',        //10
-                                        'maindivs_tmpXXXHistoric',
-                                        'maindivs_XXX',
-                                        'maindivs_documentation',
-                                        'maindivs_tmpAnalysisDescription',
-										'maindivs_workflow'                  //15
-										];
-            </script>
             <nav class="navbar navbar-default">
                 <ul id="navbar_ul" class="nav navbar-nav">
-                  <li class="active"><a onclick="show_div(0);" style="cursor: pointer;">Home</a></li>
-                  <li><a onclick="show_div(1);" style="cursor: pointer;">Protocol</a></li>
-                  <li><a onclick="show_div(2);" style="cursor: pointer;">Datasets</a></li>
-                  <li><a onclick="show_div(3);" style="cursor: pointer;">Operators</a></li>
-                  <li><a onclick="show_div(4);" style="cursor: pointer;">Analysis</a></li>
-                  <li><a onclick="show_div(5);" style="cursor: pointer;">Results</a></li>
-                  <li><a onclick="show_div(13);" style="cursor: pointer;">Documentation</a></li>
+                  <li id="idNavBarHome" class="active"><a onclick="showDiv(event,'');" href="http://sakura.imag.fr" style="cursor: pointer;">Home</a></li>
+                  <li id="idNavBarProtocol"><a onclick="showDiv(event,'Protocol');" href="http://sakura.imag.fr/Protocol" style="cursor: pointer;">Protocol</a></li>
+                  <li id="idNavBarDatasets"><a onclick="showDiv(event,'Datasets');" href="http://sakura.imag.fr/Datasets" style="cursor: pointer;">Datasets</a></li>
+                  <li id="idNavBarOperators"><a onclick="showDiv(event,'Operators');" href="http://sakura.imag.fr/Operators" style="cursor: pointer;">Operators</a></li>
+                  <li id="idNavBarAnalysis"><a onclick="showDiv(event,'Analysis');" href="http://sakura.imag.fr/Analysis" style="cursor: pointer;">Analysis</a></li>
+                  <li id="idNavBarResults"><a onclick="showDiv(event,'Results');" href="http://sakura.imag.fr/Results" style="cursor: pointer;">Results</a></li>
+                  <li id="idNavBarDocumentation"><a onclick="showDiv(event,'Documentation');" href="http://sakura.imag.fr/Documentation" style="cursor: pointer;">Documentation</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                   <li><a href="http://panteda.imag.fr/" targer="_blank">About Sakura</a></li>
                   <li><a onclick="not_yet();">Connexion&nbsp;&nbsp;&nbsp;&nbsp;</a></li></ul>
-            </nav>        
+            </nav>  
+
+    <ol id="breadcrumbtrail" class="breadcrumb">
+      <li><a onclick="showDiv(event,'');" href="http://sakura.imag.fr" title="Sakura">Sakura</a></li>
+      <li class="active">Home</li>
+    </ol>
+			
             <div class="container" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
                 <div w3-include-html="divs/protocol/index.html"></div>
@@ -74,7 +61,7 @@
             </script>
 			
   <div class="container" id="divfooter" style="margin-top:50px">
-    <p align="center" class="text-muted">Maintained by the LIG, Last Update: February 2017.</p>
+    <p align="center" class="text-muted">Maintained by the LIG, Last Update: March 2017.</p>
   </div>
 			
         </div>
