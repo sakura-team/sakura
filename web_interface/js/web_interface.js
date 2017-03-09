@@ -31,15 +31,28 @@ function showDiv(event,dir) {
   bct = bct + "<li class='active'>"+dirs[i]+"</li>";
   var d = document.getElementById("breadcrumbtrail");
   d.innerHTML = bct;
+  if (idDir=="idDivProtocols") {  //regarder : document.getElementById(idDir).getElementsByClassName("executeOnShow")[i].href
+    listRequestStub(10,false);}
   event.preventDefault();}
 
+function buildListStub(result) {
+s="<ul>"
+for(i=0;i<result.length;i++) {
+  s = s + "<li>Experiment <a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\">tmpProtocol_"+result[i].nom+"</a></li>";}
+s+="</ul>"	 
+document.getElementById("dFF").innerHTML = s;}
+
 	
-function listRequestStub(n) {
- ws_request('list_nObjets', [10,'etude_'], {}, function (result) {
-   s="<ul>"
-   for(i=0;i<result.length;i++) {
-     s += "<li>Etude : "+result[i].nom+", valeur :"+result[i].valeur+"</li>\n";}
-   s+="</ul>"	 
-   document.getElementById("dFF").innerHTML = s;
-   return ;});
- return ;}
+function listRequestStub(n,bd) {
+if (!bd) {
+// version local
+  result=new Array();
+  for(i=0;i<n;i++) {
+    result.push({"nom":"nom"+i,"valeur":"val"+i});}
+  buildListStub(result);}
+else {
+// version réseau
+  ws_request('list_nObjets', [10,'etude_'], {}, function (result) {buildListStub(result);});}
+return ;}
+ 
+ 
