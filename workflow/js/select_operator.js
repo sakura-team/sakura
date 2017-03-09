@@ -214,6 +214,10 @@ function select_op_add_panel() {
     global_op_panels.push([acc_id, title, select_op_selected]);
     current_modal_id = null;
     $('#modal_op_selector').modal('hide');
+    
+   //Send the the current global var to the hub
+   var gui = JSON.stringify(global_op_panels);
+   ws_request('set_project_gui_data', [gui], {}, function(result){});
 }
 
 

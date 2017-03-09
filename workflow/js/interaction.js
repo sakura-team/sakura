@@ -139,14 +139,15 @@ function jsp_drag_stop(e) {
         e.el.style.top = 20 + "px";
         
     var ids = e.el.id.split("_");
+    
+    //GUI update
+    console.log(ids);
     if (ids[0] == 'op') {
         drop_x = parseInt(e.el.style.left.split('px')[0]);
         drop_y = parseInt(e.el.style.top.split('px')[0]);
         var gui = {x: drop_x,    y: drop_y};
         
-        ws_request('set_operator_instance_gui_data', [parseInt(ids[1]), JSON.stringify(gui)], {}, function(result) {
-            console.log("Set GUI result:", result);
-        });
+        ws_request('set_operator_instance_gui_data', [parseInt(ids[2]), JSON.stringify(gui)], {}, function(result) {});
     }
     jsPlumb.repaintEverything();        //Very Important when dragging elements manually
 }
