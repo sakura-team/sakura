@@ -12,42 +12,20 @@ function not_yet(s = '') {
   else {
     alert('Not implemented yet: '+ s);}}
 
-
-function showDiv(event,dir) {
-  if (dir=="") {
-    dir="Home";}
-  var dirs = dir.split("/");
-//show div
-  mainDivs=document.getElementsByClassName('classMainDiv');
-  for(i=0;i<mainDivs.length;i++) {
-	mainDivs[i].style.display='none';}  
-  var idDir = "idDiv"+dirs.join("");
-  if (dirs.length==2) {
-	  idDir = idDir+"Main";}
-  document.getElementById(idDir).style.display='inline';
-//activate navbar   
-  var d = document.getElementById("navbar_ul");
-  for (var i=0; i< d.children.length; i++) {
-    d.children[i].className = "";}
-  var navBarElt = document.getElementById("idNavBar"+dirs[0])
-  if (navBarElt) {
-    navBarElt.className = "active";}
-//set url
-  var stateObj = { foo: "bar" };
-  try {  //try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
-  history.pushState(stateObj, "page 2", "bar.html"); } catch (e) { tmp=0;}
-//set breadcrumb
-  var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"http://sakura.imag.fr\" title=\"Sakura\">Sakura</a></li>";
-  var tmpDir = "";
-  for(i=0;i<dirs.length-1;i++) {
-	tmpDir = tmpDir + dirs[i] ;
-	bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\"http://sakura.imag.fr/"+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
-	tmpDir = tmpDir + "/";}	  
-  bct = bct + "<li class='active'>"+dirs[i]+"</li>";
-  var d = document.getElementById("breadcrumbtrail");
-  d.innerHTML = bct;
-  event.preventDefault();}
-
+//Deprecated use showDiv/3 from web_interface.js
+function show_div(id) {
+    //Hide all
+    maindivs_array.forEach( function(item) {
+        document.getElementById(item).style.visibility='hidden';
+    });
+    //Show the one
+    document.getElementById(maindivs_array[id]).style.visibility='visible';
+    
+    var d = document.getElementById("navbar_ul");
+    for (var i=0; i< d.children.length; i++)
+        d.children[i].className = "";
+    d.children[id].className = "active";
+}
 
 function create_operator_instance(x, y, idiv_id) {
     
