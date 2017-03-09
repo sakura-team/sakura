@@ -5,31 +5,20 @@
 /////////////////////////////////////////////////////////
 //Basic Functions
 
-
-function not_yet(s = '') {
-    if (s == '')
-        alert('Not implemented yet');
-    else
-        alert('Not implemented yet: '+ s);
-}
-
-function create_operator_instance(x, y, idiv_id) {
-    
-    var id_index = idiv_id.split("_").slice(-2)[0];
+function create_operator_instance_on_hub(drop_x, drop_y, id) {
     
     //We first send the creation command to the sakura hub
-    ws_request('create_operator_instance', [parseInt(id_index)], {}, function (result) {
+    ws_request('create_operator_instance', [parseInt(id)], {}, function (result) {
         var instance_id = result.op_id;
         
         //Then we create the instance here
-        var idiv = document.getElementById(idiv_id);
+        var ndiv = document.getElementById('select_op_selected_'+id+'_static').cloneNode(true);
         
         //New div creation (cloning)
-        var ndiv = idiv.cloneNode(true);
-        ndiv.id = "op_" + id_index + "_" + instance_id;
+        ndiv.id = "op_" + id + "_" + instance_id;
         ndiv.classList.add("sakura_dynamic_operator");
-        ndiv.style.left = x+"px";
-        ndiv.style.top = y+"px";
+        ndiv.style.left = drop_x+"px";
+        ndiv.style.top = drop_y+"px";
         ndiv.setAttribute('draggable', 'false');
         ndiv.ondblclick = open_op_modal;    
         ndiv.oncontextmenu = open_op_menu;
@@ -40,11 +29,6 @@ function create_operator_instance(x, y, idiv_id) {
         //Plumbery: draggable + connections
         jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
         
-        /*if ( global_ops_cl[id_index]['inputs'] > 0)
-            jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
-        if (global_ops_cl[id_index]['outputs'] > 0)
-            jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
-        */
         if ( result.inputs.length > 0)
             jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
         if (result.outputs.length > 0)
@@ -52,8 +36,50 @@ function create_operator_instance(x, y, idiv_id) {
         
         
         //Now the modal for parameters/creation/visu/...
-        main_div.appendChild(create_op_modal(ndiv.id, id_index, result.tabs));
+        main_div.appendChild(create_op_modal(ndiv.id, id, result.tabs));
+        
+        //Now we add the current coordinates of the operator to the hub
+        var gui = {x: drop_x,    y: drop_y};
+        global_ops_inst_gui.push(gui);
+        
+        ws_request('set_operator_instance_gui_data', [instance_id, JSON.stringify(gui)], {}, function(result) {
+            console.log("Set GUI result:", result);
+        });
     });
+}
+
+
+function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
+    var ndiv = select_op_new_operator(  global_ops_cl[id]['svg'],
+                                        global_ops_cl[id]['name'],
+                                        global_ops_cl[id]['id'],
+                                        false );
+    
+    ndiv.id = "op_" + id + "_" + info.op_id;
+    ndiv.classList.add("sakura_dynamic_operator");
+    ndiv.style.left = drop_x+"px";
+    ndiv.style.top = drop_y+"px";
+    ndiv.setAttribute('draggable', 'false');
+    ndiv.ondblclick = open_op_modal;    
+    ndiv.oncontextmenu = open_op_menu;
+        
+    global_ops_inst.push(ndiv.id);
+    main_div.appendChild(ndiv);
+    
+    //Plumbery: draggable + connections
+    jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
+    
+    if ( info.inputs.length > 0)
+        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
+    if (info.outputs.length > 0)
+        jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+    
+    //Now the modal for parameters/creation/visu/...
+    main_div.appendChild(create_op_modal(ndiv.id, id, info.tabs));
+    
+    //Now we add the current coordinates of the operator to the hub
+    var gui = {x: drop_x,    y: drop_y};
+    global_ops_inst_gui.push(gui);
 }
 
 
@@ -279,26 +305,6 @@ function remove_link(nid) {
     link_focus_id = null;
 }
 
-
-function load_project() {
-    not_yet();
-}
-
-
-function save_project() {
-    not_yet();
-};
-
-
-function new_project() {
-    var res = confirm("Are you sure you want to erase the current project ?");
-    if (!res) 
-        return false;
-    global_ops_inst.forEach( function (id) {
-        remove_operator_instance(id)
-    });
-    global_ops_inst = [];
-};
 
 
 function open_op_menu(e) {

@@ -95,7 +95,7 @@ function select_op_on_change(from) {
         if (ops_to[o].selected) {
             global_ops_cl.forEach( function (op) {
                 if (op['tags'].indexOf(ops_to[o].text) >= 0 && select_op_selected.indexOf(op['id']) == -1) {
-                    select_op_divs.push(select_op_new_div(op['svg'], op['name'], op['id'], true));
+                    select_op_divs.push(select_op_new_operator(op['svg'], op['name'], op['id'], true));
                     select_op_selected.push(parseInt(op['id']));
                 }
             });
@@ -105,7 +105,7 @@ function select_op_on_change(from) {
     //names
     for (var o=0; o<ops_no.length; o++) {
         if (ops_no[o].selected && select_op_selected.indexOf(parseInt(ops_no[o].value)) == -1) {
-            select_op_divs.push(select_op_new_div(global_ops_cl[ops_no[o].value]['svg'], global_ops_cl[ops_no[o].value]['name'], global_ops_cl[ops_no[o].value]['id'], true));
+            select_op_divs.push(select_op_new_operator(global_ops_cl[ops_no[o].value]['svg'], global_ops_cl[ops_no[o].value]['name'], global_ops_cl[ops_no[o].value]['id'], true));
             select_op_selected.push(parseInt(global_ops_cl[ops_no[o].value]['id']));
         }
     }
@@ -118,7 +118,7 @@ function select_op_on_change(from) {
 }
 
 
-function select_op_new_div(svg, name, id, removable) {
+function select_op_new_operator(svg, name, id, removable) {
     var ndiv = document.createElement('div');
     if (removable) {
         ndiv.id = "select_op_selected_"+id+'rem';
@@ -189,7 +189,7 @@ function select_op_add_panel() {
     var divs = []
     select_op_selected.forEach( function(item) {
         var op = global_ops_cl[item]
-        divs.push(select_op_new_div(op['svg'], op['name'], op['id'], false));
+        divs.push(select_op_new_operator(op['svg'], op['name'], op['id'], false));
     });
     
     var tbl = select_op_make_table(3, select_op_selected, divs);

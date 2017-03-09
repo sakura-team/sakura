@@ -19,12 +19,14 @@ main_div.addEventListener("dragover", function( e ) {
 
 main_div.addEventListener("drop", function( e ) {
     e.preventDefault();
+    
     //Operators
     if (currently_dragged.id.includes("static")) {
         var rect = main_div.getBoundingClientRect();
-        create_operator_instance(   e.clientX - rect.left - drag_delta[0], 
-                                    e.clientY - rect.top - drag_delta[1] + e.target.scrollTop, 
-                                    currently_dragged.id);
+        create_operator_instance_on_hub(e.clientX - rect.left - drag_delta[0], 
+                                        e.clientY - rect.top - drag_delta[1] + e.target.scrollTop, 
+                                        currently_dragged.id.split("_").slice(-2)[0],
+                                        true);
     }
     
     //Link params
@@ -134,7 +136,6 @@ function jsp_drag_stop(e) {
         e.el.style.left = 20 + "px";
     if (e.el.getBoundingClientRect().top < ot.getBoundingClientRect().top)
         e.el.style.top = 20 + "px";
-    
     jsPlumb.repaintEverything();        //Very Important when dragging elements manually
 }
 

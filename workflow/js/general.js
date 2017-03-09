@@ -1,5 +1,5 @@
-/*Code started by Michael Ortega for the LIG*/
-/*November 14th, 2016*/
+//Code started by Michael Ortega for the LIG
+//November 14th, 2016
 
 /////////////////////////////////////////////////////////
 //Globals
@@ -8,6 +8,7 @@
 var global_op_panels    = [];
 var global_ops_cl       = [];
 var global_ops_inst     = [];
+var global_ops_inst_gui = [];
 var op_focus_id         = null;
 var link_focus_id       = null;
 
@@ -25,6 +26,14 @@ var current_modal_id    = null;
 var main_div = document.getElementById('sakura_main_div');
 
 
+function not_yet(s = '') {
+    if (s == '')
+        alert('Not implemented yet');
+    else
+        alert('Not implemented yet: '+ s);
+}
+
+
 //send the index of the row where arr[row][col] == e
 function index_in_array_of_tuples(arr, col, e) {
     for (var i = 0; i< arr.length; i++)
@@ -32,6 +41,7 @@ function index_in_array_of_tuples(arr, col, e) {
             return i;
     return -1;
 }
+
 
 function tuple_in_array_of_tuples(arr, tuple) {
     for (var i = 0; i< arr.length; i++) {
@@ -46,6 +56,7 @@ function tuple_in_array_of_tuples(arr, tuple) {
     } 
     return -1;
 }
+
 
 //returns a sub-array in which arr[row][col] == e for each row
 function sub_array_of_tuples(arr, col, e) {
@@ -64,6 +75,7 @@ function svg_round_square(id) {
                     style="fill: grey; stroke: black; stroke-width: 2"/> \
             </svg>';
 }
+
 
 function svg_round_square_crossed(id) {
     return '<svg width="24" height="24" viewBox="0 0 24 24" id="'+id+'" name="'+id+'"> \
