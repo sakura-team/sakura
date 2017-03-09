@@ -21,10 +21,10 @@
             <nav class="navbar navbar-default">
                 <ul id="navbar_ul" class="nav navbar-nav">
                   <li id="idNavBarHome" class="active"><a onclick="showDiv(event,'');" href="http://sakura.imag.fr" style="cursor: pointer;">Home</a></li>
-                  <li id="idNavBarProtocol"><a onclick="showDiv(event,'Protocol');" href="http://sakura.imag.fr/Protocol" style="cursor: pointer;">Protocol</a></li>
-                  <li id="idNavBarDatasets"><a onclick="showDiv(event,'Datasets');" href="http://sakura.imag.fr/Datasets" style="cursor: pointer;">Datasets</a></li>
+                  <li id="idNavBarProtocols"><a onclick="showDiv(event,'Protocols');" href="http://sakura.imag.fr/Protocols" style="cursor: pointer;">Protocol</a></li>
+                  <li id="idNavBarDatasets"><a onclick="showDiv(event,'DataSets');" href="http://sakura.imag.fr/Datasets" style="cursor: pointer;">Datasets</a></li>
                   <li id="idNavBarOperators"><a onclick="showDiv(event,'Operators');" href="http://sakura.imag.fr/Operators" style="cursor: pointer;">Operators</a></li>
-                  <li id="idNavBarAnalysis"><a onclick="showDiv(event,'Analysis');" href="http://sakura.imag.fr/Analysis" style="cursor: pointer;">Analysis</a></li>
+                  <li id="idNavBarAnalyses"><a onclick="showDiv(event,'Analyses');" href="http://sakura.imag.fr/Analyses" style="cursor: pointer;">Analysis</a></li>
                   <li id="idNavBarResults"><a onclick="showDiv(event,'Results');" href="http://sakura.imag.fr/Results" style="cursor: pointer;">Results</a></li>
                   <li id="idNavBarDocumentation"><a onclick="showDiv(event,'Documentation');" href="http://sakura.imag.fr/Documentation" style="cursor: pointer;">Documentation</a></li>
                 </ul>
@@ -40,21 +40,24 @@
 			
             <div class="container" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
-                <div w3-include-html="divs/protocol/index.html"></div>
+                <div w3-include-html="divs/protocols/index.html"></div>
+                <div w3-include-html="divs/protocols/main.html"></div>
+                <div w3-include-html="divs/protocols/historic.html"></div>
                 <div w3-include-html="divs/datasets/index.html"></div>
+                <div w3-include-html="divs/datasets/main.html"></div>
+                <div w3-include-html="divs/datasets/work.html"></div>
+                <div w3-include-html="divs/datasets/historic.html"></div>
                 <div w3-include-html="divs/operators/index.html"></div>
-                <div w3-include-html="divs/analysis/index.html"></div>
+                <div w3-include-html="divs/operators/main.html"></div>
+                <div w3-include-html="divs/operators/historic.html"></div>
+                <div w3-include-html="divs/analyses/index.html"></div>
+                <div w3-include-html="divs/analyses/main.html"></div>
+                <div w3-include-html="divs/analyses/historic.html"></div>                
+                <div w3-include-html="divs/workflow/index.html"></div>	<!--div comment="remplacé par divs/workflow/index.html" w3-include-html="divs/analyses/work.html"></div-->			
                 <div w3-include-html="divs/results/index.html"></div>
+                <div w3-include-html="divs/results/main.html"></div>
+                <div w3-include-html="divs/results/historic.html"></div>
                 <div w3-include-html="divs/documentation/index.html"></div>
-                <div w3-include-html="divs/tmpProtocolDescription/index.html"></div>
-                <div w3-include-html="divs/tmpProtocolWorkingZone/index.html"></div>				
-                <div w3-include-html="divs/tmpProtocolHistoric/index.html"></div>				
-                <div w3-include-html="divs/tmpXXXDescription/index.html"></div>
-                <div w3-include-html="divs/tmpXXXWorkingZone/index.html"></div>				
-                <div w3-include-html="divs/tmpXXXHistoric/index.html"></div>				
-                <div w3-include-html="divs/XXX/index.html"></div>				
-                <div w3-include-html="divs/tmpAnalysisDescription/index.html"></div>				
-                <div w3-include-html="divs/workflow/index.html"></div>				
             </div>
             <script>
                 w3IncludeHTML();
