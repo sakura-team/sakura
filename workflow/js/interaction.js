@@ -25,9 +25,9 @@ main_div.addEventListener("drop", function( e ) {
         var rect = main_div.getBoundingClientRect();
         create_operator_instance_on_hub(e.clientX - rect.left - drag_delta[0], 
                                         e.clientY - rect.top - drag_delta[1] + e.target.scrollTop, 
-                                        currently_dragged.id.split("_").slice(-2)[0],
-                                        true);
+                                        currently_dragged.id.split("_").slice(-2)[0]);
     }
+    
     
     //Link params
     else if (currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
@@ -97,7 +97,8 @@ $(window).bind('keypress', function(e){
 
 $('#sakura_operator_contextMenu').on("click", "a", function() {
     $('#sakura_operator_contextMenu').hide();
-    remove_operator_instance(op_focus_id);
+    remove_operator_instance(op_focus_id, true);
+    jsPlumb.repaintEverything();
 });
 
 $('#sakura_link_contextMenu').on("click", "a", function() {

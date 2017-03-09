@@ -2,7 +2,17 @@
 //March 9th, 2017
 
 function current_project() {
-    //We first ask for the operator classes
+    console.log(global_ops_inst);
+    
+    //We first clean the current gui
+    while (global_ops_inst.length) {
+        console.log(global_ops_inst[0]);
+        remove_operator_instance(global_ops_inst[0], false)
+    };
+    
+    global_ops_inst_gui = [];
+    
+    //Now we ask for the operator classes
     ws_request('list_operators_classes', [], {}, function (result) {
         global_ops_cl = JSON.parse(JSON.stringify(result));
         //Then we ask for the instance ids
@@ -10,10 +20,11 @@ function current_project() {
             ids.forEach( function(id) {
                 //Then ask for the infos
                 ws_request('get_operator_instance_info', [id], {}, function (info) {
-                    cl_id = index_in_array_of_tuples(global_ops_cl, 'name', info.cls_name);
+                    var cl_id = index_in_array_of_tuples(global_ops_cl, 'name', info.cls_name);
                     //Then aks for the gui
                     ws_request('get_operator_instance_gui_data', [id], {}, function (gui) {
-                        jgui = eval("("+gui+")");
+                        var jgui = eval("("+gui+")");
+                        console.log(cl_id, info);
                         create_operator_instance_from_hub(jgui.x, jgui.y, cl_id, info);
                     });
                 });
@@ -37,8 +48,8 @@ function new_project() {
     var res = confirm("Are you sure you want to erase the current project ?");
     if (!res) 
         return false;
-    global_ops_inst.forEach( function (id) {
-        remove_operator_instance(id)
-    });
+    while (global_ops_inst.length) {
+        remove_operator_instance(global_ops_inst[0], true)
+    };
     global_ops_inst = [];
 };

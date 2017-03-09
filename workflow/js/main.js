@@ -83,7 +83,7 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
 }
 
 
-function remove_operator_instance(id) {
+function remove_operator_instance(id, on_hub) {
     
     tab = id.split("_");
     op_inst = parseInt(tab[2]);
@@ -94,28 +94,22 @@ function remove_operator_instance(id) {
         remove_link(item[0]);
     });
     
-    //First we send the command to the hub
-    ws_request('delete_operator_instance', [op_inst], {}, function (result) {
-        if (!result) {
-            
-            //Then remove from the list of instances
-            var index = index_in_array_of_tuples(global_ops_inst, 2, op_inst);
-            global_ops_inst.splice(index, 1);
-            
-            //remove from jsPlumb
-            jsPlumb.remove(id);
-            jsPlumb.repaintEverything();
-            
-            //remove modal
-            var mod = document.getElementById("modal_"+id);
-            mod.outerHTML = "";
-            delete mod;
-            op_focus_id = null;
-            
-            //console.log(global_links);
-            //console.log(global_ops_inst);
-        }
-    });
+    //remove from jsPlumb
+    jsPlumb.remove(id);
+    jsPlumb.repaintEverything();
+    
+    //remove modal
+    var mod = document.getElementById("modal_"+id);
+    mod.outerHTML = "";
+    delete mod;
+    op_focus_id = null;
+    
+    //Remove from the list of instances
+    var index = global_ops_inst.indexOf(id);
+    global_ops_inst.splice(index, 1);
+    
+    if (on_hub)
+        ws_request('delete_operator_instance', [op_inst], {}, function (result) {});
 }
 
 
