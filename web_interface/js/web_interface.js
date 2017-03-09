@@ -33,3 +33,13 @@ function showDiv(event,dir) {
   d.innerHTML = bct;
   event.preventDefault();}
 
+	
+function listRequestStub(n) {
+ ws_request('list_nObjets', [10,'etude_'], {}, function (result) {
+   s="<ul>"
+   for(i=0;i<result.length;i++) {
+     s += "<li>Etude : "+result[i].nom+", valeur :"+result[i].valeur+"</li>\n";}
+   s+="</ul>"	 
+   document.getElementById("dFF").innerHTML = s;
+   return ;});
+ return ;}
