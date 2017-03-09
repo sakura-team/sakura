@@ -31,15 +31,198 @@ function showDiv(event,dir) {
   bct = bct + "<li class='active'>"+dirs[i]+"</li>";
   var d = document.getElementById("breadcrumbtrail");
   d.innerHTML = bct;
+  var actionsOnShow=document.getElementById(idDir).getElementsByClassName("executeOnShow");
+  for(i=0;i<actionsOnShow.length;i++) {
+	eval(actionsOnShow[i].href);}
   event.preventDefault();}
 
+/*    Génération aléatoire     */
+var firstProcNamesAlea=["Avg","Count","Diff","Hist","Viz","Reg","Lin","Stand","Sort","Best","Approx","Plot"];
+var firstNamesAlea=["Geom","Math","Plus","Tutor","Class","Copex","Diag","Form","Lab","Mooc","Mood","Smart","Qcm","Tamag","Tit"];
+var lastNamesAlea=["Exp","Elec","Aplus","Edit","Eval","Alg","Add","Oct","Hex","Alea","Hist"];
+var lastDigitsAlea=["","_bis","_a","_b","7","1","2","3","1.2","2.0","1.0","2.1","1997","2000","2001","2002","2009","2014","2015","2016","2017"];
+var usersAlea = ["John W.","Anna B.","Paul A.","Mary M.","Fiona C.","Piotr D."];
+var firstWordsAlea = ["Ipse","Ergo","Hinc","Tempus","Non","Fiat","Logos","Gnove","Lorem","Nunc","Cujus","Urbis"];
+var otherWordsAlea = ["fugit","est","veni","vidi","vici","etiam","porro","quisquam","qui","dolorem","ipsum","quia","dolor","sit","amet","adipisci","velit"];
+var extsAlea = ["pdf","csv","txt","doc","xls","jpg","png","pwt","odt"];
+var propsAlea = ["Date","Kind","Domain","Level","Duration","Status","Property","Country","Volume"];
+var valsAlea = ["porro","quia","xyz34","####",'n.a.','inf','nspp','','_','see below'];
+
+function aleaAlea(alea) {
+return alea[Math.floor(Math.random() * alea.length)]}
+
+function fullNameAlea() {
+  return firstNamesAlea[Math.floor(Math.random() * firstNamesAlea.length)]+"_"
+    + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+"_"
+    + propsAlea[Math.floor(Math.random() * propsAlea.length)]+"_"
+    + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];}
 	
-function listRequestStub(n) {
- ws_request('list_nObjets', [10,'etude_'], {}, function (result) {
-   s="<ul>"
-   for(i=0;i<result.length;i++) {
-     s += "<li>Etude : "+result[i].nom+", valeur :"+result[i].valeur+"</li>\n";}
-   s+="</ul>"	 
-   document.getElementById("dFF").innerHTML = s;
-   return ;});
- return ;}
+function fullProcNameAlea() {
+  return firstProcNamesAlea[Math.floor(Math.random() * firstProcNamesAlea.length)]
+    + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+
+    + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];}
+
+function shortTextAlea() {
+  return firstWordsAlea[Math.floor(Math.random() * firstWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+", "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+".";}
+	
+function publicAlea() {
+if (Math.random()>0.2) {
+  return "true";}
+else {
+  return "false";}}  
+
+
+/*       FillStub        */  
+function buildListStub(idDiv,result,elt) {
+s="";
+for(i=0;i<result.length;i++) {
+  if (result[i].isPublic=="true") {
+    eyeIcon = "glyphicon-eye-open";}
+  else {
+	eyeIcon = "glyphicon-eye-close";}  
+  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+        + "<td>"+result[i].shortDesc+"</td>"
+		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon "+eyeIcon+"' aria-hidden='true'></span></a></td>"
+        + "</tr>";}
+document.getElementById(idDiv).innerHTML = s;}
+
+function listRequestStub(idDiv,n,elt,bd) {
+if (!bd) {  // version local
+  result=new Array();
+  for(i=0;i<n;i++) {
+    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});}
+  buildListStub(idDiv,result,elt);}
+else {     // version réseau à faire
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
+return ;}
+ 
+function buildHistoryStub(idDiv,result,elt) {
+s="";
+for(i=0;i<result.length;i++) {
+  s = s + "<li><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].dateVersion+"</a> "+result[i].userName+" : "+result[i].msgVersion+". (<a onclick='javascript:not_yet();'>Undo</a>)</li>";}
+document.getElementById(idDiv).innerHTML = s;}
+
+function historyRequestStub(idDiv,n,elt,bd) {
+if (!bd) {  // version local
+  result=new Array();
+  var d = new Date();
+  for(i=0;i<n;i++) {	  
+    result.push({"dateVersion":d.toString(),"userName":aleaAlea(usersAlea),"msgVersion":shortTextAlea()});
+	d.setDate(d.getDate()-Math.random());}
+  buildHistoryStub(idDiv,result,elt);}
+else {     // version réseau à faire
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
+return ;}
+
+function buildEltStub(idDiv,result,elt) {
+s = "";
+s = s + '<h3>'+elt+' '+result.name+'</h3>'
+      + '<div class="col-md-12" id="studyPageContentMain"><div class="row well">'
+      + '<h4 class="">'+elt+' information</h4>'
+      + '<dl class="dl-horizontal col-md-6">';
+//Informations	  
+for(i=0;i<result.info.length;i++) { 
+  s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value+'</dd>';}
+s = s + '<dt></dt><dd></dd>';
+if (result.dataSets.length>0) {
+  s = s + '<dt class="description-terms-align-left">DataSets</dt><dd class="editableDescriptionField">';
+  for(i=0;i<result.dataSets.length;i++) {
+    s = s + "<a onclick=\"showDiv(event,'DataSets/tmpDataSet');\" href=\"http://sakura.imag.fr/DataSets/tmpDataSet\">"+result.dataSets[i].name+"</a>, ";}
+  s = s + '</dd>';}
+if (result.process.length>0) {
+  s = s + '<dt class="description-terms-align-left">Analyses processes</dt><dd class="editableDescriptionField">';
+  for(i=0;i<result.process.length;i++) {
+    s = s + "<a onclick=\"showDiv(event,'Analyses/tmpAnalysis');\" href=\"http://sakura.imag.fr/Analyses/tmpAnalysis\">"+result.process[i].name+"</a>, ";}
+  s = s + '</dd>';}
+if (result.results.length>0) {
+   s = s + '<dt class="description-terms-align-left">Results</dt><dd class="editableDescriptionField">';
+  for(i=0;i<result.results.length;i++) {
+    s = s + "<a onclick=\"showDiv(event,'Results/tmpResult');\" href=\"http://sakura.imag.fr/Results/tmpResult\">"+result.results[i].name+"</a>, ";}
+  s = s + '</dd>';}
+s = s + '</dl>'
+	  + '<ul class="list-group col-md-6">'
+	  +   '<li class="list-group-item list-group-item-info"><strong>About <em>'+result.name+'</em> :</strong></li>'
+	  +   '<li class="list-group-item"><strong>Qualitative indicator:</strong> <span class="label label-primary pull-right">5</span></li>'
+	  +   '<li class="list-group-item"><strong>Volumetric indicator:</strong> <span class="label label-primary pull-right">5</span></li>'
+	  +   '<li class="list-group-item"><strong>Contact:</strong> <span class="label label-primary pull-right">'+result.userName+'@mail.uni</span></li>'
+      + '</ul></div>';
+// Description
+s = s + '<br /><br /><div class="panel panel-primary"><div class="panel-heading">'
+      + '<table width="100%"><tbody><tr><td><h4 class="">'
+	  + '<font color="#ffffff">Explanation About '+result.name+'</font></h4></td></tr></tbody></table></div>'
+	  + '<div class="panel-body">'+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /> '
+	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+								  + '<ul><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li></ul>'
+	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+	  +'</div></div>';
+//FileSystem	  	  
+if (result.fileSystem.length>0) {
+  s = s + '<br /><br /><div class="well row"><h4 class="">Filesystem related to '+result.name+'</h4>'
+        + '<table class="table table-bordered" id="fileBrowser"><thead>'
+        + '<tr><th>Name</th><th colspan=2>Description</th></tr></thead><tbody>';
+  for(i=0;i<result.fileSystem.length;i++) {
+	s = s + '<tr><td><a onclick="not_yet();">'+result.fileSystem[i].filename+'</a></td><td>'+result.fileSystem[i].description+'</td></tr>';}
+  s = s + '</tbody></table></div>';}
+//Comments
+s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3><div align="right">'
+	  + '<button onclick="not_yet();" type="button" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-thumbs-up"></span> Like : 5</button>'
+      + '<button onclick="not_yet();" type="button" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-thumbs-down"></span> Dislike : 1</button></div>'
+	  + '</div><span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
+      + '<input class="form-control" type="text" placeholder="Your comments" onclick="not_yet()"/></div>'
+      + '<div class="form-group"><button onclick="not_yet();" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></div></form><hr />'
+	  + '<ul class="commentList">';
+for(i=0;i<result.comments.length;i++) {
+	s = s + '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
+	      + '<div class="commentText"><p class="">'+result.comments[i].comment+'</p> '
+		  + '<span class="date sub-text">'+result.comments[i].name+' on '+result.comments[i].date+'</span></div></li><br />';}
+s = s + '<a href="javascript:eltRequestStub(\''+idDiv+'\',\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd
+document.getElementById(idDiv).innerHTML = s;}
+
+function eltRequestStub(idDiv,elt,bd) {
+if (!bd) {  // version local
+  eltName = fullNameAlea();
+  userName = aleaAlea(usersAlea)
+  infos = new Array();
+  ninfo = Math.floor(Math.random() * 10);
+  infos.push({"name":"name","value":eltName});
+  infos.push({"name":"Description","value":shortTextAlea()});
+  infos.push({"name":"Author","value":userName});
+  for(i=0;i<ninfo;i++) {
+	  infos.push({"name":aleaAlea(propsAlea),"value":aleaAlea(valsAlea)});}
+  dataSets = new Array();
+  ndataSets = Math.floor((Math.random() * 4 + Math.random() + 2)/3);
+  for(i=0;i<ndataSets;i++) {
+	  dataSets.push({"name":fullNameAlea()});}
+  procs = new Array();
+  nprocs = Math.floor(Math.random() * 6);
+  for(i=0;i<nprocs;i++) {
+	  procs.push({"name":fullProcNameAlea()});}
+  results = new Array();
+  nresults = Math.floor(Math.random() * 6);
+  for(i=0;i<nresults;i++) {
+	  results.push({"name":fullProcNameAlea()});}
+  fs = new Array();
+  nfs = Math.max(Math.floor(Math.random() * 10 - 3),0);
+  for(i=0;i<nfs;i++) {
+	  fs.push({"filename":fullNameAlea()+"."+aleaAlea(extsAlea),"description":shortTextAlea()});}
+  comments = new Array();
+  ncomments = Math.floor(Math.random() * 5);
+  for(i=0;i<ncomments;i++) {
+	  comments.push({"name":aleaAlea(usersAlea), "date":"March, 2017", "comment":shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()});}
+  var result = {"name":eltName,"userName":userName,
+                "info":infos, "dataSets":dataSets, "process":procs, "results":results, 
+				"comments":comments,"fileSystem":fs};
+  buildEltStub(idDiv,result,elt);}
+else {     // version réseau à faire
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildEltStub(idDiv,result,elt);});}
+return ;}
