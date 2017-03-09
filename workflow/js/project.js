@@ -2,11 +2,9 @@
 //March 9th, 2017
 
 function current_project() {
-    console.log(global_ops_inst);
     
     //We first clean the current gui
     while (global_ops_inst.length) {
-        console.log(global_ops_inst[0]);
         remove_operator_instance(global_ops_inst[0], false)
     };
     
@@ -24,7 +22,6 @@ function current_project() {
                     //Then aks for the gui
                     ws_request('get_operator_instance_gui_data', [id], {}, function (gui) {
                         var jgui = eval("("+gui+")");
-                        console.log(cl_id, info);
                         create_operator_instance_from_hub(jgui.x, jgui.y, cl_id, info);
                     });
                 });

@@ -40,7 +40,6 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         
         //Now we add the current coordinates of the operator to the hub
         var gui = {x: drop_x,    y: drop_y};
-        global_ops_inst_gui.push(gui);
         
         ws_request('set_operator_instance_gui_data', [instance_id, JSON.stringify(gui)], {}, function(result) {
             console.log("Set GUI result:", result);
