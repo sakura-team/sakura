@@ -46,32 +46,32 @@ for(i=0;i<result.length;i++) {
     eyeIcon = "glyphicon-eye-open";}
   else {
 	eyeIcon = "glyphicon-eye-close";}  
-  s = s + "<tr><td>"+result[i].name+"</td>\n"
+  s = s + "<tr><td><a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\">"+result[i].name+"</a></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
 		+ "<td align='center'><a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\" class='btn btn-default'><span class='glyphicon "+eyeIcon+"' aria-hidden='true'></span></a></td>"
         + "</tr>";}
 document.getElementById(idDiv).innerHTML = s;}
 
-var firstNames=["Geom","Math","Plus","Tutor","Class","Copex","Diag","Form","Lab","Mooc","Mood","Smart","Qcm","Tamag","Tit"];
-var lastNames=["Exp","Elec","Aplus","Edit","Eval","Alg","Add"];
-var lastDigits=["","7","1","2","3","1.2","2.0","1.0","2.1","1997","2000","2001","2002","2009","2014","2015","2016","2017"];
+var firstNamesAlea=["Geom","Math","Plus","Tutor","Class","Copex","Diag","Form","Lab","Mooc","Mood","Smart","Qcm","Tamag","Tit"];
+var lastNamesAlea=["Exp","Elec","Aplus","Edit","Eval","Alg","Add"];
+var lastDigitsAlea=["","7","1","2","3","1.2","2.0","1.0","2.1","1997","2000","2001","2002","2009","2014","2015","2016","2017"];
 
 function fullNameAlea() {
-  return firstNames[Math.floor(Math.random() * firstNames.length)]
-    + lastNames[Math.floor(Math.random() * lastNames.length)]+
-    + lastDigits[Math.floor(Math.random() * lastDigits.length)];}
+  return firstNamesAlea[Math.floor(Math.random() * firstNamesAlea.length)]
+    + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+
+    + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];}
 	
-var firstWords = ["Ipse","Ergo","Hinc","Tempus","Non","Fiat","Logos","Gnove","Lorem"];
-var otherWords = ["fugit","est","veni","vidi","vici","etiam","porro","quisquam","qui","dolorem","ipsum","quia","dolor","sit","amet","adipisci","velit"];
+var firstWordsAlea = ["Ipse","Ergo","Hinc","Tempus","Non","Fiat","Logos","Gnove","Lorem"];
+var otherWordsAlea = ["fugit","est","veni","vidi","vici","etiam","porro","quisquam","qui","dolorem","ipsum","quia","dolor","sit","amet","adipisci","velit"];
 
-function shortDescAlea() {
-  return firstWords[Math.floor(Math.random() * firstWords.length)]+" "
-    + otherWords[Math.floor(Math.random() * otherWords.length)]+" "
-    + otherWords[Math.floor(Math.random() * otherWords.length)]+" "
-    + otherWords[Math.floor(Math.random() * otherWords.length)]+", "
-    + otherWords[Math.floor(Math.random() * otherWords.length)]+" "
-    + otherWords[Math.floor(Math.random() * otherWords.length)]+" "
-    + otherWords[Math.floor(Math.random() * otherWords.length)]+".";}
+function shortTextAlea() {
+  return firstWordsAlea[Math.floor(Math.random() * firstWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+", "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+".";}
 	
 function publicAlea() {
 if (Math.random()>0.2) {
@@ -79,14 +79,39 @@ if (Math.random()>0.2) {
 else {
   return "false";}}  
 
+var usersAlea = ["John W.","Anna B.","Paul A.","Mary M.","Fiona C.","Piotr D."];
+
+function userAlea() {
+return usersAlea[Math.floor(Math.random() * usersAlea.length)]}
+
+
 function listRequestStub(idDiv,n,bd) {
 if (!bd) {  // version local
   result=new Array();
   for(i=0;i<n;i++) {
-    result.push({"name":fullNameAlea(),"shortDesc":shortDescAlea(),"isPublic":publicAlea()});}
+    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});}
   buildListStub(idDiv,result);}
-else {     // version réseau
+else {     // version réseau à faire
   ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(result);});}
 return ;}
  
+ 
+function buildHistoryStub(idDiv,result) {
+s="";
+for(i=0;i<result.length;i++) {
+  s = s + "<li><a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\">"+result[i].dateVersion+"</a> "+result[i].userName+" : "+result[i].msgVersion+". (<a onclick='javascript:not_yet();'>Undo</a>)</li>";}
+document.getElementById(idDiv).innerHTML = s;}
+
+ 
+function historyRequestStub(idDiv,n,bd) {
+if (!bd) {  // version local
+  result=new Array();
+  var d = new Date();
+  for(i=0;i<n;i++) {	  
+    result.push({"dateVersion":d.toString(),"userName":userAlea(),"msgVersion":shortTextAlea()});
+	d.setDate(d.getDate()-Math.random());}
+  buildHistoryStub(idDiv,result);}
+else {     // version réseau à faire
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(result);});}
+return ;}
  
