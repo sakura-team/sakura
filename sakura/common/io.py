@@ -113,12 +113,17 @@ class RemoteAPIForwarder(AttrCallAggregator):
             self.next_result()
         return async_res.get()
     def next_result(self):
-        req_id, res = self.protocol.load(self.f)
+        try:
+            req_id, res = self.protocol.load(self.f)
+        except BaseException:
+            print('malformed result. closing.')
+            return False
         async_res = self.reqs[req_id]
         async_res.set(res)
         del self.reqs[req_id]
+        return True
     def loop(self):
         self.running = True
-        while True:
-            self.next_result()
+        while self.next_result():
+            pass
 

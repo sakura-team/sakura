@@ -71,4 +71,6 @@ class HubContext(object):
                 return bottle.HTTPError(*resp[1:])
         else:
             return bottle.HTTPError(404, "No such operator instance.")
+    def handle_daemon_disconnect(self, daemon_id):
+        pass
 

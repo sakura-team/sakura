@@ -11,6 +11,7 @@ def rpc_client_manager(daemon_id, context, sock_file):
     context.register_daemon(daemon_id, daemon_info, remote_api)
     remote_api.loop()
     print('rpc connection hub (client) -> daemon %d (server) disconnected.' % daemon_id)
+    context.handle_daemon_disconnect(daemon_id)
 
 def rpc_server_manager(daemon_id, context, sock_file):
     print('new rpc connection hub (server) <- daemon %d (client).' % daemon_id)
