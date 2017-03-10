@@ -88,7 +88,7 @@ function remove_operator_instance(id, on_hub) {
     //First we remove the connections
     var sub_array_links = sub_array_of_tuples(global_links, 2, op_inst).concat(sub_array_of_tuples(global_links, 3, op_inst));
     sub_array_links.forEach( function (item) {
-        remove_link(item[0]);
+        remove_link(item[0], true);
     });
     
     //remove from jsPlumb
@@ -212,7 +212,7 @@ function create_link_modal(id, source_cl_id, target_cl_id, source_inst_info, tar
                                                     <table> ';
     for (var i = 0; i < source_inst_info['outputs'].length; i++) {
         s += '                                          <tr><td valign="middle"> '+source_inst_info['outputs'][i]['label']+' </td> \
-                                                            <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_out_"+i+'\');" name="'+modal_id+"_out_"+i+'" id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"> \
+                                                            <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_out_"+i+'\', true);" name="'+modal_id+"_out_"+i+'" id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"> \
                                                                 <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_out_'+i+'">'+svg_round_square("")+' \
                                                                 </div></td>';
     }
@@ -235,7 +235,7 @@ function create_link_modal(id, source_cl_id, target_cl_id, source_inst_info, tar
                                                 <tr><td> \
                                                     <table>';
     for (var i = 0; i < target_inst_info['inputs'].length; i++)
-        s += '                                          <tr><td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_in_"+i+'\');" name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"> \
+        s += '                                          <tr><td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+modal_id+"_in_"+i+'\', true);" name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"> \
                                                                 <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_in_'+i+'">'+svg_round_square("")+' \
                                                                 </div></td> \
                                                             <td valign="middle"> '+target_inst_info['inputs'][i]['label']+' </td>';
@@ -247,7 +247,7 @@ function create_link_modal(id, source_cl_id, target_cl_id, source_inst_info, tar
                             </table> \
                         </div> \
                         <div class="modal-footer"> \
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+id.split("_")[1]+'\');">Delete Link</button> \
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+id.split("_")[1]+'\', true);">Delete Link</button> \
                             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button> \
                         </div> \
                     </div> \
@@ -266,14 +266,14 @@ function create_link_modal(id, source_cl_id, target_cl_id, source_inst_info, tar
 }
 
 
-function remove_link(nid) {
+function remove_link(nid, on_hub) {
     var link_index = index_in_array_of_tuples(global_links, 0, parseInt(nid));
     var modal_id = "modal_link_"+nid;
     
     //Now we send the removing commands to the hub, for each params
     var sub_params = sub_array_of_tuples(global_links_params, 0, nid);
     sub_params.forEach( function(row) {
-        delete_link_param(modal_id+"_out_"+row[1]);
+        delete_link_param(modal_id+"_out_"+row[1], on_hub);
     });
     
     //Then to jsPlumb
@@ -296,6 +296,98 @@ function remove_link(nid) {
     link_focus_id = null;
 }
 
+
+function delete_link_param(id, on_hub) {
+    console.log(id);
+    var tab         = id.split("_");
+    var modal_id    = parseInt(tab[2]);
+    var div_type    = tab[3];
+    var param_id    = parseInt(tab[4]);
+    
+    var col = 1;
+    if (div_type == "in") {
+        col = 2;
+    }
+        
+    var indexes = [];
+    for (var i = 0; i < global_links_params.length; i++) {
+        if (global_links_params[i][0] == modal_id && global_links_params[i][col] == param_id) {
+            indexes.push(i);
+            
+            
+            var mdiv = document.getElementById("modal_link_"+modal_id+"_body");
+            var line = "";
+            var div_out = "";
+            var div_in = "";
+            
+            if (div_type == "out") {
+                div_out = document.getElementById("svg_"+id);
+                div_in  = document.getElementById("svg_modal_link_"+modal_id+"_in_"+global_links_params[i][2]);                
+                line = document.getElementById("line_modal_link_"+modal_id+"_"+param_id+"_"+global_links_params[i][2]);
+            }
+            else {
+                div_out  = document.getElementById("svg_modal_link_"+modal_id+"_out_"+global_links_params[i][1]);
+                div_in = document.getElementById("svg_"+id);
+                line = document.getElementById("line_modal_link_"+modal_id+"_"+global_links_params[i][1]+"_"+param_id);
+            }
+            
+            //change the svgs
+            div_in.innerHTML = svg_round_square("");
+            div_out.innerHTML = svg_round_square("");
+            
+            //delete the line
+            mdiv.removeChild(line);
+            
+            //delete from hub side
+            if (on_hub) {
+                var hub_link_id = global_links_params[i][3];
+                ws_request('delete_link', [hub_link_id], {}, function (result) {
+                    if (result) {
+                        console.log("Issue with 'delete_link' function from hub:", result);
+                    }
+                });
+            }
+        }
+    }
+    
+    for (var i = indexes.length-1; i >= 0; i--) {
+        global_links_params.splice(indexes[i], 1);
+    }
+}
+
+
+function create_link_line(id, _out, _in) {
+    var rect0 = document.getElementById("modal_link_"+id+"_dialog").getBoundingClientRect();
+    var rect1 = document.getElementById("svg_modal_link_"+id+'_out_'+_out).getBoundingClientRect();
+    var rect2 = document.getElementById("svg_modal_link_"+id+'_in_'+_in).getBoundingClientRect();
+    
+    var w = Math.abs(rect2.x-rect1.x-24+2);
+    var h = Math.abs(rect2.y-rect1.y+2);
+    
+    //Making a fake connection
+    var mdiv = document.getElementById("modal_link_"+id+"_body");
+    
+    var svg_div = document.createElement('div');
+    svg_div.id = "line_modal_link_"+id+"_"+_out+"_"+_in;
+    //console.log("line id", svg_div.id);
+    
+    svg_div.style.position = 'absolute';
+    
+    svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
+    if (rect2.y >= rect1.y) {
+        svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
+        svg_div.innerHTML= '<svg height="'+(h+20)+'" width="'+(w)+'"> \
+                                <line x1="1" y1="1" x2="'+(w-1)+'" y2="'+(h-1)+'" style="stroke:rgb(33,256,33);stroke-width:2" /> \
+                            </svg> ';
+    }
+    else {
+        svg_div.style.top = (rect2.y-rect0.y+12-1)+'px';
+        svg_div.innerHTML= '<svg height="'+(h)+'" width="'+(w)+'"> \
+                                <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
+                            </svg> ';
+    }
+    mdiv.appendChild(svg_div);
+}
 
 
 function open_op_menu(e) {
