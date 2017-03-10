@@ -147,21 +147,21 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
         ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
-                s = '<table class="table table-condensed table-hover table-striped">\n<thead><tr>';
+                s = '<table class="table table-condensed table-hover table-striped" style="max-width: none;">\n<thead><tr>';
                 s += '<tr><th colspan='+nb_cols+'">&nbsp<tr>';
                 s += '<th style="padding: 1px;">#</th>';
-            
+                
                 result_info[in_out+'s'][id_in_out]['columns'].forEach( function(item) {
                     s+= '<th style="padding: 1px;">'+item[0]+'</th>';
                 });
                 s += '</tr></thead><tbody>';
-            
+                
                 var index = 0;
                 result_in_out.forEach( function(row) {
                     s += '<tr>\n';
                     s += '<td style="padding: 1px;">'+parseInt(index+min)+'</td>';
                     row.forEach( function(col) {
-                        s += '<td style="padding: 1px;">'+col+'</td>'; 
+                        s += '<td style="padding: 1px; word-break: break-all;">'+col+'</td>'; 
                     });
                     s += '</tr>';
                     index += 1;
