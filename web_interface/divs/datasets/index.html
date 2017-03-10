@@ -3,11 +3,62 @@
 
 <div style="display:none;" id="idDivDataSets" class="classMainDiv">
 	
+	<img style="float:right;" width="80px" height="80px" src="Media/Linecons_database.svg.png" alt="CC-BY-3.0 Wikipedia DataBase"></img>
+
 	<h2>DataSets</h2>
+	Collect and store your data.<br /><br />
 	
-	<ul>
-		<li>DataSet <a onclick="showDiv(event,'DataSets/tmpDataSet');"  href="http://sakura.imag.fr/DataSets/tmpDataSet">tmpDataSet_AAA</a></li>
-		<li>DataSet <a onclick="showDiv(event,'DataSets/tmpDataSet');"  href="http://sakura.imag.fr/DataSets/tmpDataSet">tmpDataSet_BBB</a></li>
-		<li>...</li>
-	</ul>
+
+	<div class="row">
+        <div class="col-md-10">
+            <div class="panel panel-default panel-table">
+                <div class="panel-heading">
+                    <div class="row">
+						<form class="form-search form-inline col-md-offset-6">
+							<input type="text" class="search-query" placeholder="Search..." />
+						</form>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <table id="mytable" class="table table-striped table-bordered table-list">
+                        <thead><tr>
+                            <th class="col-text">Name</th>
+                            <th class="col-text">Short Desc.</th>
+                            <th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>
+                        </tr></thead>
+                        <tbody id="idTableDataSetsToFullfill">
+						<tr><td><a href="javascript:listRequestStub('idTableDataSetsToFullfill',10,'DataSets/tmpDataSet',false)" class="executeOnShow">liste à remplir</a></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col col-xs-offset-3 col-xs-6">
+                            <nav aria-label="Page navigation" class="text-center">
+                                <ul class="pagination">
+                                    <li><a href="#" aria-label="Previous"><span aria-hidden="true">«</span></a></li>
+                                    <li class="active"><a href="#">1</a></li>
+                                    <li><a href="#">2</a></li>
+                                    <li><a href="#">3</a></li>
+                                    <li><a href="#">4</a></li>
+                                    <li><a href="#">5</a></li>
+                                    <li><a href="#" aria-label="Next"><span aria-hidden="true">»</span></a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                        <div class="col col-xs-3">
+                            <div class="pull-right">
+                                <button type="button" class="btn btn-primary">
+                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                    New DataSet
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
 	</div>

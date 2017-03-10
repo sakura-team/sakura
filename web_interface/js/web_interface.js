@@ -79,55 +79,52 @@ else {
 
 
 /*       FillStub        */  
-function buildListStub(idDiv,result) {
+function buildListStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
   if (result[i].isPublic=="true") {
     eyeIcon = "glyphicon-eye-open";}
   else {
 	eyeIcon = "glyphicon-eye-close";}  
-  s = s + "<tr><td><a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\">"+result[i].name+"</a></td>\n"
+  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
-		+ "<td align='center'><a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\" class='btn btn-default'><span class='glyphicon "+eyeIcon+"' aria-hidden='true'></span></a></td>"
+		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon "+eyeIcon+"' aria-hidden='true'></span></a></td>"
         + "</tr>";}
 document.getElementById(idDiv).innerHTML = s;}
 
-function listRequestStub(idDiv,n,bd) {
+function listRequestStub(idDiv,n,elt,bd) {
 if (!bd) {  // version local
   result=new Array();
   for(i=0;i<n;i++) {
     result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});}
-  buildListStub(idDiv,result);}
+  buildListStub(idDiv,result,elt);}
 else {     // version réseau à faire
-  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(result);});}
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
 return ;}
  
-function buildHistoryStub(idDiv,result) {
+function buildHistoryStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
-  s = s + "<li><a onclick=\"showDiv(event,'Protocols/tmpProtocol');\" href=\"http://sakura.imag.fr/Protocols/tmpProtocol\">"+result[i].dateVersion+"</a> "+result[i].userName+" : "+result[i].msgVersion+". (<a onclick='javascript:not_yet();'>Undo</a>)</li>";}
+  s = s + "<li><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].dateVersion+"</a> "+result[i].userName+" : "+result[i].msgVersion+". (<a onclick='javascript:not_yet();'>Undo</a>)</li>";}
 document.getElementById(idDiv).innerHTML = s;}
 
-function historyRequestStub(idDiv,n,bd) {
+function historyRequestStub(idDiv,n,elt,bd) {
 if (!bd) {  // version local
   result=new Array();
   var d = new Date();
   for(i=0;i<n;i++) {	  
     result.push({"dateVersion":d.toString(),"userName":aleaAlea(usersAlea),"msgVersion":shortTextAlea()});
 	d.setDate(d.getDate()-Math.random());}
-  buildHistoryStub(idDiv,result);}
+  buildHistoryStub(idDiv,result,elt);}
 else {     // version réseau à faire
-  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(result);});}
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
 return ;}
 
-
-
-
-function buildEltStub(idDiv,result) {
+function buildEltStub(idDiv,result,elt) {
 s = "";
-s = s + '<h3>Protocol '+result.name+'</h3>'
+s = s + '<h3>'+elt+' '+result.name+'</h3>'
       + '<div class="col-md-12" id="studyPageContentMain"><div class="row well">'
-      + '<h4 class="">Protocol information</h4>'
+      + '<h4 class="">'+elt+' information</h4>'
       + '<dl class="dl-horizontal col-md-6">';
 //Informations	  
 for(i=0;i<result.info.length;i++) { 
@@ -188,10 +185,10 @@ for(i=0;i<result.comments.length;i++) {
 	s = s + '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
 	      + '<div class="commentText"><p class="">'+result.comments[i].comment+'</p> '
 		  + '<span class="date sub-text">'+result.comments[i].name+' on '+result.comments[i].date+'</span></div></li><br />';}
-s = s + '<a href="javascript:eltRequestStub(\'idEltToFullfill\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd
+s = s + '<a href="javascript:eltRequestStub(\''+idDiv+'\',\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd
 document.getElementById(idDiv).innerHTML = s;}
 
-function eltRequestStub(idDiv,bd) {
+function eltRequestStub(idDiv,elt,bd) {
 if (!bd) {  // version local
   eltName = fullNameAlea();
   userName = aleaAlea(usersAlea)
@@ -225,7 +222,7 @@ if (!bd) {  // version local
   var result = {"name":eltName,"userName":userName,
                 "info":infos, "dataSets":dataSets, "process":procs, "results":results, 
 				"comments":comments,"fileSystem":fs};
-  buildEltStub(idDiv,result);}
+  buildEltStub(idDiv,result,elt);}
 else {     // version réseau à faire
-  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildEltStub(result);});}
+  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildEltStub(idDiv,result,elt);});}
 return ;}
