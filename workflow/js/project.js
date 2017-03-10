@@ -37,9 +37,17 @@ function current_project() {
             return;
         }
         
+        //Emptying current accordion
+        var acc_div = document.getElementById('op_left_accordion');
+        var butt = document.getElementById('select_op_add_button').cloneNode(true);
+        while(acc_div.firstChild){
+            acc_div.removeChild(acc_div.firstChild);
+        }
+        acc_div.appendChild(butt);
+        
+        //Filling accordion with panels
         var index = 0;
         global_op_panels.forEach( function (panel) {
-            console.log(panel);
             
             var divs = []
             panel[2].forEach( function(item) {
@@ -47,29 +55,22 @@ function current_project() {
                 divs.push(select_op_new_operator(op['svg'], op['name'], op['id'], false));
             });
             
-            var tbl = select_op_make_table(3, panel[2], divs);
-            console.log(tbl);
             var tmp_el = document.createElement("div");
-            tmp_el.appendChild(tbl);
+            tmp_el.appendChild(select_op_make_table(3, panel[2], divs));
             
             acc_id = "accordion_"+index
+            index++;
             
             var new_acc = select_op_create_accordion(panel[1], acc_id, tmp_el.innerHTML);
-            var acc_div = document.getElementById('op_left_accordion');
-            
-            //Empty accordion
-            //console.log(acc_div);
-            //console.log(acc_div.firstChild);
-                
-            var butt = document.getElementById('select_op_add_button');
-            
             acc_div.insertBefore(new_acc, butt);
-            
-            index++;
         });
     });
 }
 
+
+function save_project() {
+    
+}
 
 function load_project() {
     not_yet();
