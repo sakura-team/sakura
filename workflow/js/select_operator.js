@@ -216,8 +216,7 @@ function select_op_add_panel() {
     $('#modal_op_selector').modal('hide');
     
    //Send the the current global var to the hub
-   var gui = JSON.stringify(global_op_panels);
-   ws_request('set_project_gui_data', [gui], {}, function(result){});
+   save_project()
 }
 
 
@@ -276,5 +275,10 @@ function change_panel_title(id) {
 
 
 function select_op_delete_accordion(id) {
-    document.getElementById('op_left_accordion').removeChild(document.getElementById(id));
+    var acc = document.getElementById(id);
+    document.getElementById('op_left_accordion').removeChild(acc);
+    
+    var index = index_in_array_of_tuples(global_op_panels, 0, acc.id);
+    global_op_panels.splice(index,1);
+    save_project();
 }

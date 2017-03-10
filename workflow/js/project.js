@@ -68,17 +68,28 @@ function current_project() {
 }
 
 
-function save_project() {
-    
-}
-
 function load_project() {
     not_yet();
 }
 
 
 function save_project() {
-    not_yet();
+    //The panels first
+    var gui = JSON.stringify(global_op_panels);
+    ws_request('set_project_gui_data', [gui], {}, function(result){});
+    
+    
+    //Then the operators
+    global_ops_inst.forEach( function(id) {
+        var op = document.getElementById(id);
+        var tab = id.split("_");
+        var hub_id = tab[2];
+        
+        drop_x = parseInt(op.style.left.split('px')[0]);
+        drop_y = parseInt(op.style.top.split('px')[0]);
+        var gui = {x: drop_x,    y: drop_y};
+        ws_request('set_operator_instance_gui_data', [parseInt(hub_id), JSON.stringify(gui)], {}, function(result) {});
+    });
 };
 
 
