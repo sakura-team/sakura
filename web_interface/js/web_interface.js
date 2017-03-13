@@ -174,10 +174,8 @@ if (result.fileSystem.length>0) {
 	s = s + '<tr><td><a onclick="not_yet();">'+result.fileSystem[i].filename+'</a></td><td>'+result.fileSystem[i].description+'</td></tr>';}
   s = s + '</tbody></table></div>';}
 //Comments
-s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3><div align="right">'
-	  + '<button onclick="not_yet();" type="button" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-thumbs-up"></span> Like : 5</button>'
-      + '<button onclick="not_yet();" type="button" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-thumbs-down"></span> Dislike : 1</button></div>'
-	  + '</div><span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
+s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3>' 
+      + '<span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
       + '<input class="form-control" type="text" placeholder="Your comments" onclick="not_yet()"/></div>'
       + '<div class="form-group"><button onclick="not_yet();" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></div></form><hr />'
 	  + '<ul class="commentList">';
