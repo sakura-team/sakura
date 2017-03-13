@@ -2,7 +2,7 @@
 //January 16th, 2017
 
 
-var max_rows = 15;
+var max_rows = 10;
 
 function fill_all(id) {
     fill_in_out('input', id);
@@ -147,26 +147,31 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
         ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
-                s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed;">\n<thead><tr>';
-                s += '<tr><th colspan='+nb_cols+'">&nbsp<tr>';
-                s += '<th style="padding: 1px;">#</th>';
+                s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed;">\n';
+                s += '<thead><tr>';
+                s += '<th style="padding: 1px;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#</th>';
                 
                 result_info[in_out+'s'][id_in_out]['columns'].forEach( function(item) {
-                    s+= '<th style="padding: 1px;">'+item[0]+'</th>';
+                    s+= '<th style="padding: 1px;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+item[0]+'</th>';
                 });
-                s += '</tr></thead><tbody>';
+                s += '</tr></thead>';
                 
+                s+= '<tbody>';
                 var index = 0;
                 result_in_out.forEach( function(row) {
                     s += '<tr>\n';
-                    s += '<td style="padding: 1px;">'+parseInt(index+min)+'</td>';
+                    s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+parseInt(index+min)+'</td>';
                     row.forEach( function(col) {
                         s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+col+'</td>'; 
                     });
                     s += '</tr>';
                     index += 1;
                 });
+                
+                
 
+                s += '<tr><td colspan="'+nb_cols+'" style="background-color: "white";">';
+                
                 if (result_info[in_out+'s'][id_in_out]['length'] != null) {
                     
                     var nb_pages = parseInt(result_info[in_out+'s'][id_in_out]['length']/(max-min));
@@ -179,7 +184,6 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                         s+= '   </ul>';
                     }
                     else if (nb_pages > 10) {
-                        s += '<tr><td colspan="100%" style="background-color: "white";">';
                         
                         var current_page = Math.floor(min/(max-min));
                         s+= '   <ul class="pagination pagination-sm">\n';
@@ -211,7 +215,6 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     }
                 }
                 else {
-                    s += '<tr><td colspan="100%" style="background-color: "white";">';
                     s+= '   <ul class="pagination pagination-sm">\n';
                     if (min > 0) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+0+','+(max-min)+');\'><span class="glyphicon glyphicon-fast-backward" style="color: grey; cursor: pointer;"></a></li>\n';
@@ -225,7 +228,8 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+(min + (max-min))+','+(max + (max-min))+');\'><span class="glyphicon glyphicon-forward" style="color: grey; cursor: pointer;"></a></li>\n';
                     s+= '   </ul>';
                 }
-                s += '</tbody></table>';
+                
+                s += '</tr></tbody></table>';
                 d.innerHTML = s;
             }
         });
