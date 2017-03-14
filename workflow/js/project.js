@@ -9,17 +9,22 @@ function get_project_links() {
     while (global_links.length)
         remove_link(global_links[0][0]);
     
+    global_links_inc = 0;
+    
     //Recovering the links from hub
     ws_request('list_link_ids', [], {}, function (ids) {
         ids.forEach( function (id) {
             ws_request('get_link_info', [id], {}, function(info) {
-                console.log(info);
-                 //First we send the link creation command to the hub
+                
+                var src_inst = instance_from_hub_id(info.src_id);
+                var dst_inst = instance_from_hub_id(info.dst_id);
+                
+                //jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
                 
                 //global_links.push([global_links_inc, params.connection.id, source_inst_id, target_inst_id]);
                 
-                /*//modal creation
-                ws_request('get_operator_instance_info', [source_inst_id], {}, function (source_inst_info) {
+                //modal creation
+                /*ws_request('get_operator_instance_info', [source_inst_id], {}, function (source_inst_info) {
                     ws_request('get_operator_instance_info', [target_inst_id], {}, function (target_inst_info) {
                         var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id, source_inst_info, target_inst_info);
                         main_div.append(ndiv);
@@ -37,10 +42,8 @@ function current_project() {
     
     //We first clean the current gui
     while (global_ops_inst.length) {
-        remove_operator_instance(global_ops_inst[0], false)
+        remove_operator_instance("op_"+global_ops_inst[0].class_id+"_"+global_ops_inst[0].hub_id, false)
     };
-    
-    global_ops_inst_gui = [];
     
     var starting = null;
     var nb_ops = -1;
@@ -123,18 +126,14 @@ function save_project() {
     var gui = JSON.stringify(global_op_panels);
     ws_request('set_project_gui_data', [gui], {}, function(result){});
     
-    
     //Then the operators
-    global_ops_inst.forEach( function(id) {
-        var op = document.getElementById(id);
-        var tab = id.split("_");
-        var hub_id = tab[2];
-        
-        drop_x = parseInt(op.style.left.split('px')[0]);
-        drop_y = parseInt(op.style.top.split('px')[0]);
-        var gui = {x: drop_x,    y: drop_y};
-        ws_request('set_operator_instance_gui_data', [parseInt(hub_id), JSON.stringify(gui)], {}, function(result) {});
+    global_ops_inst.forEach( function(inst) {
+        var gui = {x: inst.gui.x,    y: inst.gui.y};
+        ws_request('set_operator_instance_gui_data', [parseInt(inst.hub_id), JSON.stringify(gui)], {}, function(result) {});
     });
+
+
+
 };
 
 
@@ -143,7 +142,7 @@ function new_project() {
     if (!res) 
         return false;
     while (global_ops_inst.length) {
-        remove_operator_instance(global_ops_inst[0], true)
+        remove_operator_instance("op_"+global_ops_inst[0].class_id+"_"+global_ops_inst[0].hub_id, true)
     };
     global_ops_inst = [];
 };

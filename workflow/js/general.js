@@ -8,7 +8,6 @@
 var global_op_panels    = [];
 var global_ops_cl       = [];
 var global_ops_inst     = [];
-var global_ops_inst_gui = [];
 var op_focus_id         = null;
 var link_focus_id       = null;
 
@@ -31,6 +30,22 @@ function not_yet(s = '') {
         alert('Not implemented yet');
     else
         alert('Not implemented yet: '+ s);
+}
+
+
+function instance_index_from_hub_id(hid) {
+    for (var i=0; i< global_ops_inst.length; i++)
+        if (global_ops_inst[i].hub_id == hid)
+            return i;
+    return -1
+}
+
+
+function instance_from_hub_id(hid) {
+    for (var i=0; i< global_ops_inst.length; i++)
+        if (global_ops_inst[i].hub_id == hid)
+            return global_ops_inst[i];
+    return null;
 }
 
 
@@ -88,4 +103,10 @@ function svg_round_square_crossed(id) {
             </svg>';
 }
 
+
+function escapeHtml(text) {
+    return text.replace(/[\"&<>]/g, function (a) {
+        return { '"': '&quot;', '&': '&amp;', '<': '&lt;', '>': '&gt;' }[a];
+    });
+}
 

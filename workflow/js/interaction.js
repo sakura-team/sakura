@@ -126,6 +126,7 @@ function open_op_modal() {
         $('#'+modal_name+"_dialog").toggleClass("full_width");
         $('#'+modal_name+"_body").css("height", "100%");
         $('#'+modal_name+"_body").children().eq(1).css("height", "100%");
+        current_nb_rows = max_rows;
     }
     $('#'+modal_name).modal();
 }
@@ -142,6 +143,10 @@ function jsp_drag_stop(e) {
     
     //GUI update
     if (ids[0] == 'op') {
+        var index = instance_index_from_hub_id(ids[2]);
+        console.log(parseInt(e.el.style.left));
+        global_ops_inst[index].gui = { x: parseInt(e.el.style.left),
+                                       y: parseInt(e.el.style.top) };
         save_project()
     }
     jsPlumb.repaintEverything();        //Very Important when dragging elements manually

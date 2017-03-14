@@ -3,6 +3,26 @@
 
 
 var max_rows = 10;
+var current_nb_rows = max_rows;
+
+
+function full_width(elt) {
+    $('#'+elt+"_dialog").toggleClass('full_width');
+    if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
+        //var h = ($(window).height()-$('#'+elt+"_header").height()-80);
+        //var h_diff = h - $('#'+elt+"_body").height();
+        //var nb_rows = h_diff/20;
+        //current_nb_rows = nb_rows + max_rows;
+        
+        $('#'+elt+"_body").css("height", h+"px");
+        $('#'+elt+"_body").children().eq(1).css("height", (h-60)+"px");
+    }
+    else {
+        $('#'+elt+"_body").css("height", "100%");
+        $('#'+elt+"_body").children().eq(1).css("height", "100%");
+    }
+}
+
 
 function fill_all(id) {
     fill_in_out('input', id);
@@ -107,28 +127,29 @@ function fill_in_out(in_out, id) {
         var div_tab = document.createElement('div');
         div_tab.className = 'modal-body';
         div_tab.id = id+'_'+in_out+'s';
+        div_tab.style["paddingBottom"] = '0px';
         
         var ul          = document.createElement('ul');
         var tab_content = document.createElement('div');
         ul.className            = "nav nav-tabs";
         tab_content.className   = "tab-content";
         s = '<li class="active"> \
-                <a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+max_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
+                <a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
         for (var i =1; i < nb_in_out; i++) {
-            s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+max_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
+            s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
         }
         ul.innerHTML = s;
-    
+        
         s = '<div id="'+id+'_'+in_out+'_'+0+'" class="tab-pane fade in active"></div>';
         for (var i =1; i < nb_in_out; i++)
             s += '<div id="'+id+'_'+in_out+'_'+i+'" class="tab-pane fade in active"></div>';
         tab_content.innerHTML = s;
-    
+        
         div_tab.appendChild(ul);
         div_tab.appendChild(tab_content);
         d.appendChild(div_tab);
-    
-        fill_one_in_out(in_out, id, 0, 0, max_rows);
+        
+        fill_one_in_out(in_out, id, 0, 0, current_nb_rows);
     });
 }
 
@@ -147,7 +168,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
         ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
-                s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed;">\n';
+                s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed; margin-bottom: 1px;">\n';
                 s += '<thead><tr>';
                 s += '<th style="padding: 1px;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#</th>';
                 
@@ -162,15 +183,20 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     s += '<tr>\n';
                     s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+parseInt(index+min)+'</td>';
                     row.forEach( function(col) {
-                        s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+col+'</td>'; 
+                        if (typeof col === 'string') {
+                            s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+escapeHtml(col)+'</td>'; 
+                        }
+                        else {
+                            s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+col+'</td>'; 
+                        }
                     });
                     s += '</tr>';
                     index += 1;
                 });
                 
-                
-
-                s += '<tr><td colspan="'+nb_cols+'" style="background-color: "white";">';
+                //s += '<tr><td colspan="'+nb_cols+'" style="background-color: white;">';
+                //s += '</tr></tbody></table>';
+                s += '</tbody></table>';
                 
                 if (result_info[in_out+'s'][id_in_out]['length'] != null) {
                     
@@ -178,7 +204,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     if (nb_pages*(max-min) < result_info[in_out+'s'][id_in_out]['length'])
                         nb_pages++;
                     if (nb_pages > 1 && nb_pages < 10) {
-                        s+= '   <ul class="pagination pagination-sm">\n';
+                        s+= '   <ul class="pagination pagination-sm" style="margin-top: 5px; margin-bottom: 1px;">\n';
                         for (var i=0; i< nb_pages; i++)
                             s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
                         s+= '   </ul>';
@@ -229,7 +255,6 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     s+= '   </ul>';
                 }
                 
-                s += '</tr></tbody></table>';
                 d.innerHTML = s;
             }
         });
