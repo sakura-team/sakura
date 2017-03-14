@@ -9,7 +9,7 @@ var current_nb_rows = max_rows;
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
-        //var h = ($(window).height()-$('#'+elt+"_header").height()-80);
+        var h = ($(window).height()-$('#'+elt+"_header").height()-80);
         //var h_diff = h - $('#'+elt+"_body").height();
         //var nb_rows = h_diff/20;
         //current_nb_rows = nb_rows + max_rows;
