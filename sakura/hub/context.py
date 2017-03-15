@@ -13,18 +13,26 @@ class HubContext(object):
         self.op_instances = OpInstanceRegistry()
         self.links = LinkRegistry()
         self.project_gui_data = None
-    def get_daemon_id(self):
+    def get_daemon_id(self, daemon_info):
+        daemon_name = daemon_info['name']
+        # check if we already know this daemon description
+        for daemon_id, daemon_info in self.daemons.items():
+            if daemon_info.name == daemon_name:
+                return daemon_id
+        # otherwise, let's return a new id
         daemon_id = self.next_daemon_id
         self.next_daemon_id += 1
         return daemon_id
-    def register_daemon(self, daemon_id, daemon_info, api):
+    def register_daemon(self, daemon_info, api):
         # register daemon info and operator classes.
+        daemon_id = self.get_daemon_id(daemon_info)
         # note: we convert daemon_info dict to namedtuple (it will be more handy)
         daemon_info.update(daemon_id = daemon_id, api = api)
         daemon_info = namedtuple('DaemonInfo', daemon_info.keys())(**daemon_info)
         self.daemons[daemon_id] = daemon_info
         for op_cls_info in daemon_info.op_classes:
             self.register_op_class(daemon_id, *op_cls_info)
+        return daemon_id
     def list_daemons_serializable(self):
         for daemon in self.daemons.values():
             d = dict(daemon._asdict())

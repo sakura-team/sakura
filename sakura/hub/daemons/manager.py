@@ -4,20 +4,20 @@ from sakura.common.io import RemoteAPIForwarder, \
                                 LocalAPIHandler
 from sakura.hub.daemons.api import DaemonToHubAPI
 
-def rpc_client_manager(daemon_id, context, sock_file):
-    print('new rpc connection hub (client) -> daemon %d (server).' % daemon_id)
+def rpc_client_manager(daemon_info, context, sock_file):
+    print('new rpc connection hub (client) -> %s (server).' % daemon_info['name'])
     remote_api = RemoteAPIForwarder(sock_file, pickle)
-    daemon_info = remote_api.get_daemon_info_serializable()
-    context.register_daemon(daemon_id, daemon_info, remote_api)
+    daemon_id = context.register_daemon(daemon_info, remote_api)
     remote_api.loop()
-    print('rpc connection hub (client) -> daemon %d (server) disconnected.' % daemon_id)
+    print('rpc connection hub (client) -> %s (server) disconnected.' % daemon_info['name'])
     context.handle_daemon_disconnect(daemon_id)
 
-def rpc_server_manager(daemon_id, context, sock_file):
-    print('new rpc connection hub (server) <- daemon %d (client).' % daemon_id)
+def rpc_server_manager(daemon_info, context, sock_file):
+    print('new rpc connection hub (server) <- %s (client).' % daemon_info['name'])
     pool = gevent.pool.Group()
+    daemon_id = context.get_daemon_id(daemon_info)
     local_api = DaemonToHubAPI(daemon_id, context)
     handler = LocalAPIHandler(sock_file, pickle, local_api, pool)
     handler.loop()
-    print('rpc connection hub (server) <- daemon %d (client) disconnected.' % daemon_id)
+    print('rpc connection hub (server) <- %s (client) disconnected.' % daemon_info['name'])
 
