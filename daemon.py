@@ -33,7 +33,3 @@ g1 = Greenlet.spawn(rpc_server_greenlet, srv_sock_file, engine)
 g2 = Greenlet.spawn(rpc_client_greenlet, clt_sock_file, engine)
 wait_greenlets(g1,g2)
 print('**out**')
-
-# cleanup
-for obj in [srv_sock_file, srv_sock, clt_sock_file, clt_sock]:
-    obj.close()
