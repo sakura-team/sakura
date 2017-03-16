@@ -52,6 +52,48 @@ function SakuraOperatorInterface() {
                     {},
                     cb);
     };
+    this.get_file_content = function (file_path, cb) {
+        ws_request( 'get_operator_file_content',
+                    [this.op_info.op_id, file_path],
+                    {},
+                    cb);
+    };
+    this.get_file_tree = function (cb) {
+        ws_request( 'get_operator_file_tree',
+                    [this.op_info.op_id],
+                    {},
+                    cb);
+    };
+    this.save_file_content = function (file_path, file_content, cb) {
+        ws_request( 'save_operator_file_content',
+                    [this.op_info.op_id, file_path, file_content],
+                    {},
+                    cb);
+    };
+    this.new_file = function (file_path, file_content, cb) {
+        ws_request( 'new_operator_file',
+                    [this.op_info.op_id, file_path, file_content],
+                    {},
+                    cb);
+    };
+    this.new_directory = function (dir_path, cb) {
+        ws_request( 'new_operator_directory',
+                    [this.op_info.op_id, dir_path],
+                    {},
+                    cb);
+    };
+    this.move_file = function (file_src, file_dst, cb) {
+        ws_request( 'move_operator_file',
+                    [this.op_info.op_id, file_src, file_dst],
+                    {},
+                    cb);
+    };
+    this.delete_file = function (file_path, cb) {
+        ws_request( 'delete_operator_file',
+                    [this.op_info.op_id, file_path],
+                    {},
+                    cb);
+    };
     this.onready = function (cb) {
         if (this.op_info != null) {
             // ok cb can be executed right now

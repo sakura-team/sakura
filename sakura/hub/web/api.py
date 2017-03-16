@@ -41,12 +41,32 @@ class GuiToHubAPI(object):
     def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):
         return self.context.op_instances[op_id].internal_streams[intern_id].get_range(row_start, row_end)
     
-    def get_operator_file_content(self, op_id, file_path):
-        return self.context.op_instances[op_id].get_file_content(file_path)
-        
     def fire_operator_event(self, op_id, event):
         return self.context.op_instances[op_id].handle_event(event)
     
+    ########################################
+    # Operator files
+
+    def get_operator_file_content(self, op_id, file_path):
+        return self.context.op_instances[op_id].get_file_content(file_path)
+
+    def get_operator_file_tree(self, op_id):
+        return self.context.op_instances[op_id].get_file_tree()
+
+    def save_operator_file_content(self, op_id, file_path, file_content):
+        return self.context.op_instances[op_id].save_file_content(file_path, file_content)
+
+    def new_operator_file(self, op_id, file_path, file_content):
+        return self.context.op_instances[op_id].new_file(file_path, file_content)
+
+    def new_operator_directory(self, op_id, dir_path):
+        return self.context.op_instances[op_id].new_directory(dir_path)
+
+    def move_operator_file(self, op_id, file_src, file_dst):
+        return self.context.op_instances[op_id].move_file(file_src, file_dst)
+
+    def delete_operator_file(self, op_id, file_path):
+        return self.context.op_instances[op_id].delete_file(file_path)
     
     ########################################
     # Links

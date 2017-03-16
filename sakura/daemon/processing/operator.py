@@ -1,4 +1,5 @@
-import inspect, os.path
+import inspect
+from pathlib import Path
 from sakura.daemon.processing.stream import InputStream, OutputStream, InternalStream
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
@@ -11,8 +12,8 @@ class Operator(Registry):
         self.internal_streams = []
         self.parameters = []
         self.tabs = []
-        operator_py_path = inspect.getabsfile(self.__class__)
-        self.op_root_path = os.path.split(operator_py_path)[0]
+        operator_py_path = Path(inspect.getabsfile(self.__class__))
+        self.root_dir = operator_py_path.parent
     def register_input(self, input_stream_label):
         return self.register(self.input_streams, InputStream, input_stream_label)
     def register_output(self, output_stream_label, compute_cb):
@@ -43,19 +44,58 @@ class Operator(Registry):
             internal_streams = [ stream.get_info_serializable() for stream in self.internal_streams ],
             tabs = [ tab.get_info_serializable() for tab in self.tabs ]
         )
-    def get_abs_file_path(self, file_path):
-        return os.path.join(self.op_root_path, file_path)
-    def get_file_content(self, file_path):
-        with open(self.get_abs_file_path(file_path)) as f:
-            return f.read()
     def auto_fill_parameters(self):
         for param in self.parameters:
             param.auto_fill()
     def serve_file(self, request):
         print('serving ' + request.filepath, end="")
-        resp = request.serve(self.op_root_path)
+        resp = request.serve(str(self.root_dir))
         print(' ->', resp)
         return resp
+    def get_file_content(self, file_path):
+        with (self.root_dir / file_path).open() as f:
+            return f.read()
+    def get_file_tree(self, path=None):
+        if path == None:
+            path = self.root_dir
+        return tuple(self.iterate_file_tree(path))
+    def iterate_file_tree(self, p):
+        for f in p.iterdir():
+            if f.is_dir():
+                yield dict(
+                    name = f.name,
+                    is_dir = True,
+                    dir_entries = self.get_file_tree(f)
+                )
+            else:
+                yield dict(
+                    name = f.name,
+                    is_dir = False
+                )
+    def save_file_content(self, file_path, file_content):
+        with (self.root_dir / file_path).open('w') as f:
+            f.write(file_content)
+
+    def new_file(self, file_path, file_content):
+        self.save_file_content(file_path, file_content)
+
+    def new_directory(self, dir_path):
+        (self.root_dir / dir_path).mkdir()
+
+    def move_file(self, file_src, file_dst):
+        (self.root_dir / file_src).rename(
+                    self.root_dir / file_dst)
+
+    def delete_file(self, path):
+        self.delete_abs_file(self.root_dir / path)
+
+    def delete_abs_file(self, p):
+        if p.is_dir():
+            for f in p.iterdir():
+                self.delete_abs_file(f)
+            p.rmdir()
+        else:
+            p.unlink()
 
 class InternalOperator(Operator):
     def __init__(self):
