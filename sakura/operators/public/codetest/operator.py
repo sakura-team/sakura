@@ -8,3 +8,4 @@ class CodeOperator(Operator):
     def construct(self):
         # additional tabs
         self.register_tab('Code-proto', 'code.html')
+        self.register_tab('API-test', 'testtab.html')
