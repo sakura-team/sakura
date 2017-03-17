@@ -3,6 +3,7 @@ from collections import namedtuple
 from sakura.hub.opclasses import OpClassRegistry
 from sakura.hub.opinstances import OpInstanceRegistry
 from sakura.hub.links import LinkRegistry
+from sakura.hub.storage import CentralStorage
 from sakura.common.bottle import PicklableFileRequest
 
 class HubContext(object):
@@ -13,6 +14,7 @@ class HubContext(object):
         self.op_instances = OpInstanceRegistry()
         self.links = LinkRegistry()
         self.project_gui_data = None
+        self.db = CentralStorage()
     def get_daemon_id(self, daemon_info):
         daemon_name = daemon_info['name']
         # check if we already know this daemon description

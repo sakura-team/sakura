@@ -13,4 +13,7 @@ def load_conf():
                 help="Specify web app sub-directory",
                 type=str,
                 default='workflow')
-    return merge_args_and_conf(parser)
+    defaults = dict(
+        work_dir = '/var/lib/sakura'
+    )
+    return merge_args_and_conf(parser, defaults)

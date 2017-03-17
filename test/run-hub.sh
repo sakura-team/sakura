@@ -22,7 +22,8 @@ cat > $TMPDIR/hub.conf << EOF
 {
     "web-port": 8081,
     "hub-port": 10432,
-    "external-datasets": [ ]
+    "external-datasets": [ ],
+    "work-dir": "$TMPDIR"
 }
 EOF
 
