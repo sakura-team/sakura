@@ -14,7 +14,9 @@ class SQLiteDB():
 
     def __init__(self, path):
         self.c = None
-        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        parent_dir = Path(path).parent
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True)
         self.c = sqlite3.connect(path)
         # allow name-based access to columns
         self.c.row_factory = sqlite3.Row
