@@ -1,6 +1,7 @@
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
+        self.project_id = 0     # for now
     
     ########################################
     # Daemons
@@ -86,13 +87,13 @@ class GuiToHubAPI(object):
     ########################################
     # Gui
     def set_operator_instance_gui_data(self, op_id, gui_data):
-        self.context.op_instances[op_id].gui_data = gui_data
+        self.context.op_instances.set_gui_data(op_id, gui_data)
     
     def get_operator_instance_gui_data(self, op_id):
-        return self.context.op_instances[op_id].gui_data
+        return self.context.op_instances.get_gui_data(op_id)
     
     def set_project_gui_data(self, project_gui_data):
-        self.context.project_gui_data = project_gui_data
+        self.context.set_project_gui_data(self.project_id, project_gui_data)
     
     def get_project_gui_data(self):
-        return self.context.project_gui_data
+        return self.context.get_project_gui_data(self.project_id)

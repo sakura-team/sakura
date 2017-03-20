@@ -14,7 +14,6 @@ class HubContext(object):
         self.op_classes = OpClassRegistry(self.db)
         self.op_instances = OpInstanceRegistry(self.db)
         self.links = LinkRegistry()
-        self.project_gui_data = None
     def get_daemon_id(self, daemon_info):
         # check if we already know this daemon description
         db_row = self.db.select_unique('Daemon',
@@ -82,3 +81,16 @@ class HubContext(object):
             return bottle.HTTPError(404, "No such operator instance.")
     def on_daemon_disconnect(self, daemon_id):
         self.daemons[daemon_id].connected = False
+    def get_project_gui_data(self, project_id):
+        row = self.db.select_unique('Project',
+                                    project_id = project_id)
+        if row == None:
+            return None
+        else:
+            return row['gui_data']
+    def set_project_gui_data(self, project_id, gui_data):
+        self.db.insert_or_update(
+                'Project', 'project_id',
+                project_id = project_id,
+                gui_data = gui_data)
+        self.db.commit()

@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS OpClass (
 CREATE TABLE IF NOT EXISTS OpInstance (
     op_id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER REFERENCES Project(project_id),
-    cls_id INTEGER REFERENCES OpClass(cls_id)
+    cls_id INTEGER REFERENCES OpClass(cls_id),
+    gui_data TEXT
 );
 """
 

@@ -21,13 +21,14 @@ class OpInstanceRegistry(object):
         for row in self.db.execute(QUERY_OPINSTANCES_FROM_DAEMON % daemon_info.daemon_id):
             cls_info = op_classes[row['cls_id']]
             op_id = row['op_id']
-            self.instanciate(daemon_info, cls_info, op_id)
+            gui_data = row['gui_data']
+            self.instanciate(daemon_info, cls_info, op_id, gui_data)
     def create(self, daemon_info, cls_info):
         self.db.insert('OpInstance', cls_id = cls_info.cls_id)
         self.db.commit()
         op_id = self.db.lastrowid
         return self.instanciate(daemon_info, cls_info, op_id)
-    def instanciate(self, daemon_info, cls_info, op_id):
+    def instanciate(self, daemon_info, cls_info, op_id, gui_data = None):
         daemon_info.api.create_operator_instance(cls_info.name, op_id)
         remote_instance = daemon_info.api.op_instances[op_id]
         desc = OpInstance(  op_id = op_id,
@@ -35,7 +36,7 @@ class OpInstanceRegistry(object):
                             cls_info = cls_info,
                             attached_links = set(),
                             remote_instance = remote_instance,
-                            gui_data = None)
+                            gui_data = gui_data)
         self.info_per_op_id[op_id] = desc
         return remote_instance.get_info_serializable()
     def delete(self, op_id):
@@ -48,3 +49,10 @@ class OpInstanceRegistry(object):
     def __iter__(self):
         # iterate over op_id values
         return self.info_per_op_id.__iter__()
+    def get_gui_data(self, op_id):
+        return self[op_id].gui_data
+    def set_gui_data(self, op_id, gui_data):
+        self[op_id].gui_data = gui_data
+        self.db.update('OpInstance', 'op_id',
+                    op_id = op_id, gui_data = gui_data)
+        self.db.commit()
