@@ -15,10 +15,9 @@ def set_unbuffered_stdout():
 def wait_greenlets(*greenlets):
     gevent.joinall(greenlets, count=1)
 
-def SimpleAttrContainer(*attrs):
-    class Cls:
-        __slots__ = attrs
-        def __init__(self, *args):
-            for attr, v in zip(attrs, args):
-                setattr(self, attr, v)
-    return Cls
+class SimpleAttrContainer:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+    def _asdict(self):
+        return self.__dict__.copy()

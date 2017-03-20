@@ -1,5 +1,6 @@
 import inspect
 from pathlib import Path
+from sakura.common.tools import SimpleAttrContainer
 from sakura.daemon.processing.stream import InputStream, OutputStream, InternalStream
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
@@ -33,7 +34,11 @@ class Operator(Registry):
                 return False
         return True
     def descriptor(op_cls):
-        return op_cls.NAME, op_cls.SHORT_DESC, op_cls.TAGS, op_cls.ICON
+        return SimpleAttrContainer(
+                name = op_cls.NAME,
+                short_desc = op_cls.SHORT_DESC,
+                tags = op_cls.TAGS,
+                icon = op_cls.ICON)
     def get_info_serializable(self):
         return dict(
             op_id = self.op_id,

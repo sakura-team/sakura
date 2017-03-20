@@ -1,24 +1,34 @@
-from collections import namedtuple
-
-OpClsInfo = namedtuple('OpClsInfo',
-        ['cls_id', 'daemon_id', 'name', 'short_desc', 'tags', 'icon'])
-
 class OpClassRegistry(object):
-    def __init__(self):
-        self.next_cls_id = 0
+    def __init__(self, db):
+        self.db = db
         self.info_per_cls_id = {}
-        self.info_per_daemon_and_name = {}
-    def store(self, daemon_id, name, *args):
-        if (daemon_id, name) in self.info_per_daemon_and_name:
-            cls_id = self.info_per_daemon_and_name[(daemon_id, name)][0]
-        else:
-            cls_id = self.next_cls_id
-            self.next_cls_id += 1
-        desc = OpClsInfo(cls_id, daemon_id, name, *args)
-        self.info_per_cls_id[cls_id] = desc
-        self.info_per_daemon_and_name[(daemon_id, name)] = desc
     def list(self):
         return self.info_per_cls_id.values()
-    def get_cls_info(self, cls_id):
+    def __getitem__(self, cls_id):
         return self.info_per_cls_id[cls_id]
-
+    def restore_daemon_state(self, daemon_info):
+        daemon_id = daemon_info.daemon_id
+        new_cls_per_name = { info.name: info \
+            for info in daemon_info.op_classes}
+        new_cls_names = set(new_cls_per_name)
+        old_cls_per_name = { row['name'] : row \
+            for row in self.db.select('OpClass', daemon_id=daemon_id)}
+        old_cls_names = set(old_cls_per_name)
+        # forget obsolete classes and instances from db
+        for cls_name in old_cls_names - new_cls_names:
+            cls_id = old_cls_per_name[cls_name]['cls_id']
+            self.db.delete('OpInstance', cls_id=cls_id)
+            self.db.delete('OpClass', cls_id=cls_id)
+        # add new classes in db
+        for cls_name in new_cls_names - old_cls_names:
+            self.db.insert('OpClass', daemon_id=daemon_id, name=cls_name)
+        # if any change was made, commit
+        if len(new_cls_names ^ old_cls_names) > 0:
+            self.db.commit()
+        # retrieve updated info from db (because we need the class ids)
+        for row in self.db.select('OpClass', daemon_id=daemon_id):
+            name, cls_id = row['name'], row['cls_id']
+            info = new_cls_per_name[name]
+            info.daemon_id = daemon_id
+            info.cls_id = cls_id
+            self.info_per_cls_id[cls_id] = info

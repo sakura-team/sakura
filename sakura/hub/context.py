@@ -5,43 +5,42 @@ from sakura.hub.opinstances import OpInstanceRegistry
 from sakura.hub.links import LinkRegistry
 from sakura.hub.storage import CentralStorage
 from sakura.common.bottle import PicklableFileRequest
+from sakura.common.tools import SimpleAttrContainer
 
 class HubContext(object):
     def __init__(self):
-        self.next_daemon_id = 0
         self.daemons = {}
-        self.op_classes = OpClassRegistry()
-        self.op_instances = OpInstanceRegistry()
+        self.db = CentralStorage()
+        self.op_classes = OpClassRegistry(self.db)
+        self.op_instances = OpInstanceRegistry(self.db)
         self.links = LinkRegistry()
         self.project_gui_data = None
-        self.db = CentralStorage()
     def get_daemon_id(self, daemon_info):
-        daemon_name = daemon_info['name']
         # check if we already know this daemon description
-        for daemon_id, daemon_info in self.daemons.items():
-            if daemon_info.name == daemon_name:
-                return daemon_id
-        # otherwise, let's return a new id
-        daemon_id = self.next_daemon_id
-        self.next_daemon_id += 1
-        return daemon_id
-    def register_daemon(self, daemon_info, api):
+        db_row = self.db.select_unique('Daemon',
+                        name = daemon_info['name'])
+        if db_row != None:
+            return db_row['daemon_id']
+        else:
+            # otherwise, insert in db and return the id
+            self.db.insert('Daemon', **daemon_info)
+            self.db.commit()
+            return self.db.lastrowid
+    def on_daemon_connect(self, daemon_info, api):
         # register daemon info and operator classes.
         daemon_id = self.get_daemon_id(daemon_info)
-        # note: we convert daemon_info dict to namedtuple (it will be more handy)
-        daemon_info.update(daemon_id = daemon_id, api = api)
-        daemon_info = namedtuple('DaemonInfo', daemon_info.keys())(**daemon_info)
+        daemon_info.update(daemon_id = daemon_id, api = api, connected=True)
+        # note: a SimpleAttrContainer will be more handy
+        daemon_info = SimpleAttrContainer(**daemon_info)
         self.daemons[daemon_id] = daemon_info
-        for op_cls_info in daemon_info.op_classes:
-            self.register_op_class(daemon_id, *op_cls_info)
+        self.op_classes.restore_daemon_state(daemon_info)
+        self.op_instances.restore_daemon_state(daemon_info, self.op_classes)
         return daemon_id
     def list_daemons_serializable(self):
         for daemon in self.daemons.values():
-            d = dict(daemon._asdict())
+            d = daemon._asdict()
             del d['api']
             yield d
-    def register_op_class(self, *args):
-        self.op_classes.store(*args)
     def list_op_classes_serializable(self):
         return [ dict(
                     id = info.cls_id,
@@ -53,7 +52,7 @@ class HubContext(object):
                 ) for info in self.op_classes.list() ]
     # instanciate an operator and return the instance id
     def create_operator_instance(self, cls_id):
-        cls_info = self.op_classes.get_cls_info(cls_id)
+        cls_info = self.op_classes[cls_id]
         daemon_info = self.daemons[cls_info.daemon_id]
         return self.op_instances.create(daemon_info, cls_info)
     def delete_operator_instance(self, op_id):
@@ -81,6 +80,5 @@ class HubContext(object):
                 return bottle.HTTPError(*resp[1:])
         else:
             return bottle.HTTPError(404, "No such operator instance.")
-    def handle_daemon_disconnect(self, daemon_id):
-        pass
-
+    def on_daemon_disconnect(self, daemon_id):
+        self.daemons[daemon_id].connected = False
