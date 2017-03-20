@@ -178,16 +178,20 @@ function create_op_modal(id, id_index, tabs) {
                                 <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_params">Params</a></li> \
                                 <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_outputs">Outputs</a></li> \
                                 <li class="disabled"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li>';
+    var index = 0;
     tabs.forEach( function (tab) {
-        s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_'+tab.label+'">'+tab.label+'</a></li>';
+        s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_tab_'+index+'">'+tab.label+'</a></li>';
+        index++;
     });
     s += '                  </ul> \
                             <div class="tab-content" style="width:100%; height:100%;"> \
                                 <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"></div> \
                                 <div id="modal_'+id+'_tab_params" class="tab-pane fade"></div> \
                                 <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"></div>';
+    index = 0;
     tabs.forEach( function (tab) {
-        s += '<iframe frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:100%;" id="modal_'+id+'_tab_'+tab.label+'" class="tab-pane fade" sandbox="allow-scripts"></iframe>';
+        s += '<iframe frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:100%;" id="modal_'+id+'_tab_tab_'+index+'" class="tab-pane fade" sandbox="allow-scripts"></iframe>';
+        index++;
     });
     s += '                      <div id="modal_'+id+'_tab_code" class="tab-pane fade"></div> \
                             </div> \

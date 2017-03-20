@@ -35,11 +35,12 @@ function fill_all(id) {
 function fill_tabs(id) {
     var op_hub_id = parseInt(id.split("_")[2]);
     ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
+        var index = 0;
         instance_info.tabs.forEach( function(tab) {
-            var label = tab.label;
-            var iframe = $(document.getElementById('modal_'+id+'_tab_'+label));
+            var iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
             var tab_url = '/opfiles/' + op_hub_id + '/' + tab.html_path;
             iframe.attr('src', tab_url);
+            index++;
         });
     });
 }
