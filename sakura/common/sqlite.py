@@ -97,16 +97,19 @@ class SQLiteDB():
                     quoted(kwargs[primary_key_name]))).fetchall())
         return num_modified
 
-    # allow statements like:
-    # mem_db.select("network", ip=ip)
-    def select(self, table, **kwargs):
+    def get_where_clause(self, table, kwargs):
         constraints = [ "%s=%s" % t for t in \
                 self.get_tuples(table, kwargs) ]
         if len(constraints) > 0:
-            where_clause = "WHERE %s" % (
+            return "WHERE %s" % (
                 ' AND '.join(constraints));
         else:
-            where_clause = ""
+            return ""
+
+    # allow statements like:
+    # mem_db.select("network", ip=ip)
+    def select(self, table, **kwargs):
+        where_clause = self.get_where_clause(table, kwargs)
         return self.c.execute("SELECT * FROM %s %s;" % (
                     table, where_clause)).fetchall()
 
@@ -119,3 +122,9 @@ class SQLiteDB():
         else:
             return record_list[0]
 
+    # allow statements like:
+    # db.delete("OpClass", name='Mean', daemon_id=1)
+    def delete(self, table, **kwargs):
+        where_clause = self.get_where_clause(table, kwargs)
+        sql = "DELETE FROM %s %s;" % (table, where_clause)
+        return self.c.execute(sql)
