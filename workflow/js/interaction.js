@@ -144,7 +144,6 @@ function jsp_drag_stop(e) {
     //GUI update
     if (ids[0] == 'op') {
         var index = instance_index_from_hub_id(ids[2]);
-        console.log(parseInt(e.el.style.left));
         global_ops_inst[index].gui = { x: parseInt(e.el.style.left),
                                        y: parseInt(e.el.style.top) };
         save_project()

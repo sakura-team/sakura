@@ -31,9 +31,19 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         var e_in = null;
         var e_out = null;
         if ( result.inputs.length > 0)
-            e_in = jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true});
+            e_in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"], 
+                                                    isTarget:true,
+                                                    cssClass:"sakura_endPoint",
+                                                    paintStyle:{fillStyle:"black", radius:6},
+                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                    });
         if (result.outputs.length > 0)
-            e_out = jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true});
+            e_out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"], 
+                                                    isSource:true,
+                                                    cssClass:"sakura_endPoint",
+                                                    paintStyle:{fillStyle:"black", radius:6},
+                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                    });
         
         
         //Now the modal for parameters/creation/visu/...
@@ -73,10 +83,23 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     
     var e_in = null;
     var e_out = null;
-    if ( info.inputs.length > 0)
-        e_in = jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Left"], isTarget:true, uuid:"ep_"+ndiv.id+"_in"});
+    if ( info.inputs.length > 0) {
+        e_in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"], 
+                                                isTarget:true, 
+                                                uuid:"ep_"+ndiv.id+"_in",
+                                                cssClass:"sakura_endPoint",
+                                                paintStyle:{fillStyle:"black", radius:6},
+                                                hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                });
+    }
     if (info.outputs.length > 0)
-        e_out = jsPlumb.addEndpoint(ndiv.id, { anchor:[ "Right"], isSource:true, uuid:"ep_"+ndiv.id+"_out"});
+        e_out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"], 
+                                                isSource:true, 
+                                                uuid:"ep_"+ndiv.id+"_out",
+                                                cssClass:"sakura_endPoint",
+                                                paintStyle:{fillStyle:"black", radius:6},
+                                                hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                });
     
     //Now the modal for parameters/creation/visu/...
     main_div.appendChild(create_op_modal(ndiv.id, id, info.tabs));
@@ -292,7 +315,6 @@ function remove_link(nid, on_hub) {
 
 
 function delete_link_param(id, on_hub) {
-    console.log(id);
     var tab         = id.split("_");
     var modal_id    = parseInt(tab[2]);
     var div_type    = tab[3];
@@ -410,8 +432,8 @@ $( window ).load(function() {
     jsPlumb.importDefaults({
         PaintStyle : { lineWidth : 4, strokeStyle : "#333333" },
         MaxConnections : 100,
-        Endpoint : ["Dot", {radius:6}],
-        EndpointStyle : { fillStyle:"#000000" },
+        Endpoint : ["Dot", {radius:6, zindex:20}],
+        EndpointStyle : { fillStyle:"black" },
         Container: "sakura_main_div"
     });
     
@@ -437,6 +459,7 @@ $( window ).load(function() {
     
     //A connection is established
     jsPlumb.bind("connection", function(params) {
+        params.connection._jsPlumb.hoverPaintStyle = { lineWidth: 7, strokeStyle: "#333333" };
         //First we send the link creation command to the hub
         var source_inst_id = parseInt(params.sourceId.split("_")[2]);
         var target_inst_id = parseInt(params.targetId.split("_")[2]);
@@ -454,7 +477,6 @@ $( window ).load(function() {
                 global_links_inc++;
             });
         });
-        
     });
     
     //When the target of a link changes
