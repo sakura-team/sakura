@@ -87,15 +87,16 @@ class SQLiteDB():
     # db.update("topology", "mac", switch_mac=swmac, switch_port=swport)
     def update(self, table, primary_key_name, **kwargs):
         tuples = self.get_tuples(table, kwargs)
-        num_modified = len(self.c.execute("""
+        cursor = self.c.cursor()
+        cursor.execute("""
                 UPDATE %s
                 SET %s
                 WHERE %s = %s;""" % (
                     table,
                     ','.join("%s = %s" % t for t in tuples),
                     primary_key_name,
-                    quoted(kwargs[primary_key_name]))).fetchall())
-        return num_modified
+                    quoted(kwargs[primary_key_name])))
+        return cursor.rowcount
 
     def get_where_clause(self, table, kwargs):
         constraints = [ "%s=%s" % t for t in \
