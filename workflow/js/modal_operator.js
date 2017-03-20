@@ -6,6 +6,72 @@ var max_rows = 10;
 var current_nb_rows = max_rows;
 
 
+function create_op_modal(id, id_index, tabs) {
+    var name    = global_ops_cl[id_index].name;
+    var svg     = global_ops_cl[id_index].svg;
+    var desc    = global_ops_cl[id_index].short_desc;
+    var daemon  = global_ops_cl[id_index].daemon;
+    
+    var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
+                <div class="modal-dialog" role="document" id="modal_'+id+'_dialog"> \
+                    <div class="modal-content"> \
+                        <div class="modal-header" id="modal_'+id+'_header"> \
+                            <table width="100%"> \
+                                <tr> \
+                                <td width="38px">'+svg+'</td> \
+                                <td class="modal-title" align="left"><b><font size=4>&nbsp;&nbsp;'+name+'&nbsp;&nbsp;</font></b><font size="2" color="grey">'+daemon+'</font></td> \
+                                <td align="right"> \
+                                    <table> \
+                                        <tr> \
+                                            <td> \
+                                                <button type="button" class="btn btn-xs" style="background-color: transparent; border-color: transparent;" onclick="full_width(\'modal_'+id+'\');"> \
+                                                    <span class="glyphicon glyphicon-resize-full"></span>\
+                                                </button> \
+                                            <td> \
+                                                <button type="button" class="btn btn-xs" style="background-color: transparent; border-color: transparent;" data-dismiss="modal" aria-label="Close"> \
+                                                    <span class="glyphicon glyphicon-remove"></span>\
+                                                </button> \
+                                    </table> \
+                                </td> \
+                                <tr><td colspan="3"><font size="2">'+desc+'</font></td> \
+                            </table> \
+                        </div> \
+                        <div class="modal-body" id="modal_'+id+'_body"> \
+                            <ul class="nav nav-tabs"> \
+                                <li class="active"> \
+                                    <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_inputs">Inputs</a></li> \
+                                <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_params">Params</a></li> \
+                                <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_outputs">Outputs</a></li> \
+                                <li class="disabled"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li>';
+    var index = 0;
+    tabs.forEach( function (tab) {
+        s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_tab_'+index+'">'+tab.label+'</a></li>';
+        index++;
+    });
+    s += '                  </ul> \
+                            <div class="tab-content" style="width:100%; height:100%;"> \
+                                <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"></div> \
+                                <div id="modal_'+id+'_tab_params" class="tab-pane fade"></div> \
+                                <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"></div>';
+    index = 0;
+    tabs.forEach( function (tab) {
+        s += '<iframe frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:100%;" id="modal_'+id+'_tab_tab_'+index+'" class="tab-pane fade" sandbox="allow-scripts"></iframe>';
+        index++;
+    });
+    s += '                      <div id="modal_'+id+'_tab_code" class="tab-pane fade"></div> \
+                            </div> \
+                        </div> \
+                    </div> \
+                </div> \
+            </div>';
+    
+    var wrapper= document.createElement('div');
+    wrapper.innerHTML= s;
+    var ndiv= wrapper.firstChild;
+    return ndiv;
+}
+
+
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {

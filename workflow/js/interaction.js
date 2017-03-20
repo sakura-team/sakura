@@ -46,27 +46,16 @@ main_div.addEventListener("drop", function( e ) {
         }
         
         var tab1 = param_out.id.split("_");
-        var modal_id = parseInt(tab1[3]);
-        var _out_id = parseInt(tab1[5]);
-        var _in_id = parseInt(param_in.id.split("_")[5]);
+        var out_id = parseInt(tab1[6]);
+        var in_id = parseInt(param_in.id.split("_")[6]);
         
-        var params_for_this_modal = sub_array_of_tuples(global_links_params, 0, modal_id);
+        var link = link_from_id('con_'+parseInt(tab1[4]));
         
-        //if (tuple_in_array_of_tuples(global_links_params, [modal_id, _out_id, _in_id]) == -1) {
-        if (index_in_array_of_tuples(params_for_this_modal, 1, _out_id) == -1 &&
-            index_in_array_of_tuples(params_for_this_modal, 2, _in_id) == -1 ) {
-            
-            //we first retrieve the objects instance ids
-            var index = index_in_array_of_tuples(global_links, 0, modal_id)
-            var src_op_id = global_links[index][2];
-            var dst_op_id = global_links[index][3];
-            
-            //src_op_id, src_out_id, dst_op_id, dst_in_id):
-            ws_request('create_link', [src_op_id, _out_id, dst_op_id, _in_id], {}, function (link_id_from_hub) {
-                
+        if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
+            ws_request('create_link', [link.src, out_id, link.dst, in_id], {}, function (link_id_from_hub) {
                 //local creation
-                create_link_line(modal_id, _out_id, _in_id);
-                global_links_params.push([modal_id, _out_id, _in_id, parseInt(link_id_from_hub)]);
+                create_link_line(link, out_id, in_id);
+                create_params(link, out_id, in_id, parseInt(link_id_from_hub));
                 
                 //changing svgs
                 var div_out = document.getElementById(param_out.id)
@@ -117,6 +106,17 @@ $('#sakura_main_div').on("click", function () {
         op_focus_id = null;
     }
 });
+
+
+function open_op_menu(e) {
+    $('#sakura_operator_contextMenu').css({
+      display: "block",
+      left: e.clientX - e.layerX + 30,
+      top: e.clientY - e.layerY + 30
+    });
+    op_focus_id = this.id;
+    return false;
+}
 
 
 function open_op_modal() {

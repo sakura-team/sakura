@@ -1,15 +1,15 @@
 //Code started by Michael Ortega for the LIG
 //March 9th, 2017
 
+
+var global_project_jsFlag = true;
+
 //This function is apart, because of the asynchronous aspect of ws
 //links can only be recovered after recovering all operator instances
 function get_project_links() {
     
     //Cleaning the gui from current links
-    while (global_links.length)
-        remove_link(global_links[0][0]);
-    
-    global_links_inc = 0;
+    remove_all_links();
     
     //Recovering the links from hub
     ws_request('list_link_ids', [], {}, function (ids) {
@@ -18,21 +18,16 @@ function get_project_links() {
                 
                 var src_inst = instance_from_hub_id(info.src_id);
                 var dst_inst = instance_from_hub_id(info.dst_id);
+                console.log(info);
                 
-                //jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
+                //jsPlumb creation
+                global_project_jsFlag = false;
+                js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
+                global_project_jsFlag = true;
                 
-                //global_links.push([global_links_inc, params.connection.id, source_inst_id, target_inst_id]);
                 
-                //modal creation
-                /*ws_request('get_operator_instance_info', [source_inst_id], {}, function (source_inst_info) {
-                    ws_request('get_operator_instance_info', [target_inst_id], {}, function (target_inst_info) {
-                        var ndiv = create_link_modal("link_"+global_links_inc, source_cl_id, target_cl_id, source_inst_info, target_inst_info);
-                        main_div.append(ndiv);
-                        $('#modal_link_'+global_links_inc).modal();
-                        global_links_inc++;
-                    });
-                });
-                */
+                //our creation
+                create_link_from_hub(js_link.id, info.src_id, info.dst_id)
             });
         });
     });
@@ -42,7 +37,7 @@ function current_project() {
     
     //We first clean the current gui
     while (global_ops_inst.length) {
-        remove_operator_instance("op_"+global_ops_inst[0].class_id+"_"+global_ops_inst[0].hub_id, false)
+        remove_operator_instance("op_"+global_ops_inst[0].cl.id+"_"+global_ops_inst[0].hub_id, false)
     };
     
     var starting = null;
@@ -131,9 +126,6 @@ function save_project() {
         var gui = {x: inst.gui.x,    y: inst.gui.y};
         ws_request('set_operator_instance_gui_data', [parseInt(inst.hub_id), JSON.stringify(gui)], {}, function(result) {});
     });
-
-
-
 };
 
 
@@ -142,7 +134,7 @@ function new_project() {
     if (!res) 
         return false;
     while (global_ops_inst.length) {
-        remove_operator_instance("op_"+global_ops_inst[0].class_id+"_"+global_ops_inst[0].hub_id, true)
+        remove_operator_instance("op_"+global_ops_inst[0].cl.id+"_"+global_ops_inst[0].hub_id, true)
     };
     global_ops_inst = [];
 };

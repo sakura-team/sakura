@@ -9,12 +9,7 @@ var global_op_panels    = [];
 var global_ops_cl       = [];
 var global_ops_inst     = [];
 var op_focus_id         = null;
-var link_focus_id       = null;
 
-//links
-var global_links        = []; //[local_id, jsPlumb_id, src_inst_id (from hub), dst_inst_id (from hub)]
-var global_links_params = [];
-var global_links_inc    = 0;  // for the links' local ids
 
 //interaction
 var drag_delta          = [0, 0];
@@ -45,13 +40,6 @@ function instance_from_hub_id(hid) {
     for (var i=0; i< global_ops_inst.length; i++)
         if (global_ops_inst[i].hub_id == hid)
             return global_ops_inst[i];
-    return null;
-}
-
-function link_from_id(id) {
-    for (var i=0; i< global_links.length; i++)
-        if (global_links[i].id == id)
-            return global_links[i];
     return null;
 }
 
