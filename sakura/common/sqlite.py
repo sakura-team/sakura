@@ -129,3 +129,8 @@ class SQLiteDB():
         where_clause = self.get_where_clause(table, kwargs)
         sql = "DELETE FROM %s %s;" % (table, where_clause)
         return self.c.execute(sql)
+
+    def insert_or_update(self, table, primary_key_name, **kwargs):
+        num_updated = self.update(table, primary_key_name, **kwargs)
+        if num_updated == 0:
+            self.insert(table, **kwargs)
