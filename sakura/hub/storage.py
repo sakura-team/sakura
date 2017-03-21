@@ -35,6 +35,13 @@ CREATE TABLE IF NOT EXISTS Link (
     dst_op_id INTEGER REFERENCES OpInstance(op_id) ON DELETE CASCADE,
     dst_in_id INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS OpParam (
+    op_id INTEGER REFERENCES OpInstance(op_id) ON DELETE CASCADE,
+    param_id INTEGER,
+    json_value TEXT,
+    UNIQUE(op_id, param_id)
+);
 """
 
 class CentralStorage(SQLiteDB):

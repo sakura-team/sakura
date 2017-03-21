@@ -35,6 +35,7 @@ class HubContext(object):
         self.op_classes.restore_daemon_state(daemon_info)
         self.op_instances.restore_daemon_state(daemon_info, self.op_classes)
         self.links.restore_daemon_state(daemon_info, self.op_instances)
+        self.op_instances.restore_daemon_op_params(daemon_info)
         return daemon_id
     def list_daemons_serializable(self):
         for daemon in self.daemons.values():

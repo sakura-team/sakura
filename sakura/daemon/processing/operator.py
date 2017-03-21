@@ -39,6 +39,8 @@ class Operator(Registry):
                 short_desc = op_cls.SHORT_DESC,
                 tags = op_cls.TAGS,
                 icon = op_cls.ICON)
+    def get_num_parameters(self):
+        return len(self.parameters)
     def get_info_serializable(self):
         return dict(
             op_id = self.op_id,

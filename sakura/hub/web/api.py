@@ -31,7 +31,7 @@ class GuiToHubAPI(object):
         return self.context.op_instances[op_id].get_info_serializable()
     
     def set_parameter_value(self, op_id, param_id, value):
-        return self.context.op_instances[op_id].parameters[param_id].set_value(value)
+        return self.context.op_instances.set_parameter_value(op_id, param_id, value)
     
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
         return self.context.op_instances[op_id].input_streams[in_id].get_range(row_start, row_end)
