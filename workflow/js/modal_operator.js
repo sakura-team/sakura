@@ -30,7 +30,7 @@ function create_op_modal(id, cl_id, tabs) {
                                                 </button> \
                                     </table> \
                                 </td> \
-                                <tr><td colspan="3"><font size="2">'+cl.desc+'</font></td> \
+                                <tr><td colspan="3"><font size="2">'+cl.short_desc+'</font></td> \
                             </table> \
                         </div> \
                         <div class="modal-body" id="modal_'+id+'_body"> \
