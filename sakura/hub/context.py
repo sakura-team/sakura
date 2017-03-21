@@ -13,7 +13,7 @@ class HubContext(object):
         self.db = CentralStorage()
         self.op_classes = OpClassRegistry(self.db)
         self.op_instances = OpInstanceRegistry(self.db)
-        self.links = LinkRegistry()
+        self.links = LinkRegistry(self.db)
     def get_daemon_id(self, daemon_info):
         # check if we already know this daemon description
         db_row = self.db.select_unique('Daemon',
@@ -34,6 +34,7 @@ class HubContext(object):
         self.daemons[daemon_id] = daemon_info
         self.op_classes.restore_daemon_state(daemon_info)
         self.op_instances.restore_daemon_state(daemon_info, self.op_classes)
+        self.links.restore_daemon_state(daemon_info, self.op_instances)
         return daemon_id
     def list_daemons_serializable(self):
         for daemon in self.daemons.values():

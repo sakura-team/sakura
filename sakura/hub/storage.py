@@ -25,6 +25,14 @@ CREATE TABLE IF NOT EXISTS OpInstance (
     cls_id INTEGER REFERENCES OpClass(cls_id),
     gui_data TEXT
 );
+
+CREATE TABLE IF NOT EXISTS Link (
+    link_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    src_op_id INTEGER REFERENCES OpInstance(op_id),
+    src_out_id INTEGER,
+    dst_op_id INTEGER REFERENCES OpInstance(op_id),
+    dst_in_id INTEGER
+);
 """
 
 class CentralStorage(SQLiteDB):
