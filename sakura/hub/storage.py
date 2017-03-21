@@ -2,6 +2,8 @@ import sakura.hub.conf as conf
 from sakura.common.sqlite import SQLiteDB
 
 DB_SCHEMA = """
+pragma foreign_keys = ON;
+
 CREATE TABLE IF NOT EXISTS Project (
     project_id INTEGER PRIMARY KEY AUTOINCREMENT,
     gui_data TEXT
@@ -22,15 +24,15 @@ CREATE TABLE IF NOT EXISTS OpClass (
 CREATE TABLE IF NOT EXISTS OpInstance (
     op_id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER REFERENCES Project(project_id),
-    cls_id INTEGER REFERENCES OpClass(cls_id),
+    cls_id INTEGER REFERENCES OpClass(cls_id) ON DELETE CASCADE,
     gui_data TEXT
 );
 
 CREATE TABLE IF NOT EXISTS Link (
     link_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    src_op_id INTEGER REFERENCES OpInstance(op_id),
+    src_op_id INTEGER REFERENCES OpInstance(op_id) ON DELETE CASCADE,
     src_out_id INTEGER,
-    dst_op_id INTEGER REFERENCES OpInstance(op_id),
+    dst_op_id INTEGER REFERENCES OpInstance(op_id) ON DELETE CASCADE,
     dst_in_id INTEGER
 );
 """

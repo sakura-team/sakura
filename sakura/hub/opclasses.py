@@ -17,7 +17,9 @@ class OpClassRegistry(object):
         # forget obsolete classes and instances from db
         for cls_name in old_cls_names - new_cls_names:
             cls_id = old_cls_per_name[cls_name]['cls_id']
-            self.db.delete('OpClass', cascade=True, cls_id=cls_id)
+            # note this will also delete related instances and so on
+            # (because of ON DELETE CASCADE clause on db schema)
+            self.db.delete('OpClass', cls_id=cls_id)
         # add new classes in db
         for cls_name in new_cls_names - old_cls_names:
             self.db.insert('OpClass', daemon_id=daemon_id, name=cls_name)
