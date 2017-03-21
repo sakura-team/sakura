@@ -125,9 +125,14 @@ class SQLiteDB():
 
     # allow statements like:
     # db.delete("OpClass", name='Mean', daemon_id=1)
-    def delete(self, table, **kwargs):
+    def delete(self, table, cascade=False, **kwargs):
         where_clause = self.get_where_clause(table, kwargs)
-        sql = "DELETE FROM %s %s;" % (table, where_clause)
+        if cascade:
+            on_delete_clause = 'ON DELETE CASCADE'
+        else:
+            on_delete_clause = ''
+        sql = "DELETE FROM %s %s %s;" % (table, where_clause,
+                                            on_delete_clause)
         return self.c.execute(sql)
 
     def insert_or_update(self, table, primary_key_name, **kwargs):
