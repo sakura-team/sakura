@@ -25,9 +25,11 @@ function get_project_links() {
                 js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
                 global_project_jsFlag = true;
                 
-                
                 //our creation
                 create_link_from_hub(js_link.id, info.src_id, info.dst_id)
+                
+                //now params
+                
             });
         });
     });
@@ -94,8 +96,7 @@ function current_project() {
             
             var divs = []
             panel[2].forEach( function(item) {
-                var op = global_ops_cl[item]
-                divs.push(select_op_new_operator(op['svg'], op['name'], op['id'], false));
+                divs.push(select_op_new_operator(item, false));
             });
             
             var tmp_el = document.createElement("div");

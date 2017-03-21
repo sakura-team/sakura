@@ -95,7 +95,7 @@ function select_op_on_change(from) {
         if (ops_to[o].selected) {
             global_ops_cl.forEach( function (op) {
                 if (op['tags'].indexOf(ops_to[o].text) >= 0 && select_op_selected.indexOf(op['id']) == -1) {
-                    select_op_divs.push(select_op_new_operator(op['svg'], op['name'], op['id'], true));
+                    select_op_divs.push(select_op_new_operator(parseInt(op['id']), true));
                     select_op_selected.push(parseInt(op['id']));
                 }
             });
@@ -105,8 +105,8 @@ function select_op_on_change(from) {
     //names
     for (var o=0; o<ops_no.length; o++) {
         if (ops_no[o].selected && select_op_selected.indexOf(parseInt(ops_no[o].value)) == -1) {
-            select_op_divs.push(select_op_new_operator(global_ops_cl[ops_no[o].value]['svg'], global_ops_cl[ops_no[o].value]['name'], global_ops_cl[ops_no[o].value]['id'], true));
-            select_op_selected.push(parseInt(global_ops_cl[ops_no[o].value]['id']));
+            select_op_divs.push(select_op_new_operator(parseInt(ops_no[o].value), true));
+            select_op_selected.push(parseInt(ops_no[o].value));
         }
     }
     
@@ -118,40 +118,38 @@ function select_op_on_change(from) {
 }
 
 
-function select_op_new_operator(svg, name, id, removable) {
+function select_op_new_operator(cl_id, removable) {
+    var cl = class_from_id(cl_id);
     var ndiv = document.createElement('div');
+    var s = '';
     if (removable) {
-        ndiv.id = "select_op_selected_"+id+'rem';
-        var s = '   <table> \
+        ndiv.id = "select_op_selected_"+cl.id+'rem';
+        s = '   <table> \
                         <tr> \
-                            <td align="center">'+svg+ ' \
-                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+id+'\');" style="cursor: pointer;"/> \
+                            <td align="center">'+cl.svg+ ' \
+                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+cl.id+'\');" style="cursor: pointer;"/> \
                         <tr>';
-        var l = name.length;
-        if (l > 7) {
-            name = name.substring(0,7)+'.';
-        }
-        s += '<td align="center"> <font size="1">'+name+'</font>';
-        s += '</table>';
-        ndiv.innerHTML = s;
     }
     else {
-        ndiv.id = "select_op_selected_"+id+"_static";
+        ndiv.id = "select_op_selected_"+cl.id+"_static";
         ndiv.setAttribute('draggable', 'true');
         ndiv.style.zIndex = '2';
         ndiv.classList.add("sakura_static_operator");
-        var s = '   <table> \
+        s = '   <table> \
                         <tr> \
-                            <td align="center">'+svg+ ' \
+                            <td align="center">'+cl.svg+ ' \
                         <tr>';
-        var l = name.length;
-        if (l > 7) {
-            name = name.substring(0,7)+'.';
-        }
-        s += '<td align="center"> <font size="1">'+name+'</font>';
-        s += '</table>';
-        ndiv.innerHTML = s;
     }
+    
+    var l = cl.name.length;
+    var fname = cl.name;
+    if (l > 7) {
+        fname = cl.name.substring(0,7)+'.';
+    }
+    
+    s += '<td align="center"> <font size="1">'+fname+'</font>';
+    s += '</table>';
+    ndiv.innerHTML = s;
     return (ndiv);
 }
 
@@ -188,8 +186,7 @@ function select_op_add_panel() {
     
     var divs = []
     select_op_selected.forEach( function(item) {
-        var op = global_ops_cl[item]
-        divs.push(select_op_new_operator(op['svg'], op['name'], op['id'], false));
+        divs.push(select_op_new_operator(item, false));
     });
     
     var tbl = select_op_make_table(3, select_op_selected, divs);

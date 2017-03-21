@@ -43,11 +43,11 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         
         
         //Now the modal for parameters/creation/visu/...
-        main_div.appendChild(create_op_modal(ndiv.id, id, result.tabs));
+        main_div.appendChild(create_op_modal(ndiv.id, parseInt(id), result.tabs));
         
         
         global_ops_inst.push({  hub_id      : hub_id,
-                                cl          : global_ops_cl[id],
+                                cl          : class_from_id(parseInt(id)),
                                 ep          : {in: e_in, out: e_out},
                                 gui         : {x: drop_x, y: drop_y}
                                 });
@@ -59,10 +59,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
 
 function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
-    var ndiv = select_op_new_operator(  global_ops_cl[id]['svg'],
-                                        global_ops_cl[id]['name'],
-                                        global_ops_cl[id]['id'],
-                                        false );
+    var ndiv = select_op_new_operator(id, false );
     
     ndiv.id = "op_" + id + "_" + info.op_id;
     ndiv.classList.add("sakura_dynamic_operator");
@@ -98,10 +95,10 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                                                 });
     
     //Now the modal for parameters/creation/visu/...
-    main_div.appendChild(create_op_modal(ndiv.id, id, info.tabs));
+    main_div.appendChild(create_op_modal(ndiv.id, parseInt(id), info.tabs));
     
     global_ops_inst.push({  hub_id      : info.op_id,
-                            cl          : global_ops_cl[id],
+                            cl          : class_from_id(parseInt(id)),
                             ep          : {in: e_in, out: e_out},
                             gui         : {x: drop_x, y: drop_y} 
                             });
@@ -131,4 +128,11 @@ function remove_operator_instance(id, on_hub) {
     
     if (on_hub)
         ws_request('delete_operator_instance', [hub_id], {}, function (result) {});
+}
+
+
+function class_from_id(id) {
+    return global_ops_cl.find( function (e) {
+        return e.id === id;
+    });
 }

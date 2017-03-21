@@ -6,11 +6,8 @@ var max_rows = 10;
 var current_nb_rows = max_rows;
 
 
-function create_op_modal(id, id_index, tabs) {
-    var name    = global_ops_cl[id_index].name;
-    var svg     = global_ops_cl[id_index].svg;
-    var desc    = global_ops_cl[id_index].short_desc;
-    var daemon  = global_ops_cl[id_index].daemon;
+function create_op_modal(id, cl_id, tabs) {
+    var cl = class_from_id(cl_id);
     
     var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
                 <div class="modal-dialog" role="document" id="modal_'+id+'_dialog"> \
@@ -18,8 +15,8 @@ function create_op_modal(id, id_index, tabs) {
                         <div class="modal-header" id="modal_'+id+'_header"> \
                             <table width="100%"> \
                                 <tr> \
-                                <td width="38px">'+svg+'</td> \
-                                <td class="modal-title" align="left"><b><font size=4>&nbsp;&nbsp;'+name+'&nbsp;&nbsp;</font></b><font size="2" color="grey">'+daemon+'</font></td> \
+                                <td width="38px">'+cl.svg+'</td> \
+                                <td class="modal-title" align="left"><b><font size=4>&nbsp;&nbsp;'+cl.name+'&nbsp;&nbsp;</font></b><font size="2" color="grey">'+cl.daemon+'</font></td> \
                                 <td align="right"> \
                                     <table> \
                                         <tr> \
@@ -33,7 +30,7 @@ function create_op_modal(id, id_index, tabs) {
                                                 </button> \
                                     </table> \
                                 </td> \
-                                <tr><td colspan="3"><font size="2">'+desc+'</font></td> \
+                                <tr><td colspan="3"><font size="2">'+cl.desc+'</font></td> \
                             </table> \
                         </div> \
                         <div class="modal-body" id="modal_'+id+'_body"> \
