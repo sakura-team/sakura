@@ -83,19 +83,25 @@ class SQLiteDB():
         except sqlite3.IntegrityError:
             return False
 
+    def get_filter(self, filter_keys, kwargs):
+        if isinstance(filter_keys, str):
+            filter_keys = (filter_keys,)
+        return ' AND '.join("%s = %s" % (k, quoted(kwargs[k])) \
+                for k in filter_keys)
+
     # allow statements like:
     # db.update("topology", "mac", switch_mac=swmac, switch_port=swport)
-    def update(self, table, primary_key_name, **kwargs):
+    def update(self, table, filter_keys, **kwargs):
         tuples = self.get_tuples(table, kwargs)
+        filter_clause = self.get_filter(filter_keys, kwargs)
         cursor = self.c.cursor()
         cursor.execute("""
                 UPDATE %s
                 SET %s
-                WHERE %s = %s;""" % (
+                WHERE %s;""" % (
                     table,
                     ','.join("%s = %s" % t for t in tuples),
-                    primary_key_name,
-                    quoted(kwargs[primary_key_name])))
+                    filter_clause))
         return cursor.rowcount
 
     def get_where_clause(self, table, kwargs):
@@ -135,7 +141,7 @@ class SQLiteDB():
                                             on_delete_clause)
         return self.c.execute(sql)
 
-    def insert_or_update(self, table, primary_key_name, **kwargs):
-        num_updated = self.update(table, primary_key_name, **kwargs)
+    def insert_or_update(self, table, filter_keys, **kwargs):
+        num_updated = self.update(table, filter_keys, **kwargs)
         if num_updated == 0:
             self.insert(table, **kwargs)
