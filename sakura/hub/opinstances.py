@@ -55,6 +55,10 @@ class OpInstanceRegistry(object):
                             gui_data = gui_data)
         self.info_per_op_id[op_id] = desc
         return remote_instance.get_info_serializable()
+    def get_info_serializable(self, op_id):
+        info = self[op_id].get_info_serializable()
+        info.update(cls_id = self[op_id].cls_info.cls_id)
+        return info
     def delete(self, op_id):
         self[op_id].daemon.api.delete_operator_instance(op_id)
         del self.info_per_op_id[op_id]

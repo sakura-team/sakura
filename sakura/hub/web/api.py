@@ -28,7 +28,7 @@ class GuiToHubAPI(object):
     
     # returns info about operator instance: cls_name, inputs, outputs, parameters
     def get_operator_instance_info(self, op_id):
-        return self.context.op_instances[op_id].get_info_serializable()
+        return self.context.op_instances.get_info_serializable(op_id)
     
     def set_parameter_value(self, op_id, param_id, value):
         return self.context.op_instances.set_parameter_value(op_id, param_id, value)
