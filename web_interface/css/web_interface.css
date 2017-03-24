@@ -2,6 +2,10 @@
  * LIG March 2017
 */
 
+.label-primary {
+  background-color:blue;
+  color:white;}
+
 input.search-query {
     padding-left:26px;
 	border-radius: 15px;
