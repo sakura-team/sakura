@@ -83,13 +83,17 @@ function buildListStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
   if (result[i].isPublic=="true") {
-    eyeIcon = "glyphicon-eye-open";}
-  else {
-	eyeIcon = "glyphicon-eye-close";}  
   s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
-		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon "+eyeIcon+"' aria-hidden='true'></span></a></td>"
-        + "</tr>";}
+		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+		+ "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+        + "</td></tr>";}
+  else {
+  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+        + "<td>"+result[i].shortDesc+"</td>"
+		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a></td>"
+        + "</tr>";}  
+}
 document.getElementById(idDiv).innerHTML = s;}
 
 function listRequestStub(idDiv,n,elt,bd) {
