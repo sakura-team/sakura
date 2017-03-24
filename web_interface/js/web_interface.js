@@ -51,6 +51,9 @@ var valsAlea = ["porro","quia","xyz34","####",'n.a.','inf','nspp','','_','see be
 function aleaAlea(alea) {
 return alea[Math.floor(Math.random() * alea.length)]}
 
+function numAlea(num) {
+return num+(Math.floor(Math.random() * num));}
+
 function fullNameAlea() {
   return firstNamesAlea[Math.floor(Math.random() * firstNamesAlea.length)]+"_"
     + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+"_"
@@ -196,7 +199,8 @@ if (!bd) {  // version local
   userName = aleaAlea(usersAlea)
   infos = new Array();
   ninfo = Math.floor(Math.random() * 10);
-  infos.push({"name":"name","value":eltName});
+  infos.push({"name":"Name","value":eltName});
+  infos.push({"name":elt+"-id","value":numAlea(100)});
   infos.push({"name":"Description","value":shortTextAlea()});
   infos.push({"name":"Author","value":userName});
   for(i=0;i<ninfo;i++) {
