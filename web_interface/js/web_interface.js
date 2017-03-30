@@ -129,7 +129,8 @@ s="";
 i=0;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
 elt='Protocols/tmpProtocol';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+      + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Simpleicons_Business_notebook.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
       + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
@@ -137,7 +138,8 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
 elt='DataSets/tmpDataSet';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+      + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Linecons_database.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
       + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
@@ -145,7 +147,8 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
 elt='Operators/tmpOperator';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+      + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Octicons-gear.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
       + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
@@ -153,7 +156,8 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
 elt='Analyses/tmpAnalysis';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+      + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Share_icon_BLACK-01.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
       + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
@@ -161,7 +165,8 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
 elt='Results/tmpResult';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+      + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Article_icon_cropped.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
       + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
@@ -189,7 +194,22 @@ return ;}
 
 function buildEltStub(idDiv,result,elt) {
 s = "";
-s = s + '<h3>'+elt+' '+result.name+'</h3>'
+if (elt=="Protocol") {
+  imageElt = "Simpleicons_Business_notebook.svg.png";
+  imageEltInverse = "Simpleicons_Business_notebook_inverse.svg.png";}
+else if (elt=="DataSet") {
+  imageElt = "Linecons_database.svg.png";
+  imageEltInverse = "Linecons_database_inverse.svg.png";}
+else if (elt=="Operator") {
+  imageElt = "Octicons-gear.svg.png";
+  imageEltInverse = "Octicons-gear_inverse.svg.png";}
+else if (elt=="Analysis") {
+  imageElt = "Share_icon_BLACK-01.svg.png";
+  imageEltInverse = "Share_icon_BLACK-01_inverse.svg.png";}
+else {
+  imageElt = "Article_icon_cropped.svg.png";
+  imageEltInverse = "Article_icon_cropped_inverse.svg.png";}
+s = s + '<h3>'+elt+' '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px' src='media/"+imageElt+"' alt='CC-BY-3.0 Wikipedia Gears'></img></h3>"
       + '<div class="col-md-12" id="studyPageContentMain"><div class="row well">'
       + '<h4 class="">'+elt+' information</h4>'
       + '<dl class="dl-horizontal col-md-6">';
@@ -222,7 +242,7 @@ s = s + '</dl>'
 // Description
 s = s + '<br /><br /><div class="panel panel-primary"><div class="panel-heading">'
       + '<table width="100%"><tbody><tr><td><h4 class="">'
-	  + '<font color="#ffffff">Explanation About '+result.name+'</font></h4></td></tr></tbody></table></div>'
+	  + '<font color="#ffffff">Explanation About '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px' src='media/"+imageEltInverse+"' alt='CC-BY-3.0 Wikipedia Gears'></img></h3>"+'</font></h4></td></tr></tbody></table></div>'
 	  + '<div class="panel-body">'+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /> '
 	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
 	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
