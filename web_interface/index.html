@@ -31,7 +31,7 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                   <li><a href="http://panteda.imag.fr/" targer="_blank">About Sakura</a></li>
-                  <li><a onclick="not_yet();">Connexion&nbsp;&nbsp;&nbsp;&nbsp;</a></li></ul>
+                  <li id="idSignInHelloYou"><a class="btn" data-toggle="modal" data-target="#signInModal">Sign in&nbsp;&nbsp;</a></li></ul>				  
             </nav>  
 
     <ol id="breadcrumbtrail" class="breadcrumb">
@@ -41,6 +41,7 @@
 			
             <div class="container" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
+                <div w3-include-html="divs/home/helloYou.html"></div>
                 <div w3-include-html="divs/protocols/index.html"></div>
                 <div w3-include-html="divs/protocols/main.html"></div>
                 <div w3-include-html="divs/protocols/work.html"></div>
@@ -62,6 +63,7 @@
                 <div w3-include-html="divs/results/work.html"></div>
                 <div w3-include-html="divs/results/historic.html"></div>
                 <div w3-include-html="divs/documentation/index.html"></div>
+                <div w3-include-html="divs/signIn/index.html"></div>				
             </div>
             <script>
                 w3IncludeHTML();

@@ -35,6 +35,20 @@ function showDiv(event,dir) {
   for(i=0;i<actionsOnShow.length;i++) {
 	eval(actionsOnShow[i].href);}
   event.preventDefault();}
+  
+/* Login stub */
+function signInSubmitControl(event) {
+  if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
+    showDiv(event,'HelloYou');
+	$("#signInModal").modal("hide");
+	document.getElementById("idSignInHelloYou").innerHTML= '<a onclick="showDiv(event,\'HelloYou\');" href="http://sakura.imag.fr/Restart" style="cursor: pointer;">Hello you</a>';
+    return;	
+    }
+  else {
+	alert('not yet, try email=password=guest');
+    return;	
+    }
+  }
 
 /*    Génération aléatoire     */
 var firstProcNamesAlea=["Avg","Count","Diff","Hist","Viz","Reg","Lin","Stand","Sort","Best","Approx","Plot"];
@@ -107,6 +121,52 @@ if (!bd) {  // version local
   buildListStub(idDiv,result,elt);}
 else {     // version réseau à faire
   ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
+return ;}
+ 
+function listRequestStubForRestart(idDiv) {
+result=new Array();
+s="";
+i=0;
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+elt='Protocols/tmpProtocol';
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+      + "<td>"+result[i].shortDesc+"</td>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "</td></tr>";
+i=i+1;
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+elt='DataSets/tmpDataSet';
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+      + "<td>"+result[i].shortDesc+"</td>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "</td></tr>";
+i=i+1;
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+elt='Operators/tmpOperator';
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+      + "<td>"+result[i].shortDesc+"</td>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "</td></tr>";
+i=i+1;
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+elt='Analyses/tmpAnalysis';
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+      + "<td>"+result[i].shortDesc+"</td>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "</td></tr>";
+i=i+1;
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+elt='Results/tmpResult';
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+      + "<td>"+result[i].shortDesc+"</td>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "</td></tr>";
+document.getElementById(idDiv).innerHTML = s;
 return ;}
  
 function buildHistoryStub(idDiv,result,elt) {
