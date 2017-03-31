@@ -36,19 +36,20 @@ function showDiv(event,dir) {
 	eval(actionsOnShow[i].href);}
   event.preventDefault();}
   
-/* Login stub */
+/* Divers */
 function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
     showDiv(event,'HelloYou');
 	$("#signInModal").modal("hide");
 	document.getElementById("idSignInHelloYou").innerHTML= '<a onclick="showDiv(event,\'HelloYou\');" href="http://sakura.imag.fr/Restart" style="cursor: pointer;">Hello you</a>';
-    return;	
-    }
+    return;}
   else {
 	alert('not yet, try email=password=guest');
-    return;	
-    }
-  }
+    return;	}}
+	
+function showDivCGU(event) {
+  $("#signInModal").modal("hide");
+  showDiv(event,"CGU");}
 
 /*    Génération aléatoire     */
 var firstProcNamesAlea=["Avg","Count","Diff","Hist","Viz","Reg","Lin","Stand","Sort","Best","Approx","Plot"];
