@@ -123,7 +123,7 @@ function remove_operator_instance(id, on_hub) {
     op_focus_id = null;
     
     //Remove from the list of instances
-    global_ops_inst.splice(instance_index_from_hub_id(hub_id), 1);
+    global_ops_inst.splice(instance_index_from_id(hub_id), 1);
     
     if (on_hub)
         ws_request('delete_operator_instance', [hub_id], {}, function (result) {});
@@ -134,4 +134,17 @@ function class_from_id(id) {
     return global_ops_cl.find( function (e) {
         return e.id === id;
     });
+}
+
+function instance_from_id(id) {
+    return global_ops_inst.find( function (e) {
+        return e.hub_id === id;
+    });
+}
+
+function instance_index_from_id(hid) {
+    for (var i=0; i< global_ops_inst.length; i++)
+        if (global_ops_inst[i].hub_id == hid)
+            return i;
+    return -1
 }

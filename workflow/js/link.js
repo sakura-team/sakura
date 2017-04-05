@@ -7,29 +7,20 @@ var global_links  = []; //[local_id, jsPlumb_id, src_inst_id (from hub), dst_ins
 var link_focus_id = null;
 
 
-function create_link(js_id, source, destination) {
+function create_link(js_id, src_id, dst_id) {
     
-    var src_id = parseInt(source.split("_")[2]);
-    var dst_id = parseInt(destination.split("_")[2]);
-    
-    //global_links.push([global_links_inc, js_id, src_id, dst_id]);
     global_links.push({ id: js_id,
                         src: src_id,
                         dst: dst_id,
                         params: null});
-    
-    src_inst = global_ops_inst.find( function(e) {
-        return e.hub_id === src_id;
-        });
-    
-    dst_inst = global_ops_inst.find( function(e) {
-        return e.hub_id === dst_id;
-        });
-    
     //modal creation
     ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
         ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-            var ndiv = create_link_modal(global_links[global_links.length - 1], src_inst.cl, dst_inst.cl, source_inst_info, target_inst_info);
+            var ndiv = create_link_modal(   global_links[global_links.length - 1], 
+                                            instance_from_id(src_id).cl, 
+                                            instance_from_id(dst_id).cl, 
+                                            source_inst_info, 
+                                            target_inst_info);
             main_div.append(ndiv);
             $('#modal_link_'+js_id).modal();
         });
@@ -37,7 +28,7 @@ function create_link(js_id, source, destination) {
 }
 
 
-function create_link_from_hub(js_id, src_id, dst_id) {
+function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id) {
     
     //global_links.push([global_links_inc, js_id, src_id, dst_id]);
     var l = global_links.push({ id: js_id,
@@ -45,18 +36,19 @@ function create_link_from_hub(js_id, src_id, dst_id) {
                                 dst: dst_id,
                                 params: null});
     
-    src_inst = global_ops_inst.find( function(e) {
-        return e.hub_id === src_id;
-        });
-    
-    dst_inst = global_ops_inst.find( function(e) {
-        return e.hub_id === dst_id;
-        });
-    
     ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
         ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-            var ndiv = create_link_modal(global_links[l - 1], src_inst.cl, dst_inst.cl, source_inst_info, target_inst_info);
-            main_div.append(ndiv);
+            main_div.append( create_link_modal(   global_links[l - 1], 
+                                            instance_from_id(src_id).cl, 
+                                            instance_from_id(dst_id).cl, 
+                                            source_inst_info, 
+                                            target_inst_info) );
+                                            
+            create_params(global_links[l - 1], out_id, in_id, hub_id);
+            create_link_line(global_links[l - 1], out_id, in_id);
+            
+            document.getElementById("svg_modal_link_"+global_links[l - 1].id+'_out_'+out_id).innerHTML = svg_round_square_crossed("");
+            document.getElementById("svg_modal_link_"+global_links[l - 1].id+'_in_'+in_id).innerHTML = svg_round_square_crossed("");
         });
     });
 }

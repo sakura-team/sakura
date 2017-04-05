@@ -46,7 +46,9 @@ $( window ).load(function() {
         
         //link creation on hub and other        
         if (global_project_jsFlag) 
-            create_link(params.connection.id, params.sourceId, params.targetId);
+            create_link(params.connection.id, 
+                        parseInt(params.sourceId.split("_")[2]),
+                        parseInt(params.targetId.split("_")[2]));
     });
     
     //When the target of a link changes

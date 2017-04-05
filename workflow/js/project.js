@@ -16,9 +16,8 @@ function get_project_links() {
         ids.forEach( function (id) {
             ws_request('get_link_info', [id], {}, function(info) {
                 
-                var src_inst = instance_from_hub_id(info.src_id);
-                var dst_inst = instance_from_hub_id(info.dst_id);
-                console.log(info);
+                var src_inst = instance_from_id(info.src_id);
+                var dst_inst = instance_from_id(info.dst_id);
                 
                 //jsPlumb creation
                 global_project_jsFlag = false;
@@ -26,10 +25,7 @@ function get_project_links() {
                 global_project_jsFlag = true;
                 
                 //our creation
-                create_link_from_hub(js_link.id, info.src_id, info.dst_id)
-                
-                //now params
-                
+                create_link_from_hub(js_link.id, info.link_id, info.src_id, info.dst_id, info.src_out_id, info.dst_in_id);
             });
         });
     });
@@ -73,7 +69,7 @@ function current_project() {
         });
     });
     
-    //Finally, he panels
+    //Finally, the panels
     ws_request('get_project_gui_data', [], {}, function (result) {
         global_op_panels = eval(result);
         if (! global_op_panels) {

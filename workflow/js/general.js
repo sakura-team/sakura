@@ -28,22 +28,6 @@ function not_yet(s = '') {
 }
 
 
-function instance_index_from_hub_id(hid) {
-    for (var i=0; i< global_ops_inst.length; i++)
-        if (global_ops_inst[i].hub_id == hid)
-            return i;
-    return -1
-}
-
-
-function instance_from_hub_id(hid) {
-    for (var i=0; i< global_ops_inst.length; i++)
-        if (global_ops_inst[i].hub_id == hid)
-            return global_ops_inst[i];
-    return null;
-}
-
-
 //send the index of the row where arr[row][col] == e
 function index_in_array_of_tuples(arr, col, e) {
     for (var i = 0; i< arr.length; i++)
