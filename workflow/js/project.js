@@ -58,11 +58,10 @@ function current_project() {
                 ids.forEach( function(id) {
                     //Then ask for the infos
                     ws_request('get_operator_instance_info', [id], {}, function (info) {
-                        var cl_id = index_in_array_of_tuples(global_ops_cl, 'name', info.cls_name);
                         //Then aks for the gui
                         ws_request('get_operator_instance_gui_data', [id], {}, function (gui) {
                             var jgui = eval("("+gui+")");
-                            create_operator_instance_from_hub(jgui.x, jgui.y, cl_id, info);
+                            create_operator_instance_from_hub(jgui.x, jgui.y, info.cls_id, info);
                             starting++;
                             if (nb_ops == starting) {
                                 get_project_links();
