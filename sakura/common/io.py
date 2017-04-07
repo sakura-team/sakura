@@ -1,15 +1,22 @@
-import collections, itertools, io, sys, json
+import collections, itertools, io, sys, json, numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
 
+def json_fallback_handler(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    raise TypeError(repr(obj) + ' is not JSON serializable')
+
 class CompactJsonProtocol:
     def load(self, f):
         return json.load(f)
     def dump(self, obj, f):
-        return json.dump(obj, f, separators=(',', ':'))
+        return json.dump(obj, f,
+                separators=(',', ':'),
+                default=json_fallback_handler)
 
 compactjson = CompactJsonProtocol()
 
