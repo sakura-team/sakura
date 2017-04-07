@@ -1,9 +1,17 @@
-import collections, itertools, io, sys
+import collections, itertools, io, sys, json
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
+
+class CompactJsonProtocol:
+    def load(self, f):
+        return json.load(f)
+    def dump(self, obj, f):
+        return json.dump(obj, f, separators=(',', ':'))
+
+compactjson = CompactJsonProtocol()
 
 def print_short(*args):
     OUT = io.StringIO()
