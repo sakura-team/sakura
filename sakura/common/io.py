@@ -1,9 +1,18 @@
-import collections, itertools
+import collections, itertools, io, sys
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
+
+def print_short(*args):
+    OUT = io.StringIO()
+    print(*args, file=OUT)
+    if OUT.tell() > 110:
+        OUT.seek(110)
+        OUT.write('...\n')
+        OUT.truncate()
+    sys.stdout.write(OUT.getvalue())
 
 class LocalAPIHandler(object):
     def __init__(self, f, protocol, local_api, greenlets_pool = None):
@@ -24,7 +33,7 @@ class LocalAPIHandler(object):
         try:
             raw_req = self.protocol.load(self.f)
             req = ParsedRequest(*raw_req)
-            print('received', req)
+            print_short('received', str(req))
         except BaseException:
             print('malformed request. closing.')
             return False
@@ -34,10 +43,10 @@ class LocalAPIHandler(object):
         res = self.api_runner.do(path, args, kwargs)
         try:
             self.protocol.dump((req_id, res), self.f)
-            print("sent",res)
+            print_short("sent",res)
             self.f.flush()
         except BaseException as e:
-            print('could not send response:', e)
+            print_short('could not send response:', e)
     def handle_request_pool(self, *args):
         self.pool.spawn(self.handle_request_base, *args)
 
