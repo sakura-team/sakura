@@ -1,6 +1,14 @@
 // LIG March 2017
 
 function showDiv(event,dir) {
+//set url
+if (event instanceof PopStateEvent) {
+  ; /* rien dans l'history */}
+else {
+    var stateObj = { where: dir };
+    try {  //try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
+    history.pushState(stateObj, "page", "#"+dir); } catch (e) { tmp=0;}}
+//normalize dir
   if (dir=="") {
     dir="Home";}
   var dirs = dir.split("/");
@@ -17,10 +25,6 @@ function showDiv(event,dir) {
   var navBarElt = document.getElementById("idNavBar"+dirs[0])
   if (navBarElt) {
     navBarElt.className = "active";}
-//set url
-  var stateObj = { foo: "bar" };
-  try {  //try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
-  history.pushState(stateObj, "page 2", "bar.html"); } catch (e) { tmp=0;}
 //set breadcrumb
   var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"http://sakura.imag.fr\" title=\"Sakura\">Sakura</a></li>";
   var tmpDir = "";
