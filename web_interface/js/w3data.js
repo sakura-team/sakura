@@ -126,7 +126,7 @@ function w3IncludeHTML() {
           w3IncludeHTML();
         }
       }      
-      xhttp.open("GET", file, true);
+      xhttp.open("GET", file, false);
       xhttp.send();
       return;
     }

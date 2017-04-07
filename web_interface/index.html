@@ -17,6 +17,11 @@
 	<script>
 window.onpopstate = function(event) {
   showDiv(event,event.state.where);};
+window.onload = function(event) {
+  w3IncludeHTML();
+  var a = window.location.href.split("#");
+  if (a.length>1) {
+    showDiv(event,a[1]);}}
 	</script>
     </head>
     <body>
@@ -69,10 +74,7 @@ window.onpopstate = function(event) {
                 <div w3-include-html="divs/documentation/index.html"></div>
                 <div w3-include-html="divs/documentation/cgu.html"></div>
                 <div w3-include-html="divs/signIn/index.html"></div>				
-            </div>
-            <script>
-                w3IncludeHTML();
-            </script>
+            </div>          
 			
   <div class="container" id="divfooter" style="margin-top:50px">
     <p align="center" class="text-muted">Page maintained by the LIG, viewed <span class="label label-primary">127</span> since January 2017, last updated on March 2017.</p>
