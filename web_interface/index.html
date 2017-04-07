@@ -14,6 +14,10 @@
     <link href="css/web_interface.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="bootstrap-3.3.7/css/bootstrap-select.min.css">
+	<script>
+window.onpopstate = function(event) {
+  showDiv(event,event.state.where);};
+	</script>
     </head>
     <body>
         <div class="container">
