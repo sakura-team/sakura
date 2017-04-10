@@ -71,4 +71,6 @@ $( window ).load(function() {
         });
         link_focus_id = link_from_id(params.id);
     });
+    
+    current_project();
 });

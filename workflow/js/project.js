@@ -32,11 +32,6 @@ function get_project_links() {
 
 function current_project() {
     
-    //We first clean the current gui
-    while (global_ops_inst.length) {
-        remove_operator_instance("op_"+global_ops_inst[0].cl.id+"_"+global_ops_inst[0].hub_id, false)
-    };
-    
     var starting = 0;
     var nb_ops = -1;
     
