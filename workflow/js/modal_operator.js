@@ -6,66 +6,23 @@ var max_rows = 10;
 var current_nb_rows = max_rows;
 
 
-function create_op_modal(id, cl_id, tabs) {
+function create_op_modal(main_div, id, cl_id, tabs) {
+    // load in a temporary div element, then
+    // append content obtained to main div.
     var cl = class_from_id(cl_id);
-    
-    var s = '<div class="modal fade" name="modal_'+id+'" id="modal_'+id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
-                <div class="modal-dialog" role="document" id="modal_'+id+'_dialog"> \
-                    <div class="modal-content"> \
-                        <div class="modal-header" id="modal_'+id+'_header"> \
-                            <table width="100%"> \
-                                <tr> \
-                                <td width="38px">'+cl.svg+'</td> \
-                                <td class="modal-title" align="left"><b><font size=4>&nbsp;&nbsp;'+cl.name+'&nbsp;&nbsp;</font></b><font size="2" color="grey">'+cl.daemon+'</font></td> \
-                                <td align="right"> \
-                                    <table> \
-                                        <tr> \
-                                            <td> \
-                                                <button type="button" class="btn btn-xs" style="background-color: transparent; border-color: transparent;" onclick="full_width(\'modal_'+id+'\');"> \
-                                                    <span class="glyphicon glyphicon-resize-full"></span>\
-                                                </button> \
-                                            <td> \
-                                                <button type="button" class="btn btn-xs" style="background-color: transparent; border-color: transparent;" data-dismiss="modal" aria-label="Close"> \
-                                                    <span class="glyphicon glyphicon-remove"></span>\
-                                                </button> \
-                                    </table> \
-                                </td> \
-                                <tr><td colspan="3"><font size="2">'+cl.short_desc+'</font></td> \
-                            </table> \
-                        </div> \
-                        <div class="modal-body" id="modal_'+id+'_body"> \
-                            <ul class="nav nav-tabs"> \
-                                <li class="active"> \
-                                    <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_inputs">Inputs</a></li> \
-                                <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_params">Params</a></li> \
-                                <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_outputs">Outputs</a></li> \
-                                <li class="disabled"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_code">Code</a></li>';
-    var index = 0;
-    tabs.forEach( function (tab) {
-        s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_'+id+'_tab_tab_'+index+'">'+tab.label+'</a></li>';
-        index++;
-    });
-    s += '                  </ul> \
-                            <div class="tab-content" style="width:100%; height:100%;"> \
-                                <div id="modal_'+id+'_tab_inputs" class="tab-pane fade in active"></div> \
-                                <div id="modal_'+id+'_tab_params" class="tab-pane fade"></div> \
-                                <div id="modal_'+id+'_tab_outputs" class="tab-pane fade"></div>';
-    index = 0;
-    tabs.forEach( function (tab) {
-        s += '<iframe frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:100%;" id="modal_'+id+'_tab_tab_'+index+'" class="tab-pane fade" sandbox="allow-scripts"></iframe>';
-        index++;
-    });
-    s += '                      <div id="modal_'+id+'_tab_code" class="tab-pane fade"></div> \
-                            </div> \
-                        </div> \
-                    </div> \
-                </div> \
-            </div>';
-    
     var wrapper= document.createElement('div');
-    wrapper.innerHTML= s;
-    var ndiv= wrapper.firstChild;
-    return ndiv;
+    load_from_template(
+                    wrapper,
+                    "modal-operator.html",
+                    {'id': id, 'cl': cl, 'tabs': tabs},
+                    function () {
+                        var modal = wrapper.firstChild;
+                        // update the svg icon
+                        $(modal).find("#tdsvg").html(cl.svg);
+                        // append to main div
+                        main_div.appendChild(modal);
+                    }
+    );
 }
 
 

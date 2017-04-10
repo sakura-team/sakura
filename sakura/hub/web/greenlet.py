@@ -1,10 +1,16 @@
-import bottle
+import bottle, json
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
 from sakura.hub.tools import monitored
+from pathlib import Path
+from bottle import template
+from collections import namedtuple
 import sakura.hub.conf as conf
+
+def to_namedtuple(clsname, d):
+    return namedtuple(clsname, d.keys())(**d)
 
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
@@ -16,13 +22,21 @@ def web_greenlet(context, webapp_path):
         rpc_manager(context, wsock)
 
     @app.route('/opfiles/<op_id:int>/<filepath:path>')
-    def server_static(op_id, filepath):
+    def serve_operator_file(op_id, filepath):
         return context.serve_operator_file(op_id, filepath)
+
+    @app.route('/tpl/<filepath:path>', method=['POST'])
+    def serve_template(filepath):
+        params = json.loads(
+                    bottle.request.forms['params'],
+                    object_hook = lambda d: to_namedtuple('Params', d))
+        with (Path(webapp_path) / filepath).open() as f:
+            return template(f.read(), **params._asdict())
 
     # if no route was found above, look for static files in webapp subdir
     @app.route('/')
     @app.route('/<filepath:path>')
-    def server_static(filepath = 'index.html'):
+    def serve_static(filepath = 'index.html'):
         print('serving ' + filepath, end="")
         resp = bottle.static_file(filepath, root = webapp_path)
         print(' ->', resp.status_line)

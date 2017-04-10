@@ -105,3 +105,7 @@ function escapeHtml(text) {
     });
 }
 
+
+function load_from_template(elem, template_file, params, cb) {
+    $(elem).load("tpl/" + template_file, { 'params': JSON.stringify(params) }, cb);
+}

@@ -43,8 +43,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         
         
         //Now the modal for parameters/creation/visu/...
-        main_div.appendChild(create_op_modal(ndiv.id, parseInt(id), result.tabs));
-        
+        create_op_modal(main_div, ndiv.id, parseInt(id), result.tabs);
         
         global_ops_inst.push({  hub_id      : hub_id,
                                 cl          : class_from_id(parseInt(id)),
@@ -95,7 +94,7 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                                                 });
     
     //Now the modal for parameters/creation/visu/...
-    main_div.appendChild(create_op_modal(ndiv.id, parseInt(id), info.tabs));
+    create_op_modal(main_div, ndiv.id, parseInt(id), info.tabs);
     
     global_ops_inst.push({  hub_id      : info.op_id,
                             cl          : class_from_id(parseInt(id)),
