@@ -120,8 +120,8 @@ function create_link_modal(link, source_cl, destination_cl, source_inst_info, ta
                             </table> \
                         </div> \
                         <div class="modal-footer"> \
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+link.id+'\');">Delete Link</button> \
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button> \
+                            <!--<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+link.id+'\');">Delete Link</button>--> \
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="test_link(\''+link.id+'\')">Close</button> \
                         </div> \
                     </div> \
                 </div> \
@@ -139,33 +139,45 @@ function create_link_modal(link, source_cl, destination_cl, source_inst_info, ta
 }
 
 
-function remove_link(link) {
+function test_link(link) {
+    if (typeof link == 'string') {
+        link = link_from_id(link);
+    }
+    if (link.params == null) 
+        remove_link(link)
+}
 
+function remove_link(link) {
+    
+    if (typeof link == 'string') {
+        link = link_from_id(link);
+    }
     //We first send the removing commands to the hub
     if (link.params)
         delete_link_param(link);
-    
-    //Then to jsPlumb
-    var jsPConn = null;
-    jsPlumb.getConnections().forEach (function (item) {
-        if (item.id == link.id)
-            jsPConn = item;
-    });
-    
-    jsPlumb.detach(jsPConn);
-    jsPlumb.repaintEverything();
-    
-    //remove modal
-    var mod = document.getElementById("modal_link_"+link.id);
-    mod.outerHTML = "";
-    delete mod;
-    link_focus_id = null;
-    
-    //Then to us :) (removing the modal and the link)
-    var index = global_links.findIndex( function (e) {
-        return e.id === link.id;
-    });
-    global_links.splice(index, 1);
+    else {
+        //Then to jsPlumb
+        var jsPConn = null;
+        jsPlumb.getConnections().forEach (function (item) {
+            if (item.id == link.id)
+                jsPConn = item;
+        });
+        
+        jsPlumb.detach(jsPConn);
+        jsPlumb.repaintEverything();
+        
+        //remove modal
+        var mod = document.getElementById("modal_link_"+link.id);
+        mod.outerHTML = "";
+        delete mod;
+        link_focus_id = null;
+        
+        //Then to us :) (removing the modal and the link)
+        var index = global_links.findIndex( function (e) {
+            return e.id === link.id;
+        });
+        global_links.splice(index, 1);
+    }
 }
 
 
@@ -197,6 +209,8 @@ function delete_link_param(link) {
             mdiv.removeChild(line);
             
             link.params = null;
+            
+            remove_link(link);
         }
     });
 }
