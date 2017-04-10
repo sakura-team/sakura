@@ -58,7 +58,7 @@ class LocalAPIHandler(object):
         res = self.api_runner.do(path, args, kwargs)
         try:
             self.protocol.dump((req_id, res), self.f)
-            print_short("sent",res)
+            print_short("sent", req_id, res)
             self.f.flush()
         except BaseException as e:
             print_short('could not send response:', e)
