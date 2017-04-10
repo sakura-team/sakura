@@ -229,9 +229,9 @@ function change_chevron(a) {
 function select_op_create_accordion(title, id, ops) {
     var title_for_id = title.replace(" ", "_");
     var s = '<div id="'+id+'" class="panel panel-primary" id="div_acc_'+title_for_id+'"> \
-                <div class="panel-heading"> \
+                <div class="panel-heading" style="padding: 6px"> \
                     <h6 class="panel-title"> \
-                        <table width="100%"> \
+                        <table width="100%" > \
                             <tr> \
                                 <td> \
                                     <span id="panel_title_'+title_for_id+'" ondblclick="change_panel_title(\''+title_for_id+'\');">'+title+'</span> \

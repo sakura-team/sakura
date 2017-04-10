@@ -106,8 +106,15 @@
                                 </td>
                                 <td style="padding: 5px;">
                                     <table width=100%>
-                                        <tr><td><label>Title</labl>
-                                        <td><input type="text" class="form-control" placeholder="Panel title" id="select_op_panel_title" />
+                                        <tr>
+                                        <td><label>Title</label>
+                                        </td>
+                                        <td>
+                                            <div class="col-xs-7">
+                                            <input type="text" maxlength="10" class="form-control" placeholder="Panel title" id="select_op_panel_title" />
+                                            </div>
+                                            <p><span>(10 chars max)</span></p>
+                                        </td>
                                     </table>
                                     <br>
                                     <div id="select_op_panel" width="100%" style="height: 400px; overflow-y: auto;"/>

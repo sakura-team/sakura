@@ -15,7 +15,6 @@ function get_project_links() {
     ws_request('list_link_ids', [], {}, function (ids) {
         ids.forEach( function (id) {
             ws_request('get_link_info', [id], {}, function(info) {
-                
                 var src_inst = instance_from_id(info.src_id);
                 var dst_inst = instance_from_id(info.dst_id);
                 
@@ -38,7 +37,7 @@ function current_project() {
         remove_operator_instance("op_"+global_ops_inst[0].cl.id+"_"+global_ops_inst[0].hub_id, false)
     };
     
-    var starting = null;
+    var starting = 0;
     var nb_ops = -1;
     
     //Now we ask for the operator classes

@@ -29,11 +29,7 @@ function create_op_modal(main_div, id, cl_id, tabs) {
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
-        var h = ($(window).height()-$('#'+elt+"_header").height()-80);
-        //var h_diff = h - $('#'+elt+"_body").height();
-        //var nb_rows = h_diff/20;
-        //current_nb_rows = nb_rows + max_rows;
-        
+        var h = ($(window).height()-$('#'+elt+"_header").height()-80);        
         $('#'+elt+"_body").css("height", h+"px");
         $('#'+elt+"_body").children().eq(1).css("height", (h-60)+"px");
     }
@@ -215,8 +211,6 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     index += 1;
                 });
                 
-                //s += '<tr><td colspan="'+nb_cols+'" style="background-color: white;">';
-                //s += '</tr></tbody></table>';
                 s += '</tbody></table>';
                 
                 if (result_info[in_out+'s'][id_in_out]['length'] != null) {
