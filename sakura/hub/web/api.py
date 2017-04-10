@@ -83,7 +83,6 @@ class GuiToHubAPI(object):
     def delete_link(self, link_id):
         return self.context.delete_link(link_id)
     
-    
     ########################################
     # Gui
     def set_operator_instance_gui_data(self, op_id, gui_data):
@@ -97,3 +96,9 @@ class GuiToHubAPI(object):
     
     def get_project_gui_data(self):
         return self.context.get_project_gui_data(self.project_id)
+
+    def set_link_gui_data(self, link_id, gui_data):
+        self.context.links.set_gui_data(link_id, gui_data)
+
+    def get_link_gui_data(self, link_id):
+        return self.context.links.get_gui_data(link_id)

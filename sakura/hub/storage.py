@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS Link (
     src_op_id INTEGER REFERENCES OpInstance(op_id) ON DELETE CASCADE,
     src_out_id INTEGER,
     dst_op_id INTEGER REFERENCES OpInstance(op_id) ON DELETE CASCADE,
-    dst_in_id INTEGER
+    dst_in_id INTEGER,
+    gui_data TEXT
 );
 
 CREATE TABLE IF NOT EXISTS OpParam (
