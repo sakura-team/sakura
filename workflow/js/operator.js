@@ -129,6 +129,14 @@ function remove_operator_instance(id, on_hub) {
         ws_request('delete_operator_instance', [hub_id], {}, function (result) {});
 }
 
+function remove_all_operators_instances() {
+    var list = global_ops_inst.slice();
+    list.forEach( function (item) {
+        remove_operator_instance("op_"+item.cl.id+"_"+item.hub_id, true);
+    });
+}
+    
+
 
 function class_from_id(id) {
     return global_ops_cl.find( function (e) {

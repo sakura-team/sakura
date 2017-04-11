@@ -163,8 +163,10 @@ function remove_link(link) {
                 jsPConn = item;
         });
         
-        jsPlumb.detach(jsPConn);
-        jsPlumb.repaintEverything();
+        if (jsPConn) {
+            jsPlumb.detach(jsPConn);
+            jsPlumb.repaintEverything();
+        }
         
         //remove modal
         var mod = document.getElementById("modal_link_"+link.id);
@@ -289,6 +291,8 @@ function link_exist(src_id, dst_id) {
 
 
 function remove_all_links() {
-    while (global_links.length)
-        remove_link(global_links[0]);
+    global_links.forEach( function(item) {
+        remove_link(item);
+    });
+    global_links = []
 }

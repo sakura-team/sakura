@@ -112,8 +112,8 @@ function load_project() {
 
 function save_project() {
     //The panels first
-    var gui = JSON.stringify(global_op_panels);
-    ws_request('set_project_gui_data', [gui], {}, function(result){});
+    if (global_op_panels.length)
+        ws_request('set_project_gui_data', [JSON.stringify(global_op_panels)], {}, function(result){});
     
     //Second the operators
     global_ops_inst.forEach( function(inst) {
@@ -132,8 +132,10 @@ function new_project() {
     var res = confirm("Are you sure you want to erase the current project ?");
     if (!res) 
         return false;
-    while (global_ops_inst.length) {
-        remove_operator_instance("op_"+global_ops_inst[0].cl.id+"_"+global_ops_inst[0].hub_id, true)
-    };
-    global_ops_inst = [];
+    
+    //removing links
+    remove_all_links();
+    
+    //removing operators instances
+    remove_all_operators_instances();
 };
