@@ -1,15 +1,15 @@
-<div class="panel panel-primary" id="div_acc_{{title_escaped}}">
+<div class="panel panel-primary" id="{{id}}">
     <div class="panel-heading" style="padding: 6px">
         <h6 class="panel-title">
             <table width="100%" >
                 <tr>
                     <td>
-                        <span id="panel_title_{{title_escaped}}" ondblclick="change_panel_title('{{title_escaped}}');">{{title}}
+                        <span id="panel_title_{{title_escaped}}" ondblclick="change_panel_title('{{title}}');">{{title}}
                         </span>
                     </td>
                     <td align="right">
                         <small>
-                            <a data-toggle="collapse" id="panel_'+title_for_id+'_chevron" style="color: white;" data-parent="#accordion" href="#acc_{{title_escaped}}" onclick="change_chevron($(this), '{{id}}');">
+                            <a data-toggle="collapse" id="panel_{{title_escaped}}_chevron" style="color: white;" data-parent="#accordion" href="#acc_{{title_escaped}}" onclick="change_chevron($(this), '{{id}}');">
                                 <span class="glyphicon glyphicon-chevron-up" style="color: white; cursor: pointer;">
                                 </span>
                             </a>

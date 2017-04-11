@@ -95,13 +95,10 @@ function current_project() {
             var tmp_el = document.createElement("div");
             tmp_el.appendChild(select_op_make_table(3, panel['selected_ops'], divs));
             
-            acc_id = "accordion_"+index
+            panel.id = "accordion_"+index
             index++;
             
-            select_op_create_accordion(panel['title'], acc_id, tmp_el.innerHTML);
-            
-            if (!panel.gui.opened)
-                $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
+            select_op_create_accordion(panel, tmp_el.innerHTML);
         });
     });
 }

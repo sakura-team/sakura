@@ -201,14 +201,15 @@ function select_op_add_panel() {
         if (op['id'] == acc_id)
             acc_id ++;
     });
+    var panel = {'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}}
+    panel.id = "accordion_"+acc_id;
     
-    acc_id = "accordion_"+acc_id
+    global_op_panels.push(panel);
+    current_modal_id = null;
     
-    select_op_create_accordion(title, acc_id, tmp_el.innerHTML);
+    select_op_create_accordion(panel, tmp_el.innerHTML);
     
     //update global variable
-    global_op_panels.push({'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}});
-    current_modal_id = null;
     $('#modal_op_selector').modal('hide');
     
    //Send the the current global var to the hub
@@ -234,21 +235,23 @@ function change_chevron(a, panel_id) {
 }
 
 
-function select_op_create_accordion(title, id, ops) {
+function select_op_create_accordion(panel, ops) {
     
-    var title_escaped = title.replace(' ', '_');
     var wrapper= document.createElement('div');
     load_from_template(
                     wrapper,
                     "panel.html",
-                    {'id': id, 'title': title, 'title_escaped': title_escaped},
+                    {'id': panel.id, 'title': panel.title, 'title_escaped': panel.title.replace(' ', '_')},
                     function () {
                         var modal = wrapper.firstChild;
-                        $(modal).find("#panel_"+id+"_body").html(ops);
+                        $(modal).find("#panel_"+panel.id+"_body").html(ops);
                         var acc_div = document.getElementById('op_left_accordion');
                         var butt = document.getElementById('select_op_add_button');
                         
                         acc_div.insertBefore(wrapper.firstChild, butt);
+                        
+                        if (!panel.gui.opened)
+                            $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
                     });
 }
 
@@ -266,10 +269,12 @@ function change_panel_title(id) {
 
 
 function select_op_delete_accordion(id) {
-    var acc = document.getElementById(id);
+    var panel = panel_from_id(id);
+    var acc = document.getElementById(panel.id);
+    console.log(panel.id);
     document.getElementById('op_left_accordion').removeChild(acc);
     
-    var index = panel_index_from_id(acc.id);
+    var index = panel_index_from_id(panel.id);
     global_op_panels.splice(index,1);
     
     save_project();
