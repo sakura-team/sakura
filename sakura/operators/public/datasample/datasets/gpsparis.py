@@ -25,6 +25,7 @@ def compute():
 
 # dataset description
 NAME = 'GPS Data, Paris'
-COLUMNS = (("Longitude", float), ("Latitude", float))
+COLUMNS = ( ("Longitude", float, ('longitude',)),
+            ("Latitude", float, ('latitude',)))
 COMPUTE_CALLBACK = compute
 # we consider LENGTH is unknown

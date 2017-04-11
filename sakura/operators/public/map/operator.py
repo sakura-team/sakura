@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import itertools, numpy as np
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import FloatColumnSelection
+from sakura.daemon.processing.parameter import TagBasedColumnSelection
 from . import heatmap
 from time import time
 
@@ -14,9 +14,9 @@ class MapOperator(Operator):
         self.input_markers = self.register_input('Markers')
         # parameters
         self.input_longitude_column = self.register_parameter('input longitude',
-                FloatColumnSelection(self.input_markers))
+                TagBasedColumnSelection(self.input_markers, 'longitude'))
         self.input_latitude_column = self.register_parameter('input latitude',
-                FloatColumnSelection(self.input_markers))
+                TagBasedColumnSelection(self.input_markers, 'latitude'))
         # additional tabs
         self.register_tab('Map', 'map.html')
 

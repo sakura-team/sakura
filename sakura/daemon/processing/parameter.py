@@ -102,6 +102,14 @@ class ColumnSelectionParameter(ComboParameter):
     def get_value_serializable(self):
         return self.raw_value
 
+def TagBasedColumnSelection(stream, tag):
+    class CustomParameterClass(ColumnSelectionParameter):
+        def __init__(self, label):
+            def condition(column):
+                return tag in column.tags
+            ColumnSelectionParameter.__init__(self, label, stream, condition)
+    return CustomParameterClass
+
 def TypeBasedColumnSelection(stream, cls):
     class CustomParameterClass(ColumnSelectionParameter):
         def __init__(self, label):

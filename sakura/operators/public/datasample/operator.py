@@ -15,7 +15,7 @@ class DataSampleOperator(Operator):
             output = self.register_output(ds.NAME, ds.COMPUTE_CALLBACK)
             if hasattr(ds, 'LENGTH'):
                 output.length = ds.LENGTH
-            for colname, coltype in ds.COLUMNS:
-                output.add_column(colname, coltype)
+            for col_info in ds.COLUMNS:
+                output.add_column(*col_info)
         # no parameters
         pass
