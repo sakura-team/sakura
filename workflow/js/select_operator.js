@@ -204,11 +204,7 @@ function select_op_add_panel() {
     
     acc_id = "accordion_"+acc_id
     
-    var new_acc = select_op_create_accordion(title, acc_id, tmp_el.innerHTML);
-    var acc_div = document.getElementById('op_left_accordion');
-    var butt = document.getElementById('select_op_add_button');
-    
-    acc_div.insertBefore(new_acc, butt);
+    select_op_create_accordion(title, acc_id, tmp_el.innerHTML);
     
     //update global variable
     global_op_panels.push({'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}});
@@ -239,35 +235,21 @@ function change_chevron(a, panel_id) {
 
 
 function select_op_create_accordion(title, id, ops) {
-    var title_for_id = title.replace(" ", "_");
-    var s = '<div id="'+id+'" class="panel panel-primary" id="div_acc_'+title_for_id+'"> \
-                <div class="panel-heading" style="padding: 6px"> \
-                    <h6 class="panel-title"> \
-                        <table width="100%" > \
-                            <tr> \
-                                <td> \
-                                    <span id="panel_title_'+title_for_id+'" ondblclick="change_panel_title(\''+title_for_id+'\');">'+title+'</span> \
-                                </td> \
-                                <td align="right"> \
-                                    <small> \
-                                    <a data-toggle="collapse" id="panel_'+title_for_id+'_chevron" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'" onclick="change_chevron($(this), \''+id+'\');"><span class="glyphicon glyphicon-chevron-up" style="color: white; cursor: pointer;"></span></a> \
-                                    <a style="color: white; cursor: pointer;"><span class="glyphicon glyphicon-pencil" onclick="not_yet();"></span></a> \
-                                    <a><span class="glyphicon glyphicon-remove" onclick="select_op_delete_accordion(\''+id+'\');" style="color: white; cursor: pointer;"></span></a> \
-                                    </small> \
-                                </td> \
-                            </tr> \
-                        </table> \
-                    </h6> \
-                </div> \
-                <div id="acc_'+title_for_id+'" class="panel-collapse collapse in"> \
-                    <div class="panel-body">'+ops+'</div> \
-                </div> \
-            </div>';
     
+    var title_escaped = title.replace(' ', '_');
     var wrapper= document.createElement('div');
-    wrapper.innerHTML= s;
-    var ndiv= wrapper.firstChild;
-    return ndiv;
+    load_from_template(
+                    wrapper,
+                    "panel.html",
+                    {'id': id, 'title': title, 'title_escaped': title_escaped},
+                    function () {
+                        var modal = wrapper.firstChild;
+                        $(modal).find("#panel_"+id+"_body").html(ops);
+                        var acc_div = document.getElementById('op_left_accordion');
+                        var butt = document.getElementById('select_op_add_button');
+                        
+                        acc_div.insertBefore(wrapper.firstChild, butt);
+                    });
 }
 
 

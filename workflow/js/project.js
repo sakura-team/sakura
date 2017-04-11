@@ -98,8 +98,7 @@ function current_project() {
             acc_id = "accordion_"+index
             index++;
             
-            var new_acc = select_op_create_accordion(panel['title'], acc_id, tmp_el.innerHTML);
-            acc_div.insertBefore(new_acc, butt);
+            select_op_create_accordion(panel['title'], acc_id, tmp_el.innerHTML);
             
             if (!panel.gui.opened)
                 $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
