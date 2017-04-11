@@ -112,8 +112,7 @@ function load_project() {
 
 function save_project() {
     //The panels first
-    if (global_op_panels.length)
-        ws_request('set_project_gui_data', [JSON.stringify(global_op_panels)], {}, function(result){});
+    ws_request('set_project_gui_data', [JSON.stringify(global_op_panels)], {}, function(result){});
     
     //Second the operators
     global_ops_inst.forEach( function(inst) {

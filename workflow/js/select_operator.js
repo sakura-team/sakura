@@ -277,5 +277,6 @@ function select_op_delete_accordion(id) {
     
     var index = index_in_array_of_tuples(global_op_panels, 0, acc.id);
     global_op_panels.splice(index,1);
+    
     save_project();
 }
