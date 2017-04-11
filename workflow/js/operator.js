@@ -135,7 +135,6 @@ function remove_all_operators_instances() {
         remove_operator_instance("op_"+item.cl.id+"_"+item.hub_id, true);
     });
 }
-    
 
 
 function class_from_id(id) {
@@ -144,11 +143,13 @@ function class_from_id(id) {
     });
 }
 
+
 function instance_from_id(id) {
     return global_ops_inst.find( function (e) {
         return e.hub_id === id;
     });
 }
+
 
 function instance_index_from_id(hid) {
     for (var i=0; i< global_ops_inst.length; i++)

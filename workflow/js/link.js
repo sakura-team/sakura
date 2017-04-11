@@ -13,16 +13,15 @@ function create_link(js_id, src_id, dst_id) {
                         src: src_id,
                         dst: dst_id,
                         params: null});
-    //modal creation
+    
     ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
         ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-            var ndiv = create_link_modal(   global_links[global_links.length - 1], 
-                                            instance_from_id(src_id).cl, 
-                                            instance_from_id(dst_id).cl, 
-                                            source_inst_info, 
-                                            target_inst_info);
-            main_div.append(ndiv);
-            $('#modal_link_'+js_id).modal();
+            create_link_modal(  global_links[global_links.length - 1], 
+                                instance_from_id(src_id).cl, 
+                                instance_from_id(dst_id).cl, 
+                                source_inst_info, 
+                                target_inst_info,
+                                true);
         });
     });
 }
@@ -30,25 +29,23 @@ function create_link(js_id, src_id, dst_id) {
 
 function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui) {
     
-    //global_links.push([global_links_inc, js_id, src_id, dst_id]);
     var l = global_links.push({ id: js_id,
                                 src: src_id,
                                 dst: dst_id,
                                 params: null});
     global_links[l-1].gui = gui;
+    
     ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
         ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-            main_div.append( create_link_modal(   global_links[l - 1], 
-                                            instance_from_id(src_id).cl, 
-                                            instance_from_id(dst_id).cl, 
-                                            source_inst_info, 
-                                            target_inst_info) );
-                                            
-            create_params(global_links[l - 1], out_id, in_id, hub_id);
-            create_link_line(global_links[l - 1], out_id, in_id);
-            
-            document.getElementById("svg_modal_link_"+global_links[l - 1].id+'_out_'+out_id).innerHTML = svg_round_square_crossed("");
-            document.getElementById("svg_modal_link_"+global_links[l - 1].id+'_in_'+in_id).innerHTML = svg_round_square_crossed("");
+            create_link_modal(  global_links[l - 1], 
+                                instance_from_id(src_id).cl, 
+                                instance_from_id(dst_id).cl, 
+                                source_inst_info, 
+                                target_inst_info,
+                                false,
+                                out_id,
+                                in_id,
+                                hub_id);
         });
     });
 }
@@ -61,81 +58,52 @@ function create_params(link, out_id, in_id, link_id_from_hub) {
 }
 
 
-function create_link_modal(link, source_cl, destination_cl, source_inst_info, target_inst_info) {
-    
-    var modal_id = "modal_link_"+link.id;
-    
-    //we ask for instances info
-    var s = '<div class="modal fade" name="'+modal_id+'" id="'+modal_id+'" tabindex="-1" role="dialog" aria-hidden="true"> \
-                <div class="modal-dialog" role="document" name="'+modal_id+'_dialog" id="'+modal_id+'_dialog"> \
-                    <div class="modal-content"> \
-                        <div class="modal-body"> \
-                            <table width="100%"> \
-                                <tr><td width="45%" valign="top"> \
-                                    <div class="panel panel-default" name="'+modal_id+'_panel" id="'+modal_id+'_panel"> \
-                                         <div class="panel-heading"> \
-                                            <table width="100%"> \
-                                                <tr><td align="center">'+ source_cl['svg']+'</td> \
-                                                <tr><td align="center">'+ source_cl['name']+ '</td> \
-                                            </table> \
-                                        </div> \
-                                        <div class="panel-body" name="'+modal_id+'_body" id="'+modal_id+'_body"> \
-                                            <table align="right"> \
-                                                <tr><td> \
-                                                    <table> ';
-    for (var i = 0; i < source_inst_info['outputs'].length; i++) {
-        s += '                                          <tr><td valign="middle"> '+source_inst_info['outputs'][i]['label']+' </td> \
-                                                            <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+link.id+'\');" name="'+modal_id+"_out_"+i+'" id="'+modal_id+"_out_"+i+'" align="right" valign="middle" width="40px"> \
-                                                                <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_out_'+i+'">'+svg_round_square("")+' \
-                                                                </div></td>';
-    }
-    s += '                                          </table> \
-                                                </td> \
-                                            </table> \
-                                        </div> \
-                                    </div> \
-                                <td width="10%"> \
-                                <td width="45%" valign="top"> \
-                                    <div class="panel panel-default"> \
-                                        <div class="panel-heading"> \
-                                            <table width="100%"> \
-                                                <tr><td align="center">'+ destination_cl['svg']+'</td> \
-                                                <tr><td align="center">'+ destination_cl['name']+ '</td> \
-                                            </table> \
-                                        </div> \
-                                        <div class="panel-body"> \
-                                            <table align="left"> \
-                                                <tr><td> \
-                                                    <table>';
-    for (var i = 0; i < target_inst_info['inputs'].length; i++)
-        s += '                                          <tr><td title="Drag me to another box, or click to delete my links" onclick="delete_link_param(\''+link.id+'\');" name="'+modal_id+"_in_"+i+'" id="'+modal_id+"_in_"+i+'" align="left" valign="middle" width="40px"> \
-                                                                <div style="width: 24px; height: 24px;" draggable="true" id="svg_'+modal_id+'_in_'+i+'">'+svg_round_square("")+' \
-                                                                </div></td> \
-                                                            <td valign="middle"> '+target_inst_info['inputs'][i]['label']+' </td>';
-    s += '                                          </table> </td>\
-                                                </td>\
-                                            </table> \
-                                        </div> \
-                                    </div> \
-                            </table> \
-                        </div> \
-                        <div class="modal-footer"> \
-                            <!--<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="remove_link(\''+link.id+'\');">Delete Link</button>--> \
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="test_link(\''+link.id+'\')">Close</button> \
-                        </div> \
-                    </div> \
-                </div> \
-            </div>';
+function create_link_modal(link, src_cl, dst_cl, src_inst_info, dst_inst_info, open_now, out_id, in_id, hub_id) {
     
     //Here we automatically connect tables into the link
-    if (source_inst_info['outputs'].length == 1 && target_inst_info['inputs'].length == source_inst_info['outputs'].length) {
-        console.log("Could be Automatically connected");
+    var auto_link = false;
+    if (src_inst_info['outputs'].length == 1 && dst_inst_info['inputs'].length == src_inst_info['outputs'].length) {
+        auto_link = true;
     }
     
     var wrapper= document.createElement('div');
-    wrapper.innerHTML= s;
-    var ndiv= wrapper.firstChild;
-    return ndiv;
+    load_from_template(
+                    wrapper,
+                    "modal-link.html",
+                    {'id': link.id, 'source_cl': src_cl, 'destination_cl': dst_cl, 'tabs_src_outputs': src_inst_info['outputs'], 'tabs_dst_inputs': dst_inst_info['inputs']},
+                    function () {
+                        var modal = wrapper.firstChild;
+                        // update the svg icon
+                        $(modal).find("#td_src_svg").html(src_cl.svg);
+                        $(modal).find("#td_dst_svg").html(dst_cl.svg);
+                        
+                        var index = 0;
+                        src_inst_info['outputs'].forEach( function (item) {
+                            $(modal).find("#svg_modal_link_"+link.id+"_out_"+index).html(svg_round_square(""));
+                            index ++;
+                        });
+                        
+                        var index = 0;
+                        dst_inst_info['inputs'].forEach( function (item) {
+                            $(modal).find("#svg_modal_link_"+link.id+"_in_"+index).html(svg_round_square(""));
+                            index ++;
+                        });
+                        
+                        // append to main div
+                        main_div.appendChild(modal);
+                        if (open_now && !auto_link)
+                            $(modal).modal();
+                        else if (!open_now) {
+                            create_params(link, out_id, in_id, hub_id);
+                            create_link_line(link, out_id, in_id);
+                            $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
+                            $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
+                        }
+                        else if (auto_link) {  //means should b open now, but we don't cause we link automatically
+                            console.log('Could think about auto link');
+                        }
+                    }
+    );
 }
 
 

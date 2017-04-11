@@ -1,0 +1,78 @@
+<div class="modal fade" name="modal_link_{{id}}" id="modal_link_{{id}}" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document" name="modal_link_{{id}}_dialog" id="modal_link_{{id}}_dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <table width="100%">
+                    <tr>
+                    <td width="45%" valign="top">
+                        <div class="panel panel-default" name="modal_link_{{id}}_panel" id="modal_link_{{id}}_panel">
+                             <div class="panel-heading">
+                                <table width="100%">
+                                    <tr><td align="center" id="td_src_svg"></td>
+                                    <tr><td align="center">{{source_cl.name}}</td>
+                                </table>
+                            </div>
+                            <div class="panel-body" name="modal_link_{{id}}_body" id="modal_link_{{id}}_body">
+                                <table align="right">
+                                    <tr><td>
+                                        <table>
+                                            % for index, tab in enumerate(tabs_src_outputs):
+                                            <tr>
+                                                <td valign="middle"> {{tab.label}}
+                                                </td>
+                                                <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}');" name="modal_link_{{id}}_out_{{index}}" id="modal_link_{{id}}_out_{{index}}" align="right" valign="middle" width="40px">
+                                                    <div style="width: 24px; height: 24px;" draggable="true" id="svg_modal_link_{{id}}_out_{{index}}"></div>
+                                                </td>
+                                            </tr>
+                                            % end
+                                        </table>
+                                    </td>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                    <td width="10%">
+                    </td>
+                    <td width="45%" valign="top">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <table width="100%">
+                                    <tr>
+                                        <td align="center" id = "td_dst_svg">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center">{{destination_cl.name}}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="panel-body">
+                                <table align="left">
+                                    <tr>
+                                        <td>
+                                            <table>
+                                                % for index, tab in enumerate(tabs_dst_inputs):
+                                                <tr>
+                                                    <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}');" name="modal_link_{{id}}_in_{{index}}" id="modal_link_{{id}}_in_{{index}}" align="left" valign="middle" width="40px">
+                                                        <div style="width: 24px; height: 24px;" draggable="true" id="svg_modal_link_{{id}}_in_{{index}}"></div>
+                                                    </td>
+                                                    <td valign="middle">{{tab.label}} 
+                                                    </td>
+                                                </tr>
+                                                % end
+                                            </table> 
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </td>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="test_link('{{id}}')">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
