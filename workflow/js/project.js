@@ -88,18 +88,21 @@ function current_project() {
         global_op_panels.forEach( function (panel) {
             
             var divs = []
-            panel[2].forEach( function(item) {
+            panel['selected_ops'].forEach( function(item) {
                 divs.push(select_op_new_operator(item, false));
             });
             
             var tmp_el = document.createElement("div");
-            tmp_el.appendChild(select_op_make_table(3, panel[2], divs));
+            tmp_el.appendChild(select_op_make_table(3, panel['selected_ops'], divs));
             
             acc_id = "accordion_"+index
             index++;
             
-            var new_acc = select_op_create_accordion(panel[1], acc_id, tmp_el.innerHTML);
+            var new_acc = select_op_create_accordion(panel['title'], acc_id, tmp_el.innerHTML);
             acc_div.insertBefore(new_acc, butt);
+            
+            if (!panel.gui.opened)
+                $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
         });
     });
 }

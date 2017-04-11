@@ -178,10 +178,13 @@ function select_op_add_panel() {
     if (title == '') { 
         title  = "Panel 0";
         var cpt = 0;
-        while (index_in_array_of_tuples(global_op_panels, 1, title) >= 0) {
-             cpt += 1;
-             title = "Panel "+cpt;
-        }
+        global_op_panels.forEach( function (p) {
+            console.log(p);
+            if (p['title'] == title) {
+                 cpt += 1;
+            }
+        title = "Panel "+cpt;
+        });
     }
     
     var divs = []
@@ -208,7 +211,7 @@ function select_op_add_panel() {
     acc_div.insertBefore(new_acc, butt);
     
     //update global variable
-    global_op_panels.push([acc_id, title, select_op_selected]);
+    global_op_panels.push({'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}});
     current_modal_id = null;
     $('#modal_op_selector').modal('hide');
     
@@ -217,12 +220,21 @@ function select_op_add_panel() {
 }
 
 
-function change_chevron(a) {
+function change_chevron(a, panel_id) {
+    
+    var panel = panel_from_id(panel_id);
     var span_class = a.find('span').attr('class');
-    if (span_class == "glyphicon glyphicon-chevron-up")
+    
+    if (span_class == "glyphicon glyphicon-chevron-up") {
         a.find('span').removeClass('glyphicon glyphicon-chevron-up').addClass('glyphicon glyphicon-chevron-down');
-    else
+        panel.gui.opened = false;
+    }
+    else {
         a.find('span').removeClass('glyphicon glyphicon-chevron-down').addClass('glyphicon glyphicon-chevron-up');
+        panel.gui.opened = true;
+    }
+    
+    save_project();
 }
 
 
@@ -238,7 +250,7 @@ function select_op_create_accordion(title, id, ops) {
                                 </td> \
                                 <td align="right"> \
                                     <small> \
-                                    <a data-toggle="collapse" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'" onclick="change_chevron($(this));"><span class="glyphicon glyphicon-chevron-up" style="color: white; cursor: pointer;"></span></a> \
+                                    <a data-toggle="collapse" id="panel_'+title_for_id+'_chevron" style="color: white;" data-parent="#accordion" href="#acc_'+title_for_id+'" onclick="change_chevron($(this), \''+id+'\');"><span class="glyphicon glyphicon-chevron-up" style="color: white; cursor: pointer;"></span></a> \
                                     <a style="color: white; cursor: pointer;"><span class="glyphicon glyphicon-pencil" onclick="not_yet();"></span></a> \
                                     <a><span class="glyphicon glyphicon-remove" onclick="select_op_delete_accordion(\''+id+'\');" style="color: white; cursor: pointer;"></span></a> \
                                     </small> \
@@ -275,8 +287,22 @@ function select_op_delete_accordion(id) {
     var acc = document.getElementById(id);
     document.getElementById('op_left_accordion').removeChild(acc);
     
-    var index = index_in_array_of_tuples(global_op_panels, 0, acc.id);
+    var index = panel_index_from_id(acc.id);
     global_op_panels.splice(index,1);
     
     save_project();
+}
+
+
+function panel_from_id(id) {
+    return global_op_panels.find( function (e) {
+        return e['id'] === id;
+    });
+}
+
+function panel_index_from_id(id) {
+    for (var i=0; i< global_op_panels.length; i++)
+        if (global_op_panels[i]['id'] == id)
+            return i;
+    return -1
 }
