@@ -3,7 +3,7 @@
 
 
 //links
-var global_links  = []; //[local_id, jsPlumb_id, src_inst_id (from hub), dst_inst_id (from hub)]
+var global_links  = [];
 var link_focus_id = null;
 
 
@@ -28,14 +28,14 @@ function create_link(js_id, src_id, dst_id) {
 }
 
 
-function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id) {
+function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui) {
     
     //global_links.push([global_links_inc, js_id, src_id, dst_id]);
     var l = global_links.push({ id: js_id,
                                 src: src_id,
                                 dst: dst_id,
                                 params: null});
-    
+    global_links[l-1].gui = gui;
     ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
         ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
             main_div.append( create_link_modal(   global_links[l - 1], 
@@ -154,7 +154,7 @@ function remove_link(link) {
     }
     //We first send the removing commands to the hub
     if (link.params)
-        delete_link_param(link);
+        delete_link_param(link, true);
     else {
         //Then to jsPlumb
         var jsPConn = null;
@@ -189,7 +189,7 @@ function remove_connection(hub_id) {
 }
 
 
-function delete_link_param(link) {
+function delete_link_param(link, and_main_link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -209,42 +209,57 @@ function delete_link_param(link) {
             mdiv.removeChild(line);
             
             link.params = null;
+            link.gui = null;
             
-            remove_link(link);
+            if (and_main_link)
+                remove_link(link);
         }
     });
 }
 
 
 function create_link_line(link, _out, _in) {
-    var rect0 = document.getElementById("modal_link_"+link.id+"_dialog").getBoundingClientRect();
-    var rect1 = document.getElementById("svg_modal_link_"+link.id+'_out_'+_out).getBoundingClientRect();
-    var rect2 = document.getElementById("svg_modal_link_"+link.id+'_in_'+_in).getBoundingClientRect();
     
-    var w = Math.abs(rect2.x-rect1.x-24+2);
-    var h = Math.abs(rect2.y-rect1.y+2);
+    var svg_div = document.createElement('div');
+    svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
+    svg_div.style.position = 'absolute';
     
     //Making a fake connection
     var mdiv = document.getElementById("modal_link_"+link.id+"_body");
     
-    var svg_div = document.createElement('div');
-    svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
-    
-    svg_div.style.position = 'absolute';
-    
-    svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
-    if (rect2.y >= rect1.y) {
-        svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
-        svg_div.innerHTML= '<svg height="'+(h+20)+'" width="'+(w)+'"> \
-                                <line x1="1" y1="1" x2="'+(w-1)+'" y2="'+(h-1)+'" style="stroke:rgb(33,256,33);stroke-width:2" /> \
-                            </svg> ';
+    if (!link.gui) {
+        var rect0 = document.getElementById("modal_link_"+link.id+"_dialog").getBoundingClientRect();
+        var rect1 = document.getElementById("svg_modal_link_"+link.id+'_out_'+_out).getBoundingClientRect();
+        var rect2 = document.getElementById("svg_modal_link_"+link.id+'_in_'+_in).getBoundingClientRect();
+        
+        var w = Math.abs(rect2.x-rect1.x-24+2);
+        var h = Math.abs(rect2.y-rect1.y+2);
+        
+        svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
+        
+        if (rect2.y >= rect1.y) {
+            svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
+            svg_div.innerHTML= '<svg height="'+(h+20)+'" width="'+(w)+'"> \
+                                    <line x1="1" y1="1" x2="'+(w-1)+'" y2="'+(h-1)+'" style="stroke:rgb(33,256,33);stroke-width:2" /> \
+                                </svg> ';
+        }
+        else {
+            svg_div.style.top = (rect2.y-rect0.y+12-1)+'px';
+            svg_div.innerHTML= '<svg height="'+(h)+'" width="'+(w)+'"> \
+                                    <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
+                                </svg> ';
+        }
+        
+        link.gui = {top:        svg_div.style.top,
+                    left:       svg_div.style.left,
+                    innerHTML:  svg_div.innerHTML }
     }
     else {
-        svg_div.style.top = (rect2.y-rect0.y+12-1)+'px';
-        svg_div.innerHTML= '<svg height="'+(h)+'" width="'+(w)+'"> \
-                                <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
-                            </svg> ';
+        svg_div.style.left  = link.gui.left;
+        svg_div.style.top   = link.gui.top;
+        svg_div.innerHTML   = link.gui.innerHTML;
     }
+    
     mdiv.appendChild(svg_div);
 }
 

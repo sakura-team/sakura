@@ -15,16 +15,20 @@ function get_project_links() {
     ws_request('list_link_ids', [], {}, function (ids) {
         ids.forEach( function (id) {
             ws_request('get_link_info', [id], {}, function(info) {
-                var src_inst = instance_from_id(info.src_id);
-                var dst_inst = instance_from_id(info.dst_id);
-                
-                //jsPlumb creation
-                global_project_jsFlag = false;
-                js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
-                global_project_jsFlag = true;
-                
-                //our creation
-                create_link_from_hub(js_link.id, info.link_id, info.src_id, info.dst_id, info.src_out_id, info.dst_in_id);
+                //Then aks for the gui
+                ws_request('get_link_gui_data', [id], {}, function (gui) {
+                    var jgui = eval("("+gui+")");
+                    var src_inst = instance_from_id(info.src_id);
+                    var dst_inst = instance_from_id(info.dst_id);
+                    
+                    //jsPlumb creation
+                    global_project_jsFlag = false;
+                    js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
+                    global_project_jsFlag = true;
+                    
+                    //our creation
+                    create_link_from_hub(js_link.id, info.link_id, info.src_id, info.dst_id, info.src_out_id, info.dst_in_id, jgui);
+                });
             });
         });
     });
@@ -111,10 +115,15 @@ function save_project() {
     var gui = JSON.stringify(global_op_panels);
     ws_request('set_project_gui_data', [gui], {}, function(result){});
     
-    //Then the operators
+    //Second the operators
     global_ops_inst.forEach( function(inst) {
         var gui = {x: inst.gui.x,    y: inst.gui.y};
         ws_request('set_operator_instance_gui_data', [parseInt(inst.hub_id), JSON.stringify(gui)], {}, function(result) {});
+    });
+    
+    //Finally the links
+    global_links.forEach( function(link) {
+        ws_request('set_link_gui_data', [parseInt(link.params.hub_id), JSON.stringify(link.gui)], {}, function(result) {});
     });
 };
 
