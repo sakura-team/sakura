@@ -5,13 +5,11 @@ from time import time
 
 # web mercator projection functions
 # ---------------------------------
-DEG_TO_RAD = 1 / (180 / np.pi)
+def linear_lat(lat, atanh = np.arctanh, sin = np.sin, radians = np.radians):
+    return atanh(sin(radians(lat)))
 
-def linear_lat(lat, atanh = np.arctanh, sin = np.sin, alpha = DEG_TO_RAD):
-    return atanh(sin(lat * alpha))
-
-def inv_linear_lat(ll, asin = np.arcsin, tanh = np.tanh, beta = 1 / DEG_TO_RAD):
-    return asin(tanh(ll)) * beta
+def inv_linear_lat(ll, asin = np.arcsin, tanh = np.tanh, degrees = np.degrees):
+    return degrees(asin(tanh(ll)))
 
 def lng_to_x(w, lng_min, lng_max, lng):
     return (lng - lng_min) * (w / (lng_max - lng_min))
