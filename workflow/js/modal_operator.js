@@ -107,10 +107,8 @@ function fill_params(id) {
 
 
 function params_onChange(op_id, param_index, select_id) {
-    var index = document.getElementById(select_id).selectedIndex;
-    if (index == 0)
-        return;
     
+    var index = document.getElementById(select_id).selectedIndex;
     ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
         var param_value = index;
         ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {

@@ -271,7 +271,6 @@ function change_panel_title(id) {
 function select_op_delete_accordion(id) {
     var panel = panel_from_id(id);
     var acc = document.getElementById(panel.id);
-    console.log(panel.id);
     document.getElementById('op_left_accordion').removeChild(acc);
     
     var index = panel_index_from_id(panel.id);
