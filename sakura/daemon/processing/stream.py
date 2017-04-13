@@ -9,7 +9,7 @@ class Column(object):
         self.output_stream = output_stream
         self.index = col_index
     def get_info_serializable(self):
-        return (self.label, self.type.__name__)
+        return (self.label, self.type.__name__, self.tags)
     def __iter__(self):
         for row in self.output_stream:
             yield row[self.index]
@@ -61,7 +61,8 @@ class OutputStream(Registry):
         self.compute_cb = compute_cb
         self.length = None
     def add_column(self, col_label, col_type, col_tags=()):
-        return self.register(self.columns, Column, col_label, col_type, col_tags,
+        return self.register(self.columns, Column,
+                    col_label, col_type, tuple(col_tags),
                     self, len(self.columns))
     def get_info_serializable(self):
         return dict(label = self.label,

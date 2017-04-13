@@ -26,8 +26,8 @@ class FragmentSourceOperator(InternalOperator):
         self.output_stream = self.register_output(
                 out_stream_info['label'], self.compute)
         self.output_stream.length = out_stream_info['length']
-        for col_label, col_type in out_stream_info['columns']:
-            self.output_stream.add_column(col_label, eval(col_type))
+        for col_label, col_type, col_tags in out_stream_info['columns']:
+            self.output_stream.add_column(col_label, eval(col_type), col_tags)
     def compute(self):
         # we just pull and transmit the output from the remote operator.
         # however, for performance reasons, we do not pull rows 1 by 1,
