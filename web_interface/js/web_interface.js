@@ -45,7 +45,7 @@ function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
     showDiv(event,'HelloYou');
 	$("#signInModal").modal("hide");
-	document.getElementById("idSignInHelloYou").innerHTML= '<a onclick="showDiv(event,\'HelloYou\');" href="http://sakura.imag.fr/Restart" style="cursor: pointer;">Hello you</a>';
+	document.getElementById("idSignInHelloYou").innerHTML= '<a onclick="showDiv(event,\'HelloYou\');" href="http://sakura.imag.fr/Restart" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
     return;}
   else {
 	alert('not yet, try email=password=guest');
@@ -182,7 +182,7 @@ return ;}
 function buildHistoryStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
-  s = s + "<li><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].dateVersion+"</a> "+result[i].userName+" : "+result[i].msgVersion+". (<a onclick='javascript:not_yet();'>Undo</a>)</li>";}
+  s = s + "<li>On "+result[i].dateVersion+" (<a onclick='javascript:not_yet();'>view this version</a> or <a onclick='javascript:not_yet();'>set back current version with this version.</a>)<p> Revision message from "+result[i].userName+" : "+result[i].msgVersion+"</li>";}
 document.getElementById(idDiv).innerHTML = s;}
 
 function historyRequestStub(idDiv,n,elt,bd) {

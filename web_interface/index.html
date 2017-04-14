@@ -27,20 +27,22 @@ window.onload = function(event) {
     <body>
         <div class="container">
             <h1> Sakura </h1>
-            <p>Store and Analyse Data            
+            <p>Store and Analyse Data</p>
+			<div id="idSignInHelloYou" style="top: 35px; right: 35px; width: 160px; position: absolute; text-align: left;">
+			  <a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a></div>
             <nav class="navbar navbar-default">
                 <ul id="navbar_ul" class="nav navbar-nav">
-                  <li id="idNavBarHome" class="active"><a onclick="showDiv(event,'');" href="http://sakura.imag.fr" style="cursor: pointer;">Home</a></li>
+                  <li id="idNavBarHome" class="active"><a onclick="showDiv(event,'');" href="http://sakura.imag.fr" style="cursor: pointer;"><span class="glyphicon glyphicon-home" title="home" aria-hidden="true"></span></a></li>
                   <li id="idNavBarProtocols"><a onclick="showDiv(event,'Protocols');" href="http://sakura.imag.fr/Protocols" style="cursor: pointer;">Protocols</a></li>
                   <li id="idNavBarDataSets"><a onclick="showDiv(event,'DataSets');" href="http://sakura.imag.fr/DataSets" style="cursor: pointer;">DataSets</a></li>
                   <li id="idNavBarOperators"><a onclick="showDiv(event,'Operators');" href="http://sakura.imag.fr/Operators" style="cursor: pointer;">Operators</a></li>
                   <li id="idNavBarAnalyses"><a onclick="showDiv(event,'Analyses');" href="http://sakura.imag.fr/Analyses" style="cursor: pointer;">Analyses</a></li>
                   <li id="idNavBarResults"><a onclick="showDiv(event,'Results');" href="http://sakura.imag.fr/Results" style="cursor: pointer;">Results</a></li>
-                  <li id="idNavBarDocumentation"><a onclick="showDiv(event,'Documentation');" href="http://sakura.imag.fr/Documentation" style="cursor: pointer;">Documentation</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                  <li><a href="http://panteda.imag.fr/" targer="_blank">About Sakura</a></li>
-                  <li id="idSignInHelloYou"><a class="btn" data-toggle="modal" data-target="#signInModal">Sign in&nbsp;&nbsp;</a></li></ul>				  
+                  <li id="idNavBarDocumentation"><a onclick="showDiv(event,'Documentation');" href="http://sakura.imag.fr/Documentation" style="cursor: pointer;">Help</a></li>
+                  <li><a href="http://panteda.imag.fr/" targer="_blank">About&nbsp;&nbsp;</a></li>
+				</ul>
             </nav>  
 
     <ol id="breadcrumbtrail" class="breadcrumb">
