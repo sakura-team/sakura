@@ -82,6 +82,9 @@ class GuiToHubAPI(object):
     
     def delete_link(self, link_id):
         return self.context.delete_link(link_id)
+
+    def get_possible_links(self, src_op_id, dst_op_id):
+        return self.context.get_possible_links(src_op_id, dst_op_id)
     
     ########################################
     # Gui

@@ -1,7 +1,13 @@
 import numbers
 from enum import Enum
 
-ParameterIssue = Enum('ParameterIssue', 'InputNotConnected NotSelected')
+Issue = Enum('ParameterIssue',
+        'InputNotConnected NotSelected NoPossibleValues')
+
+class ParameterException(Exception):
+    def get_issue_name(self):
+        # get the name of the Issue enum
+        return self.args[0].name
 
 # Parameter implementation.
 class Parameter(object):
@@ -25,7 +31,7 @@ class Parameter(object):
     # it is a 'special method'.)
     def __iter__(self):
         if not self.selected():
-            raise ParameterIssue.NotSelected
+            raise ParameterException(Issue.NotSelected)
         return self.value.__iter__()
 
     def get_info_serializable_base(self):
@@ -47,9 +53,17 @@ class Parameter(object):
         print('auto_fill() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
+    def is_linked_to_stream(self, stream):
+        print('is_linked_to_stream() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
+
     # override in subclass if needed.
     def set_value(self, value):
         self.value = value
+
+    # override in subclass if needed.
+    def unset_value(self):
+        self.value = None
 
     # override in subclass if needed.
     def get_value_serializable(self):
@@ -60,19 +74,18 @@ class ComboParameter(Parameter):
         super().__init__('COMBO', label)
     def get_info_serializable(self):
         info = self.get_info_serializable_base()
-        possible_values = self.get_possible_values()
-        if isinstance(possible_values, ParameterIssue):
-            # get the name of the ParameterIssue enum
-            info.update(issue = possible_values.name)
-        else:
+        try:
+            possible_values = self.get_possible_values()
             info.update(possible_values = possible_values)
+        except ParameterException as e:
+            info.update(issue = e.get_issue_name())
         return info
     def auto_fill(self):
         if not self.selected():
             possible = self.get_possible_values()
-            if not isinstance(possible, ParameterIssue) and \
-                    len(possible) > 0:
-                self.set_value(0)
+            if len(possible) == 0:
+                raise ParameterException(Issue.NoPossibleValues)
+            self.set_value(0)
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError
@@ -83,22 +96,27 @@ class ColumnSelectionParameter(ComboParameter):
         self.stream = stream
         self.condition = condition
         self.raw_value = None
+    def is_linked_to_stream(self, stream):
+        return self.stream == stream
     def matching_columns(self):
         for idx, column in enumerate(self.stream.columns):
             if self.condition(column):
                 yield column
     def get_possible_values(self):
         if not self.stream.connected():
-            return ParameterIssue.InputNotConnected
+            raise ParameterException(Issue.InputNotConnected)
         return list('%s (of %s)' % (column.label, self.stream.label) \
                     for column in self.matching_columns())
     def set_value(self, idx):
         if not self.stream.connected():
-            raise ParameterIssue.InputNotConnected
+            raise ParameterException(Issue.InputNotConnected)
         # raw_value is the index of the column in the possible values
         self.raw_value = idx
         # value is the selected column
         self.value = tuple(self.matching_columns())[idx]
+    def unset_value(self):
+        self.raw_value = None
+        self.value = None
     def get_value_serializable(self):
         return self.raw_value
 

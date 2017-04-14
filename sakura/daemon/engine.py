@@ -1,6 +1,7 @@
 import sakura.daemon.conf as conf
 from sakura.daemon.processing.operator import Operator
 from sakura.operators.internal.fragmentsource.operator import FragmentSourceOperator
+from sakura.daemon.processing.parameter import ParameterException
 
 class DaemonEngine(object):
     def __init__(self, op_classes):
@@ -21,7 +22,7 @@ class DaemonEngine(object):
         op_cls = self.op_classes[cls_name]
         op = op_cls(op_id)
         op.construct()
-        op.auto_fill_parameters()
+        op.auto_fill_parameters(permissive=True)
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (cls_name, op_id))
     def delete_operator_instance(self, op_id):
@@ -45,16 +46,40 @@ class DaemonEngine(object):
             src_op = self.op_instances[src_op_id]
             src_label = '%s op_id=%d out%d' % (src_op.NAME, src_op_id, src_out_id)
         dst_op = self.op_instances[dst_op_id]
-        dst_op.input_streams[dst_in_id].connect(src_op.output_streams[src_out_id])
-        # auto select unselected parameters, if possible
-        dst_op.auto_fill_parameters()
+        dst_input_stream = dst_op.input_streams[dst_in_id]
+        dst_input_stream.connect(src_op.output_streams[src_out_id])
+        # auto select unselected parameters
+        dst_op.auto_fill_parameters(stream = dst_input_stream)
         print("connected %s -> %s op_id=%d in%d" % \
                 (src_label, dst_op.NAME, dst_op_id, dst_in_id))
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         dst_op = self.op_instances[dst_op_id]
-        dst_op.input_streams[dst_in_id].disconnect()
+        dst_input_stream = dst_op.input_streams[dst_in_id]
+        dst_op.unselect_parameters(stream = dst_input_stream)
+        dst_input_stream.disconnect()
         if self.is_foreign_operator(src_op_id):
             # discard the fragment source operator
             del self.fragment_sources[(dst_op_id, dst_in_id)]
         print("disconnected [...] -> %s op_id=%d in%d" % \
                 (dst_op.NAME, dst_op_id, dst_in_id))
+    def get_possible_links(self, src_op_id, dst_op_id):
+        dst_op = self.op_instances[dst_op_id]
+        if self.is_foreign_operator(src_op_id):
+            src_op = hub.context.op_instances[src_op_id]
+        else:
+            src_op = self.op_instances[src_op_id]
+        # check all src_op.output -> dst_op.input combinations
+        # and discard those which cause an exception.
+        links = []
+        for dst_in_id in range(len(dst_op.input_streams)):
+            for src_out_id in range(len(src_op.output_streams)):
+                if dst_op.input_streams[dst_in_id].connected():
+                    # this entry is already connected with something else
+                    continue
+                try:
+                    self.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
+                    self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
+                except ParameterException:
+                    continue
+                links.append((src_out_id, dst_in_id))
+        return tuple(links)

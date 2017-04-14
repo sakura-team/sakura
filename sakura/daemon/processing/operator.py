@@ -4,6 +4,7 @@ from sakura.common.tools import SimpleAttrContainer
 from sakura.daemon.processing.stream import InputStream, OutputStream, InternalStream
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
+from sakura.daemon.processing.parameter import ParameterException
 
 class Operator(Registry):
     def __init__(self, op_id):
@@ -51,9 +52,25 @@ class Operator(Registry):
             internal_streams = [ stream.get_info_serializable() for stream in self.internal_streams ],
             tabs = [ tab.get_info_serializable() for tab in self.tabs ]
         )
-    def auto_fill_parameters(self):
+    def auto_fill_parameters(self, permissive = False, stream = None):
+        if permissive:
+            ignored_exception = ParameterException
+        else:
+            ignored_exception = ()  # do not ignore any exception
         for param in self.parameters:
-            param.auto_fill()
+            # restrict to parameters concerning the specified stream if any
+            if stream != None and not param.is_linked_to_stream(stream):
+                continue
+            try:
+                param.auto_fill()
+            except ignored_exception:
+                pass
+    def unselect_parameters(self, stream = None):
+        for param in self.parameters:
+            # restrict to parameters concerning the specified stream if any
+            if stream != None and not param.is_linked_to_stream(stream):
+                continue
+            param.unset_value()
     def serve_file(self, request):
         print('serving ' + request.filepath, end="")
         resp = request.serve(str(self.root_dir))

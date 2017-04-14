@@ -67,6 +67,8 @@ class LinkRegistry(object):
         src_op.attached_links.remove(link_id)
         dst_op.attached_links.remove(link_id)
         self.db.delete('Link', link_id = link_id)
+    def get_possible_links(self, src_op, dst_op):
+        return dst_op.daemon.api.get_possible_links(src_op.op_id, dst_op.op_id)
     def __getitem__(self, link_id):
         return self.info_per_link_id[link_id]
     def __iter__(self):

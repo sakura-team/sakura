@@ -71,6 +71,10 @@ class HubContext(object):
         return self.links.create(src_op, src_out_id, dst_op, dst_in_id)
     def delete_link(self, link_id):
         self.links.delete(link_id)
+    def get_possible_links(self, src_op_id, dst_op_id):
+        src_op = self.op_instances[src_op_id]
+        dst_op = self.op_instances[dst_op_id]
+        return self.links.get_possible_links(src_op, dst_op)
     def serve_operator_file(self, op_id, filepath):
         if op_id in self.op_instances:
             request = PicklableFileRequest(bottle.request, filepath)
