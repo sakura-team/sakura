@@ -123,15 +123,14 @@ function w3IncludeHTML() {
         if (this.readyState == 4 && this.status == 200) {
           elmnt.innerHTML = this.responseText;
           elmnt.removeAttribute("w3-include-html");
-          w3IncludeHTML();
-        }
-      }      
-      xhttp.open("GET", file, false);
+          w3IncludeHTML();}}      
+	  if (window.location.href.split("#").length>1) { // adaptation Sakura pour forcer le telechargement de la page complete en vue d'acceder a un permalien
+	    xhttp.open("GET", file, false);}              // adaptation Sakura 
+	  else {                                          // adaptation Sakura 
+	    xhttp.open("GET", file, true);}
       xhttp.send();
-      return;
-    }
-  }
-}
+      return;}}}
+	  
 function w3Http(target, readyfunc, xml, method) {
     var httpObj;
     if (!method) {method = "GET"; }
