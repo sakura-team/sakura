@@ -7,12 +7,15 @@ var select_op_selected  = []
 var nb_cols_in_displayed_table = 4
 
 //This function ask about all the operators, and then update the "operators selection" modal
-function select_op_open_modal() {
+function select_op_new_modal() {
     
     //cleaning
     $('#select_op_tags_select').empty();
     $('#select_op_names_select').empty();
     document.getElementById('select_op_panel_title').value = '';
+    
+    $("#select_op_make_button").removeClass('btn btn-secondary').addClass('btn btn-primary');
+    $("#select_op_update_button").hide();    
     
     //Before opening the modal, we have to ask about the existing operators, and then make the tags list
     ws_request('list_operators_classes', [], {}, function (result) {
@@ -44,18 +47,85 @@ function select_op_open_modal() {
             
         $('#select_op_tags_select').selectpicker('refresh');
         $('#select_op_names_select').selectpicker('refresh');
-        current_modal_id = 'modal_op_selector';
         $('#modal_op_selector').modal();
     });
 }
 
 
-function select_op_make_table(nb_cols, ids, divs) {
+function select_op_reopen_modal(id) {
+    panel = panel_from_id(id);
+    panel_focus_id = id;
+    
+    $('#select_op_tags_select').empty();
+    $('#select_op_names_select').empty();
+    document.getElementById('select_op_panel_title').value = '';
+    
+    $("#select_op_make_button").removeClass('btn btn-primary').addClass('btn btn-secondary');
+    $("#select_op_update_button").show();
+    
+    //Before opening the modal, we have to ask about the existing operators, and then make the tags list
+    ws_request('list_operators_classes', [], {}, function (result) {
+        var tags_list = [];
+        var sostl = document.getElementById('select_op_tags_select');
+        var sosnl = document.getElementById('select_op_names_select');
+        
+        var div = document.getElementById('select_op_panel');
+        while(div.firstChild){
+            div.removeChild(div.firstChild);
+        }
+        
+        global_ops_cl = JSON.parse(JSON.stringify(result));
+        global_ops_cl.forEach( function (op) {
+            op['tags'].forEach( function (tag) {
+                if (tags_list.indexOf(tag) == -1) {
+                        tags_list.push(tag);
+                        var option = document.createElement("option");
+                        option.text = tag;
+                        sostl.add(option);
+                }
+            });
+            var option = document.createElement("option");
+            option.text = op['name'];
+            option.value = op['id'];
+            option.setAttribute("data-subtext", op['daemon']);
+            sosnl.add(option);
+        });
+        
+        document.getElementById('select_op_panel_title').value = panel.title;
+        for (var i=0; i< panel.names.length; i++)
+            document.getElementById("select_op_names_select").options[i].selected = panel.names[i];
+        for (var i=0; i< panel.tags.length; i++)
+            document.getElementById("select_op_tags_select").options[i].selected = panel.tags[i];
+        
+        select_op_on_change();
+        
+        //Cleaning
+        while(div.firstChild){
+            div.removeChild(div.firstChild);
+        }
+        
+        var divs = [];
+        panel.selected_ops.forEach( function(op) {
+            divs.push(select_op_new_operator(op, true));
+        });
+        
+        var pdiv = document.getElementById('select_op_panel');
+        pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, divs));
+        
+        $('#select_op_tags_select').selectpicker('refresh');
+        $('#select_op_names_select').selectpicker('refresh');
+        
+        $('#modal_op_selector').modal();
+    });
+}
+
+
+function select_op_make_table(nb_cols, divs) {
     
     //table creation
     var tbl = document.createElement('table');
     var tbdy = document.createElement('tbody');
-    var nb_rows = Math.ceil(ids.length/nb_cols);
+    var nb_rows = Math.ceil(divs.length/nb_cols);
     
     tbl.style.width = '100%';
     
@@ -63,7 +133,7 @@ function select_op_make_table(nb_cols, ids, divs) {
     for (var i=0; i< nb_rows; i++) {
         var tr = document.createElement('tr');
         for (var j=0; j<nb_cols; j++) {
-            if (ids[index] != null) {
+            if (divs[index] != null) {
                 var td = document.createElement('td');
                 td.setAttribute('align', 'center');
                 td.style.width = '20px';
@@ -79,8 +149,7 @@ function select_op_make_table(nb_cols, ids, divs) {
 }
 
 
-function select_op_on_change(from) {
-    //'from' is in ['tags, 'names'], not used for now ....
+function select_op_on_change() {
     
     var ops_to = document.getElementById("select_op_tags_select").options;
     var ops_no = document.getElementById("select_op_names_select").options;
@@ -114,16 +183,16 @@ function select_op_on_change(from) {
     while(pdiv.firstChild){
         pdiv.removeChild(pdiv.firstChild);
     }
-    pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_selected, select_op_divs));
+    pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_divs));
 }
 
 
-function select_op_new_operator(cl_id, removable) {
-    var cl = class_from_id(cl_id);
+function select_op_new_operator(id, removable) {
+    var cl = class_from_id(id);
     var ndiv = document.createElement('div');
     var s = '';
     if (removable) {
-        ndiv.id = "select_op_selected_"+cl.id+'rem';
+        ndiv.id = "select_op_selected_"+cl.id+'_rem';
         s = '   <table> \
                         <tr> \
                             <td align="center">'+cl.svg+ ' \
@@ -162,11 +231,24 @@ function select_op_delete_op(id) {
     select_op_divs.splice(index, 1);
     
     var pdiv = document.getElementById('select_op_panel');
-    //Cleaning
+    
+    //Cleaning div
     while(pdiv.firstChild){
         pdiv.removeChild(pdiv.firstChild);
     }
-    pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_selected, select_op_divs));
+    pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_divs));
+    
+    //Cleaning name selection
+    var options = document.getElementById("select_op_names_select").options;
+    for (var i=0; i<options.length;i++) {
+        options[i].selected = false;
+        select_op_divs.forEach( function(op) {
+            var val = op.id.split('_')[3];
+            if (val == options[i].value)
+                options[i].selected = true;
+        });
+    }
+    $('#select_op_names_select').selectpicker('refresh');
 }
 
 
@@ -192,7 +274,7 @@ function select_op_add_panel() {
         divs.push(select_op_new_operator(item, false));
     });
     
-    var tbl = select_op_make_table(3, select_op_selected, divs);
+    var tbl = select_op_make_table(nb_cols_in_displayed_table, divs);
     var tmp_el = document.createElement("div");
     tmp_el.appendChild(tbl);
     
@@ -201,19 +283,37 @@ function select_op_add_panel() {
         if (op['id'] == acc_id)
             acc_id ++;
     });
-    var panel = {'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}}
+    
+    var names = []
+    var options = document.getElementById("select_op_names_select").options;
+    for (var i=0; i<options.length;i++) {
+        names.push(options[i].selected);
+    }
+    
+    var tags = []
+    options = document.getElementById("select_op_tags_select").options;
+    for (var i=0; i<options.length;i++) {
+        tags.push(options[i].selected);
+    }
+    
+    var panel = {'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}, 'names': names, 'tags': tags}
     panel.id = "accordion_"+acc_id;
     
     global_op_panels.push(panel);
-    current_modal_id = null;
     
     select_op_create_accordion(panel, tmp_el.innerHTML);
     
     //update global variable
     $('#modal_op_selector').modal('hide');
     
-   //Send the the current global var to the hub
-   save_project()
+    //Send the the current global var to the hub
+    save_project()
+}
+
+
+function select_op_update_panel() {
+    select_op_delete_accordion(panel_focus_id);
+    select_op_add_panel();
 }
 
 
@@ -253,18 +353,6 @@ function select_op_create_accordion(panel, ops) {
                         if (!panel.gui.opened)
                             $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
                     });
-}
-
-
-function change_panel_title(id) {
-    console.log($("#"+id));
-    $("#"+id).attr('contentEditable', true);
-
-/*}).blur(
-    function() {
-        $(this).attr('contentEditable', false);
-    };
-*/
 }
 
 

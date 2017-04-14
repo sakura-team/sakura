@@ -4,17 +4,16 @@
 /////////////////////////////////////////////////////////
 //Globals
 
-//operators
 var global_op_panels    = [];
 var global_ops_cl       = [];
 var global_ops_inst     = [];
 var op_focus_id         = null;
-
+var panel_focus_id      = null;
 
 //interaction
 var drag_delta          = [0, 0];
 var currently_dragged   = null;
-var current_modal_id    = null;
+
 
 //main
 var main_div = document.getElementById('sakura_main_div');

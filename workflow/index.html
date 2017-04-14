@@ -40,8 +40,8 @@
                 <tr>
                     <td width="250px">
                         <div id="sakura_left_div" class="sakura_left_tab">
-                            <div class="panel-group" name="op_left_accordion" id="op_left_accordion">
-                            <button title="Create a new panel of operators" type="button" class="btn btn-secondary btn-xs" id="select_op_add_button" onclick="select_op_open_modal();"><span class="glyphicon glyphicon-plus" style="color: grey; cursor: pointer;"></span></button>
+                            <div class="panel-group" name="op_left_accordion" id="op_left_accordion">                            
+                            <button title="Create a new panel of operators" type="button" class="btn btn-primary btn-xs" style="width: 100%; margin-top: 0px;" id="select_op_add_button" onclick="select_op_new_modal();"><span class="glyphicon glyphicon-plus" style="cursor: pointer;"></span></button>
                             </div>
                         </div>
                     <td width="100%">
@@ -83,7 +83,7 @@
                                                     <label>Name </label>
                                             </td>
                                             <td valign="middle">
-                                                <select class="selectpicker" multiple name="select_op_names_select" id="select_op_names_select" onchange="select_op_on_change('names');" data-width="200px" data-live-search="true"/>
+                                                <select class="selectpicker" multiple name="select_op_names_select" id="select_op_names_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -91,7 +91,7 @@
                                                 <label>Tag</label>
                                             </td>
                                             <td>
-                                                <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change('tags');" data-width="200px" data-live-search="true"/>
+                                                <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
                                             </td>
                                         </tr>
                                         
@@ -122,7 +122,8 @@
                         </table>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" onclick="select_op_add_panel();">Make a panel</button>
+                        <button type="button" id="select_op_update_button" class="btn btn-primary" onclick="select_op_update_panel();" visibility='hidden'>Update panel</button>
+                        <button type="button" id="select_op_make_button" class="btn btn-primary" onclick="select_op_add_panel();">Create new panel</button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     </div>
                 </div>

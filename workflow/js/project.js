@@ -93,7 +93,7 @@ function current_project() {
             });
             
             var tmp_el = document.createElement("div");
-            tmp_el.appendChild(select_op_make_table(3, panel['selected_ops'], divs));
+            tmp_el.appendChild(select_op_make_table(3, divs));
             
             panel.id = "accordion_"+index
             index++;
