@@ -93,8 +93,8 @@ function shortTextAlea() {
     + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
     + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+".";}
 	
-function publicAlea() {
-if (Math.random()>0.2) {
+function boolAlea(trueProportion) {
+if (Math.random()<trueProportion) {
   return "true";}
 else {
   return "false";}}  
@@ -104,25 +104,25 @@ else {
 function buildListStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
-  if (result[i].isPublic=="true") {
   s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
-		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-		+ "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-        + "</td></tr>";}
+		+ "<td align='center'>";
+  if ((result[i].isPublic=="true") && (result[i].isOwner=="true")) {
+	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+		  + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";}
+  else if (result[i].isPublic=="true") {
+	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+		  + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";}
   else {
-  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
-        + "<td>"+result[i].shortDesc+"</td>"
-		+ "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a></td>"
-        + "</tr>";}  
-}
+	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";}  
+  s = s + "</td></tr>";}
 document.getElementById(idDiv).innerHTML = s;}
 
 function listRequestStub(idDiv,n,elt,bd) {
 if (!bd) {  // version local
   result=new Array();
   for(i=0;i<n;i++) {
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});}
+    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":boolAlea(0.7),"isOwner":boolAlea(0.3)});}
   buildListStub(idDiv,result,elt);}
 else {     // version réseau à faire
   ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
@@ -132,7 +132,7 @@ function listRequestStubForRestart(idDiv) {
 result=new Array();
 s="";
 i=0;
-result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":boolAlea(0.7),"isOwner":"true"});
 elt='Protocols/tmpProtocol';
 s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Simpleicons_Business_notebook.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
@@ -141,7 +141,7 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
       + "</td></tr>";
 i=i+1;
-result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":boolAlea(0.7),"isOwner":"true"});
 elt='DataSets/tmpDataSet';
 s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Linecons_database.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
@@ -150,7 +150,7 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
       + "</td></tr>";
 i=i+1;
-result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":boolAlea(0.7),"isOwner":"true"});
 elt='Operators/tmpOperator';
 s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Octicons-gear.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
@@ -159,7 +159,7 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
       + "</td></tr>";
 i=i+1;
-result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":boolAlea(0.7),"isOwner":"true"});
 elt='Analyses/tmpAnalysis';
 s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Share_icon_BLACK-01.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
@@ -168,7 +168,7 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
       + "</td></tr>";
 i=i+1;
-result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":publicAlea()});
+result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isPublic":boolAlea(0.7),"isOwner":"true"});
 elt='Results/tmpResult';
 s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Article_icon_cropped.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
