@@ -65,7 +65,7 @@ class DaemonEngine(object):
     def get_possible_links(self, src_op_id, dst_op_id):
         dst_op = self.op_instances[dst_op_id]
         if self.is_foreign_operator(src_op_id):
-            src_op = hub.context.op_instances[src_op_id]
+            src_op = self.hub.context.op_instances[src_op_id]
         else:
             src_op = self.op_instances[src_op_id]
         # check all src_op.output -> dst_op.input combinations
