@@ -34,7 +34,7 @@ trap on_exit EXIT
 # output.
 prefix_out HUB test/run-hub.sh $args &
 sleep 1
-prefix_out DAEMON0 test/run-daemon.sh 0 datasample &
+prefix_out DAEMON0 test/run-daemon.sh 0 datasample spacetime & 
 sleep 0.2
 prefix_out DAEMON1 test/run-daemon.sh 1 mean map &
 

@@ -13,17 +13,20 @@ function create_link(js_id, src_id, dst_id) {
                         src: src_id,
                         dst: dst_id,
                         params: null});
-    
-    ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
-        ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-            create_link_modal(  global_links[global_links.length - 1], 
-                                instance_from_id(src_id).cl, 
-                                instance_from_id(dst_id).cl, 
-                                source_inst_info, 
-                                target_inst_info,
-                                true);
+                        
+    //ws_request('get_possible_links', [src_id, dst_id], {}, function (p_links) {
+    //    console.log(p_links);
+        ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
+            ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
+                create_link_modal(  global_links[global_links.length - 1], 
+                                    instance_from_id(src_id).cl, 
+                                    instance_from_id(dst_id).cl, 
+                                    source_inst_info, 
+                                    target_inst_info,
+                                    true);
+            });
         });
-    });
+    //});
 }
 
 
@@ -101,6 +104,7 @@ function create_link_modal(link, src_cl, dst_cl, src_inst_info, dst_inst_info, o
                         }
                         else if (auto_link) {  //means should b open now, but we don't cause we link automatically
                             console.log('Could think about auto link');
+                            $(modal).modal();
                         }
                     }
     );
@@ -114,6 +118,7 @@ function test_link(link) {
     if (link.params == null) 
         remove_link(link)
 }
+
 
 function remove_link(link) {
     
