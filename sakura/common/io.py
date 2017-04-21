@@ -104,6 +104,9 @@ class AttrCallAggregator(object):
         return AttrCallAggregator(self.handler, self.path + ((index,),))
     def __call__(self, *args, **kwargs):
         return self.handler(self.path, args, kwargs)
+    def __len__(self):
+        path = self.path + ('__len__',)
+        return self.handler(path, (), {})
 
 class AttrCallRunner(object):
     def __init__(self, handler):
