@@ -41,6 +41,7 @@ else {
   event.preventDefault();}
   
 /* Divers */
+
 function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
     showDiv(event,'HelloYou');
@@ -79,8 +80,8 @@ var valsAlea = ["porro","quia","xyz34","####",'n.a.','inf','nspp','','_','see be
 function aleaAlea(alea) {
 return alea[Math.floor(Math.random() * alea.length)]}
 
-function numAlea(num) {
-return num+(Math.floor(Math.random() * num));}
+function numAlea(base,over) {
+return base+(Math.floor(Math.random() * over));}
 
 function dateAlea() {
 return ''+Math.floor(1+Math.random() * 10.5)+'/'+Math.floor(2000+Math.random() * 17);}
@@ -131,13 +132,22 @@ for(i=0;i<result.length;i++) {
   else {
 	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";}  
   s = s + "</td></tr>";}
+s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
 document.getElementById(idDiv).innerHTML = s;}
 
 function listRequestStub(idDiv,n,elt,bd) {
 if (!bd) {  // version local
   result=new Array();
   for(i=0;i<n;i++) {
-    result.push({"name":fullNameAlea(),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)});}
+    result.push({"name":fullNameAlea(),
+	  "id":numAlea(100,100),
+	  "tags":aleaAlea(firstNamesAlea),
+	  "shortDesc":shortTextAlea(),
+	  "date":dateAlea(),
+	  "modif":dateAlea(),	  
+	  "author":aleaAlea(usersAlea),	  
+	  "isViewable":boolAlea(0.7),
+	  "isEditable":boolAlea(0.3)});}
   buildListStub(idDiv,result,elt);}
 else {     // version réseau à faire
   ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
@@ -196,6 +206,7 @@ s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.i
       + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
       + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
       + "</td></tr>";
+s = s + '<a href="javascript:listRequestStubForRestart(\''+idDiv+'\')" class="executeOnShow"> </a></div>';
 document.getElementById(idDiv).innerHTML = s;
 return ;}
  
@@ -305,7 +316,7 @@ if (!bd) {  // version local
   infos = new Array();
   ninfo = Math.floor(Math.random() * 10);
   infos.push({"name":"Name","value":eltName});
-  infos.push({"name":elt+"-id","value":numAlea(100)});
+  infos.push({"name":elt+"-id","value":numAlea(100,100)});
   infos.push({"name":"Description","value":shortTextAlea()});
   infos.push({"name":"Author","value":userName});
   for(i=0;i<ninfo;i++) {
