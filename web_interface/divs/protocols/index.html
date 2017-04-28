@@ -10,7 +10,7 @@
 	  <button type="button" onclick="showDiv(event,'Protocols/tmpProtocol/Work');" class="btn btn-primary">Try it</button></div>
 
 	<h2>Experiment Protocols</h2>
-	Organize your experiment.<br /><br />
+	Prepare and organize your experiment.<br /><br />
  	
 	<div class="row">
         <div class="col-md-10">
@@ -26,8 +26,13 @@
                     <table id="mytable" class="table table-striped table-bordered table-list">
                         <thead><tr>
                             <th class="col-text">Name</th>
+                            <th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>
                             <th class="col-text">Short Desc.</th>
+                            <th class="col-text">Date</th>
                             <th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>
+							<th class="col-text" style="max-width:3px; overflow:hidden">
+							  <a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">
+							    <span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>
                         </tr></thead>
                         <tbody id="idTableProtocolsToFullfill">
 						<tr><td><a href="javascript:listRequestStub('idTableProtocolsToFullfill',10,'Protocols/tmpProtocol',false)" class="executeOnShow">liste à remplir</a></td></tr>
