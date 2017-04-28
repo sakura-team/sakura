@@ -41,6 +41,9 @@ else {
   event.preventDefault();}
   
 /* Divers */
+function chgShowColumns(event) {
+ showDiv(event,window.location.href.split("#")[1]);
+ return;}
 
 function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
@@ -116,12 +119,41 @@ else {
 /*       FillStub        */  
 function buildListStub(idDiv,result,elt) {
 s="";
+s = s +'<thead><tr>'
+      + '<th class="col-text">Name</th>';
+if (document.getElementById("cbColSelectTags").checked) {
+  s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
+if (document.getElementById("cbColSelectId").checked) {
+  s = s +  '<th class="col-text">id</th>';}
+if (document.getElementById("cbColSelectShortDesc").checked) {
+  s = s +  '<th class="col-text">Short Desc.</th>';}
+if (document.getElementById("cbColSelectDate").checked) {
+  s = s +  '<th class="col-text">Date</th>';}
+if (document.getElementById("cbColSelectModification").checked) {
+  s = s +  '<th class="col-text">Modif.</th>';}
+if (document.getElementById("cbColSelectAuthor").checked) {
+  s = s +  '<th class="col-text">Author</th>';}
+s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>'
+      + '<th class="col-text" style="max-width:3px; overflow:hidden">'
+      + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
+	  + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
+      + '</tr></thead>'
+	  + '<tbody>';						
 for(i=0;i<result.length;i++) {
-  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
-        + "<td>"+result[i].tags+"</td>"
-        + "<td>"+result[i].shortDesc+"</td>"
-        + "<td>"+result[i].date+"</td>"
-		+ "<td colspan='2' align='center' style='padding:2px;'>";
+  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
+  if (document.getElementById("cbColSelectTags").checked) {
+    s = s + "<td>"+result[i].tags+"</td>";}
+  if (document.getElementById("cbColSelectId").checked) {
+    s = s + "<td>"+result[i].id+"</td>";} 
+  if (document.getElementById("cbColSelectShortDesc").checked) {
+    s = s + "<td>"+result[i].shortDesc+"</td>";}  
+  if (document.getElementById("cbColSelectDate").checked) {
+    s = s + "<td>"+result[i].date+"</td>";}
+  if (document.getElementById("cbColSelectModification").checked) {
+    s = s + "<td>"+result[i].modif+"</td>";} 
+  if (document.getElementById("cbColSelectAuthor").checked) {
+    s = s + "<td>"+result[i].author+"</td>";} 	
+  s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
   if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
 	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
 	      + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
@@ -132,7 +164,8 @@ for(i=0;i<result.length;i++) {
   else {
 	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";}  
   s = s + "</td></tr>";}
-s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
+s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
+      + '</tbody>';
 document.getElementById(idDiv).innerHTML = s;}
 
 function listRequestStub(idDiv,n,elt,bd) {
