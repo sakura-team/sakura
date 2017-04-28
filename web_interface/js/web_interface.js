@@ -82,6 +82,9 @@ return alea[Math.floor(Math.random() * alea.length)]}
 function numAlea(num) {
 return num+(Math.floor(Math.random() * num));}
 
+function dateAlea() {
+return ''+Math.floor(1+Math.random() * 10.5)+'/'+Math.floor(2000+Math.random() * 17);}
+
 function fullNameAlea() {
   return firstNamesAlea[Math.floor(Math.random() * firstNamesAlea.length)]+"_"
     + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+"_"
@@ -114,8 +117,10 @@ function buildListStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
   s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
+        + "<td>"+result[i].tags+"</td>"
         + "<td>"+result[i].shortDesc+"</td>"
-		+ "<td align='center'>";
+        + "<td>"+result[i].date+"</td>"
+		+ "<td colspan='2' align='center' style='padding:2px;'>";
   if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
 	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
 	      + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
@@ -132,7 +137,7 @@ function listRequestStub(idDiv,n,elt,bd) {
 if (!bd) {  // version local
   result=new Array();
   for(i=0;i<n;i++) {
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)});}
+    result.push({"name":fullNameAlea(),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)});}
   buildListStub(idDiv,result,elt);}
 else {     // version réseau à faire
   ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
