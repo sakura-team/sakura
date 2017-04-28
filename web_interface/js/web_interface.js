@@ -41,6 +41,13 @@ else {
   event.preventDefault();}
   
 /* Divers */
+function chgShowColumns(event) {
+ not_yet();
+ // A Faire : ajouter prise en compte des changements dans l'affichage de la liste
+ //           rapatrier l'affichage du haut de la liste ici aussi pour prendre en compte ces changements
+ //           relancer l'affichage de la page
+ // A faire plus tard : sauvegarder les parametres d'affichages ? distinguer les différents onglets ?  prendre en compte d'autres columns (col variables) ? ... ?
+ return;}
 
 function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
@@ -118,8 +125,8 @@ function buildListStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
   s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n"
-        + "<td>"+result[i].tags+"</td>"
-        + "<td>"+result[i].shortDesc+"</td>"
+        + "<td>"+result[i].tags+"</td>";
+  s = s + "<td>"+result[i].shortDesc+"</td>"
         + "<td>"+result[i].date+"</td>"
 		+ "<td colspan='2' align='center' style='padding:2px;'>";
   if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
