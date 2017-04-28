@@ -45,7 +45,7 @@ function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
     showDiv(event,'HelloYou');
 	$("#signInModal").modal("hide");
-	document.getElementById("idSignInHelloYou").innerHTML= '<a onclick="showDiv(event,\'HelloYou\');" href="http://sakura.imag.fr/Restart" style="cursor: pointer;">Hello you</a>';
+	document.getElementById("idSignInHelloYou").innerHTML= '<a onclick="showDiv(event,\'HelloYou\');" href="http://sakura.imag.fr/Restart" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
     return;}
   else {
 	alert('not yet, try email=password=guest');
