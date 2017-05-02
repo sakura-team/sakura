@@ -141,6 +141,13 @@ function select_op_make_table(nb_cols, divs) {
                 tr.appendChild(td);
                 index = index + 1;
             }
+            else {
+                var td = document.createElement('td');
+                td.setAttribute('align', 'center');
+                td.style.width = '20px';
+                tr.appendChild(td);
+                index = index + 1;
+            }
         }
         tbdy.appendChild(tr);
     }
