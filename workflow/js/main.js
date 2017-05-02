@@ -39,9 +39,13 @@ $( window ).load(function() {
         return true;
     });
     
+    jsPlumb.bind("beforeDetach", function(params) {
+        //We do nothing here !!!
+    });
+    
+    
     //A connection is established
     jsPlumb.bind("connection", function(params) {
-        
         //link creation on hub and other        
         if (global_project_jsFlag)
             create_link( params.connection.id, 
@@ -52,7 +56,6 @@ $( window ).load(function() {
     
     //When the target of a link changes
     jsPlumb.bind("connectionMoved", function(params) {
-        not_yet('connectionMoved Event');
     });
     
     //On double click we open the link parameters
