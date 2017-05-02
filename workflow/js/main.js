@@ -41,14 +41,13 @@ $( window ).load(function() {
     
     //A connection is established
     jsPlumb.bind("connection", function(params) {
-        //jsPlumb params
-        params.connection._jsPlumb.hoverPaintStyle = { lineWidth: 7, strokeStyle: "#333333" };
         
         //link creation on hub and other        
-        if (global_project_jsFlag) 
-            create_link(params.connection.id, 
-                        parseInt(params.sourceId.split("_")[2]),
-                        parseInt(params.targetId.split("_")[2]));
+        if (global_project_jsFlag)
+            create_link( params.connection.id, 
+                                parseInt(params.sourceId.split("_")[2]),
+                                parseInt(params.targetId.split("_")[2]),
+                                params.connection );
     });
     
     //When the target of a link changes
