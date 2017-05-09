@@ -10,7 +10,7 @@
                     <td align="right">
                         <small>
                             <a>
-                                <span class="glyphicon glyphicon-remove" onclick="delete_comment('{{id}}');" style="color: white; cursor: pointer;"></span>
+                                <span class="glyphicon glyphicon-remove" onclick="remove_comment({{id}});" style="color: white; cursor: pointer;"></span>
                             </a>
                         </small>
                     </td>
@@ -18,6 +18,6 @@
             </table>
     </div>
     <font size="1">
-        <div id="comment_0_body" class="panel-collapse collapse in" contentEditable="true" style="padding-left: 3px; padding-right: 3px;">Edit your comment here</div>
+        <div id="comment_{{id}}_body" class="panel-collapse collapse in" contentEditable="true" style="padding-left: 3px; padding-right: 3px;">Edit your comment here</div>
     </font>
 </div>

@@ -22,11 +22,13 @@ function new_comment() {
                         com.setAttribute("draggable", "true");
                         main_div.appendChild(com);
                         
-                        global_coms.push({  'id': global_coms.length,
+                        global_coms.push({  'id': id,
                                             'div': com});
+                        save_project();
                     }
     );
 }
+
 
 function comment_from(com) {
     var wrapper = document.createElement('div');
@@ -35,27 +37,53 @@ function comment_from(com) {
                     "comment.html",
                     {'id': com.id},
                     function () {
-                        var com             = wrapper.firstChild;
-                        com.style.left      = com.div.style.left;
-                        com.style.top       = com.div.style.top;
-                        com.style.width     = com.div.style.width;
-                        com.style.height    = com.div.style.height;
-                        $('#comment_'+com.id+'_title').text(com.title);
-                        $('#comment_'+com.id+'_body').text(com.body);
-                        com.setAttribute("draggable", "true");
-                        main_div.appendChild(com);
+                        var ncom             = wrapper.firstChild;
+                        ncom.style.left      = com.left;
+                        ncom.style.top       = com.top;
+                        ncom.style.width     = com.width;
+                        ncom.style.height    = com.height;
+                        $('#comment_'+ncom.id+'_title').text(com.title);
+                        $('#comment_'+ncom.id+'_body').text(com.body);
+                        ncom.setAttribute("draggable", "true");
+                        main_div.appendChild(ncom);
+                        
+                        global_coms.push({  'id': parseInt(com.id),
+                                            'div': ncom});
                     }
     );
 }
 
 
-function comment_get_info(com) {
+function get_comment_info(com) {
     return {'id': com.id,
             'title':    $('#comment_'+com.id+'_title').text(),
             'body':    $('#comment_'+com.id+'_body').text(),
-            'x':        com.div.style.left,
-            'y':        com.div.style.top,
+            'left':        com.div.style.left,
+            'top':        com.div.style.top,
             'width':    com.div.style.width,
             'height':   com.div.style.height
             };
 }
+
+
+function remove_comment(id) {
+    main_div.removeChild(com_from_id(id).div);
+    global_coms.splice(index_from_comment_id(id), 1);
+    save_project();
+}
+
+
+function index_from_comment_id(id) {
+    return global_coms.findIndex( function (e) {
+        return e.id === id;
+    });
+}
+
+
+function com_from_id(id) {
+    return global_coms.find( function (e) {
+        return e.id === id;
+    });
+}
+
+

@@ -67,9 +67,12 @@ function current_project() {
         });
     });
     
-    //Finally, the panels
+    //Finally, the panels and the comments
     ws_request('get_project_gui_data', [], {}, function (result) {
-        global_op_panels = eval(result);
+        if (!result)
+            return
+        var res = eval("(" + result + ")");
+        global_op_panels = eval(res.panels);
         if (! global_op_panels) {
             global_op_panels = []
             return;
@@ -100,6 +103,12 @@ function current_project() {
             
             select_op_create_accordion(panel, tmp_el.innerHTML);
         });
+        
+        console.log(res.comments);
+        res.comments.forEach( function(com) {
+            var ncom = comment_from(com);
+            console.log(com);
+        });
     });
 }
 
@@ -114,10 +123,10 @@ function save_project() {
     
     var coms = [];
     global_coms.forEach( function(com) {
-        console.log(comment_get_info(com));
+        coms.push(get_comment_info(com));
     });
     
-    ws_request('set_project_gui_data', [JSON.stringify(global_op_panels)], {}, function(result){});
+    ws_request('set_project_gui_data', [JSON.stringify({'panels': global_op_panels, 'comments': coms})], {}, function(result){});
     
     //Second the operators
     global_ops_inst.forEach( function(inst) {
