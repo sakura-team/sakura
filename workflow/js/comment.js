@@ -48,10 +48,13 @@ function new_comment() {
 
 function comment_from(com) {
     var wrapper = document.createElement('div');
+    var body = com.body.replace('<br>', '\n');
+    var title = com.title.replace('<br>', '\n');
+    
     load_from_template(
                     wrapper,
                     "comment.html",
-                    {'id': com.id, 'title': com.title, 'body': com.body},
+                    {'id': com.id, 'title': title, 'body': body},
                     function () {
                         var ncom             = wrapper.firstChild;
                         ncom.style.left      = com.left;
@@ -78,8 +81,8 @@ function comment_from(com) {
 
 function get_comment_info(com) {
     return {'id': com.id,
-            'title':    $('#comment_'+com.id+'_title').text(),
-            'body':     $('#comment_'+com.id+'_body').text(),
+            'title':    $('#comment_'+com.id+'_title').html(),
+            'body':     $('#comment_'+com.id+'_body').html(),
             'left':     com.div.style.left,
             'top':      com.div.style.top,
             'width':    com.div.style.width,

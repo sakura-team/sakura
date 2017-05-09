@@ -1,10 +1,10 @@
-<div class="panel panel-info sakura_comment" id="comment_{{id}}" style="width: 182px; height: 50px;">
-    <div class="panel-heading" style="padding: 0px; padding-left: 4px; padding-right: 3px;">
+<div class="panel panel-info sakura_comment" id="comment_{{id}}" style="width: 182px; height: 50px; border-color: #999999; background-color: #f2f2f2;">
+    <div class="panel-heading" style="padding: 0px; padding-left: 4px; padding-right: 3px; background-color: orange">
         <table width="100%" >
                 <tr>
                     <td>
-                        <font size="2" >
-                            <span id="comment_{{id}}_title" contentEditable="true">{{title}}</span>
+                        <font size="2" color="white">
+                            <div id="comment_{{id}}_title" contentEditable="true" style="white-space: pre-wrap;">{{title}}</div>
                         </font>
                     </td>
                     <td align="right">
@@ -18,6 +18,6 @@
             </table>
     </div>
     <font size="1">
-        <div id="comment_{{id}}_body" class="panel-collapse collapse in" contentEditable="true" style="padding-left: 3px; padding-right: 3px;">{{body}}</div>
+        <div id="comment_{{id}}_body" class="panel-collapse collapse in" contentEditable="true" style="white-space: pre-wrap; padding-left: 3px; padding-right: 3px;">{{body}}</div>
     </font>
 </div>

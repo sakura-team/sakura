@@ -104,10 +104,8 @@ function current_project() {
             select_op_create_accordion(panel, tmp_el.innerHTML);
         });
         
-        console.log(res.comments);
         res.comments.forEach( function(com) {
             var ncom = comment_from(com);
-            console.log(com);
         });
     });
 }
