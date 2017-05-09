@@ -9,8 +9,17 @@ function context_new_comment() {
 
 function new_comment() {
     var wrapper = document.createElement('div');
-    var id = global_coms.length
-                    
+    var id = 0;
+    var found = false;
+    while (! found) {
+        if (index_from_comment_id(id) != -1) {
+            id ++
+        }
+        else {
+            found = true;
+        }
+    }
+    
     load_from_template(
                     wrapper,
                     "comment.html",
@@ -70,9 +79,9 @@ function comment_from(com) {
 function get_comment_info(com) {
     return {'id': com.id,
             'title':    $('#comment_'+com.id+'_title').text(),
-            'body':    $('#comment_'+com.id+'_body').text(),
-            'left':        com.div.style.left,
-            'top':        com.div.style.top,
+            'body':     $('#comment_'+com.id+'_body').text(),
+            'left':     com.div.style.left,
+            'top':      com.div.style.top,
             'width':    com.div.style.width,
             'height':   com.div.style.height
             };
