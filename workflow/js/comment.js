@@ -14,13 +14,20 @@ function new_comment() {
     load_from_template(
                     wrapper,
                     "comment.html",
-                    {'id': id},
+                    {'id': id, 'title': "Comment "+id, 'body': "Edit your comment here"},
                     function () {
                         var com         = wrapper.firstChild;
                         com.style.left  = ''+(cursorX - main_div.offsetLeft - 90)+'px';
                         com.style.top   = ''+(cursorY - main_div.offsetTop)+'px';
                         com.setAttribute("draggable", "true");
                         main_div.appendChild(com);
+                        
+                        $('#comment_'+com.id+'_title').blur( function (e) {
+                            save_project()
+                        });
+                        $('#comment_'+com.id+'_body').blur( function (e) {
+                            save_project()
+                        });
                         
                         global_coms.push({  'id': id,
                                             'div': com});
@@ -35,17 +42,23 @@ function comment_from(com) {
     load_from_template(
                     wrapper,
                     "comment.html",
-                    {'id': com.id},
+                    {'id': com.id, 'title': com.title, 'body': com.body},
                     function () {
                         var ncom             = wrapper.firstChild;
                         ncom.style.left      = com.left;
                         ncom.style.top       = com.top;
                         ncom.style.width     = com.width;
                         ncom.style.height    = com.height;
-                        $('#comment_'+ncom.id+'_title').text(com.title);
-                        $('#comment_'+ncom.id+'_body').text(com.body);
                         ncom.setAttribute("draggable", "true");
+                        
                         main_div.appendChild(ncom);
+                        
+                        $('#comment_'+com.id+'_title').blur( function (e) {
+                            save_project()
+                        });
+                        $('#comment_'+com.id+'_body').blur( function (e) {
+                            save_project()
+                        });
                         
                         global_coms.push({  'id': parseInt(com.id),
                                             'div': ncom});
