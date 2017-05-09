@@ -67,6 +67,13 @@ body {
   display:none;
 }
 
+.sakura_comment {
+    position: absolute;
+    overflow: auto; 
+    resize: both;
+    z-index: 4;
+}
+
 .full_width{
     width: 100%;
  }

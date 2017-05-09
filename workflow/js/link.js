@@ -9,14 +9,17 @@ var link_focus_id = null;
 
 function create_link(js_id, src_id, dst_id, js_connection) {
     
-    ws_request('get_possible_links', [src_id, dst_id], {}, function (p_links) {
-        if (p_links.length == 0) {
+    ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
+        console.log(possible_links);
+        if (possible_links.length == 0) {
             alert("These two operators cannot be linked");
             jsPlumb.detach(js_connection);
             jsPlumb.repaintEverything();
             return false;
         }
-        else {
+        else 
+        {
+            //console.log("possible links", possible_links);
             global_links.push({ id: js_id,
                         src: src_id,
                         dst: dst_id,
@@ -24,7 +27,9 @@ function create_link(js_id, src_id, dst_id, js_connection) {
                         
             ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
                 ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-                    create_link_modal(  global_links[global_links.length - 1], 
+                        //console.log(possible_links);
+                        //console.log(target_inst_info);
+                        create_link_modal(  global_links[global_links.length - 1], 
                                         instance_from_id(src_id).cl, 
                                         instance_from_id(dst_id).cl, 
                                         source_inst_info, 
@@ -47,19 +52,21 @@ function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui)
                                 params: null});
     global_links[l-1].gui = gui;
     
-    ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
-        ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-            create_link_modal(  global_links[l - 1], 
-                                instance_from_id(src_id).cl, 
-                                instance_from_id(dst_id).cl, 
-                                source_inst_info, 
-                                target_inst_info,
-                                false,
-                                out_id,
-                                in_id,
-                                hub_id);
+    //ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
+        ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
+            ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
+                create_link_modal(  global_links[l - 1], 
+                                    instance_from_id(src_id).cl, 
+                                    instance_from_id(dst_id).cl, 
+                                    source_inst_info, 
+                                    target_inst_info,
+                                    false,
+                                    out_id,
+                                    in_id,
+                                    hub_id);
+            });
         });
-    });
+    //});
 }
 
 function create_params(link, out_id, in_id, link_id_from_hub) {
@@ -111,7 +118,7 @@ function create_link_modal(link, src_cl, dst_cl, src_inst_info, dst_inst_info, o
                             $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
                             $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
                         }
-                        else if (auto_link) {  //means should b open now, but we don't cause we link automatically
+                        else if (auto_link) {  //means should be open now, but we don't cause we link automatically
                             console.log('Could think about auto link');
                             $(modal).modal();
                         }

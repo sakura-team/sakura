@@ -110,7 +110,13 @@ function load_project() {
 
 
 function save_project() {
-    //The panels first
+    //The panels and the comments first
+    
+    var coms = [];
+    global_coms.forEach( function(com) {
+        console.log(comment_get_info(com));
+    });
+    
     ws_request('set_project_gui_data', [JSON.stringify(global_op_panels)], {}, function(result){});
     
     //Second the operators
@@ -137,3 +143,9 @@ function new_project() {
     //removing operators instances
     remove_all_operators_instances();
 };
+
+
+function context_new_project() {
+    $('#sakura_main_div_contextMenu').css({visibility: "hidden"});
+    new_project();
+}

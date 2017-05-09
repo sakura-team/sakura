@@ -1,7 +1,11 @@
+var currently_dragged   = null;
+var drag_delta          = [0, 0];
+
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
     currently_dragged = e.target;
+    drag_delta = [e.clientX - e.target.left, e.clientY - e.target.top];
     
     if (currently_dragged.id.includes("svg_modal_link")) {
         //currently_dragged.innerHTML = svg_round_square("");
@@ -73,9 +77,30 @@ main_div.addEventListener("drop", function( e ) {
             currently_dragged = null;
         }
     }
+    else if (currently_dragged.id.includes("comment")) {
+        var rect = main_div.getBoundingClientRect();
+        $('#'+currently_dragged.id).css({
+            left: e.clientX - rect.x - drag_delta[0],
+            top: e.clientY - rect.y - drag_delta[1]
+        });
+        drag_started = false;
+        save_project();
+    }
     else {
         console.log("Unknown Drop !!!");
         currently_dragged = null;
+    }
+}, false);
+
+
+main_div.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+    if (e.target.id == "sakura_main_div") {
+        $('#sakura_main_div_contextMenu').css({
+            visibility: "visible",
+            left: e.clientX ,
+            top: e.clientY
+            });
     }
 }, false);
 
@@ -99,22 +124,20 @@ $('#sakura_link_contextMenu').on("click", "a", function() {
 
 
 $('#sakura_main_div').on("click", function () {
-    if (op_focus_id != null) {
-        $('#sakura_operator_contextMenu').hide();
-        op_focus_id = null;
-    }
-    else if (link_focus_id != null) {
-        $('#sakura_link_contextMenu').hide();
-        op_focus_id = null;
-    }
+    $('#sakura_operator_contextMenu').hide();
+    $('#sakura_link_contextMenu').hide();
+    link_focus_id = null;
+    op_focus_id = null;
+    $('#sakura_main_div_contextMenu').css({visibility: "hidden"});
 });
 
 
 function open_op_menu(e) {
+    e.preventDefault();
     $('#sakura_operator_contextMenu').css({
       display: "block",
-      left: e.clientX - e.layerX + 30,
-      top: e.clientY - e.layerY + 30
+      left: e.clientX,
+      top: e.clientY
     });
     op_focus_id = this.id;
     return false;

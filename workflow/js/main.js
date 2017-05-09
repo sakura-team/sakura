@@ -68,8 +68,8 @@ $( window ).load(function() {
         e.preventDefault();
         $('#sakura_link_contextMenu').css({
             display: "block",
-            left: e.clientX - e.layerX + 30,
-            top: e.clientY - e.layerY + 30
+            left: e.clientX,
+            top: e.clientY
         });
         link_focus_id = link_from_id(params.id);
     });

@@ -7,16 +7,21 @@
 var global_op_panels    = [];
 var global_ops_cl       = [];
 var global_ops_inst     = [];
+var global_coms         = []
 var op_focus_id         = null;
 var panel_focus_id      = null;
-
-//interaction
-var drag_delta          = [0, 0];
-var currently_dragged   = null;
 
 
 //main
 var main_div = document.getElementById('sakura_main_div');
+
+
+var cursorX;
+var cursorY;
+document.onmousemove = function(e){
+    cursorX = e.pageX;
+    cursorY = e.pageY;
+}
 
 
 function not_yet(s = '') {

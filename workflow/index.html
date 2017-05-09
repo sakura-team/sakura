@@ -49,6 +49,13 @@
         </div>
         
         <!-- Context menus -->
+        <div id="sakura_main_div_contextMenu" class="dropdown clearfix" style="visibility: hidden; position: absolute;">
+            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
+                <li><a tabindex="-1" href="#" onclick="context_new_project();">New Project</a></li>
+                <li><a tabindex="-1" href="#" onclick="context_new_comment();">Add Comment</a></li>
+            </ul>
+        </div>
+        
         <div id="sakura_operator_contextMenu" class="dropdown clearfix">
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
                 <li><a tabindex="-1" href="#">Delete</a></li>
@@ -60,6 +67,7 @@
                 <li><a tabindex="-1" href="#">Delete</a></li>
             </ul>
         </div>
+        
         
         <div class="modal fade" id="modal_op_selector" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -127,6 +135,7 @@
             </div>
         </div>
         <script src="js/general.js"></script>
+        <script src="js/comment.js"></script>
         <script src="js/operator.js"></script>
         <script src="js/link.js"></script>
         <script src="js/project.js"></script>

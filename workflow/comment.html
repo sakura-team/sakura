@@ -1,0 +1,23 @@
+<div class="panel panel-info sakura_comment" id="comment_{{id}}" style="width: 182px; height: 50px;">
+    <div class="panel-heading" style="padding: 0px; padding-left: 4px; padding-right: 3px;">
+        <table width="100%" >
+                <tr>
+                    <td>
+                        <font size="2" >
+                            <span id="comment_{{id}}_title" contentEditable="true">Comment {{id}}</span>
+                        </font>
+                    </td>
+                    <td align="right">
+                        <small>
+                            <a>
+                                <span class="glyphicon glyphicon-remove" onclick="delete_comment('{{id}}');" style="color: white; cursor: pointer;"></span>
+                            </a>
+                        </small>
+                    </td>
+                </tr>
+            </table>
+    </div>
+    <font size="1">
+        <div id="comment_0_body" class="panel-collapse collapse in" contentEditable="true" style="padding-left: 3px; padding-right: 3px;">Edit your comment here</div>
+    </font>
+</div>
