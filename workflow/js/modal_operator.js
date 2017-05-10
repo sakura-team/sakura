@@ -14,7 +14,7 @@ function create_op_modal(main_div, id, cl_id, tabs) {
     load_from_template(
                     wrapper,
                     "modal-operator.html",
-                    {'id': id, 'cl': cl, 'tabs': tabs},
+                    {'id': id, 'cl': cl, 'tabs': tabs, 'inst_id': parseInt(id.split("_")[2])},
                     function () {
                         var modal = wrapper.firstChild;
                         // update the svg icon

@@ -3,7 +3,9 @@
 
 REQUIRED_JS = [
         "/js/jquery-2.2.4.min.js",
-        "/js/websocket.js"
+        "/js/websocket.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js",
+        "https://code.jquery.com/ui/1.12.1/jquery-ui.js"
 ];
 
 REQUIRED_CSS = [
@@ -23,22 +25,48 @@ function InternalStreamInterface(op_id, stream_index) {
     };
 }
 
+function testOperatorUrl(url){
+    var op_id;
+    var match= url.match(/opfiles\/([0-9]*)\//);
+
+    if(match!=null){
+        op_id = parseInt(match[1],10);
+
+    }else{
+        var url_path2 = window.location.href;
+        var op_match =url_path2.split("/"); 
+        if(op_match[op_match.length-2]=="code-editor"){
+            var op_match2 =op_match[op_match.length-1].split("?");
+            var op_id2 = op_match2[1];
+            op_id=parseInt(op_id2);
+        }
+    }
+    return op_id;
+}
+
 function SakuraOperatorInterface() {
     this.op_info = null;
     this._on_ready_cb = null;
+    
     this.init = function () {
         // parse the operator instance id from the page url
         var url_path = window.location.pathname;
-        var op_id = parseInt(url_path.match(/opfiles\/([0-9]*)\//)[1],10);
-        var op = this;  // 'this' will be overriden in the body of the function below
-        ws_request('get_operator_instance_info', [op_id], {}, function (op_info) {
-            op.op_info = op_info;
-            // if an on-ready callback has been defined, call it.
-            if (op._on_ready_cb != null) {
-                op._on_ready_cb();
-            }
-        });
+        console.log("urlpath:"+url_path);
+
+        if(url_path!=null){
+            var op_id=testOperatorUrl(url_path);
+            console.log(op_id);
+            var op = this;  // 'this' will be overriden in the body of the function below
+            ws_request('get_operator_instance_info', [op_id], {}, function (op_info) {
+                op.op_info = op_info;
+                // if an on-ready callback has been defined, call it.
+                if (op._on_ready_cb != null) {
+                    op._on_ready_cb();
+                }
+            });
+        }
     };
+
     this.get_internal_stream = function (stream_label) {
         var result = null;
         for (id in this.op_info.internal_streams) {
