@@ -70,7 +70,7 @@ function signOutSubmitControl(event) {
 	showDiv(event,'HelloYou');}}
 
 function searchSubmitControl(event,elt) {
-  listeInit = document.getElementById("idTBodyListElt").innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
+  listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
   listeInit = listeInit.split("<tr");
   searchString = document.getElementById("idInputSearch"+elt).value;
   s="";
@@ -79,7 +79,7 @@ function searchSubmitControl(event,elt) {
 		s =  s + "<tr"+listeInit[i];}
 	  else {
 		s = s + "<tr style='display:none;'"+listeInit[i];}}
-  document.getElementById("idTBodyListElt").innerHTML = s;}
+  document.getElementById("idTBodyList"+elt).innerHTML = s;}
 
 function showDivCGU(event) {
   $("#signInModal").modal("hide");
@@ -156,7 +156,7 @@ s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hi
       + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
 	  + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
       + '</tr></thead>'
-	  + '<tbody id="idTBodyListElt">';						
+	  + '<tbody id="idTBodyList'+eltAncetre+'">';						
 for(i=0;i<result.length;i++) {
   //if (document.getElementById("idInputSearch".eltAncetre).value!="") {}
   s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
