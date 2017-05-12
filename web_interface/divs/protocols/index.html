@@ -31,14 +31,13 @@
                     <div class="row">
                         <div class="col col-xs-offset-3 col-xs-6">
                             <nav aria-label="Page navigation" class="text-center">
-                                <ul class="pagination">
-                                    <li><a aria-label="Previous" onclick='javascript:not_yet();'><span aria-hidden="true">«</span></a></li>
+                                <ul class="pagination" id="idDivPaginationProtocols">
+                                    <li><a aria-label="Previous" onclick="showDiv(event,'Protocols?page=0');" href="http://sakura.imag.fr/Protocols?page=0"><span aria-hidden="true">«</span></a></li>
                                     <li class="active"><a onclick='javascript:not_yet();'>1</a></li>
-                                    <li><a onclick='javascript:not_yet();'>2</a></li>
-                                    <li><a onclick='javascript:not_yet();'>3</a></li>
-                                    <li><a onclick='javascript:not_yet();'>4</a></li>
-                                    <li><a onclick='javascript:not_yet();'>5</a></li>
-                                    <li><a aria-label="Next" onclick='javascript:not_yet();'><span aria-hidden="true">»</span></a></li>
+                                    <li><a onclick="showDiv(event,'Protocols?page=2');" href="http://sakura.imag.fr/Protocols?page=2">2</a></li>
+                                    <li><a onclick="showDiv(event,'Protocols?page=4');" href="http://sakura.imag.fr/Protocols?page=4">4</a></li>
+                                    <li><a onclick="showDiv(event,'Protocols?page=5');" href="http://sakura.imag.fr/Protocols?page=5">5</a></li>
+                                    <li><a aria-label="Next" onclick="showDiv(event,'Protocols?page=6');" href="http://sakura.imag.fr/Protocols?page=9"><span aria-hidden="true">»</span></a></li>
                                 </ul>
                             </nav>
                         </div>
