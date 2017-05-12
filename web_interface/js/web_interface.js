@@ -68,7 +68,19 @@ function signOutSubmitControl(event) {
     return;}
   else {
 	showDiv(event,'HelloYou');}}
-	
+
+function searchSubmitControl(event,elt) {
+  listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
+  listeInit = listeInit.split("<tr");
+  searchString = document.getElementById("idInputSearch"+elt).value;
+  s="";
+  for(i=1;i<listeInit.length;i++) {
+	  if (listeInit[i].match(searchString)) {
+		s =  s + "<tr"+listeInit[i];}
+	  else {
+		s = s + "<tr style='display:none;'"+listeInit[i];}}
+  document.getElementById("idTBodyList"+elt).innerHTML = s;}
+
 function showDivCGU(event) {
   $("#signInModal").modal("hide");
   showDiv(event,"CGU");}
@@ -123,6 +135,7 @@ else {
 
 /*       FillStub        */  
 function buildListStub(idDiv,result,elt) {
+var eltAncetre=elt.split("/")[0];	
 s="";
 s = s +'<thead><tr>'
       + '<th class="col-text">Name</th>';
@@ -143,8 +156,9 @@ s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hi
       + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
 	  + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
       + '</tr></thead>'
-	  + '<tbody>';						
+	  + '<tbody id="idTBodyList'+eltAncetre+'">';						
 for(i=0;i<result.length;i++) {
+  //if (document.getElementById("idInputSearch".eltAncetre).value!="") {}
   s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
   if (document.getElementById("cbColSelectTags").checked) {
     s = s + "<td>"+result[i].tags+"</td>";}
@@ -174,7 +188,6 @@ s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)
 document.getElementById(idDiv).innerHTML = s;
 //maj de la pagination
 document.pageElt;
-eltAncetre=elt.split("/")[0];
 s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
      + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-0)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-0)+"'>"+(document.pageElt-0)+"</a></li>"
      + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+1)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+1)+"'>"+(document.pageElt+1)+"</a></li>"
