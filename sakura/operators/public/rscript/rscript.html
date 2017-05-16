@@ -1,0 +1,36 @@
+<!--Code started by Michael Ortega for the LIG-->
+<!--Started on: May the 15th, 2017-->
+
+<!DOCTYPE html>
+
+<html style="height:100%;">
+    <head>
+        <meta charset="UTF-8" />
+        <script src="/js/sakura-common.js"></script>
+        <script src="/js/sakura-operator.js"></script>
+        
+        <!-- operator-specific includes ... -->
+        <script src="/js/jquery-2.2.4.min.js"></script>
+        <script src="js/rscript.js"></script>
+        <!-- ... done. -->
+    </head>
+    
+    <body style="height:100%;">
+    <table style="width: 100%; height: 100%;">
+        <tr>
+            <td>
+                <textarea id="rscript_script" placeholder="Write your script here. Use 'input_table' for accessing incoming data." style="width:100%; height:200px; resize: none;"></textarea>
+            </td>
+        <tr>
+            <td align="center" style="height:30px; padding: 3px;">
+                <button type="button" class="btn btn-xs btn-primary" onclick="call_script();">Apply Script</button>
+            </td>
+        <tr>
+            <td>
+                <textarea readonly placeholder="Result" id="rscript_result" style='width:100%; height:200px; resize: none;'></textarea>
+            </td>
+    <table>
+    
+    </body>
+</html>
+
