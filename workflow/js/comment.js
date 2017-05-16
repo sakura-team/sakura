@@ -48,8 +48,9 @@ function new_comment() {
 
 function comment_from(com) {
     var wrapper = document.createElement('div');
-    var body = com.body.replace('<br>', '\n');
-    var title = com.title.replace('<br>', '\n');
+    console.log("From", com.body);
+    var body = com.body.replace(/<br>/g, '\n');
+    var title = com.title.replace(/<br>/g, '\n');
     
     load_from_template(
                     wrapper,
@@ -74,6 +75,13 @@ function comment_from(com) {
                         
                         global_coms.push({  'id': parseInt(com.id),
                                             'div': ncom});
+                        
+                        console.log($('#comment_'+com.id));
+                        
+                        //This is for capturing resizing event
+                        $('#comment_'+com.id).on('click', function(){
+                            save_project()
+                        });
                     }
     );
 }
@@ -92,7 +100,7 @@ function get_comment_info(com) {
 
 
 function remove_comment(id) {
-    main_div.removeChild(com_from_id(id).div);
+    main_div.removeChild(comment_from_id(id).div);
     global_coms.splice(index_from_comment_id(id), 1);
     save_project();
 }
@@ -105,7 +113,7 @@ function index_from_comment_id(id) {
 }
 
 
-function com_from_id(id) {
+function comment_from_id(id) {
     return global_coms.find( function (e) {
         return e.id === id;
     });
