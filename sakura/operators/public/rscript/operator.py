@@ -5,7 +5,7 @@
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import NumericColumnSelection
  
-import subprocess
+import os
 
 class Rscript(Operator):
     NAME = "Rscript"
@@ -38,5 +38,6 @@ class Rscript(Operator):
             f.write(event[1])
             f.close()
             
-            result = str(subprocess.check_output(['Rscript','script.r']).decode("utf-8"))
-            return { 'result':  result}
+            os.system('Rscript script.r > rscript.out 2> rscript.err')
+            return {    'out': open('rscript.out', 'r').read(), 
+                        'err': open('rscript.err', 'r').read()  }
