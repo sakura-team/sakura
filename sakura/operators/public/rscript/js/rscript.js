@@ -2,7 +2,6 @@
 //Started on: May the 15th, 2017
 
 function call_script() {
-    console.log("here");
     sakura.operator.fire_event(["script", document.getElementById("rscript_script").value],
         function(result) {
             document.getElementById("rscript_result").value = result.out+'\n----------------\n'+result.err;

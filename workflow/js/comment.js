@@ -48,7 +48,6 @@ function new_comment() {
 
 function comment_from(com) {
     var wrapper = document.createElement('div');
-    console.log("From", com.body);
     var body = com.body.replace(/<br>/g, '\n');
     var title = com.title.replace(/<br>/g, '\n');
     
@@ -75,8 +74,6 @@ function comment_from(com) {
                         
                         global_coms.push({  'id': parseInt(com.id),
                                             'div': ncom});
-                        
-                        console.log($('#comment_'+com.id));
                         
                         //This is for capturing resizing event
                         $('#comment_'+com.id).on('click', function(){
