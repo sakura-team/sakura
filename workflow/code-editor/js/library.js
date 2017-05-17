@@ -1,8 +1,7 @@
 //used for popup
 var treeClickedElement;
 var mode;
-
-
+var currentTreeState;
 /*
 *
 * Generation of code sample
@@ -59,8 +58,24 @@ function print_file_tree(entries)
     (debug?console.log(str):null);
     $("#bar").append(str);
 
-    $('#tree').jstree();
+    //Creates the jstree using #tree element, sorts alphabetically with folders in top
+    $('#tree').jstree({
+        "plugins": ["state", "search", "sort"],
+        'sort': function (a, b) {
+            var nodeA = this.get_node(a);
+            var nodeB = this.get_node(b);
+            var lengthA = nodeA.li_attr["data-type"];
+            var lengthB = nodeB.li_attr["data-type"];                
+            if ((lengthA == "file" && lengthB == "file") || (lengthA == "dir" && lengthB == "dir"))
+                return this.get_text(a).toLowerCase() > this.get_text(b).toLowerCase() ? 1 : -1;
+            else
+                return lengthA < lengthB ? -1 : 1;
+        }
+    });
 
+    $('#tree').bind('ready.jstree', function() {
+        $('#tree').jstree("open_all");    
+    });
     document.getElementById("tree").children[0].children[0].getElementsByTagName("i")[0].click();
     (debug?console.log("________________________________________\n"):null);
 }
@@ -76,14 +91,16 @@ function print_dir(entries, treeHtmlString, currentPath = "")
             treeHtmlString.push("<li data-type='file' data-path='" + currentPath + entry.name + "' class='file' data-jstree=\"{'icon':'http://www.planetminecraft.com/images/buttons/icon_edit.png'}\">"+entry.name+"</li>");
         } else {    //DIR
             treeHtmlString.push("<li data-type='dir' data-path='" + currentPath + entry.name + "' data-jstree=\"{ 'opened' : true }\">" + entry.name + "<ul>");
-            currentPath += entry.name + "/";
-            print_dir(entry.dir_entries, treeHtmlString, currentPath); //Prints content of the visited directory
-            treeHtmlString.push("</ul></li>");
-            if((currentPath.match(/\//g) || []).length == 1) {
-                currentPath = "";
+            if(entry.dir_entries.length > 0) {
+                currentPath += entry.name + "/";
+                print_dir(entry.dir_entries, treeHtmlString, currentPath); //Prints content of the visited directory
+                if((currentPath.match(/\//g) || []).length == 1) {
+                    currentPath = "";
+                }
+                else
+                    currentPath = currentPath.substr(0, currentPath.lastIndexOf("/") + 1);
             }
-            else
-                currentPath = currentPath.substr(0, currentPath.lastIndexOf("/") + 1);
+            treeHtmlString.push("</ul></li>");
         }
     }
     return treeHtmlString;
@@ -156,7 +173,7 @@ function createNewElement(path,mode){
  * @param path
  */
 function removeElement(path){
-    (debug?console.log("\n________________________________________\n\tremoveElement"):null);
+    (debug?console.log("\n________________________________________\n\tremoveElement\n" + path):null);
     sakura.operator.delete_file(path, function(ret) {
         (debug?console.log("\nRemoved : " + path + "\n________________________________________\n"):null);
     });
