@@ -7,7 +7,7 @@ from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.parameter import ParameterException
 
 class Operator(Registry):
-    IGNORED_FILENAMES = ("__pycache__",)
+    IGNORED_FILENAMES = ("__pycache__", ".DS_Store")
     def __init__(self, op_id):
         self.op_id = op_id
         self.input_streams = []
