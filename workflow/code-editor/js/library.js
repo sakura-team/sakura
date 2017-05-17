@@ -65,7 +65,7 @@ function print_file_tree(entries)
             var nodeA = this.get_node(a);
             var nodeB = this.get_node(b);
             var lengthA = nodeA.li_attr["data-type"];
-            var lengthB = nodeB.li_attr["data-type"];                
+            var lengthB = nodeB.li_attr["data-type"];
             if ((lengthA == "file" && lengthB == "file") || (lengthA == "dir" && lengthB == "dir"))
                 return this.get_text(a).toLowerCase() > this.get_text(b).toLowerCase() ? 1 : -1;
             else
@@ -74,9 +74,8 @@ function print_file_tree(entries)
     });
 
     $('#tree').bind('ready.jstree', function() {
-        $('#tree').jstree("open_all");    
+        $('#tree').jstree("open_all");
     });
-    document.getElementById("tree").children[0].children[0].getElementsByTagName("i")[0].click();
     (debug?console.log("________________________________________\n"):null);
 }
 /**
@@ -277,15 +276,17 @@ function closeTab(tab){
  */
 function buildBar(tab){
     (debug?console.log("__________Build Bar "+tab):null);
-
 	  //empty the bar
     $("#tabList").html("");
 	  //get screen width
     var tabBarWidth = $("#tabList").width();
     var tabsWidth = 0;
     list.setActiveTab(tab);
+
+    newTab(list.getActiveTab().getPath());
+
     //from the active until the end of the list
-    for(var i = list.getActiveTabIndex();i<list.getList().length;i++){
+    for(var i = list.getActiveTabIndex()+1;i<list.getList().length;i++){
         var t = list.getList()[i].getPath();
 		    //add a tab at the end
         newTab(t);
@@ -308,9 +309,9 @@ function buildBar(tab){
         }
     }
     if(typeof tab !== 'undefined') {
-        document.getElementById(tab).getElementsByTagName("a")[0].click();
+        openTab(document.getElementById(tab));
     }
-    updateDisplayFilesNotSaved("active");
+    updateModifiedTab();
     (debug?console.log("_________"):null);
 }
 /**
@@ -426,6 +427,7 @@ function setActive(activeTab){
             openTabList[i].className = "inactive tabListElement";
         }
     }
+    updateModifiedTab();
 }
 /**
  * TOOL
@@ -440,6 +442,32 @@ function setActive(activeTab){
 function slashRemover(filePathLocal) {
     if (filePathLocal.indexOf("/") > -1) filePathLocal = slashRemover(filePathLocal.substr(filePathLocal.indexOf("/") + 1, filePathLocal.length));
     return filePathLocal;
+}
+/**
+* add or remove modified class to tabs
+*/
+function updateModifiedTab(){
+    treeFileElements = $(".jstree-anchor");
+    list.getList().forEach(function(tab){
+        if(tab.modified){
+            document.getElementById(tab.getPath()).classList.add("modified");
+            for(var i = 0; i < treeFileElements.length;i++){
+                if(treeFileElements[i].parentElement.attributes['data-path'].value === tab.getPath()){
+                    treeFileElements[i].parentElement.classList.add("modified");
+                    break;
+                }
+            }
+        }
+        else{
+            try{document.getElementById(tab.getPath()).classList.remove("modified");}catch(e){}
+            for(var i = 0; i < treeFileElements.length;i++){
+                if(treeFileElements[i].parentElement.attributes['data-path'].value === tab.getPath()){
+                    try{treeFileElements[i].parentElement.classList.remove("modified");}catch(e){}
+                    break;
+                }
+            }
+        }
+    });
 }
 
 /*Scroll speed*/
@@ -563,7 +591,8 @@ $(window).keydown(function(e) {
     //Ctrl + S
     if((e.ctrlKey || e.keyCode == 224 || e.keyCode == 17 || e.keyCode == 91 || e.keyCode == 93) && e.keyCode == 83) {
         e.preventDefault();
-        console.log("saving");
+        //console.log("saving");
+        saveTab();
         list.saveActiveTab();
         //save();
         //TODO : save only current tab, needs the creation of a function saveActiveTab()

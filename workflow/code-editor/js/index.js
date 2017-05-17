@@ -7,14 +7,13 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/xcode");
 editor.getSession().setMode("ace/mode/python");
 editor.$blockScrolling = Infinity;
-
+//editor.getSession().on('change', function() { list.getActiveTab().modified = true;});
+// editor.keypress(function() {console.log("a");});
 // do you want to display logs ?
 var debug = true;
 
 function init(){
     (debug?console.log("________________________________________\n\tWelcome in the Debug mode\n"):null);
-    generateTree();
-
     /**
      * ON CLICK FUNCTIONS
      */
@@ -36,7 +35,7 @@ function init(){
     /*on the save button of the toolbox*/
     $(document).on('click', '#save', function() {
         saveTab();
-        list.saveActiveTab()
+        list.saveActiveTab();
     });
     /*other toolbox element*/
     $(document).on('click', '#divNewFile', function() {toolboxNewFile();});
@@ -136,18 +135,34 @@ function init(){
                 //alert('You have a strange Mouse!');
         }
     });
+
+    /**
+    * On modification in the editor
+    */
+    $('.ace_text-input').bind('input', function() {
+        list.getActiveTab().modified = true;
+        updateModifiedTab();
+    });
+
+    $('.ace_text-input').keydown(function(e) {
+        if (e.keyCode === 8 || e.keyCode === 46){
+            (debug?console.warn("Merge the two function \"on modification\""):null);
+            list.getActiveTab().modified = true;
+            updateModifiedTab();
+        }
+    });
 }
 
 sakura.operator.onready(function(){
     init();
-
-    // Open the operator.py by default
-    var leafs = document.getElementsByClassName("jstree-leaf");
-    setTimeout(function() {
-        for(var i=0;i<leafs.length;i++){
-            if(leafs[i].attributes['data-path'].value === "operator.py"){
-                leafs[i].getElementsByTagName("a")[0].click();
-            }
-        }
-    }, 1000);
+    generateTree();
+    openOperator();
 });
+
+// open the operator.py
+function openOperator(){
+    if($(".jstree-leaf[data-path='operator.py'] a")[0] != undefined){
+      openFile($(".jstree-leaf[data-path='operator.py'] a")[0]);
+    }
+    else{setTimeout(openOperator,100);}
+}

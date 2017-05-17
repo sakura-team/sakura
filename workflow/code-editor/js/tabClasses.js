@@ -45,10 +45,11 @@ class tab{
     * uses the API
     */
     save(){
-      (debug?console.log("saved : " + this.path ):null);
+        (debug?console.log("saved : " + this.path ):null);
         var content = this.content;
         sakura.operator.save_file_content(this.path, content, function(ret){});
         this.modified = false;
+        updateModifiedTab();
     }
 }
 /**
