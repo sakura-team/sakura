@@ -7,6 +7,7 @@ from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.parameter import ParameterException
 
 class Operator(Registry):
+    IGNORED_FILENAMES = ("__pycache__",)
     def __init__(self, op_id):
         self.op_id = op_id
         self.input_streams = []
@@ -85,6 +86,8 @@ class Operator(Registry):
         return tuple(self.iterate_file_tree(path))
     def iterate_file_tree(self, p):
         for f in p.iterdir():
+            if f.name in Operator.IGNORED_FILENAMES:
+                continue
             if f.is_dir():
                 yield dict(
                     name = f.name,
