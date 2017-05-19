@@ -275,7 +275,7 @@ return ;}
 function buildHistoryStub(idDiv,result,elt) {
 s="";
 for(i=0;i<result.length;i++) {
-  s = s + "<li>On "+result[i].dateVersion+" (<a onclick='javascript:not_yet();'>view this version</a> or <a onclick='javascript:not_yet();'>set back current version with this version.</a>)<p> Revision message from "+result[i].userName+" : "+result[i].msgVersion+"</li>";}
+  s = s + "<li>On "+result[i].dateVersion+" (<a onclick='javascript:not_yet();'>view</a> / <a onclick='javascript:not_yet();'>revert</a>)<p> Revision message from "+result[i].userName+" : "+result[i].msgVersion+"</li>";}
 document.getElementById(idDiv).innerHTML = s;}
 
 function historyRequestStub(idDiv,n,elt,bd) {
