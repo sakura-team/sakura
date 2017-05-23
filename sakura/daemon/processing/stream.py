@@ -53,10 +53,9 @@ class InputStream(object):
         else:
             return None
 
-class OutputStream(Registry):
-    def __init__(self, operator, label, compute_cb):
+class SimpleStream(Registry):
+    def __init__(self, label, compute_cb):
         self.columns = []
-        self.operator = operator
         self.label = label
         self.compute_cb = compute_cb
         self.length = None
@@ -84,6 +83,6 @@ class OutputStream(Registry):
 
 # internal streams and output streams are the same
 # object.
-class InternalStream(OutputStream):
+class InternalStream(SimpleStream):
     pass
 

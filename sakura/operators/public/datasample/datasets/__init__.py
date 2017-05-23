@@ -15,5 +15,5 @@ def load():
     # load all datasets (= modules of this datasets directory)
     # and return them.
     # preserve the same order if possible.
-    return sorted(iter_load(), key = lambda ds: ds.NAME)
+    return sorted(iter_load(), key = lambda ds: ds.STREAM.label)
 

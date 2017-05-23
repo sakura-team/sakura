@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import random
+from sakura.daemon.processing.stream import SimpleStream
 
 DATA_LEN = 1000
 DATA = tuple((random.randint(0, 1000),) for i in range(DATA_LEN))
@@ -9,7 +10,6 @@ def compute():
         yield row
 
 # dataset description
-NAME = 'Random integers'
-COLUMNS = (('Integers', int),)
-COMPUTE_CALLBACK = compute
-LENGTH = DATA_LEN
+STREAM = SimpleStream('Random integers', compute)
+STREAM.add_column('Integers', int)
+STREAM.length = DATA_LEN

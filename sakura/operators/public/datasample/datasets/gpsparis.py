@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from pkg_resources import resource_string
 import zlib, pickle
+from sakura.daemon.processing.stream import SimpleStream
 
 data = None
 
@@ -24,8 +25,7 @@ def compute():
         yield tuple(row)
 
 # dataset description
-NAME = 'GPS Data, Paris'
-COLUMNS = ( ("Longitude", float, ('longitude',)),
-            ("Latitude", float, ('latitude',)))
-COMPUTE_CALLBACK = compute
+STREAM = SimpleStream('GPS Data, Paris', compute)
+STREAM.add_column("Longitude", float, ('longitude',))
+STREAM.add_column("Latitude", float, ('latitude',))
 # we consider LENGTH is unknown

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import NumericColumnSelection
+from sakura.daemon.processing.stream import SimpleStream
 
 class MeanOperator(Operator):
     NAME = "Mean"
@@ -11,7 +12,8 @@ class MeanOperator(Operator):
         self.input = self.register_input('Mean input data')
         
         # outputs
-        output = self.register_output('Mean result', self.compute)
+        output = self.register_output(
+                    SimpleStream('Mean result', self.compute))
         output.add_column('Mean', float)
         output.length = 1
         
