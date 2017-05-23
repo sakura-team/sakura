@@ -58,7 +58,7 @@ main_div.addEventListener("drop", function( e ) {
         if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
             ws_request('create_link', [link.src, out_id, link.dst, in_id], {}, function (link_id_from_hub) {
                 //local creation
-                create_link_line(link, out_id, in_id);
+                create_link_line(link, out_id, in_id, false);
                 create_params(link, out_id, in_id, parseInt(link_id_from_hub));
                 
                 //changing svgs

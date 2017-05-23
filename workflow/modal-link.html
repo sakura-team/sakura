@@ -18,10 +18,10 @@
                                         <table>
                                             % for index, tab in enumerate(tabs_src_outputs):
                                             <tr>
-                                                <td valign="middle"> {{tab.label}}
+                                                <td valign="middle"> <font color="{{tab.color}}">{{tab.label}}</font>
                                                 </td>
                                                 <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}');" name="modal_link_{{id}}_out_{{index}}" id="modal_link_{{id}}_out_{{index}}" align="right" valign="middle" width="40px">
-                                                    <div style="width: 24px; height: 24px;" draggable="true" id="svg_modal_link_{{id}}_out_{{index}}"></div>
+                                                    <div style="width: 24px; height: 24px;" draggable="{{tab.drag}}" id="svg_modal_link_{{id}}_out_{{index}}"></div>
                                                 </td>
                                             </tr>
                                             % end
@@ -55,9 +55,9 @@
                                                 % for index, tab in enumerate(tabs_dst_inputs):
                                                 <tr>
                                                     <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}');" name="modal_link_{{id}}_in_{{index}}" id="modal_link_{{id}}_in_{{index}}" align="left" valign="middle" width="40px">
-                                                        <div style="width: 24px; height: 24px;" draggable="true" id="svg_modal_link_{{id}}_in_{{index}}"></div>
+                                                        <div style="width: 24px; height: 24px;" draggable="{{tab.drag}}" id="svg_modal_link_{{id}}_in_{{index}}"></div>
                                                     </td>
-                                                    <td valign="middle">{{tab.label}}
+                                                    <td valign="middle"><font color="{{tab.color}}">{{tab.label}}</font>
                                                     </td>
                                                 </tr>
                                                 % end
