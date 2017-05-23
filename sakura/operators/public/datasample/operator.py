@@ -12,10 +12,6 @@ class DataSampleOperator(Operator):
         pass
         # outputs:
         for ds in datasets.load():
-            output = self.register_output(ds.NAME, ds.COMPUTE_CALLBACK)
-            if hasattr(ds, 'LENGTH'):
-                output.length = ds.LENGTH
-            for col_info in ds.COLUMNS:
-                output.add_column(*col_info)
+            self.register_output(ds.STREAM)
         # no parameters
         pass

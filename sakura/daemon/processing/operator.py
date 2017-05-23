@@ -1,7 +1,7 @@
 import inspect
 from pathlib import Path
 from sakura.common.tools import SimpleAttrContainer
-from sakura.daemon.processing.stream import InputStream, OutputStream, InternalStream
+from sakura.daemon.processing.stream import InputStream, InternalStream
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.parameter import ParameterException
@@ -19,8 +19,8 @@ class Operator(Registry):
         self.root_dir = operator_py_path.parent
     def register_input(self, input_stream_label):
         return self.register(self.input_streams, InputStream, input_stream_label)
-    def register_output(self, output_stream_label, compute_cb):
-        return self.register(self.output_streams, OutputStream, self, output_stream_label, compute_cb)
+    def register_output(self, output):
+        return self.register_instance(self.output_streams, output)
     def register_internal_stream(self, internal_stream_label, compute_cb):
         return self.register(self.internal_streams, InternalStream, self, internal_stream_label, compute_cb)
     def register_parameter(self, param_label, cls):

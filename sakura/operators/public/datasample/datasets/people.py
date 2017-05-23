@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-PEOPLE_COLUMNS = (
-    ("Name", str), ("Age", int),  ("Gender", str), ("Height", int))
+from sakura.daemon.processing.stream import SimpleStream
 PEOPLE = (
     ("John", 52, "male", 175),
     ("Alice", 34, "female", 184),
@@ -13,7 +12,9 @@ def compute():
         yield row
 
 # dataset description
-NAME = 'People'
-COLUMNS = PEOPLE_COLUMNS
-LENGTH = len(PEOPLE)
-COMPUTE_CALLBACK = compute
+STREAM = SimpleStream('People', compute)
+STREAM.add_column("Name", str)
+STREAM.add_column("Age", int)
+STREAM.add_column("Gender", str)
+STREAM.add_column("Height", int)
+STREAM.length = len(PEOPLE)
