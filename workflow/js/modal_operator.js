@@ -273,3 +273,12 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
         });
     });
 }
+
+function loadIFrame(url){
+    /* by default the iframe is initialized with current url 
+        with the condition it will not reload is already loaded
+    */
+    if(document.getElementById("codeEditorIframe").src==window.location.href){
+        document.getElementById("codeEditorIframe").src=url;
+    }
+}

@@ -5,13 +5,19 @@ REQUIRED_JS = [
         "/js/jquery-2.2.4.min.js",
         "/js/websocket.js",
         "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js",
-        "https://code.jquery.com/ui/1.12.1/jquery-ui.js"
+        "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
+        "/code-editor/js/library.js",
+        "/code-editor/js/index.js",
+        "/code-editor/js/tabClasses.js",
 ];
 
 REQUIRED_CSS = [
         "/css/main.css",
         "/bootstrap-3.3.7/css/bootstrap.min.css",
-        "/bootstrap-3.3.7/css/bootstrap-select.min.css"
+        "/bootstrap-3.3.7/css/bootstrap-select.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css",
+        "https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",
+        "/code-editor/style.css"
 ];
 
 function InternalStreamInterface(op_id, stream_index) {
@@ -30,9 +36,11 @@ function testOperatorUrl(url){
     var match= url.match(/opfiles\/([0-9]*)\//);
 
     if(match!=null){
+        /* if url of type .../opfile/[1-9]/[1-9] */
         op_id = parseInt(match[1],10);
 
     }else{
+        /* if url of type .../code-editor/index.html?[1-9] */
         var url_path2 = window.location.href;
         var op_match =url_path2.split("/"); 
         if(op_match[op_match.length-2]=="code-editor"){
@@ -51,11 +59,11 @@ function SakuraOperatorInterface() {
     this.init = function () {
         // parse the operator instance id from the page url
         var url_path = window.location.pathname;
-        console.log("urlpath:"+url_path);
 
         if(url_path!=null){
+
+            /* parsing of the url to get the operator instance */
             var op_id=testOperatorUrl(url_path);
-            console.log(op_id);
             var op = this;  // 'this' will be overriden in the body of the function below
             ws_request('get_operator_instance_info', [op_id], {}, function (op_info) {
                 op.op_info = op_info;
