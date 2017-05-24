@@ -1,11 +1,9 @@
 //used for popup
-var treeClickedElement;
+var treeClickedElement, treeClickedElementType, treeClickedElementModified;
 var mode;
 var currentTreeState;
 /*
-*
 * Generation of code sample
-*
 * */
 
 /**
@@ -59,24 +57,38 @@ function print_file_tree(entries)
     $("#bar").append(str);
 
     //Creates the jstree using #tree element, sorts alphabetically with folders in top
-    $('#tree').jstree({
-        "plugins": ["state", "search", "sort"],
-        'sort': function (a, b) {
-            var nodeA = this.get_node(a);
-            var nodeB = this.get_node(b);
-            var lengthA = nodeA.li_attr["data-type"];
-            var lengthB = nodeB.li_attr["data-type"];
-            if ((lengthA == "file" && lengthB == "file") || (lengthA == "dir" && lengthB == "dir"))
-                return this.get_text(a).toLowerCase() > this.get_text(b).toLowerCase() ? 1 : -1;
-            else
-                return lengthA < lengthB ? -1 : 1;
-        }
-    });
+    setJsTree();
 
     $('#tree').bind('ready.jstree', function() {
         $('#tree').jstree("open_all");
     });
     (debug?console.log("________________________________________\n"):null);
+}
+
+/**
+* Apply the JStree function and reload the jstree module if it failed
+*/
+function setJsTree(){
+  try{
+      $('#tree').jstree({
+          "plugins": ["state", "search", "sort"],
+          'sort': function (a, b) {
+              var nodeA = this.get_node(a);
+              var nodeB = this.get_node(b);
+              var lengthA = nodeA.li_attr["data-type"];
+              var lengthB = nodeB.li_attr["data-type"];
+              if ((lengthA == "file" && lengthB == "file") || (lengthA == "dir" && lengthB == "dir"))
+                  return this.get_text(a).toLowerCase() > this.get_text(b).toLowerCase() ? 1 : -1;
+              else
+                  return lengthA < lengthB ? -1 : 1;
+          }
+      });
+  }catch(e){
+    (debug?console.log(e):null);
+    $.getScript("https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js",function (data, textStatus, jqxhr){
+      setJsTree();
+    });
+  }
 }
 /**
 * Take a dir in json as a parameter
@@ -121,6 +133,7 @@ function generateRigthClickMenu(menuMode){
                 "<li class='RightClickMenuElement' id='NewFile'><span class=\"glyphicon glyphicon-file\" aria-hidden=\"true\"></span>  New File</li>" +
                 "<li class='RightClickMenuElement' id='NewDir'><span class=\"glyphicon glyphicon-folder-open\" aria-hidden=\"true\"></span>  New Directory</li>" +
                 "<li class='RightClickMenuElement' id='delete'><span class=\"glyphicon glyphicon-trash\" aria-hidden=\"true\"></span> Delete</li>" +
+                "<li class='RightClickMenuElement' id='rename'><span class=\"glyphicon glyphicon-pencil\" aria-hidden=\"true\"></span> Rename</li>" +
                 "" +
                 "</ul>" +
                 "</div>";
@@ -129,6 +142,7 @@ function generateRigthClickMenu(menuMode){
             strRight = "<div id=\"RightClickMenu\">" +
                 "<ul>" +
                 "<li class='RightClickMenuElement' id='delete'><span class=\"glyphicon glyphicon-trash\" aria-hidden=\"true\"></span> Delete</li>" +
+                "<li class='RightClickMenuElement' id='rename'><span class=\"glyphicon glyphicon-pencil\" aria-hidden=\"true\"></span> Rename</li>" +
                 "" +
                 "</ul>" +
                 "</div>";
@@ -161,22 +175,33 @@ function createNewElement(path,mode){
     } else if(mode === "file") {
         var i = sakura.operator.new_file(path, "", function(ret) {
             (debug?console.log("\nFile successfully created : " + path):null);
+            generateTree();
+            setFocusOnNewElement(path);
         });
-        generateTree();
     }
 }
 
+function setFocusOnNewElement(path){
+    if($(".jstree-leaf[data-path='" + path + "'] a")[0] != undefined){
+      openFile($(".jstree-leaf[data-path='" + path + "'] a")[0]);
+    }
+    else setTimeout(function(){setFocusOnNewElement(path);},50);
+}
 
 /**
- * delete elementin remote
+ * delete element in remote
  * @param path
  */
 function removeElement(path){
     (debug?console.log("\n________________________________________\n\tremoveElement\n" + path):null);
     sakura.operator.delete_file(path, function(ret) {
         (debug?console.log("\nRemoved : " + path + "\n________________________________________\n"):null);
+        // console.log(document.getElementById(path).getElementsByTagName('button')[0]);
     });
     generateTree();
+    highlightTree();
+    closeTab(document.getElementById(path).getElementsByTagName('button')[0]);
+
 }
 
 /**
@@ -243,8 +268,23 @@ function openTab(tab){
                 autoChange(list.getActiveTab().getPath());
                 //gives the class active to the active tab and inactive to the others
                 setActive(list.getActiveTab().getPath());
+
+                //highlight
+                highlightTree();
             }
         }
+    }
+}
+/*
+* Highlight the active tab in the tree
+*/
+function highlightTree(){
+    if($(".file[data-path='" + list.getActiveTab().getPath() +"'] a")[0] != undefined){
+        for(var i = 0; i<$(".jstree-clicked").length; i++) $(".jstree-clicked")[i].classList.remove("jstree-clicked");
+        $(".file[data-path='" + list.getActiveTab().getPath() +"'] a")[0].classList.add("jstree-clicked");
+    }
+    else{
+        setTimeout(highlightTree,100);
     }
 }
 
@@ -253,22 +293,29 @@ function openTab(tab){
  */
 function closeTab(tab){
     (debug?console.log("__________closeTab______________________"):null);
-	  var element = tab.parentElement.id;
-    var index = list.getIndexByPath(element);
-    (debug?console.log("Element : " + element + " -  index : " + index):null);
-	  if(tab.id === "close_"+list.getActiveTab().getPath() || tab.id === "tab_"+list.getActiveTab().getPath()){
-		    if(list.getList().length > 1){
-			       var i;
-             (index == 0 ? i=1 : i=0);
-    	       $("#tabList").children()[i].getElementsByTagName("a")[0].click()
+    (debug?console.log(tab):null);
+    var canCloseTable = true;
+    if(tab.parentElement.classList.contains("modified"))
+      if(!confirm("The file " + tab.parentElement.id + " is being modified. Are you sure you want to close it ?"))
+          canCloseTable = false;
+    if(canCloseTable){
+    	  var element = tab.parentElement.id;
+        var index = list.getIndexByPath(element);
+        (debug?console.log("Element : " + element + " -  index : " + index):null);
+    	  if(tab.id === "close_"+list.getActiveTab().getPath() || tab.id === "tab_"+list.getActiveTab().getPath()){
+    		    if(list.getList().length > 1){
+    			       var i;
+                 (index == 0 ? i=1 : i=0);
+        	       $("#tabList").children()[i].getElementsByTagName("a")[0].click()
+            }
+    	      else changeContent("");
         }
-	      else changeContent("");
-    }
-    //Delete the tab from the table
-    list.deleteByIndex(index);
-    document.getElementById(element).remove();
+        //Delete the tab from the table
+        list.deleteByIndex(index);
+        document.getElementById(element).remove();
 
-    if($(".glyphicon-collapse-up").length>0){list.generateExpandedMenu();};
+        if($(".glyphicon-collapse-up").length>0){list.generateExpandedMenu();};
+    }
 }
 
 /**
@@ -359,6 +406,7 @@ function toolboxNewFile(){
     $('#dialog')[0].title="Add File";
     $('#dialog').attr("title","Add File");
     $('.ui-dialog-title').html("Add File");
+    $('#inputAddFile').val("");
     $('.inputAddFile').attr("placeholder","Enter file name");
     $('.btnAddFile').html("Add File");
     mode = 'file';
@@ -378,6 +426,7 @@ function toolboxNewDir(){
     $('#dialog')[0].title="Add Directory";
     $('#dialog').attr("title","Add Directory");
     $('.ui-dialog-title').html("Add Directory");
+    $('#inputAddFile').val("");
     $('.inputAddFile').attr("placeholder","Enter directory name");
     $('.btnAddFile').html("Add Directory");
     mode = 'dir';
@@ -469,115 +518,6 @@ function updateModifiedTab(){
         }
     });
 }
-
-/*Scroll speed*/
-/*if (document.getElementById('tab').addEventListener) document.getElementById('tab').addEventListener('DOMMouseScroll', wheel, false);
-document.getElementById('tab').onmousewheel = document.getElementById('tab').onmousewheel = wheel;
-
-function wheel(event) {
-    var delta = 0;
-    if (event.wheelDelta) delta = event.wheelDelta / 120;
-    else if (event.detail) delta = -event.detail / 3;
-
-    handle(delta);
-    if (event.preventDefault) event.preventDefault();
-    event.returnValue = false;
-}
-
-function handle(delta) {
-    var time = 500;
-    var distance = 21;
-
-    $('#tab').stop().animate({
-        scrollTop: $('#tab').scrollTop() - (distance * delta)
-    }, time );
-}*/
-function updateDisplayFilesNotSaved(type) {
-
-    /*if(type == "active") {
-        if(codeTabs[activeTab] != editor.getValue()) {  //File's content differs from editor's content
-                $("li.jstree-node.file.jstree-leaf").each(function() {
-					if(this.attributes['data-path'].value == activeTab) {
-				        if($(this).find("a i+span").length<1) {
-                            $(this).find("a i").after("<span>*</span>");
-                        }else{
-							$(this).find("a i+span").html("*");
-						}
-					}
-						console.log("down");
-						if($(this).find("a i+span").html()=="*"){
-
-							var nameFileTree=$(this).find("a").clone().children().remove().end().text();
-
-							$("#tabList li").each(function() {
-								var nameFileTab= $(this).find("a").clone().children().remove().end().text();
-
-								console.log("down 55 "+nameFileTab);
-
-								if(nameFileTree==nameFileTab){
-									console.log("down 66 "+nameFileTab);
-									if($(this).find("a:first span").length<1){
-										$(this).find("a:first").html("<span>*</span>" + $(this).find("a:first").html());
-									}else{
-										$(this).find("a:first span").html("*");
-									}
-								}
-							});
-						}
-
-				//	}
-                });
-        } else {  //Reset original name
-            $("li.jstree-node.file.jstree-leaf").each(function() {
-					if(this.attributes['data-path'].value == activeTab) {
-				        if($(this).find("a i+span").length<1) {
-                            $(this).find("a i").after("<span> </span>");
-                        }else{
-							$(this).find("a i+span").html(" ");
-						}
-					}
-
-						if($(this).find("a i+span").html()=="*"){
-
-							var nameFileTree=$(this).find("a").clone().children().remove().end().text();
-
-							$("#tabList li").each(function() {
-								var nameFileTab= $(this).find("a").clone().children().remove().end().text();
-
-								if(nameFileTree==nameFileTab){
-									if($(this).find("a:first span").length<1){
-										$(this).find("a:first").html("<span>*</span>" + $(this).find("a:first").html());
-									}else{
-										$(this).find("a:first span").html("*");
-									}
-								}
-							});
-						}else{
-							var nameFileTree=$(this).find("a").clone().children().remove().end().text();
-
-							$("#tabList li").each(function() {
-								var nameFileTab= $(this).find("a").clone().children().remove().end().text();
-
-								if(nameFileTree==nameFileTab){
-									if($(this).find("a:first span").length<1){
-										$(this).find("a:first").html("<span> </span>" + $(this).find("a:first").html());
-									}else{
-										$(this).find("a:first span").html(" ");
-									}
-								}
-							});
-
-						}
-            });
-        }
-    }
-    else {
-        //TODO : iterer sur tous les onglets ouverts
-    }
-    */
-}
-
-
 /*******************************************
 Shortcuts : Ctrl+W, T and S (also OSX version)
 ********************************************/
