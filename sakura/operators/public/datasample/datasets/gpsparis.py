@@ -19,7 +19,7 @@ def load_data():
     print('done.')
 
 def compute():
-    if data == None:
+    if data is None:
         load_data()
     for row in data.T:
         yield tuple(row)
