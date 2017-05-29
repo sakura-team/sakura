@@ -1,6 +1,20 @@
 // LIG March 2017
 
 function showDiv(event,dir) {
+//save mode ?
+if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
+  res=confirm("Leave edit mode?");
+  if (res) {	
+    document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
+    sav=confirm("Save modification (or abort)?");
+	  if (sav) {
+		//alert("Save");
+		}
+	  else { 	
+        alert("Abort  (not yet impemented)");}}
+  else {
+    event.preventDefault();
+    return;}}
 //set url
 if (event instanceof PopStateEvent) {
   ; /* rien dans l'history */}
@@ -59,7 +73,17 @@ function chgShowColumns(event) {
  return;}
 
 function editModeSubmitControl(event) {
-	  not_yet();}
+  //alert("Entering edit mode.");
+  document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';} 
+
+function saveModeSubmitControl(event) {
+    sav=confirm("Save modification (or abort)?");
+	  if (sav) {
+		//alert("Save")
+		;}
+	  else {
+		 alert("Abort (not yet impemented)");}
+  document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';} 
 
  function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
