@@ -67,13 +67,15 @@ else {
   event.preventDefault();}
   
 /* Divers */
-
 function chgShowColumns(event) {
  showDiv(event,window.location.href.split("#")[1]);
  return;}
 
 function editModeSubmitControl(event) {
   //alert("Entering edit mode.");
+  menuSpans=document.getElementsByClassName('editZoneContextualMenu');
+  for(i=0;i<menuSpans.length;i++) {
+	menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="not_yet();"><i class="glyphicon glyphicon-edit"></i></a>';}
   document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';} 
 
 function saveModeSubmitControl(event) {
@@ -83,6 +85,9 @@ function saveModeSubmitControl(event) {
 		;}
 	  else {
 		 alert("Abort (not yet impemented)");}
+  menuSpans=document.getElementsByClassName('editZoneContextualMenu');
+  for(i=0;i<menuSpans.length;i++) {
+	menuSpans[i].innerHTML='';}
   document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';} 
 
  function signInSubmitControl(event) {
@@ -102,8 +107,8 @@ function signOutSubmitControl(event) {
 	showDiv(event,"");
     return;}
   else {
-	showDiv(event,'HelloYou');}}
-
+	showDiv(event,'HelloYou');}}	
+								
 function searchSubmitControl(event,elt) {
   listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
   listeInit = listeInit.split("<tr");
@@ -326,10 +331,6 @@ else {     // version réseau à faire
 return ;}
 
 function buildEltStub(idDiv,result,elt) {
-// menu sign et edition
-//if (document.getElementById("idSignInWidget").innerText.match("Hello")) {
- // document.getElementById("idEditModeWidget").style.display='';}   
-//contenu general
 s = "";
 if (elt=="Protocol") {
   imageElt = "Simpleicons_Business_notebook.svg.png";
@@ -352,20 +353,23 @@ s = s + '<h3>'+elt+' '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px'
       + '<dl class="dl-horizontal col-md-6">';
 //Informations	  
 for(i=0;i<result.info.length;i++) { 
-  s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value+'</dd>';}
+  s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value;
+  if ((result.info[i].name!="Name") && (result.info[i].name!="Protocol-id") && (result.info[i].name!="DataSet-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Analysis-id")&& (result.info[i].name!="Result-id")) {
+	  s = s +'<span class="editZoneContextualMenu"></span>';}
+  s = s +'</dd>';}
 s = s + '<dt></dt><dd></dd>';
 if (result.dataSets.length>0) {
-  s = s + '<dt class="description-terms-align-left">DataSets</dt><dd class="editableDescriptionField">';
+  s = s + '<dt class="description-terms-align-left">DataSets</dt><dd>';
   for(i=0;i<result.dataSets.length;i++) {
     s = s + "<a onclick=\"showDiv(event,'DataSets/tmpDataSet');\" href=\"http://sakura.imag.fr/DataSets/tmpDataSet\">"+result.dataSets[i].name+"</a>, ";}
   s = s + '</dd>';}
 if (result.process.length>0) {
-  s = s + '<dt class="description-terms-align-left">Analyses processes</dt><dd class="editableDescriptionField">';
+  s = s + '<dt class="description-terms-align-left">Analyses processes</dt><dd>';
   for(i=0;i<result.process.length;i++) {
     s = s + "<a onclick=\"showDiv(event,'Analyses/tmpAnalysis');\" href=\"http://sakura.imag.fr/Analyses/tmpAnalysis\">"+result.process[i].name+"</a>, ";}
   s = s + '</dd>';}
 if (result.results.length>0) {
-   s = s + '<dt class="description-terms-align-left">Results</dt><dd class="editableDescriptionField">';
+   s = s + '<dt class="description-terms-align-left">Results</dt><dd>';
   for(i=0;i<result.results.length;i++) {
     s = s + "<a onclick=\"showDiv(event,'Results/tmpResult');\" href=\"http://sakura.imag.fr/Results/tmpResult\">"+result.results[i].name+"</a>, ";}
   s = s + '</dd>';}
