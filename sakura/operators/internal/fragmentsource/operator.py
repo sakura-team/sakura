@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import InternalOperator
 from sakura.daemon.processing.stream import SimpleStream
+import numpy as np
 
 # This internal operator (not accessible from users)
 # is used when a user links 2 operators running in
@@ -28,7 +29,7 @@ class FragmentSourceOperator(InternalOperator):
                 out_stream_info['label'], self.compute))
         self.output_stream.length = out_stream_info['length']
         for col_label, col_type, col_tags in out_stream_info['columns']:
-            self.output_stream.add_column(col_label, eval(col_type), col_tags)
+            self.output_stream.add_column(col_label, np.dtype(col_type), col_tags)
     def compute(self):
         # we just pull and transmit the output from the remote operator.
         # however, for performance reasons, we do not pull rows 1 by 1,

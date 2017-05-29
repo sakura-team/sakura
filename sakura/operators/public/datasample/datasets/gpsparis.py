@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 from pkg_resources import resource_string
-import zlib, pickle
-from sakura.daemon.processing.stream import SimpleStream
-
-data = None
+import zlib, pickle, numpy as np
+from sakura.daemon.processing.stream import NumpyStream
 
 def load_data():
     global data
@@ -16,16 +14,13 @@ def load_data():
     data[0] += info['offsets']['lng']
     data[1] += info['offsets']['lat']
     data = data.round(decimals=4)
+    data = np.array(list(map(tuple, data.T)),
+            [('Longitude', float),('Latitude', float)])
     print('done.')
-
-def compute():
-    if data is None:
-        load_data()
-    for row in data.T:
-        yield tuple(row)
+    return data
 
 # dataset description
-STREAM = SimpleStream('GPS Data, Paris', compute)
-STREAM.add_column("Longitude", float, ('longitude',))
-STREAM.add_column("Latitude", float, ('latitude',))
+STREAM = NumpyStream('GPS Data, Paris', load_data())
+STREAM.columns[0].add_tags('longitude')
+STREAM.columns[1].add_tags('latitude')
 # we consider LENGTH is unknown
