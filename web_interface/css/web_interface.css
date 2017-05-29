@@ -61,3 +61,12 @@ form.form-search:before {
     font-family:verdana;
     font-size:11px;
 }
+
+
+.editableDescriptionField > span > a {
+    visibility: hidden;
+}
+
+.editableDescriptionField:hover > span > a {
+    visibility: visible;
+}
