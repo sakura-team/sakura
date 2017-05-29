@@ -16,12 +16,19 @@ else {
   dir = dir.split("?")[0];
   if (dir=="") {
     dir="Home";}
+  else if (dir.match("tmp")) {
+	if (!(dir.match("Work") || dir.match("Historic") || dir.match("Main")))  {
+	  dir = dir + "/Main";}}
   var dirs = dir.split("/");
 //show div
   mainDivs=document.getElementsByClassName('classMainDiv');
   for(i=0;i<mainDivs.length;i++) {
 	mainDivs[i].style.display='none';}  
   var idDir = "idDiv"+dirs.join("");
+  if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
+	  document.getElementById("idEditModeWidget").style.display='';}
+  else {
+	  document.getElementById("idEditModeWidget").style.display='none';}
   document.getElementById(idDir).style.display='inline';
 //activate navbar   
   var d = document.getElementById("navbar_ul");
@@ -46,11 +53,15 @@ else {
   event.preventDefault();}
   
 /* Divers */
+
 function chgShowColumns(event) {
  showDiv(event,window.location.href.split("#")[1]);
  return;}
 
-function signInSubmitControl(event) {
+function editModeSubmitControl(event) {
+	  not_yet();}
+
+ function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
     showDiv(event,'HelloYou');
 	$("#signInModal").modal("hide");
@@ -291,6 +302,10 @@ else {     // version réseau à faire
 return ;}
 
 function buildEltStub(idDiv,result,elt) {
+// menu sign et edition
+//if (document.getElementById("idSignInWidget").innerText.match("Hello")) {
+ // document.getElementById("idEditModeWidget").style.display='';}   
+//contenu general
 s = "";
 if (elt=="Protocol") {
   imageElt = "Simpleicons_Business_notebook.svg.png";
