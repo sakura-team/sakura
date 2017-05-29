@@ -75,8 +75,23 @@ function editModeSubmitControl(event) {
   //alert("Entering edit mode.");
   menuSpans=document.getElementsByClassName('editZoneContextualMenu');
   for(i=0;i<menuSpans.length;i++) {
-	menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="not_yet();"><i class="glyphicon glyphicon-edit"></i></a>';}
+	menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a>';}
   document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';} 
+
+function editField(field,event) {
+event.preventDefault();	
+initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
+field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField'><i class='glyphicon glyphicon-ok'></i></a> <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-remove'></i></a></span>";}
+
+function saveField(field,event) {
+event.preventDefault();	
+fieldValue = field.parentElement.childNodes[0].value;
+field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
+
+function revertField(field,fieldValue,event) {
+event.preventDefault();	
+field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
+
 
 function saveModeSubmitControl(event) {
     sav=confirm("Save modification (or abort)?");
