@@ -2,6 +2,10 @@ import collections, itertools, io, sys, json, numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 
+DEBUG_LEVEL = 0   # do not print messages exchanged
+# DEBUG_LEVEL = 1   # print requests and type of results
+# DEBUG_LEVEL = 2   # print requests and results (slowest mode)
+
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
 
@@ -21,6 +25,8 @@ class CompactJsonProtocol:
 compactjson = CompactJsonProtocol()
 
 def print_short(*args):
+    if DEBUG_LEVEL == 0:
+        return  # do nothing
     OUT = io.StringIO()
     print(*args, file=OUT)
     if OUT.tell() > 110:
@@ -58,7 +64,10 @@ class LocalAPIHandler(object):
         res = self.api_runner.do(path, args, kwargs)
         try:
             self.protocol.dump((req_id, res), self.f)
-            print_short("sent", req_id, res)
+            if DEBUG_LEVEL == 2:
+                print_short("sent", req_id, res)
+            elif DEBUG_LEVEL == 1:
+                print_short("sent", req_id, res.__class__)
             self.f.flush()
         except BaseException as e:
             print_short('could not send response:', e)
