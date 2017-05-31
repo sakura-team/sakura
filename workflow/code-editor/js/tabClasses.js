@@ -199,5 +199,16 @@ class tabList{
         this.tabsList[this.getActiveTabIndex()].save();
     }
 
+    /**
+    * MANIPULATE ORDER
+    */
+
+    changePos(tabIndex,posDifferential){
+        var t = this.tabsList[tabIndex];
+        var activePath = this.getActiveTab().getPath();
+        this.deleteByIndex(tabIndex);
+        this.tabsList.splice(tabIndex + posDifferential, 0, t);
+        list.setActiveTab(activePath);
+    }
 
 }

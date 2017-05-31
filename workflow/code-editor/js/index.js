@@ -1,18 +1,15 @@
-var list = new tabList();
-
 /**
  * GLOBAL VARS
  */
+ var list = new tabList();
 
- //used for rename
- var elementPath;
- var inputValue;
 
 //Ace Editor
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/xcode");
 editor.getSession().setMode("ace/mode/python");
 editor.$blockScrolling = Infinity;
+editor.setFontSize(13);
 
 // do you want to display logs ?
 var debug = !true;
@@ -49,18 +46,31 @@ function init(){
     /*on the trash button of the toolbox*/
     $(document).on('click', '#divTrash', function() {
         (debug?console.log("__________ToolBox Trash"):null);
-        var canRemoveElement = true;
-        //Ask if the user is sure to delete element
-        //if it's a dir
-        if($(".jstree-clicked")[0].parentElement.attributes["data-type"].value == "dir"){
-            canRemoveElement = confirm("Do you want to remove the directory " + $(".jstree-clicked")[0].parentElement.attributes['data-path'].value + " and its content ?");
+        if($(".jstree-clicked")[0].parentElement.attributes['data-type'].value == "dir")
+            $("#popupMessage").html("Are you sure you want to delete the folder <strong>"+$(".jstree-clicked")[0].parentElement.attributes['data-path'].value+"</strong> and its content ?");
+        else {
+            $("#popupMessage").html("Are you sure you want to delete the file <strong>"+$(".jstree-clicked")[0].parentElement.attributes['data-path'].value+"</strong> ?");
         }
-        else{ //if it's a file
-            canRemoveElement = confirm("Do you want to remove the file " + $(".jstree-clicked")[0].parentElement.attributes['data-path'].value + " ?");
-        }
-        //if validate then remove the element
-        if(canRemoveElement) removeElement($(".jstree-clicked")[0].parentElement.attributes['data-path'].value);
+        $("#popup").dialog({
+            modal:  true
+        });
+        $("#btnConfirm").click(function() {
+            $("#popup").dialog("close");
+            removeElement($(".jstree-clicked")[0].parentElement.attributes['data-path'].value);
+            $("#btnConfirm").unbind("click");
+        });
+        $("#btnAbort").click(function() {
+            $("#popup").dialog("close");
+            $("#btnAbort").unbind("click");
+        });
     });
+    $(document).on('change', '#selectFontSize', function() {
+            var size = $("#selectFontSize").val();
+            editor.setOptions({
+                fontSize: size + "pt"
+            });
+            (debug?console.log(size):null);
+        });
 
     /*extended list*/
     //open
@@ -113,12 +123,24 @@ function init(){
                 $( "#dialog" ).dialog();
                 break;
             case "delete" :
-                var canRemoveElement = true;
-                //Ask if the user is sure to remove element
-                if(treeClickedElementType == "dir") canRemoveElement = confirm("Do you want to remove the directory " + treeClickedElement + " and its content ?");
-                else canRemoveElement = confirm("Do you want to remove the file " + treeClickedElement + " ?");
-                //if confirmed remove
-                if(canRemoveElement) removeElement(treeClickedElement);
+                if(treeClickedElementType == "dir")
+                    $("#popupMessage").html("Are you sure you want to delete the folder <strong>"+treeClickedElement+"</strong> and its content ?");
+                else {
+                    $("#popupMessage").html("Are you sure you want to delete the file <strong>"+treeClickedElement+"</strong> ?");
+                }
+                $("#popup").dialog({
+                    modal:  true
+                });
+                $("#btnConfirm").click(function() {
+                    $("#popup").dialog("close");
+                    removeElement(treeClickedElement);
+                    $("#btnConfirm").unbind("click");
+                });
+                $("#btnAbort").click(function() {
+                    console.log("close");
+                    $("#popup").dialog("close");
+                    $("#btnAbort").unbind("click");
+                });
                 break;
             case "rename" :
                 $('#dialog')[0].title="Rename";
@@ -169,9 +191,9 @@ function init(){
       switch (mode) {
         case "rename":
           //path part of the element (exemple/exemple/)
-          elementPath =  treeClickedElement.slice(0,treeClickedElement.indexOf(slashRemover(treeClickedElement)));
+          var elementPath =  treeClickedElement.slice(0,treeClickedElement.indexOf(slashRemover(treeClickedElement)));
           //name part of the element (exemple.ex)
-          inputValue = $(".inputAddFile")[0].value;
+          var inputValue = $(".inputAddFile")[0].value;
           //move and rename is the same function
           sakura.operator.move_file(treeClickedElement,elementPath + inputValue, function(ret) {
               //if the renamed tab is open
@@ -188,7 +210,7 @@ function init(){
                 //if act change the editor mode (coloration)
                 if(act) autoChange(elementPath + inputValue);
               }
-              (debug?console.log("moved : " + ret + "\n________________________________________\n"):null);
+              (debug?console.log("renamed \n________________________________________\n"):null);
               generateTree();
               highlightTree();
           });
@@ -215,6 +237,39 @@ function init(){
             updateModifiedTab();
         }
     });
+
+    /**
+    * Drag N Drop on tab
+    */
+    $( function() {
+        var oldPos, newPos;
+        $( "#tabList" ).sortable({
+            start: function (event, ui) {
+                oldPos = ui.item.index();
+            },
+            revert: true,
+            update: function( event, ui ) {
+                var selectedId = ui.item[0].attributes["id"].value;
+                newPos = ui.item.index();
+                (debug?console.log("Moved item : " + selectedId + " - Old Pos : " + oldPos + " - New position: " + newPos):null);
+                list.changePos(list.getIndexByPath(selectedId),newPos - oldPos);
+                if($(".glyphicon-collapse-up").length>0){list.generateExpandedMenu();};
+            }
+        });
+        $( "ul, li" ).disableSelection();
+
+    });
+    /**
+    * Drag N Drop in tree
+    */
+    // $( function() {
+    //     $( ".jstree-icon" ).draggable({
+    //       stop: function() {
+    //             alert("");
+    //       }
+    //     });
+    // });
+
 }
 
 sakura.operator.onready(function(){

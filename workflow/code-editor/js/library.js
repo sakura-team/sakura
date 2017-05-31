@@ -56,7 +56,7 @@ function print_file_tree(entries)
     (debug?console.log(str):null);
     $("#bar").append(str);
 
-    //Creates the jstree using #tree element, sorts alphabetically with folders in top
+    //Creates the jstree using #tree element, sorts alphabetically with folders on top
     setJsTree();
 
     $('#tree').bind('ready.jstree', function() {
@@ -71,8 +71,24 @@ function print_file_tree(entries)
 function setJsTree(){
   try{
       $('#tree').jstree({
-          "plugins": ["state", "search", "sort"],
-          'sort': function (a, b) {
+          "core" : {
+              //check if DnD target is dir
+              "check_callback" : function(op, node, parent, position, more){
+                // console.log(op);
+                // console.log(node);
+                // console.log(parent);
+                // console.log(position);
+                // console.log(more);
+                // console.log(parent.text);
+                var targetIsDir = $(".jstree-node[data-type = 'dir'][id = '" + parent.id + "']").length;
+                if(targetIsDir > 0){
+                  return true;
+                }
+                return false;
+              }
+          },
+          "plugins": ["state", "search", "sort","dnd"],
+          "sort": function (a, b) {
               var nodeA = this.get_node(a);
               var nodeB = this.get_node(b);
               var lengthA = nodeA.li_attr["data-type"];
@@ -90,6 +106,39 @@ function setJsTree(){
     });
   }
 }
+/*
+* When stop dragging
+*/
+$(document).on('dnd_stop.vakata', function (e, data) {
+      applyMove(data,$(".jstree-node [id = '"+ data.data.nodes[0] +"']")[0].parentElement.parentElement);
+});
+function applyMove(data,initVal){
+    if(initVal != $(".jstree-node [id = '"+ data.data.nodes[0] +"']")[0].parentElement.parentElement){
+      var oldPos = data.element.parentElement.attributes["data-path"].value;
+      var newPos = $(".jstree-node [id = '"+ data.data.nodes[0] +"']")[0].parentElement.parentElement.attributes['data-path'].value + "/";
+      var newPath = (newPos + slashRemover(oldPos)).replace("//","");
+      $(".jstree-node [id = '"+ data.data.nodes[0] +"']")[0].attributes['data-path'].value = newPath;
+
+      sakura.operator.move_file(oldPos,newPath, function(ret) {
+          //if the moved tab is open
+          var movedTab = $(".tabListElement[id = '"+ oldPos +"']");
+          // console.log(movedTab);
+          if(movedTab.length > 0){
+            //Change the path/ID of the Tab object and the editor tab
+            list.getElementByPath(oldPos).setPath(newPath);
+            movedTab.attr("id",newPath);
+          }
+          (debug?console.log("moved \n________________________________________\n"):null);
+          // generateTree();
+          // highlightTree();
+      });
+    }
+    else{
+      setTimeout(function(){applyMove(data,initVal);},5);
+    }
+
+}
+
 /**
 * Take a dir in json as a parameter
 * complete the treeHtmlString with the content of the dir

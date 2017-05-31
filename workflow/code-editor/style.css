@@ -58,21 +58,6 @@ li a{
 	position: relative;
 }
 
-/*TOOLBOX*/
-
-#toolBox{
-  width: 20%;
-  height: 50px;
-  float: left;
-  border-right: var(--innerBorders);
-  display: inline-flex;
-  margin: 0;
-  padding-left: 20px;
-  display: inline-block;
-	min-width: 280px;
-	background-color:#fff;
-}
-
 .topMenu{
   display: flex;
   border-bottom: var(--innerBorders);
@@ -88,6 +73,21 @@ li a{
 	margin-top: 50px;
 }
 
+/*TOOLBOX*/
+
+#toolBox{
+  width: 20%;
+  height: 50px;
+  float: left;
+  border-right: var(--innerBorders);
+  display: inline-flex;
+  margin: 0;
+  padding-left: 20px;
+  display: inline-block;
+	min-width: 280px;
+	background-color:#fff;
+}
+
 #toolBox .glyphicon{
 	padding-right: 30px;
 }
@@ -95,7 +95,7 @@ li a{
 .divToolBox {
 	display: inline-block;
 	cursor: pointer;
-	width:18%;
+	width:13%;
 	margin-top: -17px;
 }
 
@@ -134,6 +134,14 @@ span.glyphicon.glyphicon-plus {
 
 .divToolBox:active span{
 	color : #c4c4c4!important;
+}
+
+/*size selector*/
+
+#editorStatus{
+	padding: 10px;
+	top : -7px;
+	position: relative;
 }
 
 /*toolBox Border*/
@@ -305,18 +313,6 @@ li[data-type="dir"]>a>i:before {
 	margin : 0 10px 0 0;
 }
 
-
-/* POPUP */
-
-.fa{
-	margin-left:10px;
-}
-
-
-#dialog{
-	display:none;
-}
-
 /* EXPAND */
 
 #ExpandMenu{
@@ -354,7 +350,19 @@ li[data-type="dir"]>a>i:before {
 
 /* POP UP STYLE*/
 
-.btnAddFile{
+.fa{
+	margin-left:10px;
+}
+
+#dialog{
+	display:none;
+}
+
+#popup{
+	display: none;
+}
+
+.btnAddFile, #popup button{
 	margin-top:10px;
 
 	display: inline-block;
@@ -382,19 +390,22 @@ li[data-type="dir"]>a>i:before {
 	border-color: #2e6da4;
 }
 
-.btnAddFile:focus {
+.btnAddFile:focus, #popup button:focus {
     color: #fff;
     background-color: #286090;
     border-color: #122b40;
     text-decoration: none;
 }
 
-.btnAddFile:hover {
+.btnAddFile:hover, #popup button:hover {
   color: #fff;
   background-color: #286090;
   border-color: #204d74;
 }
 
+#btnConfirm{
+	margin-left: 10px;
+}
 
 .ui-dialog .ui-dialog-title{
 	font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;

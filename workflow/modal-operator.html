@@ -38,13 +38,13 @@
                     <div id="modal_{{id}}_tab_params" class="tab-pane fade"></div>
                     <div id="modal_{{id}}_tab_outputs" class="tab-pane fade"></div>
                     <div id="modal_{{id}}_tab_code" class="tab-pane fade" style="width:100%;height:100%;">
-                        <iframe id="codeEditorIframe" src="" style="width:100%;height:100%;"></iframe>
+                        <iframe id="codeEditorIframe" src="" frameborder="0" style="width:100%;height:100%;"></iframe>
                     </div>
 
                     % for index, tab in enumerate(tabs):
                     <iframe frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:100%;" id="modal_{{id}}_tab_tab_{{index}}" class="tab-pane fade" sandbox="allow-scripts"></iframe>
                     % end
-                    
+
                 </div>
             </div>
         </div>
