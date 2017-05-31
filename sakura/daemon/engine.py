@@ -88,4 +88,4 @@ class DaemonEngine(object):
                 except ParameterException:
                     pass
                 self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
-        return tuple(links)
+        return links
