@@ -132,31 +132,6 @@ $('#sakura_main_div').on("click", function () {
 });
 
 
-function open_op_menu(e) {
-    e.preventDefault();
-    $('#sakura_operator_contextMenu').css({
-      display: "block",
-      left: e.clientX,
-      top: e.clientY
-    });
-    op_focus_id = this.id;
-    return false;
-}
-
-
-function open_op_modal() {
-    var modal_name = "modal_"+this.id;
-    fill_all(this.id);
-    if ($('#'+modal_name+"_dialog").attr('class').includes("full_width")) {
-        $('#'+modal_name+"_dialog").toggleClass("full_width");
-        $('#'+modal_name+"_body").css("height", "100%");
-        $('#'+modal_name+"_body").children().eq(1).css("height", "100%");
-        current_nb_rows = max_rows;
-    }
-    $('#'+modal_name).modal();
-}
-
-
 function jsp_drag_stop(e) {
     var ot = document.getElementById("sakura_main_div");
     if (e.el.getBoundingClientRect().left < ot.getBoundingClientRect().left)

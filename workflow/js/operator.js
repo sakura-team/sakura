@@ -13,11 +13,16 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         //New div creation (cloning)
         ndiv.id = "op_" + id + "_" + hub_id;
         ndiv.classList.add("sakura_dynamic_operator");
-        ndiv.style.left = drop_x+"px";
-        ndiv.style.top = drop_y+"px";
         ndiv.setAttribute('draggable', 'false');
-        ndiv.ondblclick = open_op_modal;    
-        ndiv.oncontextmenu = open_op_menu;
+        ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
+        ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
+        
+        ndiv.style.left     = drop_x+"px";
+        ndiv.style.top      = drop_y+"px";
+        ndiv.ondblclick     = open_op_modal;
+        ndiv.oncontextmenu  = open_op_menu;
+        ndiv.onmouseenter   = op_mouse_enter;
+        ndiv.onmouseleave   = op_mouse_leave;
         
         main_div.appendChild(ndiv);
         
@@ -62,11 +67,17 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     
     ndiv.id = "op_" + id + "_" + info.op_id;
     ndiv.classList.add("sakura_dynamic_operator");
-    ndiv.style.left = drop_x+"px";
-    ndiv.style.top = drop_y+"px";
     ndiv.setAttribute('draggable', 'false');
-    ndiv.ondblclick = open_op_modal;    
-    ndiv.oncontextmenu = open_op_menu;
+    ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
+    ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
+    
+    
+    ndiv.style.left     = drop_x+"px";
+    ndiv.style.top      = drop_y+"px";
+    ndiv.ondblclick     = open_op_modal;    
+    ndiv.oncontextmenu  = open_op_menu;
+    ndiv.onmouseenter   = op_mouse_enter;
+    ndiv.onmouseleave   = op_mouse_leave;
     
     main_div.appendChild(ndiv);
     
@@ -136,6 +147,48 @@ function remove_all_operators_instances() {
     });
 }
 
+//Interactions
+function op_mouse_enter(e) {
+    h_div = document.getElementById(this.id+"_help");
+    h_div.style.visibility = "visible";
+}
+
+
+function op_mouse_leave(e) {
+    h_div = document.getElementById(this.id+"_help");
+    h_div.style.visibility = "hidden";
+}
+
+
+function open_op_menu(e) {
+    e.preventDefault();
+    $('#sakura_operator_contextMenu').css({
+      display: "block",
+      left: e.clientX,
+      top: e.clientY
+    });
+    op_focus_id = this.id;
+    return false;
+}
+
+
+function open_op_help(e) {
+    var op = class_from_id(parseInt(this.parentNode.id.split("_")[1]));
+    alert("Help on operator \""+op.name +"\" is not yet implemented !");
+}
+
+
+function open_op_modal() {
+    var modal_name = "modal_"+this.id;
+    fill_all(this.id);
+    if ($('#'+modal_name+"_dialog").attr('class').includes("full_width")) {
+        $('#'+modal_name+"_dialog").toggleClass("full_width");
+        $('#'+modal_name+"_body").css("height", "100%");
+        $('#'+modal_name+"_body").children().eq(1).css("height", "100%");
+        current_nb_rows = max_rows;
+    }
+    $('#'+modal_name).modal();
+}
 
 function class_from_id(id) {
     return global_ops_cl.find( function (e) {
