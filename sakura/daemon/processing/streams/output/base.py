@@ -28,7 +28,7 @@ class OutputStreamBase(Registry):
                 it = last_it
         # otherwise, create a new iterator
         if it == None:
-            it = self.__iter_chunks__(row_end-row_start, row_start)
+            it = self.chunks(row_end-row_start, row_start)
         # read next chunk and return it
         for chunk in it:
             # update info about last iterator
