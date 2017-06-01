@@ -26,13 +26,17 @@ class InputStream(object):
                 connected = False
             )
         return info
-    def __iter__(self):
+    def __getattr__(self, attr):
+        # redirect calls to the connected output stream
         if self.connected():
-            return self.source_stream.__iter__()
+            return getattr(self.source_stream, attr)
         else:
             return None
-    def get_range(self, *args):
+    def __iter__(self):
+        # explicitely redirect this one
+        # (such a 'special method' is not matched by the
+        # __getattr__() function above)
         if self.connected():
-            return self.source_stream.get_range(*args)
+            return self.source_stream.__iter__()
         else:
             return None
