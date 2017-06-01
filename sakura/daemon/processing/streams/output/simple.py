@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import islice
+from operator import itemgetter
 from sakura.daemon.processing.streams.output.base import OutputStreamBase
 
 DEFAULT_CHUNK_SIZE = 10000
@@ -18,3 +19,12 @@ class SimpleStream(OutputStreamBase):
             if chunk.size == 0:
                 break
             yield chunk
+    def select_columns(self, *columns):
+        indexes = list(col.index for col in columns)
+        columns_selector = itemgetter(*indexes)
+        def filtered_compute_cb():
+            return map(columns_selector, self.compute_cb())
+        filtered_stream = SimpleStream(self.label, filtered_compute_cb)
+        for col in columns:
+            filtered_stream.add_column(col.label, col.type, col.tags)
+        return filtered_stream

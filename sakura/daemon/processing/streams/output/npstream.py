@@ -17,3 +17,6 @@ class NumpyStream(OutputStreamBase):
         while offset < self.array.size:
             yield self.array[offset:offset+chunk_size].view(np.recarray)
             offset += chunk_size
+    def select_columns(self, *columns):
+        filtered_array = self.array[list(col.label for col in columns)]
+        return NumpyStream(self.label, filtered_array)
