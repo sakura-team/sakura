@@ -1,4 +1,4 @@
-import numbers
+import numpy as np
 from enum import Enum
 
 Issue = Enum('ParameterIssue',
@@ -132,16 +132,16 @@ def TypeBasedColumnSelection(stream, cls):
     class CustomParameterClass(ColumnSelectionParameter):
         def __init__(self, label):
             def condition(column):
-                return issubclass(column.type, cls)
+                return np.issubdtype(column.type, cls)
             ColumnSelectionParameter.__init__(self, label, stream, condition)
     return CustomParameterClass
 
 def NumericColumnSelection(stream):
-    return TypeBasedColumnSelection(stream, numbers.Number)
+    return TypeBasedColumnSelection(stream, np.number)
 
 def StrColumnSelection(stream):
-    return TypeBasedColumnSelection(stream, str)
+    return TypeBasedColumnSelection(stream, np.str)
 
 def FloatColumnSelection(stream):
-    return TypeBasedColumnSelection(stream, float)
+    return TypeBasedColumnSelection(stream, np.float)
 
