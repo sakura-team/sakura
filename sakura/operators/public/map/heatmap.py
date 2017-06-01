@@ -35,17 +35,19 @@ def generate(lnglat, width, height, westlng, eastlng, southlat, northlat):
     centerlng = x_to_lng(width, westlng, eastlng, (x[1:] + x[:-1])/2)
     edgelat = y_to_lat(height, southlat, northlat, y)
     centerlat = y_to_lat(height, southlat, northlat, (y[1:] + y[:-1])/2)
-    # convert to x, y
-    if lnglat.size == 0:
-        lng, lat = np.empty(0), np.empty(0)
-    else:
-        lng, lat = lnglat[0], lnglat[1]
     t1 = time()
     # make histogram:
     # - create a pixel grid
     # - given a tuple (lng, lat) increment the corresponding pixel
-    heatmap = np.histogram2d(lng, lat, bins=(edgelng, edgelat), range=((westlng, eastlng), (southlat, northlat)))[0]
-    heatmap = heatmap.T
+    heatmap = None
+    for chunk in lnglat.chunks():
+        lng = chunk[chunk.dtype.names[0]]
+        lat = chunk[chunk.dtype.names[1]]
+        chunk_heatmap = np.histogram2d(lng, lat, bins=(edgelng, edgelat), range=((westlng, eastlng), (southlat, northlat)))[0]
+        if heatmap is None:
+            heatmap = chunk_heatmap.T
+        else:
+            heatmap += chunk_heatmap.T
     t2 = time()
     # apply threshold
     nzhm = (heatmap / heatmap.max()) > 0.05
