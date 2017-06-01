@@ -270,17 +270,21 @@ function create_link_line(link, _out, _in, copy) {
         
         var w = Math.abs(rect2.x-rect1.x-24+2);
         var h = Math.abs(rect2.y-rect1.y+2);
+        console.log(h, rect2.y, rect1.y);
         
         svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
         
-        if (rect2.y >= rect1.y) {
+        if (parseInt(rect2.y) - parseInt(rect1.y) >= 0) {
+            console.log("pass  1");
             svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
             svg_div.innerHTML= '<svg height="'+(h+20)+'" width="'+(w)+'"> \
                                     <line x1="1" y1="1" x2="'+(w-1)+'" y2="'+(h-1)+'" style="stroke:rgb(33,256,33);stroke-width:2" /> \
                                 </svg> ';
         }
         else {
+            console.log("pass  2");
             svg_div.style.top = (rect2.y-rect0.y+12-1)+'px';
+            console.log(svg_div.style.top);
             svg_div.innerHTML= '<svg height="'+(h)+'" width="'+(w)+'"> \
                                     <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
                                 </svg> ';
