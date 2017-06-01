@@ -20,13 +20,6 @@ class MapOperator(Operator):
         # additional tabs
         self.register_tab('Map', 'map.html')
 
-    def flat_iterator(self):
-        lng_idx = self.lng_column_param.value.index
-        lat_idx = self.lat_column_param.value.index
-        for t in self.input_markers:
-            yield t[lng_idx]
-            yield t[lat_idx]
-
     def handle_event(self, event):
         ev_type = event[0]
         if ev_type == 'map_clicked':
@@ -34,12 +27,10 @@ class MapOperator(Operator):
             pass
         elif ev_type == 'map_move':
             info = event[1]
-            self.lat_bounds = info['southlat'], info['northlat']
-            self.lng_bounds = info['westlng'], info['eastlng']
-            t0 = time()
-            lnglat = np.fromiter(self.flat_iterator(), np.float)
-            t1 = time()
-            lnglat = lnglat.reshape(int(lnglat.size/2), 2).T
-            print('  collect: %.4f' % (t1 - t0))
-            info['lnglat'] = lnglat
+            lng_column, lat_column = \
+                self.lng_column_param.value, self.lat_column_param.value
+            info['lnglat'] = self.input_markers.select_columns(
+                lng_column,
+                lat_column
+            )
             return { 'heatmap': heatmap.generate(**info) }
