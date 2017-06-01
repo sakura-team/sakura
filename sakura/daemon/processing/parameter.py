@@ -19,21 +19,6 @@ class Parameter(object):
     def selected(self):
         return self.value != None
 
-    # redirect other accesses to the selected value
-    def __getattr__(self, attr):
-        if not self.selected():
-            raise AttributeError
-        return getattr(self.value, attr)
-
-    # for case where self.value is iterable, we explicitly
-    # forward the __iter__() method.
-    # (by default it is not catched by __getattr__ because
-    # it is a 'special method'.)
-    def __iter__(self):
-        if not self.selected():
-            raise ParameterException(Issue.NotSelected)
-        return self.value.__iter__()
-
     def get_info_serializable_base(self):
         info = dict(
             gui_type = self.gui_type,

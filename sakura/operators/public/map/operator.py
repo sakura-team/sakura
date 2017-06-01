@@ -13,16 +13,16 @@ class MapOperator(Operator):
         # inputs
         self.input_markers = self.register_input('Markers')
         # parameters
-        self.input_longitude_column = self.register_parameter('input longitude',
+        self.lng_column_param = self.register_parameter('input longitude',
                 TagBasedColumnSelection(self.input_markers, 'longitude'))
-        self.input_latitude_column = self.register_parameter('input latitude',
+        self.lat_column_param = self.register_parameter('input latitude',
                 TagBasedColumnSelection(self.input_markers, 'latitude'))
         # additional tabs
         self.register_tab('Map', 'map.html')
 
     def flat_iterator(self):
-        lng_idx = self.input_longitude_column.index
-        lat_idx = self.input_latitude_column.index
+        lng_idx = self.lng_column_param.value.index
+        lat_idx = self.lat_column_param.value.index
         for t in self.input_markers:
             yield t[lng_idx]
             yield t[lat_idx]

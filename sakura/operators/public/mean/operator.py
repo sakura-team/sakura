@@ -18,13 +18,13 @@ class MeanOperator(Operator):
         output.length = 1
         
         # parameters
-        self.input_column = self.register_parameter('Input column',
+        self.input_column_param = self.register_parameter('Input column',
                 NumericColumnSelection(self.input))
                 
     def compute(self):
         res = 0
         num = 0
-        for val in self.input_column:
+        for val in self.input_column_param.value:
             res += val
             num += 1
         mean = float(res)/num
