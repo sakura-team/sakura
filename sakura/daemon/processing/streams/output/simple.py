@@ -2,6 +2,7 @@ import numpy as np
 from itertools import islice
 from operator import itemgetter
 from sakura.daemon.processing.streams.output.base import OutputStreamBase
+from sakura.common.chunk import NumpyChunk
 
 DEFAULT_CHUNK_SIZE = 10000
 
@@ -15,7 +16,7 @@ class SimpleStream(OutputStreamBase):
         dtype = self.get_dtype()
         it = islice(self.compute_cb(), offset, None)
         while True:
-            chunk = np.fromiter(islice(it, chunk_size), dtype).view(np.recarray)
+            chunk = np.fromiter(islice(it, chunk_size), dtype).view(NumpyChunk)
             if chunk.size == 0:
                 break
             yield chunk
