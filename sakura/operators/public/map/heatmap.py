@@ -41,8 +41,7 @@ def generate(lnglat, width, height, westlng, eastlng, southlat, northlat):
     # - given a tuple (lng, lat) increment the corresponding pixel
     heatmap = None
     for chunk in lnglat.chunks():
-        lng = chunk[chunk.dtype.names[0]]
-        lat = chunk[chunk.dtype.names[1]]
+        lng, lat = chunk.columns
         chunk_heatmap = np.histogram2d(lng, lat, bins=(edgelng, edgelat), range=((westlng, eastlng), (southlat, northlat)))[0]
         if heatmap is None:
             heatmap = chunk_heatmap.T
