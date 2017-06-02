@@ -6,6 +6,9 @@ if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
   res=confirm("Leave edit mode?");
   if (res) {	
     document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
+	plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
+    for(i=0;i<plusFieldButtons.length;i++) {
+	  plusFieldButtons[i].style.display='none';}
     sav=confirm("Save modification (or abort)?");
 	  if (sav) {
 		//alert("Save");
@@ -76,42 +79,54 @@ function editModeSubmitControl(event) {
   menuSpans=document.getElementsByClassName('editZoneContextualMenu');
   for(i=0;i<menuSpans.length;i++) {
 	menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a>';}
-  document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';} 
+  document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';
+  plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
+  for(i=0;i<plusFieldButtons.length;i++) {
+	plusFieldButtons[i].style.display='';}} 
 
 function editField(field,event) {
-event.preventDefault();	
-initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
-field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField'><i class='glyphicon glyphicon-ok'></i></a>"
-  +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-ban-circle'></i></a>"
-  +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-remove'></i></a></span>";}
+  event.preventDefault();	
+  initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
+  field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField'><i class='glyphicon glyphicon-ok'></i></a>"
+    +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-ban-circle'></i></a>"
+    +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-remove'></i></a></span>";}
 
 function saveField(field,event) {
-event.preventDefault();	
-fieldValue = field.parentElement.childNodes[0].value;
-field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
+  event.preventDefault();	
+  fieldValue = field.parentElement.childNodes[0].value;
+  field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
 
 function revertField(field,fieldValue,event) {
-event.preventDefault();	
-field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
+  event.preventDefault();	
+  field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
 
 function deleteField(field,event) {
-event.preventDefault();	
- res=confirm("Delete Field?");
+  event.preventDefault();	
+  res=confirm("Delete Field?");
   if (res) {
-	field.parentElement.parentElement.previousSibling.remove();
+    field.parentElement.parentElement.previousSibling.remove();
     field.parentElement.parentElement.remove();}}
 
+function addField(field,event) {
+  res=prompt("Name for your field","Field Name");
+  if ((res!="")&&(res!=null)) {
+    field.parentElement.children[field.parentElement.children.length-2].insertAdjacentHTML("afterend","<dt class='description-terms-align-left'>"+res+"</dt><dd class='editableDescriptionField'>value?<span class='editZoneContextualMenu'><a class='editDescriptionField' href='' onclick='editField(this,event);'><i class='glyphicon glyphicon-edit'></i></a></span></dd>");
+    return;}}
+
 function saveModeSubmitControl(event) {
-    sav=confirm("Save modification (or abort)?");
-	  if (sav) {
-		//alert("Save")
-		;}
-	  else {
-		 alert("Abort (not yet impemented)");}
+  sav=confirm("Save modification (or abort)?");
+  if (sav) {
+    //alert("Save")
+    ;}
+  else {
+    alert("Abort (not yet impemented)");}
   menuSpans=document.getElementsByClassName('editZoneContextualMenu');
   for(i=0;i<menuSpans.length;i++) {
-	menuSpans[i].innerHTML='';}
-  document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';} 
+    menuSpans[i].innerHTML='';}
+  document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
+  plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
+  for(i=0;i<plusFieldButtons.length;i++) {
+	plusFieldButtons[i].style.display='none';}}
 
  function signInSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
@@ -396,6 +411,7 @@ if (result.results.length>0) {
   for(i=0;i<result.results.length;i++) {
     s = s + "<a onclick=\"showDiv(event,'Results/tmpResult');\" href=\"http://sakura.imag.fr/Results/tmpResult\">"+result.results[i].name+"</a>, ";}
   s = s + '</dd>';}
+s = s + '<a class="clPlusFieldButton" onclick="addField(this,event);" style="cursor: pointer; display:none;"><span style="left:33%;" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>';
 s = s + '</dl>'
 	  + '<ul class="list-group col-md-6">'
 	  +   '<li class="list-group-item list-group-item-info"><strong>About <em>'+result.name+'</em> :</strong></li>'
