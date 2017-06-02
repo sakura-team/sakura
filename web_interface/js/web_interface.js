@@ -81,7 +81,9 @@ function editModeSubmitControl(event) {
 function editField(field,event) {
 event.preventDefault();	
 initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
-field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField'><i class='glyphicon glyphicon-ok'></i></a> <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-remove'></i></a></span>";}
+field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField'><i class='glyphicon glyphicon-ok'></i></a>"
+  +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-ban-circle'></i></a>"
+  +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-remove'></i></a></span>";}
 
 function saveField(field,event) {
 event.preventDefault();	
@@ -92,6 +94,12 @@ function revertField(field,fieldValue,event) {
 event.preventDefault();	
 field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
 
+function deleteField(field,event) {
+event.preventDefault();	
+ res=confirm("Delete Field?");
+  if (res) {
+	field.parentElement.parentElement.previousSibling.remove();
+    field.parentElement.parentElement.remove();}}
 
 function saveModeSubmitControl(event) {
     sav=confirm("Save modification (or abort)?");
