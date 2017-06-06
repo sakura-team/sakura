@@ -11,12 +11,12 @@ class MapOperator(Operator):
     TAGS = [ "geo", "map", "selection" ]
     def construct(self):
         # inputs
-        self.input_markers = self.register_input('Markers')
+        self.input_stream = self.register_input('GPS data')
         # parameters
         self.lng_column_param = self.register_parameter('input longitude',
-                TagBasedColumnSelection(self.input_markers, 'longitude'))
+                TagBasedColumnSelection(self.input_stream, 'longitude'))
         self.lat_column_param = self.register_parameter('input latitude',
-                TagBasedColumnSelection(self.input_markers, 'latitude'))
+                TagBasedColumnSelection(self.input_stream, 'latitude'))
         # additional tabs
         self.register_tab('Map', 'map.html')
 
@@ -27,10 +27,17 @@ class MapOperator(Operator):
             pass
         elif ev_type == 'map_move':
             info = event[1]
+            # get columns selected in combo parameters
             lng_column, lat_column = \
                 self.lng_column_param.value, self.lat_column_param.value
-            info['lnglat'] = self.input_markers.select_columns(
-                lng_column,
-                lat_column
-            )
-            return { 'heatmap': heatmap.generate(**info) }
+            # filter input stream as much as possible:
+            # - select useful columns only
+            # - restrict to visible area
+            stream = self.input_stream
+            stream = stream.select_columns(lng_column, lat_column)
+            stream = stream.filter(lng_column >= info['westlng'])
+            stream = stream.filter(lng_column <= info['eastlng'])
+            stream = stream.filter(lat_column >= info['southlat'])
+            stream = stream.filter(lat_column <= info['northlat'])
+            # compute heatmap
+            return { 'heatmap': heatmap.generate(lnglat=stream, **info) }

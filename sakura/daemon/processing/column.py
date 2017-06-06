@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np, operator
 
 class Column(object):
     def __init__(self, col_label, col_type, col_tags,
@@ -20,3 +20,15 @@ class Column(object):
         return self.output_stream.select_columns(self)
     def add_tags(self, *tags):
         self.tags += tags
+    def __lt__(self, other):
+        return (self, operator.__lt__, other)
+    def __le__(self, other):
+        return (self, operator.__le__, other)
+    def __eq__(self, other):
+        return (self, operator.__eq__, other)
+    def __ne__(self, other):
+        return (self, operator.__ne__, other)
+    def __gt__(self, other):
+        return (self, operator.__gt__, other)
+    def __ge__(self, other):
+        return (self, operator.__ge__, other)
