@@ -1,6 +1,5 @@
 import numpy as np
 from itertools import islice
-from operator import itemgetter
 from sakura.daemon.processing.streams.output.base import OutputStreamBase
 from sakura.common.chunk import NumpyChunk
 
@@ -22,9 +21,9 @@ class SimpleStream(OutputStreamBase):
             yield chunk
     def select_columns(self, *columns):
         indexes = list(col.index for col in columns)
-        columns_selector = itemgetter(*indexes)
         def filtered_compute_cb():
-            return map(columns_selector, self.compute_cb())
+            for record in self.compute_cb():
+                yield tuple(record[i] for i in indexes)
         filtered_stream = SimpleStream(self.label, filtered_compute_cb)
         for col in columns:
             filtered_stream.add_column(col.label, col.type, col.tags)
