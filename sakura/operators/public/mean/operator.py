@@ -22,11 +22,12 @@ class MeanOperator(Operator):
                 NumericColumnSelection(self.input))
                 
     def compute(self):
+        column = self.input_column_param.value
         res = 0
         num = 0
-        for val in self.input_column_param.value:
-            res += val
-            num += 1
+        for chunk in column.chunks():
+            res += chunk.sum()
+            num += chunk.size
         mean = float(res)/num
         # our output has only 1 row and 1 column
         yield (mean,)
