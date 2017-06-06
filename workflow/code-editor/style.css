@@ -403,6 +403,11 @@ li[data-type="dir"]>a>i:before {
   border-color: #204d74;
 }
 
+.btnAddFile:disabled {
+	color: black;
+	background-color: #8492a8;
+}
+
 #btnConfirm{
 	margin-left: 10px;
 }

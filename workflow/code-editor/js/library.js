@@ -221,6 +221,7 @@ function createNewElement(path,mode){
             (debug?console.log("\nDirectory successfully created : " + path):null);
         });
         generateTree();
+        highlightTree();
     } else if(mode === "file") {
         var i = sakura.operator.new_file(path, "", function(ret) {
             (debug?console.log("\nFile successfully created : " + path):null);
@@ -249,7 +250,8 @@ function removeElement(path){
     });
     generateTree();
     highlightTree();
-    closeTab(document.getElementById(path).getElementsByTagName('button')[0]);
+
+    if(list.getElementByPath(path) != -1) closeTab(document.getElementById(path).getElementsByTagName('button')[0]);
 
 }
 
@@ -343,28 +345,25 @@ function highlightTree(){
 function closeTab(tab){
     (debug?console.log("__________closeTab______________________"):null);
     (debug?console.log(tab):null);
-    var canCloseTable = true;
-    if(tab.parentElement.classList.contains("modified"))
-      if(!confirm("The file " + tab.parentElement.id + " is being modified. Are you sure you want to close it ?"))
-          canCloseTable = false;
-    if(canCloseTable){
-    	  var element = tab.parentElement.id;
-        var index = list.getIndexByPath(element);
-        (debug?console.log("Element : " + element + " -  index : " + index):null);
-    	  if(tab.id === "close_"+list.getActiveTab().getPath() || tab.id === "tab_"+list.getActiveTab().getPath()){
-    		    if(list.getList().length > 1){
-    			       var i;
-                 (index == 0 ? i=1 : i=0);
-        	       $("#tabList").children()[i].getElementsByTagName("a")[0].click()
-            }
-    	      else changeContent("");
-        }
-        //Delete the tab from the table
-        list.deleteByIndex(index);
-        document.getElementById(element).remove();
 
-        if($(".glyphicon-collapse-up").length>0){list.generateExpandedMenu();};
+	  var element = tab.parentElement.id;
+    var index = list.getIndexByPath(element);
+    (debug?console.log("Element : " + element + " -  index : " + index):null);
+	  if(tab.id === "close_"+list.getActiveTab().getPath() || tab.id === "tab_"+list.getActiveTab().getPath()){
+		    if(list.getList().length > 1){
+			       var i;
+             (index == 0 ? i=1 : i=0);
+    	       $("#tabList").children()[i].getElementsByTagName("a")[0].click()
+        }
+	      else changeContent("");
     }
+    //Delete the tab from the table
+    list.deleteByIndex(index);
+    document.getElementById(element).remove();
+    //remove modified class in tree
+    try {$(".jstree-node [data-path = '"+element+"']")[0].classList.remove("modified");} catch (e) {}
+
+    if($(".glyphicon-collapse-up").length>0){list.generateExpandedMenu();};
 }
 
 /**
@@ -380,7 +379,7 @@ function buildBar(tab){
     list.setActiveTab(tab);
 
     newTab(list.getActiveTab().getPath());
-
+    tabsWidth += document.getElementById(list.getActiveTab().getPath()).offsetWidth;
     //from the active until the end of the list
     for(var i = list.getActiveTabIndex()+1;i<list.getList().length;i++){
         var t = list.getList()[i].getPath();
@@ -402,6 +401,11 @@ function buildBar(tab){
 			      //add a tab at the begining
             newPreTab(temp);
             tabsWidth += document.getElementById(temp).offsetWidth;
+            //break if too large
+            if (tabsWidth > tabBarWidth - 20) {
+                $(".tabListElement")[i].remove();
+                break;
+            }
         }
     }
     if(typeof tab !== 'undefined') {
@@ -452,6 +456,9 @@ function toolboxNewFile(){
     }
     (debug?console.log(tree_clicked):null);
     treeClickedElement = tree_clicked.attributes['data-path'].value;
+    newFileFunction();
+}
+function newFileFunction(){
     $('#dialog')[0].title="Add File";
     $('#dialog').attr("title","Add File");
     $('.ui-dialog-title').html("Add File");
@@ -472,6 +479,9 @@ function toolboxNewDir(){
     }
     (debug?console.log(tree_clicked):null);
     treeClickedElement = tree_clicked.attributes['data-path'].value;
+    newDirFunction();
+}
+function newDirFunction(){
     $('#dialog')[0].title="Add Directory";
     $('#dialog').attr("title","Add Directory");
     $('.ui-dialog-title').html("Add Directory");
@@ -480,6 +490,66 @@ function toolboxNewDir(){
     $('.btnAddFile').html("Add Directory");
     mode = 'dir';
     $( "#dialog" ).dialog();
+}
+
+function deleteFunction(type, path){
+    if(type == "dir")
+        $("#popupMessage").html("Are you sure you want to delete the folder <strong>"+path+"</strong> and its content ?");
+    else {
+        $("#popupMessage").html("Are you sure you want to delete the file <strong>"+path+"</strong> ?");
+    }
+    $("#popup").dialog({
+        modal:  true
+    });
+    $("#btnConfirm").click(function() {
+        $("#popup").dialog("close");
+        removeElement(path);
+        $("#btnConfirm").unbind("click");
+    });
+    $("#btnAbort").click(function() {
+        $("#popup").dialog("close");
+        $("#btnAbort").unbind("click");
+    });
+}
+
+/**
+* POPUP
+*/
+//on submit dialog
+function submitPopUp(){
+  switch (mode) {
+    case "rename":
+      //path part of the element (exemple/exemple/)
+      var elementPath =  treeClickedElement.slice(0,treeClickedElement.indexOf(slashRemover(treeClickedElement)));
+      //name part of the element (exemple.ex)
+      var inputValue = $(".inputAddFile")[0].value;
+      //move and rename is the same function
+      sakura.operator.move_file(treeClickedElement,elementPath + inputValue, function(ret) {
+          //if the renamed tab is open
+          var modifiedTab = $(".tabListElement[id = '"+ treeClickedElement +"']");
+          if(modifiedTab.length > 0){
+            //act : the active tab === the renamed tab
+            var act = list.getActiveTab().getPath() == treeClickedElement;
+            //Change the name of the tab object and the editor tab
+            list.getElementByPath(treeClickedElement).setName(inputValue);
+            modifiedTab.find("a").text(inputValue);
+            //Change the path/ID of the Tab object and the editor tab
+            list.getElementByPath(treeClickedElement).setPath(elementPath + inputValue);
+            modifiedTab.attr("id",elementPath + inputValue);
+            //if act change the editor mode (coloration)
+            if(act) autoChange(elementPath + inputValue);
+          }
+          (debug?console.log("renamed \n________________________________________\n"):null);
+          generateTree();
+          highlightTree();
+      });
+      break;
+    default: //in case of new file and new dir
+      var url = treeClickedElement + '/' + $(".inputAddFile")[0].value ;
+      createNewElement(url,mode);
+      break;
+  }
+  $("#dialog").dialog('close');
 }
 
 /**

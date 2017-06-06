@@ -4,6 +4,7 @@
 REQUIRED_JS = [
         "/js/jquery-2.2.4.min.js",
         "/js/websocket.js",
+        // "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js",
         "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js",
         "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
         "/code-editor/js/library.js",
@@ -15,6 +16,7 @@ REQUIRED_CSS = [
         "/css/main.css",
         "/bootstrap-3.3.7/css/bootstrap.min.css",
         "/bootstrap-3.3.7/css/bootstrap-select.min.css",
+        // "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-modelist.js",
         "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css",
         "https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",
         "/code-editor/style.css"
@@ -42,7 +44,7 @@ function testOperatorUrl(url){
     }else{
         /* if url of type .../code-editor/index.html?[1-9] */
         var url_path2 = window.location.href;
-        var op_match =url_path2.split("/"); 
+        var op_match =url_path2.split("/");
         if(op_match[op_match.length-2]=="code-editor"){
             var op_match2 =op_match[op_match.length-1].split("?");
             var op_id2 = op_match2[1];
@@ -55,7 +57,7 @@ function testOperatorUrl(url){
 function SakuraOperatorInterface() {
     this.op_info = null;
     this._on_ready_cb = null;
-    
+
     this.init = function () {
         // parse the operator instance id from the page url
         var url_path = window.location.pathname;

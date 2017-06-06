@@ -3,18 +3,18 @@
  */
  var list = new tabList();
 
-
 //Ace Editor
-var editor = ace.edit("editor");
-editor.setTheme("ace/theme/xcode");
-editor.getSession().setMode("ace/mode/python");
-editor.$blockScrolling = Infinity;
-editor.setFontSize(13);
-
+var editor;
 // do you want to display logs ?
 var debug = !true;
 
 function init(){
+    editor = ace.edit("editor");
+    editor.setTheme("ace/theme/xcode");
+    editor.getSession().setMode("ace/mode/python");
+    editor.$blockScrolling = Infinity;
+    editor.setFontSize(13);
+
     (debug?console.log("________________________________________\n\tWelcome in the Debug mode\n"):null);
     /**
      * ON CLICK FUNCTIONS
@@ -24,7 +24,28 @@ function init(){
     $(document).on('click', '.jstree-anchor', function() {openFile($(this)[0]);});
 
     /*on the tab cross*/
-    $(document).on('click', '.closeTab', function() {closeTab($(this)[0]);});
+    $(document).on('click', '.closeTab', function() {
+      // closeTab($(this)[0]);
+      var tab = $(this)[0];
+      if(tab.parentElement.classList.contains("modified")) {
+        //ask confirmation
+        canCloseTab = false;
+        $("#popupMessage").html("The file <strong>"+tab.parentElement.id+"</strong> is being modified. Are you sure you want to close it ?");
+        $("#popup").dialog({
+            modal:  true
+        });
+        $("#btnConfirm").click(function() {
+            $("#popup").dialog("close");
+            closeTab(tab);
+            $("#btnConfirm").unbind("click");
+        });
+        $("#btnAbort").click(function() {
+            $("#popup").dialog("close");
+            $("#btnAbort").unbind("click");
+        });
+      }
+      else closeTab(tab);
+    });
 
     /*on a tab*/
     $(document).on('click', '.tabListElement a', function(e) {openTab($(this)[0].parentElement);});
@@ -46,24 +67,9 @@ function init(){
     /*on the trash button of the toolbox*/
     $(document).on('click', '#divTrash', function() {
         (debug?console.log("__________ToolBox Trash"):null);
-        if($(".jstree-clicked")[0].parentElement.attributes['data-type'].value == "dir")
-            $("#popupMessage").html("Are you sure you want to delete the folder <strong>"+$(".jstree-clicked")[0].parentElement.attributes['data-path'].value+"</strong> and its content ?");
-        else {
-            $("#popupMessage").html("Are you sure you want to delete the file <strong>"+$(".jstree-clicked")[0].parentElement.attributes['data-path'].value+"</strong> ?");
-        }
-        $("#popup").dialog({
-            modal:  true
-        });
-        $("#btnConfirm").click(function() {
-            $("#popup").dialog("close");
-            removeElement($(".jstree-clicked")[0].parentElement.attributes['data-path'].value);
-            $("#btnConfirm").unbind("click");
-        });
-        $("#btnAbort").click(function() {
-            $("#popup").dialog("close");
-            $("#btnAbort").unbind("click");
-        });
+        deleteFunction($(".jstree-clicked")[0].parentElement.attributes['data-type'].value,$(".jstree-clicked")[0].parentElement.attributes['data-path'].value);
     });
+    /*on pulice size change*/
     $(document).on('change', '#selectFontSize', function() {
             var size = $("#selectFontSize").val();
             editor.setOptions({
@@ -110,37 +116,13 @@ function init(){
         var menuId = $(this)[0].id;
         switch(menuId){
             case 'NewFile':
-                $('#dialog')[0].title = "Add File";
-                mode = 'file';
-                console.log($('#inputAddFile').val(""));
-                $('#inputAddFile').val("");
-                $( "#dialog" ).dialog();
+                newFileFunction();
                 break;
             case 'NewDir' :
-                $('#dialog')[0].title = "Add Directory";
-                mode = 'dir';
-                $('#inputAddFile').val("");
-                $( "#dialog" ).dialog();
+                newDirFunction();
                 break;
             case "delete" :
-                if(treeClickedElementType == "dir")
-                    $("#popupMessage").html("Are you sure you want to delete the folder <strong>"+treeClickedElement+"</strong> and its content ?");
-                else {
-                    $("#popupMessage").html("Are you sure you want to delete the file <strong>"+treeClickedElement+"</strong> ?");
-                }
-                $("#popup").dialog({
-                    modal:  true
-                });
-                $("#btnConfirm").click(function() {
-                    $("#popup").dialog("close");
-                    removeElement(treeClickedElement);
-                    $("#btnConfirm").unbind("click");
-                });
-                $("#btnAbort").click(function() {
-                    console.log("close");
-                    $("#popup").dialog("close");
-                    $("#btnAbort").unbind("click");
-                });
+                deleteFunction(treeClickedElementType,treeClickedElement);
                 break;
             case "rename" :
                 $('#dialog')[0].title="Rename";
@@ -155,18 +137,29 @@ function init(){
     });
 
     //POPUP
+    /*Forbiden characters in names*/
+    $('#inputAddFile').on("change paste keyup",function(e){
+      var regex = new RegExp("^.*[/'\"]");
+      var matchRegex = $(this)[0].value.search(regex) > -1;
+      $(".btnAddFile")[0].disabled = matchRegex;
+      if(matchRegex){
+        $(".btnAddFile")[0].title="there's a forbiden character in the string";
+      }
+      else {
+        $(".btnAddFile")[0].title="click to confirm";
+      }
+    });
     /* If the button "add file" on the pop up is clicked */
     $(document).on('click', '.btnAddFile', function() {
         submitPopUp();
     });
 
-    $(document).mousedown(function(event) {
+    /*hide right click menu*/
+    $(document).mouseup(function(event) {
         switch (event.which) {
             case 1:
                 //Left Mouse button pressed
-                setTimeout(function() {
-                    $("#RightClickMenu").css("display","none");
-                },250);
+                $("#RightClickMenu").css("display","none");
                 break;
             case 2:
                 //Middle Mouse button pressed
@@ -186,42 +179,6 @@ function init(){
         submitPopUp();
       }
     });
-    //on submit dialog
-    function submitPopUp(){
-      switch (mode) {
-        case "rename":
-          //path part of the element (exemple/exemple/)
-          var elementPath =  treeClickedElement.slice(0,treeClickedElement.indexOf(slashRemover(treeClickedElement)));
-          //name part of the element (exemple.ex)
-          var inputValue = $(".inputAddFile")[0].value;
-          //move and rename is the same function
-          sakura.operator.move_file(treeClickedElement,elementPath + inputValue, function(ret) {
-              //if the renamed tab is open
-              var modifiedTab = $(".tabListElement[id = '"+ treeClickedElement +"']");
-              if(modifiedTab.length > 0){
-                //act : the active tab === the renamed tab
-                var act = list.getActiveTab().getPath() == treeClickedElement;
-                //Change the name of the tab object and the editor tab
-                list.getElementByPath(treeClickedElement).setName(inputValue);
-                modifiedTab.find("a").text(inputValue);
-                //Change the path/ID of the Tab object and the editor tab
-                list.getElementByPath(treeClickedElement).setPath(elementPath + inputValue);
-                modifiedTab.attr("id",elementPath + inputValue);
-                //if act change the editor mode (coloration)
-                if(act) autoChange(elementPath + inputValue);
-              }
-              (debug?console.log("renamed \n________________________________________\n"):null);
-              generateTree();
-              highlightTree();
-          });
-          break;
-        default: //in case of new file and new dir
-          var url = treeClickedElement + '/' + $(".inputAddFile")[0].value ;
-          createNewElement(url,mode);
-          break;
-      }
-      $("#dialog").dialog('close');
-}
 
     /**
     * On modification in the editor
@@ -259,16 +216,6 @@ function init(){
         $( "ul, li" ).disableSelection();
 
     });
-    /**
-    * Drag N Drop in tree
-    */
-    // $( function() {
-    //     $( ".jstree-icon" ).draggable({
-    //       stop: function() {
-    //             alert("");
-    //       }
-    //     });
-    // });
 
 }
 

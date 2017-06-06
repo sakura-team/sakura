@@ -29,7 +29,7 @@ function create_op_modal(main_div, id, cl_id, tabs) {
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
-        var h = ($(window).height()-$('#'+elt+"_header").height()-80);        
+        var h = ($(window).height()-$('#'+elt+"_header").height()-80);
         $('#'+elt+"_body").css("height", h+"px");
         $('#'+elt+"_body").children().eq(1).css("height", (h-60)+"px");
     }
@@ -68,16 +68,16 @@ function fill_params(id) {
             while (d.firstChild) {
                 d.removeChild(d.firstChild);
             }
-            
+
             var index = -1;
-            
+
             if (result['parameters'].length == 0) {
                 d.innerHTML = '<br><p align="center"> No Params</p>';
             }
-            
+
             result['parameters'].forEach( function (item) {
                 index++;
-                
+
                 if (item['issue']) {
                     d.innerHTML = '<br><p align="center">'+item['issue']+'</p>';
                 }
@@ -107,7 +107,7 @@ function fill_params(id) {
 
 
 function params_onChange(op_id, param_index, select_id) {
-    
+
     var index = document.getElementById(select_id).selectedIndex;
     ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
         var param_value = index;
@@ -122,28 +122,28 @@ function params_onChange(op_id, param_index, select_id) {
 
 
 function fill_in_out(in_out, id) {
-    var inst_id     = parseInt(id.split("_")[2]);    
+    var inst_id     = parseInt(id.split("_")[2]);
     var d           = document.getElementById('modal_'+id+'_tab_'+in_out+'s');
-    
+
     //cleaning
     while (d.firstChild) {
         d.removeChild(d.firstChild);
     }
-    
+
     //infos
     ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
         var nb_in_out = result_info[in_out+'s'].length;
-        
+
         if (nb_in_out == 0) {
             d.innerHTML = '<br><p align="center"> No '+in_out+'s</p>';
             return;
         }
-        
+
         var div_tab = document.createElement('div');
         div_tab.className = 'modal-body';
         div_tab.id = id+'_'+in_out+'s';
         div_tab.style["paddingBottom"] = '0px';
-        
+
         var ul          = document.createElement('ul');
         var tab_content = document.createElement('div');
         ul.className            = "nav nav-tabs";
@@ -154,16 +154,16 @@ function fill_in_out(in_out, id) {
             s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
         }
         ul.innerHTML = s;
-        
+
         s = '<div id="'+id+'_'+in_out+'_'+0+'" class="tab-pane fade in active"></div>';
         for (var i =1; i < nb_in_out; i++)
             s += '<div id="'+id+'_'+in_out+'_'+i+'" class="tab-pane fade in active"></div>';
         tab_content.innerHTML = s;
-        
+
         div_tab.appendChild(ul);
         div_tab.appendChild(tab_content);
         d.appendChild(div_tab);
-        
+
         fill_one_in_out(in_out, id, 0, 0, current_nb_rows);
     });
 }
@@ -172,26 +172,26 @@ function fill_in_out(in_out, id) {
 function fill_one_in_out(in_out, id, id_in_out, min, max) {
     var d = document.getElementById(id+'_'+in_out+'_'+id_in_out);
     var inst_id = parseInt(id.split("_")[2]);
-    
+
     //cleaning
     while (d.firstChild) {
         d.removeChild(d.firstChild);
     }
-    
+
     //infos
-    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {        
+    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
         ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
                 s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed; margin-bottom: 1px;">\n';
                 s += '<thead><tr>';
                 s += '<th style="padding: 1px;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#</th>';
-                
+
                 result_info[in_out+'s'][id_in_out]['columns'].forEach( function(item) {
                     s+= '<th style="padding: 1px;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+item[0]+'</th>';
                 });
                 s += '</tr></thead>';
-                
+
                 s+= '<tbody>';
                 var index = 0;
                 result_in_out.forEach( function(row) {
@@ -199,20 +199,20 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                     s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+parseInt(index+min)+'</td>';
                     row.forEach( function(col) {
                         if (typeof col === 'string') {
-                            s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+escapeHtml(col)+'</td>'; 
+                            s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+escapeHtml(col)+'</td>';
                         }
                         else {
-                            s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+col+'</td>'; 
+                            s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+col+'</td>';
                         }
                     });
                     s += '</tr>';
                     index += 1;
                 });
-                
+
                 s += '</tbody></table>';
-                
+
                 if (result_info[in_out+'s'][id_in_out]['length'] != null) {
-                    
+
                     var nb_pages = parseInt(result_info[in_out+'s'][id_in_out]['length']/(max-min));
                     if (nb_pages*(max-min) < result_info[in_out+'s'][id_in_out]['length'])
                         nb_pages++;
@@ -223,7 +223,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                         s+= '   </ul>';
                     }
                     else if (nb_pages > 10) {
-                        
+
                         var current_page = Math.floor(min/(max-min));
                         s+= '   <ul class="pagination pagination-sm">\n';
                         if (current_page > 0) {
@@ -245,7 +245,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                             else {
                                 s+= '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
                             }
-                    
+
                         if (up_limit < nb_pages) {
                             s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+((current_page+1)*(max-min))+','+((current_page+2)*(max-min))+');\'><span class="glyphicon glyphicon-forward" style="color: grey; cursor: pointer;"></a></li>\n';
                             s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+((nb_pages-1)*(max-min))+','+((nb_pages)*(max-min))+');\'><span class="glyphicon glyphicon-fast-forward" style="color: grey; cursor: pointer;"></a></li>\n';
@@ -267,18 +267,18 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                         s += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+(min + (max-min))+','+(max + (max-min))+');\'><span class="glyphicon glyphicon-forward" style="color: grey; cursor: pointer;"></a></li>\n';
                     s+= '   </ul>';
                 }
-                
+
                 d.innerHTML = s;
             }
         });
     });
 }
 
-function loadIFrame(url){
-    /* by default the iframe is initialized with current url 
+function loadIFrame(url,id){
+    /* by default the iframe is initialized with current url
         with the condition it will not reload is already loaded
     */
-    if(document.getElementById("codeEditorIframe").src==window.location.href){
-        document.getElementById("codeEditorIframe").src=url;
+    if(document.getElementById("codeEditorIframe_"+id).src==window.location.href){
+        document.getElementById("codeEditorIframe_"+id).src=url;
     }
 }
