@@ -21,3 +21,12 @@ class NumpyStream(OutputStreamBase):
     def select_columns(self, *columns):
         filtered_array = self.array[list(col.label for col in columns)]
         return NumpyStream(self.label, filtered_array)
+    def filter(self, cond):
+        col, comp_op, other = cond
+        # we generate a condition of the form:
+        # self.array[<col_label>] <comp_op> <other>
+        # for example:
+        # self.array['age'] > 20
+        array_cond = comp_op(self.array[col.label], other)
+        # then we apply this condition on the array
+        return NumpyStream(self.label, self.array[array_cond])
