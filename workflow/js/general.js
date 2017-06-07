@@ -97,3 +97,13 @@ function escapeHtml(text) {
 function load_from_template(elem, template_file, params, cb) {
     $(elem).load("tpl/" + template_file, { 'params': JSON.stringify(params) }, cb);
 }
+
+
+function s_sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds){
+            break;
+        }
+    }
+}

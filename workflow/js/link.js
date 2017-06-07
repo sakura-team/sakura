@@ -18,16 +18,14 @@ function create_link(js_id, src_id, dst_id, js_connection) {
         }
         else 
         {
-            //console.log("possible links", possible_links);
             global_links.push({ id: js_id,
                         src: src_id,
                         dst: dst_id,
-                        params: null});
+                        params: []});
                         
             ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
                 ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
                         console.log(possible_links);
-                        //console.log(target_inst_info);
                         create_link_modal(  possible_links,
                                             global_links[global_links.length - 1], 
                                             instance_from_id(src_id).cl, 
@@ -46,12 +44,12 @@ function create_link(js_id, src_id, dst_id, js_connection) {
 
 function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui) {
     
-    var l = global_links.push({ id: js_id,
-                                src: src_id,
-                                dst: dst_id,
-                                params: null});
-    global_links[l-1].gui = gui;
-    
+    var l = global_links.push({ 'id': js_id,
+                                'src': src_id,
+                                'dst': dst_id,
+                                'params': [],
+                                'modal': false});
+                                
     ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
         ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
             ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
@@ -64,21 +62,16 @@ function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui)
                                     false,
                                     out_id,
                                     in_id,
-                                    hub_id);
+                                    hub_id,
+                                    gui);
+                global_links[l - 1].modal = true;
             });
         });
     });
 }
 
-function create_params(link, out_id, in_id, link_id_from_hub) {
-    
-    link.params = { out_id: out_id, 
-                    in_id: in_id, 
-                    hub_id: link_id_from_hub};
-}
 
-
-function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_inst_info, open_now, out_id, in_id, hub_id) {
+function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_inst_info, open_now, out_id, in_id, hub_id, gui) {
     
     //Here we automatically connect tables into the link
     var auto_link = false;
@@ -158,8 +151,13 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
                         if (open_now && !auto_link)
                             $(modal).modal();
                         else if (!open_now) {
-                            create_params(link, out_id, in_id, hub_id);
-                            create_link_line(link, out_id, in_id, true);
+                            link.params.push({  'out_id': out_id, 
+                                                'in_id': in_id, 
+                                                'hub_id': hub_id,
+                                                'top': gui.top,
+                                                'left': gui.left,
+                                                'line':  gui.line});
+                            copy_link_line(link, out_id, in_id, gui);
                             $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
                             $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
                         }
@@ -176,7 +174,7 @@ function test_link(link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
-    if (link.params == null) 
+    if (link.params.length == 0) 
         remove_link(link)
 }
 
@@ -186,9 +184,10 @@ function remove_link(link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
+    
     //We first send the removing commands to the hub
-    if (link.params)
-        delete_link_param(link, true);
+    if (link.params.length > 0)
+        delete_link_params(link, true);
     else {
         //Then to jsPlumb
         var jsPConn = null;
@@ -225,82 +224,125 @@ function remove_connection(hub_id) {
 }
 
 
-function delete_link_param(link, and_main_link) {
+function delete_link_params(link, and_main_link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
     
-    ws_request('delete_link', [link.params.hub_id], {}, function (result) {
-        if (result) {
-            console.log("Issue with 'delete_link' function from hub:", result);
-        }
-        else {
-            var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
-            var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link.params.out_id);
-            var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link.params.in_id);
-            var line    = document.getElementById("line_modal_link_"+link.id+"_"+link.params.out_id+"_"+link.params.in_id);
-            
-            div_in.innerHTML = svg_round_square("");
-            div_out.innerHTML = svg_round_square("");
-            mdiv.removeChild(line);
-            
-            link.params = null;
-            link.gui = null;
-            
-            if (and_main_link)
+    var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
+    for (var i=0; i< link.params.length; i++) {
+        var para = link.params[i];
+        ws_request('delete_link', [para.hub_id], {}, function (result) {
+            if (result) {
+                console.log("Issue with 'delete_link' function from hub:", result);
+            }
+        });
+        var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+para.out_id);
+        var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
+        var line    = document.getElementById("line_modal_link_"+link.id+"_"+para.out_id+"_"+para.in_id);
+        
+        div_in.innerHTML = svg_round_square("");
+        div_out.innerHTML = svg_round_square("");
+        mdiv.removeChild(line);
+        
+        if (i >= link.params.length -1) {
+            link.params = [];
+            if (and_main_link) {
                 remove_link(link);
+            }
         }
-    });
+    }
 }
 
 
-function create_link_line(link, _out, _in, copy) {
+function delete_link_param(link, side, id) {
     
+    if (typeof link == 'string') {
+        link = link_from_id(link);
+    }
+    
+    var link_p = null;
+    var index_p = 0;
+    var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
+    for (var i=0; i<link.params.length; i++)
+    {
+        if (side == 'in' && link.params[i].in_id == parseInt(id)) {
+            link_p = link.params[i];
+            index_p = i;
+        }
+        else if (side == 'out' && link.params[i].out_id == parseInt(id)) {
+            link_p = link.params[i];
+            index_p = i;
+        }
+    }
+    
+    ws_request('delete_link', [link_p.hub_id], {}, function (result) {
+        if (result) {
+            console.log("Issue with 'delete_link' function from hub:", result);
+        }
+    });
+    var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
+    var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
+    var line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
+    
+    div_in.innerHTML = svg_round_square("");
+    div_out.innerHTML = svg_round_square("");
+    link.params.splice(index_p, 1);
+    mdiv.removeChild(line);
+}
+
+
+function create_link_line(link, _out, _in) {
+    
+    
+    //Making a fake connection
+    var mdiv = document.getElementById("modal_link_"+link.id+"_body");
     var svg_div = document.createElement('div');
     svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
     svg_div.style.position = 'absolute';
     
-    //Making a fake connection
-    var mdiv = document.getElementById("modal_link_"+link.id+"_body");
+    var rect0 = document.getElementById("modal_link_"+link.id+"_dialog").getBoundingClientRect();
+    var rect1 = document.getElementById("svg_modal_link_"+link.id+'_out_'+_out).getBoundingClientRect();
+    var rect2 = document.getElementById("svg_modal_link_"+link.id+'_in_'+_in).getBoundingClientRect();
     
-    if (!copy) {
-        var rect0 = document.getElementById("modal_link_"+link.id+"_dialog").getBoundingClientRect();
-        var rect1 = document.getElementById("svg_modal_link_"+link.id+'_out_'+_out).getBoundingClientRect();
-        var rect2 = document.getElementById("svg_modal_link_"+link.id+'_in_'+_in).getBoundingClientRect();
-        
-        var w = Math.abs(rect2.x-rect1.x-24+2);
-        var h = Math.abs(rect2.y-rect1.y+2);
-        console.log(h, rect2.y, rect1.y);
-        
-        svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
-        
-        if (parseInt(rect2.y) - parseInt(rect1.y) >= 0) {
-            console.log("pass  1");
-            svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
-            svg_div.innerHTML= '<svg height="'+(h+20)+'" width="'+(w)+'"> \
-                                    <line x1="1" y1="1" x2="'+(w-1)+'" y2="'+(h-1)+'" style="stroke:rgb(33,256,33);stroke-width:2" /> \
-                                </svg> ';
-        }
-        else {
-            console.log("pass  2");
-            svg_div.style.top = (rect2.y-rect0.y+12-1)+'px';
-            console.log(svg_div.style.top);
-            svg_div.innerHTML= '<svg height="'+(h)+'" width="'+(w)+'"> \
-                                    <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
-                                </svg> ';
-        }
-        
-        link.gui = {top:        svg_div.style.top,
-                    left:       svg_div.style.left,
-                    innerHTML:  svg_div.innerHTML }
+    var w = Math.abs(rect2.x-rect1.x-24+2);
+    var h = Math.abs(rect2.y-rect1.y+2);
+    
+    svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
+    var svg = '';
+    if (parseInt(rect2.y) - parseInt(rect1.y) >= 0) {
+        svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
+        svg = '<svg height="'+(h+20)+'" width="'+(w)+'"> \
+                                <line x1="1" y1="1" x2="'+(w-1)+'" y2="'+(h-1)+'" style="stroke:rgb(33,256,33);stroke-width:2" /> \
+                            </svg> ';
     }
     else {
-        svg_div.style.left  = link.gui.left;
-        svg_div.style.top   = link.gui.top;
-        svg_div.innerHTML   = link.gui.innerHTML;
+        svg_div.style.top = (rect2.y-rect0.y+12-1)+'px';
+        svg = '<svg height="'+(h)+'" width="'+(w)+'"> \
+                                <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
+                            </svg> ';
     }
     
+    svg_div.innerHTML = svg;
     mdiv.appendChild(svg_div);
+    return svg;
+}
+
+
+function copy_link_line(link, _out, _in, gui) {
+    //Making a fake connection
+    var mdiv = document.getElementById("modal_link_"+link.id+"_body");
+    var svg_div = document.createElement('div');
+    svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
+    svg_div.style.position = 'absolute';
+    
+    svg_div.style.left = gui.left;
+    svg_div.style.top = gui.top;
+    svg = gui.line;
+    
+    svg_div.innerHTML = svg;
+    mdiv.appendChild(svg_div);
+    return svg;
 }
 
 
@@ -321,10 +363,18 @@ function link_from_id(id) {
 function link_exist(src_id, dst_id) {
     var found = false;
     for (var i=0; i<global_links.length; i++) {
-        if (global_links[i][2] == src_id && global_links[i][3] == dst_id)
+        if (global_links[i].src == src_id && global_links[i].dst == dst_id)
             found = true;
     }
     return found;
+}
+
+function link_from_instances(src_id, dst_id) {
+    for (var i=0; i<global_links.length; i++) {
+        if (global_links[i].src == src_id && global_links[i].dst == dst_id)
+            return global_links[i];
+    }
+    return null;
 }
 
 
