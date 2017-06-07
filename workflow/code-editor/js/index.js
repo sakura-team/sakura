@@ -128,8 +128,8 @@ function init(){
                 $('#dialog')[0].title="Rename";
                 $('#dialog').attr("title","Rename");
                 $('.ui-dialog-title').html("rename");
-                $('#inputAddFile').val(slashRemover(treeClickedElement));
-                $('.btnAddFile').html("Rename");
+                $('#dialogInput').val(slashRemover(treeClickedElement));
+                $('.dialogButton').html("Rename");
                 mode = 'rename';
                 $( "#dialog" ).dialog({
                     modal:  true
@@ -140,26 +140,26 @@ function init(){
 
     //POPUP
     /*forbidden characters in names*/
-    $('#inputAddFile').on("change paste keyup",function(e){
+    $('#dialogInput').on("change paste keyup",function(e){
       var regex = new RegExp("^.*[/'\"]");
       var matchRegex = $(this)[0].value.search(regex) > -1;
-      $(".btnAddFile")[0].disabled = matchRegex;
+      $(".dialogButton")[0].disabled = matchRegex;
       if(matchRegex){
-        $(".btnAddFile")[0].title="there's a forbidden character in the string";
-        $(".inputAddFile")[0].classList.add("forbiddenChar");
+        $(".dialogButton")[0].title="there's a forbidden character in the string";
+        $(".dialogInput")[0].classList.add("forbiddenChar");
         $("#forbiddenCharMessage").css("display","initial");
 
       }
       else {
-        $(".btnAddFile")[0].title="click to confirm";
-        if($(".inputAddFile")[0].classList.contains("forbiddenChar")){
-            $(".inputAddFile")[0].classList.remove("forbiddenChar");
+        $(".dialogButton")[0].title="click to confirm";
+        if($(".dialogInput")[0].classList.contains("forbiddenChar")){
+            $(".dialogInput")[0].classList.remove("forbiddenChar");
             $("#forbiddenCharMessage").css("display","none");
         }
       }
     });
     /* If the button "add file" on the pop up is clicked */
-    $(document).on('click', '.btnAddFile', function() {
+    $(document).on('click', '.dialogButton', function() {
         submitPopUp();
     });
 
@@ -183,7 +183,7 @@ function init(){
     });
 
     //Press enter while editing the dialog
-    $("#inputAddFile").keypress(function(e){
+    $("#dialogInput").keypress(function(e){
       if(e.which == 13){
         submitPopUp();
       }

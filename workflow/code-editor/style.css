@@ -146,7 +146,7 @@ span.glyphicon.glyphicon-plus {
 
 /*toolBox Border*/
 
-#bar{
+#treeDiv{
 	border-right : var(--innerBorders);
 	min-width: 220px;
 }
@@ -224,7 +224,7 @@ button.close{
 
 /*ARBORESCENCE - Jstree*/
 
-#bar{
+#treeDiv{
 	height: var(--editorHeight);
 	width: 20%;
 
@@ -362,7 +362,7 @@ li[data-type="dir"]>a>i:before {
 	display: none;
 }
 
-.btnAddFile, #popup button{
+.dialogButton, #popup button{
 	margin-top:10px;
 
 	display: inline-block;
@@ -390,20 +390,20 @@ li[data-type="dir"]>a>i:before {
 	border-color: #2e6da4;
 }
 
-.btnAddFile:focus, #popup button:focus {
+.dialogButton:focus, #popup button:focus {
     color: #fff;
     background-color: #286090;
     border-color: #122b40;
     text-decoration: none;
 }
 
-.btnAddFile:hover, #popup button:hover {
+.dialogButton:hover, #popup button:hover {
   color: #fff;
   background-color: #286090;
   border-color: #204d74;
 }
 
-.btnAddFile:disabled {
+.dialogButton:disabled {
 	color: black;
 	background-color: #8492a8;
 }

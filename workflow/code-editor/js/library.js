@@ -15,7 +15,7 @@ var currentTreeState;
 function generateTree(){
     //empty the tree section
     try{
-        $('#bar').html("");
+        $('#treeDiv').html("");
         $('#tree').jstree().destroy();
     } catch(e){}
     //call the tree builder
@@ -24,7 +24,7 @@ function generateTree(){
 /**
 * parameter : - entry : a Json file containing all the elements and infos
 *
-* build the tree and append it in the bar div
+* build the tree and append it in the treeDiv div
 * call the function jstree
 */
 function print_file_tree(entries)
@@ -54,7 +54,7 @@ function print_file_tree(entries)
         str += treeHtmlString[i];
     }
     (debug?console.log(str):null);
-    $("#bar").append(str);
+    $("#treeDiv").append(str);
 
     //Creates the jstree using #tree element, sorts alphabetically with folders on top
     setJsTree();
@@ -471,9 +471,9 @@ function newFileFunction(){
     $('#dialog')[0].title="Add File";
     $('#dialog').attr("title","Add File");
     $('.ui-dialog-title').html("Add File");
-    $('#inputAddFile').val("");
-    $('.inputAddFile').attr("placeholder","Enter file name");
-    $('.btnAddFile').html("Add File");
+    $('#dialogInput').val("");
+    $('.dialogInput').attr("placeholder","Enter file name");
+    $('.dialogButton').html("Add File");
     mode = 'file';
     $( "#dialog" ).dialog({
         modal:  true
@@ -496,9 +496,9 @@ function newDirFunction(){
     $('#dialog')[0].title="Add Directory";
     $('#dialog').attr("title","Add Directory");
     $('.ui-dialog-title').html("Add Directory");
-    $('#inputAddFile').val("");
-    $('.inputAddFile').attr("placeholder","Enter directory name");
-    $('.btnAddFile').html("Add Directory");
+    $('#dialogInput').val("");
+    $('.dialogInput').attr("placeholder","Enter directory name");
+    $('.dialogButton').html("Add Directory");
     mode = 'dir';
     $( "#dialog" ).dialog({
         modal:  true
@@ -535,7 +535,7 @@ function submitPopUp(){
       //path part of the element (exemple/exemple/)
       var elementPath =  treeClickedElement.slice(0,treeClickedElement.indexOf(slashRemover(treeClickedElement)));
       //name part of the element (exemple.ex)
-      var inputValue = $(".inputAddFile")[0].value;
+      var inputValue = $(".dialogInput")[0].value;
       //move and rename is the same function
       sakura.operator.move_file(treeClickedElement,elementPath + inputValue, function(ret) {
           //if the renamed tab is open
@@ -558,7 +558,7 @@ function submitPopUp(){
       });
       break;
     default: //in case of new file and new dir
-      var url = treeClickedElement + '/' + $(".inputAddFile")[0].value ;
+      var url = treeClickedElement + '/' + $(".dialogInput")[0].value ;
       createNewElement(url,mode);
       break;
   }
