@@ -244,15 +244,24 @@ function setFocusOnNewElement(path){
  */
 function removeElement(path){
     (debug?console.log("\n________________________________________\n\tremoveElement\n" + path):null);
+    var toClose = new Array();
+    //For each tab
+    $(".tabListElement").each(function(i){
+        //if a opened tab is an element contained in the dir that is being deleted
+        if($(".tabListElement")[i].id.indexOf(path+"/") == 0){
+            toClose.push($(".tabListElement button")[i].id);
+        }
+    });
+    //close it
+    for(var i=0;i<toClose.length;i++) closeTab(document.getElementById(toClose[i]));
     sakura.operator.delete_file(path, function(ret) {
         (debug?console.log("\nRemoved : " + path + "\n________________________________________\n"):null);
         // console.log(document.getElementById(path).getElementsByTagName('button')[0]);
     });
     generateTree();
     highlightTree();
-
+    //if the deleted element is opened close it
     if(list.getElementByPath(path) != -1) closeTab(document.getElementById(path).getElementsByTagName('button')[0]);
-
 }
 
 /**
@@ -361,8 +370,8 @@ function closeTab(tab){
     list.deleteByIndex(index);
     document.getElementById(element).remove();
     //remove modified class in tree
-    try {$(".jstree-node [data-path = '"+element+"']")[0].classList.remove("modified");} catch (e) {}
-
+    if($(".jstree-node [data-path = '"+element+"']").length > 0)
+        $(".jstree-node [data-path = '"+element+"']")[0].classList.remove("modified");
     if($(".glyphicon-collapse-up").length>0){list.generateExpandedMenu();};
 }
 
@@ -438,7 +447,7 @@ function newTab(tabName) {
  * @param tabName
  */
 function newPreTab(tabName) {
-    var NewTab = "<li id=\"" + tabName + "\" role=\"presentation\" class=\"inactive tabListElement\"><a>" + slashRemover(tabName) + "</a><button id=\"tab_" + tabName + "\" class=\"close closeTab\" type=\"button\" >&#215;</button></li>";
+    var NewTab = "<li id=\"" + tabName + "\" role=\"presentation\" class=\"inactive tabListElement\"><a>" + slashRemover(tabName) + "</a><button id=\"close_" + tabName + "\" class=\"close closeTab\" type=\"button\" >&#215;</button></li>";
     $("#tabList").prepend(NewTab);
 }
 
@@ -466,7 +475,9 @@ function newFileFunction(){
     $('.inputAddFile').attr("placeholder","Enter file name");
     $('.btnAddFile').html("Add File");
     mode = 'file';
-    $( "#dialog" ).dialog();
+    $( "#dialog" ).dialog({
+        modal:  true
+    });
 }
 
 function toolboxNewDir(){
@@ -489,7 +500,9 @@ function newDirFunction(){
     $('.inputAddFile').attr("placeholder","Enter directory name");
     $('.btnAddFile').html("Add Directory");
     mode = 'dir';
-    $( "#dialog" ).dialog();
+    $( "#dialog" ).dialog({
+        modal:  true
+    });
 }
 
 function deleteFunction(type, path){

@@ -131,22 +131,31 @@ function init(){
                 $('#inputAddFile').val(slashRemover(treeClickedElement));
                 $('.btnAddFile').html("Rename");
                 mode = 'rename';
-                $( "#dialog" ).dialog();
+                $( "#dialog" ).dialog({
+                    modal:  true
+                });
                 break;
         }
     });
 
     //POPUP
-    /*Forbiden characters in names*/
+    /*forbidden characters in names*/
     $('#inputAddFile').on("change paste keyup",function(e){
       var regex = new RegExp("^.*[/'\"]");
       var matchRegex = $(this)[0].value.search(regex) > -1;
       $(".btnAddFile")[0].disabled = matchRegex;
       if(matchRegex){
-        $(".btnAddFile")[0].title="there's a forbiden character in the string";
+        $(".btnAddFile")[0].title="there's a forbidden character in the string";
+        $(".inputAddFile")[0].classList.add("forbiddenChar");
+        $("#forbiddenCharMessage").css("display","initial");
+
       }
       else {
         $(".btnAddFile")[0].title="click to confirm";
+        if($(".inputAddFile")[0].classList.contains("forbiddenChar")){
+            $(".inputAddFile")[0].classList.remove("forbiddenChar");
+            $("#forbiddenCharMessage").css("display","none");
+        }
       }
     });
     /* If the button "add file" on the pop up is clicked */
@@ -220,9 +229,14 @@ function init(){
 }
 
 sakura.operator.onready(function(){
-    init();
-    generateTree();
-    openOperator();
+    try{
+        init();
+        generateTree();
+        openOperator();
+    }
+    catch(e){
+        loadJquery();
+    }
 });
 
 // open the operator.py
@@ -231,4 +245,25 @@ function openOperator(){
       openFile($(".jstree-leaf[data-path='operator.py'] a")[0]);
     }
     else{setTimeout(openOperator,100);}
+}
+// if jquery load failed
+function loadJquery(){
+    try{
+      jQuery;
+    }catch(e){
+          //load jquery
+          var script = document.createElement("SCRIPT");
+          script.src = "https://code.jquery.com/jquery-3.1.1.min.js";
+          script.type = 'text/javascript';
+          script.onload = function() {
+              var $ = window.jQuery;
+              //load ui
+              $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.js",function (data, textStatus, jqxhr){
+                init();
+                generateTree();
+                openOperator();
+              });
+          };
+          document.getElementsByTagName("head")[0].appendChild(script);
+    }
 }

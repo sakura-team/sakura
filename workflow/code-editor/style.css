@@ -470,8 +470,20 @@ li[data-type="dir"]>a>i:before {
 	transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 }
 
+
 .ui-widget.ui-widget-content input:focus{
    border-color: #66AFE9;
    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(102, 175, 233, 0.6);
    outline: 0 none;
+}
+.ui-widget.ui-widget-content input.forbiddenChar:focus{
+   border-color: #f20000;
+   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(242, 0, 0, 0.6);
+   outline: 0 none;
+}
+
+#forbiddenCharMessage{
+	color : #f20000;
+	font-size: 0.8em;
+	display: none;
 }
