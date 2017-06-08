@@ -166,13 +166,11 @@ function save_project() {
     //Finally the links
     global_links.forEach( function(link) {
         link.params.forEach( function(para) {
-            console.log(para);
             var js = JSON.stringify({'op_src':  link.src,
                                     'op_dst':   link.dst,
                                     'top':      para.top,
                                     'left':     para.left,
                                     'line':     para.line});
-            console.log("JS", para.line);
             ws_request('set_link_gui_data', [   parseInt(para.hub_id), js], {}, function(result) {});
         });
     });

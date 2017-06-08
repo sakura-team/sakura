@@ -25,7 +25,6 @@ function create_link(js_id, src_id, dst_id, js_connection) {
                         
             ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
                 ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
-                        console.log(possible_links);
                         create_link_modal(  possible_links,
                                             global_links[global_links.length - 1], 
                                             instance_from_id(src_id).cl, 
@@ -170,6 +169,60 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
 }
 
 
+function refresh_link_modal(link) {
+    ws_request('get_possible_links', [link.src, link.dst], {}, function (p_links) {
+        ws_request('get_operator_instance_info', [link.src], {}, function (source_inst_info) {
+            ws_request('get_operator_instance_info', [link.dst], {}, function (target_inst_info) {
+                //sources
+                for(var i=0; i<source_inst_info.outputs.length;i++) {
+                    var found = false;
+                    p_links.forEach( function(item) {
+                    if (item[0] == i)
+                        found = true;
+                    });
+                    var div_name = document.getElementById('modal_link_'+link.id+'_td_out_'+i);
+                    var div_square = $("#svg_modal_link_"+link.id+'_out_'+i);
+                    if (found) {
+                        div_name.style.color = 'black';
+                        if (div_square.html().indexOf('line') == -1)
+                            div_square.html(svg_round_square(""));
+                        div_square.attr('draggable', 'True');
+                    }
+                    else {
+                        div_name.style.color = 'lightgrey';
+                        div_square.html("");
+                        div_square.attr('draggable', 'False');
+                    }
+                }
+                
+                //destinations
+                for(var i=0; i<target_inst_info.inputs.length;i++) {
+                    var found = false;
+                    p_links.forEach( function(item) {
+                    if (item[1] == i)
+                        found = true;
+                    });
+                    
+                    var div_name = document.getElementById('modal_link_'+link.id+'_td_in_'+i);
+                    var div_square = $("#svg_modal_link_"+link.id+'_in_'+i);
+                    
+                    if (found) {
+                        div_name.style.color = 'black';
+                        if (div_square.html().indexOf('line') == -1)
+                            div_square.html(svg_round_square(""));
+                        div_square.attr('draggable', 'True');
+                    }
+                    else {
+                        div_name.style.color = 'lightgrey';
+                        div_square.html("");
+                        div_square.attr('draggable', 'False');
+                    }
+                }
+            });
+        });
+    });
+}
+
 function test_link(link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
@@ -213,6 +266,11 @@ function remove_link(link) {
         });
         global_links.splice(index, 1);
     }
+    
+    global_links.forEach( function (l) {
+        refresh_link_modal(l);
+    });
+    
 }
 
 
@@ -275,20 +333,25 @@ function delete_link_param(link, side, id) {
             index_p = i;
         }
     }
-    
-    ws_request('delete_link', [link_p.hub_id], {}, function (result) {
-        if (result) {
-            console.log("Issue with 'delete_link' function from hub:", result);
-        }
-    });
-    var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
-    var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
-    var line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
-    
-    div_in.innerHTML = svg_round_square("");
-    div_out.innerHTML = svg_round_square("");
-    link.params.splice(index_p, 1);
-    mdiv.removeChild(line);
+    if (link_p) {
+        ws_request('delete_link', [link_p.hub_id], {}, function (result) {
+            if (result) {
+                console.log("Issue with 'delete_link' function from hub:", result);
+            }
+        });
+        var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
+        var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
+        var line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
+        
+        div_in.innerHTML = svg_round_square("");
+        div_out.innerHTML = svg_round_square("");
+        link.params.splice(index_p, 1);
+        mdiv.removeChild(line);
+        refresh_link_modal(link);
+    }
+    else {
+        console.log('problem with link_p in delete_link_params (link.js)');
+    }
 }
 
 
@@ -346,7 +409,8 @@ function copy_link_line(link, _out, _in, gui) {
 }
 
 
-function open_link_params(conn_id) {    
+function open_link_params(conn_id) {
+    refresh_link_modal(link_from_id(conn_id));
     $('#modal_link_'+conn_id).modal();
     setTimeout(function() {
     }, 200);

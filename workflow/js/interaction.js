@@ -57,16 +57,16 @@ main_div.addEventListener("drop", function( e ) {
         
         if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
             ws_request('create_link', [link.src, out_id, link.dst, in_id], {}, function (link_id_from_hub) {
+                
                 //local creation
                 var line = create_link_line(link, out_id, in_id);
                 var svg_line = document.getElementById("line_modal_link_"+link.id+"_"+out_id+"_"+in_id);
-                var p = {   'out_id':   out_id, 
-                        'in_id':    in_id, 
-                        'hub_id':   parseInt(link_id_from_hub),
-                        'top':      svg_line.style.top,
-                        'left':     svg_line.style.left,
-                        'line':     line};
-                link.params.push(p);
+                link.params.push({  'out_id':   out_id, 
+                                    'in_id':    in_id, 
+                                    'hub_id':   parseInt(link_id_from_hub),
+                                    'top':      svg_line.style.top,
+                                    'left':     svg_line.style.left,
+                                    'line':     line});
                 
                 //changing svgs
                 var div_out = document.getElementById(param_out.id)
@@ -77,6 +77,7 @@ main_div.addEventListener("drop", function( e ) {
                 currently_dragged = null;
                 
                 save_project();
+                refresh_link_modal(link);
             });
         }
         else {

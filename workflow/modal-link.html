@@ -15,10 +15,10 @@
                             <div class="panel-body" name="modal_link_{{id}}_body" id="modal_link_{{id}}_body">
                                 <table align="right">
                                     <tr><td>
-                                        <table>
+                                        <table id="modal_link_{{id}}_table_out">
                                             % for index, tab in enumerate(tabs_src_outputs):
                                             <tr>
-                                                <td valign="middle"> <font color="{{tab.color}}">{{tab.label}}</font>
+                                                <td valign="middle" id="modal_link_{{id}}_td_out_{{index}}" style="color:{{tab.color}};">{{tab.label}}
                                                 </td>
                                                 <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}', 'out', '{{index}}');" name="modal_link_{{id}}_out_{{index}}" id="modal_link_{{id}}_out_{{index}}" align="right" valign="middle" width="40px">
                                                     <div style="width: 24px; height: 24px;" draggable="{{tab.drag}}" id="svg_modal_link_{{id}}_out_{{index}}"></div>
@@ -57,7 +57,7 @@
                                                     <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}', 'in', '{{index}}');" name="modal_link_{{id}}_in_{{index}}" id="modal_link_{{id}}_in_{{index}}" align="left" valign="middle" width="40px">
                                                         <div style="width: 24px; height: 24px;" draggable="{{tab.drag}}" id="svg_modal_link_{{id}}_in_{{index}}"></div>
                                                     </td>
-                                                    <td valign="middle"><font color="{{tab.color}}">{{tab.label}}</font>
+                                                    <td valign="middle" id="modal_link_{{id}}_td_in_{{index}}" style="color:{{tab.color}};">{{tab.label}}
                                                     </td>
                                                 </tr>
                                                 % end
