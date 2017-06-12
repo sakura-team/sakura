@@ -1,5 +1,11 @@
 // LIG March 2017
 
+function not_yet(s = '') {
+  if (s == '') {
+    alert('Not implemented yet');}
+  else {
+    alert('Not implemented yet: '+ s);}}
+
 function showDiv(event,dir) {
 //save mode ?
 if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
