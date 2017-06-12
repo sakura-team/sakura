@@ -61,11 +61,11 @@ else {
   if (navBarElt) {
     navBarElt.className = "active";}
 //set breadcrumb
-  var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"http://sakura.imag.fr\" title=\"Sakura\">Sakura</a></li>";
+  var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"/\" title=\"Sakura\">Sakura</a></li>";
   var tmpDir = "";
   for(i=0;i<dirs.length-1;i++) {
 	tmpDir = tmpDir + dirs[i] ;
-	bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\"http://sakura.imag.fr/"+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
+	bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\"/"+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
 	tmpDir = tmpDir + "/";}	  
   bct = bct + "<li class='active'>"+dirs[i]+"</li>";
   var d = document.getElementById("breadcrumbtrail");
@@ -138,7 +138,7 @@ function saveModeSubmitControl(event) {
   if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
     showDiv(event,'HelloYou');
 	$("#signInModal").modal("hide");
-	document.getElementById("idSignInWidget").innerHTML= '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
+	document.getElementById("idSignInWidget").innerHTML= '<a onclick="signOutSubmitControl(event);" href="/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
     return;}
   else {
 	alert('not yet, try email=password=guest');
@@ -243,7 +243,7 @@ s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hi
 	  + '<tbody id="idTBodyList'+eltAncetre+'">';						
 for(i=0;i<result.length;i++) {
   //if (document.getElementById("idInputSearch".eltAncetre).value!="") {}
-  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
+  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\">"+result[i].name+"</a></td>\n";
   if (document.getElementById("cbColSelectTags").checked) {
     s = s + "<td>"+result[i].tags+"</td>";}
   if (document.getElementById("cbColSelectId").checked) {
@@ -258,27 +258,27 @@ for(i=0;i<result.length;i++) {
     s = s + "<td>"+result[i].author+"</td>";} 	
   s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
   if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
-	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-	      + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-		  + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";}
+	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+	      + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+		  + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";}
   else if (result[i].isViewable=="true") {
-	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-		  + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";}
+	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+		  + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";}
   else {
-	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";}  
+	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";}  
   s = s + "</td></tr>";}
 s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
       + '</tbody>';
 document.getElementById(idDiv).innerHTML = s;
 //maj de la pagination
 document.pageElt;
-s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-0)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-0)+"'>"+(document.pageElt-0)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+1)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+1)+"'>"+(document.pageElt+1)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+2)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+2)+"'>"+(document.pageElt+2)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+3)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+3)+"'>"+(document.pageElt+3)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+4)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+4)+"'>"+(document.pageElt+4)+"</a></li>"
-     + "<li><a aria-label='Next' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+5)+"'><span aria-hidden='true'>»</span></a></li>";
+s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
+     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-0)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt-0)+"'>"+(document.pageElt-0)+"</a></li>"
+     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+1)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt+1)+"'>"+(document.pageElt+1)+"</a></li>"
+     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+2)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt+2)+"'>"+(document.pageElt+2)+"</a></li>"
+     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+3)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt+3)+"'>"+(document.pageElt+3)+"</a></li>"
+     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+4)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt+4)+"'>"+(document.pageElt+4)+"</a></li>"
+     + "<li><a aria-label='Next' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+5)+"\");' href='/"+eltAncetre+"?page="+(document.pageElt+5)+"'><span aria-hidden='true'>»</span></a></li>";
 document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;}
 
 function listRequestStub(idDiv,n,elt,bd) {
@@ -305,52 +305,52 @@ s="";
 i=0;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
 elt='Protocols/tmpProtocol';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Simpleicons_Business_notebook.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
-      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-	  + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+	  + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
       + "</td></tr>";
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
 elt='DataSets/tmpDataSet';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Linecons_database.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
-      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
 	  + "</td></tr>";
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
 elt='Operators/tmpOperator';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Octicons-gear.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
-      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
       + "</td></tr>";
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
 elt='Analyses/tmpAnalysis';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Share_icon_BLACK-01.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
-      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
       + "</td></tr>";
 i=i+1;
 result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
 elt='Results/tmpResult';
-s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
+s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\">"+result[i].name
       + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Article_icon_cropped.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
       + "<td>"+result[i].shortDesc+"</td>"
-      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+      + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
+      + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
       + "</td></tr>";
 s = s + '<a href="javascript:listRequestStubForRestart(\''+idDiv+'\')" class="executeOnShow"> </a></div>';
 document.getElementById(idDiv).innerHTML = s;
@@ -405,17 +405,17 @@ s = s + '<dt></dt><dd></dd>';
 if (result.dataSets.length>0) {
   s = s + '<dt class="description-terms-align-left">DataSets</dt><dd>';
   for(i=0;i<result.dataSets.length;i++) {
-    s = s + "<a onclick=\"showDiv(event,'DataSets/tmpDataSet');\" href=\"http://sakura.imag.fr/DataSets/tmpDataSet\">"+result.dataSets[i].name+"</a>, ";}
+    s = s + "<a onclick=\"showDiv(event,'DataSets/tmpDataSet');\" href=\"/DataSets/tmpDataSet\">"+result.dataSets[i].name+"</a>, ";}
   s = s + '</dd>';}
 if (result.process.length>0) {
   s = s + '<dt class="description-terms-align-left">Analyses processes</dt><dd>';
   for(i=0;i<result.process.length;i++) {
-    s = s + "<a onclick=\"showDiv(event,'Analyses/tmpAnalysis');\" href=\"http://sakura.imag.fr/Analyses/tmpAnalysis\">"+result.process[i].name+"</a>, ";}
+    s = s + "<a onclick=\"showDiv(event,'Analyses/tmpAnalysis');\" href=\"/Analyses/tmpAnalysis\">"+result.process[i].name+"</a>, ";}
   s = s + '</dd>';}
 if (result.results.length>0) {
    s = s + '<dt class="description-terms-align-left">Results</dt><dd>';
   for(i=0;i<result.results.length;i++) {
-    s = s + "<a onclick=\"showDiv(event,'Results/tmpResult');\" href=\"http://sakura.imag.fr/Results/tmpResult\">"+result.results[i].name+"</a>, ";}
+    s = s + "<a onclick=\"showDiv(event,'Results/tmpResult');\" href=\"/Results/tmpResult\">"+result.results[i].name+"</a>, ";}
   s = s + '</dd>';}
 s = s + '<a class="clPlusFieldButton" onclick="addField(this,event);" style="cursor: pointer; display:none;"><span style="left:33%;" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>';
 s = s + '</dl>'
