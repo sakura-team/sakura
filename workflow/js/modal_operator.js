@@ -275,10 +275,10 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
 }
 
 function loadIFrame(url,id){
-    /* by default the iframe is initialized with current url
-        with the condition it will not reload is already loaded
-    */
-    if(document.getElementById("codeEditorIframe_"+id).src==window.location.href){
-        document.getElementById("codeEditorIframe_"+id).src=url;
-    }
+  /* by default the iframe is initialized with current url
+      with the condition it will not reload is already loaded
+  */
+  if(document.getElementById("codeEditorIframe_"+id).src.indexOf(url) == -1){
+      document.getElementById("codeEditorIframe_"+id).src=url;
+  }
 }

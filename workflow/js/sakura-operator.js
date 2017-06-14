@@ -4,22 +4,14 @@
 REQUIRED_JS = [
         "/js/jquery-2.2.4.min.js",
         "/js/websocket.js",
-        // "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js",
         "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
-        "/code-editor/js/library.js",
-        "/code-editor/js/index.js",
-        "/code-editor/js/tabClasses.js",
 ];
 
 REQUIRED_CSS = [
         "/css/main.css",
         "/bootstrap-3.3.7/css/bootstrap.min.css",
         "/bootstrap-3.3.7/css/bootstrap-select.min.css",
-        // "https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-modelist.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css",
         "https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",
-        "/code-editor/style.css"
 ];
 
 function InternalStreamInterface(op_id, stream_index) {
