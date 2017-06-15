@@ -1,4 +1,5 @@
 import numpy as np
+from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.column import Column
 
@@ -34,8 +35,8 @@ class OutputStreamBase(Registry):
             # update info about last iterator
             self.last_iter_info = row_start + chunk.size, row_end - row_start, it
             return chunk
-        # if we are here, stream has ended, return empty range
-        return np.empty((0,), self.get_dtype())
+        # if we are here, stream has ended, return empty chunk
+        return NumpyChunk(0, self.get_dtype())
     def get_column_dtype(self, col):
         if col.type == str:
             # string with unknown length
