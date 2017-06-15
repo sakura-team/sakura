@@ -18,15 +18,16 @@ class NumpyStream(OutputStreamBase):
         while offset < self.array.size:
             yield self.array[offset:offset+chunk_size].view(NumpyChunk)
             offset += chunk_size
-    def select_columns(self, *columns):
-        filtered_array = self.array[list(col.label for col in columns)]
+    def __select_columns__(self, *col_indexes):
+        col_labels = list(self.columns[col_index].label for col_index in col_indexes)
+        filtered_array = self.array[col_labels]
         return NumpyStream(self.label, filtered_array)
-    def filter(self, cond):
-        col, comp_op, other = cond
+    def __filter__(self, col_index, comp_op, other):
+        col_label = self.columns[col_index].label
         # we generate a condition of the form:
         # self.array[<col_label>] <comp_op> <other>
         # for example:
         # self.array['age'] > 20
-        array_cond = comp_op(self.array[col.label], other)
+        array_cond = comp_op(self.array[col_label], other)
         # then we apply this condition on the array
         return NumpyStream(self.label, self.array[array_cond])
