@@ -48,6 +48,13 @@ def generate(lnglat, width, height, westlng, eastlng, southlat, northlat):
         else:
             heatmap += chunk_heatmap.T
     t2 = time()
+    # if no points, return empty heatmap
+    if heatmap.max() == 0:
+        return dict(
+                data = dict(lat = [], lng = [], val = []),
+                scales = dict(lat = 1, lng = 1),
+                offsets = dict(lat = 0, lng = 0)
+        )
     # apply threshold
     nzhm = (heatmap / heatmap.max()) > 0.05
     # get sparse matrix representation: (lat, lng, intensity) tuples.
