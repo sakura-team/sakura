@@ -43,7 +43,7 @@ class GuiToHubAPI(object):
         return self.context.op_instances[op_id].internal_streams[intern_id].get_range(row_start, row_end)
     
     def fire_operator_event(self, op_id, event):
-        return self.context.op_instances[op_id].handle_event(event)
+        return self.context.op_instances[op_id].sync_handle_event(event)
     
     ########################################
     # Operator files
