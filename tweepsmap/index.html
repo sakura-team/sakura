@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang ="en">
+<head>
+        <title>TweetsMap</title>
+
+        <!-- CSS file -->
+        <link rel="stylesheet" type="text/css" href="css/index.css" >
+        <link rel="stylesheet" type="text/css" href="css/research.css" >
+        <link rel="stylesheet" type="text/css" href="css/consultation.css" >
+        
+        <link rel="stylesheet" type="text/css" href="libs/font-awesome-4.7.0/css/font-awesome.css" >
+        <link rel="stylesheet" type="text/css" href="libs/font-awesome-4.7.0/css/font-awesome.min.css" >        
+        <!-- Miscellaneous things-->
+        <meta charset="UTF-8">
+        
+        <link rel="stylesheet" href="libs/leaflet/leaflet.css" >
+        <script src="libs/leaflet/leaflet.js"></script>
+        <script src="js/websocket.js"></script>
+        <script src='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script>
+        <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' />
+</head>
+    
+
+    <body>
+            <div id = "map"></div>
+            <div w3-include-html="includes/research.html"></div>
+            <div w3-include-html="includes/consultation.html"></div>
+
+            <!---js part-->            
+
+            <!-- Script Files-->
+            <script src="libs/w3.js"></script>
+            <script>
+                w3.includeHTML();
+            </script>
+            
+            <script src="js/index.js"></script>
+            <script src="js/sakura-operator.js"></script>
+            <script src="js/map.js"></script>        
+            <script src="js/research.js"></script>
+            <script src="js/consultation.js"></script>
+    </body>
+
+
+</html>
