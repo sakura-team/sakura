@@ -23,7 +23,10 @@ def web_greenlet(context, webapp_path):
 
     @app.route('/opfiles/<op_id:int>/<filepath:path>')
     def serve_operator_file(op_id, filepath):
-        return context.serve_operator_file(op_id, filepath)
+        print('serving operator %d file %s' % (op_id, filepath), end="")
+        resp = context.serve_operator_file(op_id, filepath)
+        print(' ->', resp.status_line)
+        return resp
 
     @app.route('/tpl/<filepath:path>', method=['POST'])
     def serve_template(filepath):

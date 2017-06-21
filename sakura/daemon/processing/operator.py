@@ -75,10 +75,7 @@ class Operator(Registry):
                 continue
             param.unset_value()
     def serve_file(self, request):
-        print('serving ' + request.filepath, end="")
-        resp = request.serve(str(self.root_dir))
-        print(' ->', resp)
-        return resp
+        return request.serve(str(self.root_dir))
     def get_file_content(self, file_path):
         with (self.root_dir / file_path).open() as f:
             return f.read()
