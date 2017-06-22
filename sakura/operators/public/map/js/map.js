@@ -54,6 +54,11 @@ function request_heatmap() {
     var width = Math.round(px_topright.x - px_bottomleft.x);
     var height = Math.round(px_bottomleft.y - px_topright.y);
 
+    if (width == 0 || height == 0) {
+        // the map is propably not displayed yet
+        return;
+    }
+
     // geo_bounds latitude values seem wrong when the users zooms
     // out at maximum: they are outside the bounds given by the
     // web mercator projection, i.e. [-85.051129, 85.051129].
@@ -97,7 +102,9 @@ function expand_heatmap_values(info) {
 }
 
 function init_map() {
-    map = L.map('map').setView([48.86, 2.34], 9);
+    map = L.map('map');
+    map.on('moveend', request_heatmap);
+    //map.on('load', request_heatmap); // update on first load
     markers_layer = null;
     heatmap_layer = null;
 
@@ -123,8 +130,6 @@ function init_map() {
 
     infobox.addTo(map);
 
-    map.on('moveend', request_heatmap);
-    map.on('load', request_heatmap); // update when ready
+    map.setView([48.86, 2.34], 9); // will cause the load event
 }
 
-sakura.operator.onready(init_map);
