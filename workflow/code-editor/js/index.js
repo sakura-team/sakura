@@ -228,7 +228,7 @@ function init(){
 
 }
 
-sakura.operator.onready(onReady());
+sakura.operator.onready(onReady);
 function onReady(){
   if(jQuery && jQuery.ui){
     init();
