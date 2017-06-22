@@ -48,7 +48,7 @@ function testOperatorUrl(url){
 
 function SakuraOperatorInterface() {
     this.op_info = null;
-    this._on_ready_cb = null;
+    this._early_callbacks = [];
 
     this.init = function () {
         // parse the operator instance id from the page url
@@ -61,78 +61,85 @@ function SakuraOperatorInterface() {
             var op = this;  // 'this' will be overriden in the body of the function below
             ws_request('get_operator_instance_info', [op_id], {}, function (op_info) {
                 op.op_info = op_info;
-                // if an on-ready callback has been defined, call it.
-                if (op._on_ready_cb != null) {
-                    op._on_ready_cb();
-                }
+                // if early callbacks were defined, call them.
+                op.run_early_callbacks();
             });
         }
     };
 
-    this.get_internal_stream = function (stream_label) {
-        var result = null;
-        for (id in this.op_info.internal_streams) {
-            if (this.op_info.internal_streams[id].label == stream_label)
-                return new InternalStreamInterface(this.op_info.op_id, parseInt(id));
-        };
+    this.run_early_callbacks = function() {
+        var i;
+        for (i = 0; i < this._early_callbacks.length; i++) {
+            var cb = this._early_callbacks[i];
+            cb(this.op_info);
+        }
+        this._early_callbacks = [];
     };
-    this.fire_event = function (event, cb) {
-        ws_request( 'fire_operator_event',
-                    [this.op_info.op_id, event],
-                    {},
-                    cb);
-    };
-    this.get_file_content = function (file_path, cb) {
-        ws_request( 'get_operator_file_content',
-                    [this.op_info.op_id, file_path],
-                    {},
-                    cb);
-    };
-    this.get_file_tree = function (cb) {
-        ws_request( 'get_operator_file_tree',
-                    [this.op_info.op_id],
-                    {},
-                    cb);
-    };
-    this.save_file_content = function (file_path, file_content, cb) {
-        ws_request( 'save_operator_file_content',
-                    [this.op_info.op_id, file_path, file_content],
-                    {},
-                    cb);
-    };
-    this.new_file = function (file_path, file_content, cb) {
-        ws_request( 'new_operator_file',
-                    [this.op_info.op_id, file_path, file_content],
-                    {},
-                    cb);
-    };
-    this.new_directory = function (dir_path, cb) {
-        ws_request( 'new_operator_directory',
-                    [this.op_info.op_id, dir_path],
-                    {},
-                    cb);
-    };
-    this.move_file = function (file_src, file_dst, cb) {
-        ws_request( 'move_operator_file',
-                    [this.op_info.op_id, file_src, file_dst],
-                    {},
-                    cb);
-    };
-    this.delete_file = function (file_path, cb) {
-        ws_request( 'delete_operator_file',
-                    [this.op_info.op_id, file_path],
-                    {},
-                    cb);
-    };
-    this.onready = function (cb) {
-        if (this.op_info != null) {
-            // ok cb can be executed right now
-            cb();
+
+    this.do_when_init_done = function (cb) {
+        if (this.op_info == null) {
+            this._early_callbacks.push(cb);
         }
         else {
-            // let's have it executed when init is done
-            this._on_ready_cb = cb;
+            cb(this.op_info);
         }
+    };
+
+    this.ws_request_with_op_id = function (path, args, kwargs, cb) {
+        this.do_when_init_done(function(op_info) {
+            args.unshift(op_info.op_id);    // insert op_id as 1st arg
+            ws_request(path, args, kwargs, cb);
+        });
+    };
+
+    this.get_internal_stream = function (stream_label) {
+        this.do_when_init_done(function(op_info) {
+            var result = null;
+            for (id in op_info.internal_streams) {
+                if (op_info.internal_streams[id].label == stream_label)
+                    return new InternalStreamInterface(op_info.op_id, parseInt(id));
+            }
+        });
+    };
+
+    this.onready = function(cb) {
+        // cb expects no arg, we ignore the op_info here
+        this.do_when_init_done(function(op_info) {
+            cb();
+        });
+    };
+
+    this.fire_event = function (event, cb) {
+        this.ws_request_with_op_id(
+            'fire_operator_event', [event], {}, cb);
+    };
+    this.get_file_content = function (file_path, cb) {
+        this.ws_request_with_op_id(
+            'get_operator_file_content', [file_path], {}, cb);
+    };
+    this.get_file_tree = function (cb) {
+        this.ws_request_with_op_id(
+            'get_operator_file_tree', [], {}, cb);
+    };
+    this.save_file_content = function (file_path, file_content, cb) {
+        this.ws_request_with_op_id(
+            'save_operator_file_content', [file_path, file_content], {}, cb);
+    };
+    this.new_file = function (file_path, file_content, cb) {
+        this.ws_request_with_op_id(
+            'new_operator_file', [file_path, file_content], {}, cb);
+    };
+    this.new_directory = function (dir_path, cb) {
+        this.ws_request_with_op_id(
+            'new_operator_directory', [dir_path], {}, cb);
+    };
+    this.move_file = function (file_src, file_dst, cb) {
+        this.ws_request_with_op_id(
+            'move_operator_file', [file_src, file_dst], {}, cb);
+    };
+    this.delete_file = function (file_path, cb) {
+        this.ws_request_with_op_id(
+            'delete_operator_file', [file_path], {}, cb);
     };
 }
 
