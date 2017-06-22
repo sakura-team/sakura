@@ -25,57 +25,74 @@ def y_to_lat(h, lat_min, lat_max, y):
 
 # heatmap data generation
 # -----------------------
-def generate(lnglat, width, height, westlng, eastlng, southlat, northlat):
-    t0 = time()
-    # compute pixel bounds of the map
-    x = np.append(np.arange(0, width, 5), width)
-    y = np.append(np.arange(0, height, 5), height)
-    # project pixel bounds coordinates (x, y -> lng, lat)
-    edgelng = x_to_lng(width, westlng, eastlng, x)
-    centerlng = x_to_lng(width, westlng, eastlng, (x[1:] + x[:-1])/2)
-    edgelat = y_to_lat(height, southlat, northlat, y)
-    centerlat = y_to_lat(height, southlat, northlat, (y[1:] + y[:-1])/2)
-    t1 = time()
-    # make histogram:
-    # - create a pixel grid
-    # - given a tuple (lng, lat) increment the corresponding pixel
-    heatmap = None
-    for chunk in lnglat.chunks():
-        lng, lat = chunk.columns
-        chunk_heatmap = np.histogram2d(lng, lat, bins=(edgelng, edgelat), range=((westlng, eastlng), (southlat, northlat)))[0]
-        if heatmap is None:
-            heatmap = chunk_heatmap.T
-        else:
-            heatmap += chunk_heatmap.T
-    t2 = time()
-    # if no points, return empty heatmap
-    if heatmap.max() == 0:
-        return dict(
-                data = dict(lat = [], lng = [], val = []),
-                scales = dict(lat = 1, lng = 1),
-                offsets = dict(lat = 0, lng = 0)
-        )
-    # apply threshold
-    nzhm = (heatmap / heatmap.max()) > 0.05
+class HeatMap:
+    def __init__(self, lnglat, width, height, westlng, eastlng, southlat, northlat):
+        # compute pixel bounds of the map
+        x = np.append(np.arange(0, width, 5), width)
+        y = np.append(np.arange(0, height, 5), height)
+        # project pixel bounds coordinates (x, y -> lng, lat)
+        edgelng = x_to_lng(width, westlng, eastlng, x)
+        centerlng = x_to_lng(width, westlng, eastlng, (x[1:] + x[:-1])/2)
+        edgelat = y_to_lat(height, southlat, northlat, y)
+        centerlat = y_to_lat(height, southlat, northlat, (y[1:] + y[:-1])/2)
+        # prepare computation parameters
+        self.bins = edgelng, edgelat
+        self.range = (westlng, eastlng), (southlat, northlat)
+        self.iterator = lnglat.chunks()
+        self.heatmap = None
+        # prepare compression parameters
+        scalelat = (edgelat[1:] - edgelat[:-1]).min() / 2
+        self.approx_centerlat = numpy.rint((centerlat - centerlat[0]) / scalelat)
+        scalelng = edgelng[1] - edgelng[0]     # longitude is linear
+        self.approx_centerlng = numpy.rint((centerlng - centerlng[0]) / scalelng)
+        self.scales = dict(lat=scalelat, lng=scalelng)
+        self.offsets = dict(lat=centerlat[0], lng=centerlng[0])
+        # stream status parameters
+        self.done = False
+    def compute(self, time_credit):
+        # make histogram:
+        # - create a pixel grid
+        # - given a tuple (lng, lat) increment the corresponding pixel
+        deadline = time() + time_credit
+        deadline_reached = False
+        for chunk in self.iterator:
+            lng, lat = chunk.columns
+            chunk_heatmap = np.histogram2d(lng, lat, bins=self.bins, range=self.range)[0]
+            if self.heatmap is None:
+                self.heatmap = chunk_heatmap.T
+            else:
+                self.heatmap += chunk_heatmap.T
+            if time() > deadline:
+                deadline_reached = True
+                break
+        if not deadline_reached:
+            # we left the loop because of the end of iteration
+            self.done = True
     # get sparse matrix representation: (lat, lng, intensity) tuples.
     # in order to lower network usage, we will transfer this data in a
     # compressed form: lng & lat values will be transfered as integers
     # together with a scaling factor and an offset to be applied.
-    scalelat = (edgelat[1:] - edgelat[:-1]).min() / 2
-    approx_centerlat = numpy.rint((centerlat - centerlat[0]) / scalelat)
-    scalelng = edgelng[1] - edgelng[0]     # longitude is linear
-    approx_centerlng = numpy.rint((centerlng - centerlng[0]) / scalelng)
-    result = dict(
-        data = dict(
-                lat = approx_centerlat[nzhm.nonzero()[0]].astype(int).tolist(),
-                lng = approx_centerlng[nzhm.nonzero()[1]].astype(int).tolist(),
-                val = heatmap[nzhm].astype(int).tolist()
-        ),
-        scales = dict(lat=scalelat, lng=scalelng),
-        offsets = dict(lat=centerlat[0], lng=centerlng[0])
-    )
-    t3 = time()
-    print('  project: %.4f' % (t1 - t0))
-    print('histogram: %.4f' % (t2 - t1))
-    print(' compress: %.4f' % (t3 - t2))
-    return result
+    def compressed_form(self):
+        # count number of points
+        count = int(self.heatmap.sum())
+        if count == 0:
+            # if no points, return empty data
+            data = dict(lat = [], lng = [], val = [])
+        else:
+            # apply threshold and
+            # compute approximated sparse matrix data
+            nonzero_xy = ((self.heatmap / self.heatmap.max()) > 0.05).nonzero()
+            nonzero_x = nonzero_xy[1]
+            nonzero_y = nonzero_xy[0]
+            data = dict(
+                    lat = self.approx_centerlat[nonzero_y].astype(int).tolist(),
+                    lng = self.approx_centerlng[nonzero_x].astype(int).tolist(),
+                    val = self.heatmap[nonzero_xy].astype(int).tolist()
+            )
+        return dict(
+            data = data,
+            scales = self.scales,
+            offsets = self.offsets,
+            count = count,
+            done = self.done
+        )

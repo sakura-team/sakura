@@ -1,35 +1,41 @@
-function update_markers() {
-    var old_markers_layer = markers_layer;
-    markers_layer = new L.FeatureGroup();
-    var markers_stream = sakura.operator.get_internal_stream('Markers');
-    markers_stream.get_range(0, 1000, function (markers) {
-        markers.forEach(function(lnglat) {
-            add_marker([lnglat[1], lnglat[0]]);
-        });
-    });
-    map.addLayer(markers_layer);
-    if (old_markers_layer != null) {
-        map.removeLayer(old_markers_layer)
+
+HEATMAP_RADIUS = 15;
+HEATMAP_REFRESH_DELAY = 0.3;
+
+function update_heatmap_callback(result) {
+    var icon;
+    if (result.heatmap.done)
+    {   // input data is complete for this map
+        icon = 'check';
     }
+    else {
+        icon = 'hourglass';
+        // request server for more complete data,
+        // while we refresh the screen
+        sakura.operator.fire_event(
+                ["map_continue", HEATMAP_REFRESH_DELAY],
+                update_heatmap_callback);
+    }
+    // expand compressed data
+    heatmap_values = expand_heatmap_values(result.heatmap);
+    // refresh the heatmap layer
+    if (heatmap_layer != null)
+    {
+        map.removeLayer(heatmap_layer)
+    }
+    heatmap_layer = L.heatLayer(heatmap_values, {
+                radius:     HEATMAP_RADIUS
+    });
+    heatmap_layer.addTo(map);
+    // update infobox
+    infobox.update({ "icon": icon, 'count': result.heatmap.count});
+    var t1 = new Date().getTime();
+    console.log('map update: ' + ((t1 - t0)/1000.0) + " seconds");
 }
 
-function add_marker(latlng) {
-    L.marker(latlng).addTo(markers_layer);
-}
+function request_heatmap() {
 
-function map_clicked(e) {
-    /*
-    // send event, then update map
-    sakura.operator.fire_event(["map_clicked", e.latlng],
-        function(result) {
-            add_marker(e.latlng);
-        });
-    */
-}
-
-function update_heatmap() {
-
-    var t0 = new Date().getTime();
+    t0 = new Date().getTime();
 
     // get lat / lng map bounds
     var geo_bounds = map.getBounds();
@@ -67,20 +73,9 @@ function update_heatmap() {
     console.log(info);
 
     // send event, then update map
-    sakura.operator.fire_event(["map_move", info],
-        function(result) {
-            heatmap_values = expand_heatmap_values(result.heatmap);
-            if (heatmap_layer != null)
-            {
-                map.removeLayer(heatmap_layer)
-            }
-            heatmap_layer = L.heatLayer(heatmap_values, {
-                        radius:     15
-            });
-            heatmap_layer.addTo(map);
-            var t1 = new Date().getTime();
-            console.log('map update: ' + ((t1 - t0)/1000.0) + " seconds");
-        });
+    sakura.operator.fire_event(
+            ["map_move", HEATMAP_REFRESH_DELAY, info],
+            update_heatmap_callback);
 }
 
 /* In order to lower network usage, heatmap data is transfered in
@@ -113,9 +108,23 @@ function init_map() {
 
     map.addLayer(layer);
 
-    map.on('click', map_clicked);
-    map.on('moveend', update_heatmap);
-    map.on('load', update_heatmap); // update when ready
+    infobox = L.control();
+
+    infobox.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'infobox'); // create a div with a class "infobox"
+        return this._div;
+    };
+
+    // method that we will use to update the control based on feature properties passed
+    infobox.update = function (props) {
+        this._div.innerHTML = props.count + ' points ' +
+                    '<span class="glyphicon glyphicon-' + props.icon + '"></span>';
+    };
+
+    infobox.addTo(map);
+
+    map.on('moveend', request_heatmap);
+    map.on('load', request_heatmap); // update when ready
 }
 
 sakura.operator.onready(init_map);
