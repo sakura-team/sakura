@@ -10,6 +10,7 @@ class MapOperator(Operator):
     SHORT_DESC = "Map display and selection operator."
     TAGS = [ "geo", "map", "selection" ]
     def construct(self):
+        print('In contruct')
         # inputs
         self.input_stream = self.register_input('GPS data')
         # parameters
@@ -41,3 +42,12 @@ class MapOperator(Operator):
             stream = stream.filter(lat_column <= info['northlat'])
             # compute heatmap
             return { 'heatmap': heatmap.generate(lnglat=stream, **info) }
+        elif ev_type == 'new_zone':
+            lng_column, lat_column = \
+                self.lng_column_param.value, self.lat_column_param.value
+            stream = self.input_stream
+            stream = stream.select_columns(lng_column,lat_column)
+            for chunk in stream.chunks():
+                 lng, lat = chunk.columns
+            return { 'tweetsmap': dict(lat = lat.tolist(), lng = lng.tolist()) }
+            

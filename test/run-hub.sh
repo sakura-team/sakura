@@ -13,8 +13,8 @@ on_exit()
 {
     rm -rf $TMPDIR
     # Delete all operators created for Tweetsmap 
-    rm -rf $HOME/.sakuraTweetsmap
-    echo "Deleted Tweetsmap operators"
+    #rm -rf $HOME/.sakuraTweetsmap
+    #echo "Deleted Tweetsmap operators"
 }
 
 # whatever happens, call on_exit() at the end.
