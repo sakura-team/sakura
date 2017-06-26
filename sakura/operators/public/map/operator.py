@@ -10,7 +10,6 @@ class MapOperator(Operator):
     SHORT_DESC = "Map display and selection operator."
     TAGS = [ "geo", "map", "selection" ]
     def construct(self):
-        print('In contruct')
         # inputs
         self.input_stream = self.register_input('GPS data')
         # parameters
