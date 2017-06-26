@@ -5,15 +5,6 @@ function TweetsmapOperatorInterface(){
     this.init = function() {
         op = this;
         ws_request("list_operators_instance_ids",[], {}, function(result){
-            // if we haven't created any operators, create it, 
-            // so that if op_id != null, it should be 1
-            // if(result.length == 0)  {
-            //     op.create_operator_instance(1);
-            //     op.create_operator_instance(3);
-            //     var start = new Date().getTime();
-            //     op.create_link(2,1);
-            // }
-            console.log(result);
             if(op._on_ready_cb != null){
                 op._on_ready_cb();
             }
@@ -33,7 +24,6 @@ function TweetsmapOperatorInterface(){
     };
 
     this.fire_event = function(event, cb) {
-        console.log(this.op_id);
         ws_request("fire_operator_event", [this.op_id, event], {}, cb);
     };
 
