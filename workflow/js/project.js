@@ -12,12 +12,12 @@ function get_project_links() {
     remove_all_links();
     
     //Recovering the links from hub
-    ws_request('list_link_ids', [], {}, function (ids) {
+    sakura.common.ws_request('list_link_ids', [], {}, function (ids) {
         var igs = []
         ids.forEach( function (id) {
-            ws_request('get_link_info', [id], {}, function(info) {
+            sakura.common.ws_request('get_link_info', [id], {}, function(info) {
                 //Then aks for the gui
-                ws_request('get_link_gui_data', [id], {}, function (gui) {
+                sakura.common.ws_request('get_link_gui_data', [id], {}, function (gui) {
                     
                     igs.push({'info': info, 'gui': gui});
                     
@@ -71,10 +71,10 @@ function current_project() {
     var nb_ops = -1;
     
     //Now we ask for the operator classes
-    ws_request('list_operators_classes', [], {}, function (result) {
+    sakura.common.ws_request('list_operators_classes', [], {}, function (result) {
         global_ops_cl = JSON.parse(JSON.stringify(result));
         //Then we ask for the instance ids
-        ws_request('list_operators_instance_ids', [], {}, function (ids) {
+        sakura.common.ws_request('list_operators_instance_ids', [], {}, function (ids) {
             nb_ops = ids.length;
             if (ids.length == 0) {
                 starting = 0;
@@ -82,9 +82,9 @@ function current_project() {
             else {
                 ids.forEach( function(id) {
                     //Then ask for the infos
-                    ws_request('get_operator_instance_info', [id], {}, function (info) {
+                    sakura.common.ws_request('get_operator_instance_info', [id], {}, function (info) {
                         //Then aks for the gui
-                        ws_request('get_operator_instance_gui_data', [id], {}, function (gui) {
+                        sakura.common.ws_request('get_operator_instance_gui_data', [id], {}, function (gui) {
                             var jgui = eval("("+gui+")");
                             create_operator_instance_from_hub(jgui.x, jgui.y, info.cls_id, info);
                             starting++;
@@ -99,7 +99,7 @@ function current_project() {
     });
     
     //Finally, the panels and the comments
-    ws_request('get_project_gui_data', [], {}, function (result) {
+    sakura.common.ws_request('get_project_gui_data', [], {}, function (result) {
         if (!result)
             return
         var res = eval("(" + result + ")");
@@ -155,12 +155,12 @@ function save_project() {
         coms.push(get_comment_info(com));
     });
     
-    ws_request('set_project_gui_data', [JSON.stringify({'panels': global_op_panels, 'comments': coms})], {}, function(result){});
+    sakura.common.ws_request('set_project_gui_data', [JSON.stringify({'panels': global_op_panels, 'comments': coms})], {}, function(result){});
     
     //Second the operators
     global_ops_inst.forEach( function(inst) {
         var gui = {x: inst.gui.x,    y: inst.gui.y};
-        ws_request('set_operator_instance_gui_data', [parseInt(inst.hub_id), JSON.stringify(gui)], {}, function(result) {});
+        sakura.common.ws_request('set_operator_instance_gui_data', [parseInt(inst.hub_id), JSON.stringify(gui)], {}, function(result) {});
     });
     
     //Finally the links
@@ -171,7 +171,7 @@ function save_project() {
                                     'top':      para.top,
                                     'left':     para.left,
                                     'line':     para.line});
-            ws_request('set_link_gui_data', [   parseInt(para.hub_id), js], {}, function(result) {});
+            sakura.common.ws_request('set_link_gui_data', [   parseInt(para.hub_id), js], {}, function(result) {});
         });
     });
 };

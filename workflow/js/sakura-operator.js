@@ -1,49 +1,15 @@
 //Code started by Etienne Dublé for the LIG
 //February 16th, 2017
 
-REQUIRED_JS = [
-        "/js/jquery-2.2.4.min.js",
-        "/js/websocket.js",
-        "https://code.jquery.com/ui/1.12.1/jquery-ui.js",
-];
-
-REQUIRED_CSS = [
-        "/css/main.css",
-        "/bootstrap-3.3.7/css/bootstrap.min.css",
-        "/bootstrap-3.3.7/css/bootstrap-select.min.css",
-        "https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css",
-];
-
 function InternalStreamInterface(op_id, stream_index) {
     this.op_id = op_id;
     this.stream_index = stream_index;
     this.get_range = function (row_start, row_end, cb) {
-            ws_request( 'get_operator_internal_range',
+            sakura.common.ws_request( 'get_operator_internal_range',
                         [this.op_id, this.stream_index, row_start, row_end],
                         {},
                         cb);
     };
-}
-
-function testOperatorUrl(url){
-    var op_id;
-    var match= url.match(/opfiles\/([0-9]*)\//);
-
-    if(match!=null){
-        /* if url of type .../opfile/[1-9]/[1-9] */
-        op_id = parseInt(match[1],10);
-
-    }else{
-        /* if url of type .../code-editor/index.html?[1-9] */
-        var url_path2 = window.location.href;
-        var op_match =url_path2.split("/");
-        if(op_match[op_match.length-2]=="code-editor"){
-            var op_match2 =op_match[op_match.length-1].split("?");
-            var op_id2 = op_match2[1];
-            op_id=parseInt(op_id2);
-        }
-    }
-    return op_id;
 }
 
 function SakuraOperatorInterface() {
@@ -55,22 +21,49 @@ function SakuraOperatorInterface() {
         var url_path = window.location.pathname;
 
         if(url_path!=null){
+            sakura.common.debug('sakura.operator.init...');
 
             /* parsing of the url to get the operator instance */
-            var op_id=testOperatorUrl(url_path);
+            var op_id = this.get_op_id_from_url(url_path);
             var op = this;  // 'this' will be overriden in the body of the function below
-            ws_request('get_operator_instance_info', [op_id], {}, function (op_info) {
+            sakura.common.ws_request('get_operator_instance_info', [op_id], {}, function (op_info) {
+                sakura.common.debug('sakura.operator.init... connected to hub');
                 op.op_info = op_info;
                 // if early callbacks were defined, call them.
                 op.run_early_callbacks();
             });
         }
+        else {
+            console.error('url_path is null!');
+        }
     };
+
+    this.get_op_id_from_url = function (url) {
+        var op_id;
+        var match= url.match(/opfiles\/([0-9]*)\//);
+
+        if(match!=null){
+            /* if url of type .../opfile/[1-9]/[1-9] */
+            op_id = parseInt(match[1],10);
+
+        }else{
+            /* if url of type .../code-editor/index.html?[1-9] */
+            var url_path2 = window.location.href;
+            var op_match =url_path2.split("/");
+            if(op_match[op_match.length-2]=="code-editor"){
+                var op_match2 =op_match[op_match.length-1].split("?");
+                var op_id2 = op_match2[1];
+                op_id=parseInt(op_id2);
+            }
+        }
+        return op_id;
+    }
 
     this.run_early_callbacks = function() {
         var i;
         for (i = 0; i < this._early_callbacks.length; i++) {
             var cb = this._early_callbacks[i];
+            sakura.common.debug('calling delayed callback');
             cb(this.op_info);
         }
         this._early_callbacks = [];
@@ -78,9 +71,11 @@ function SakuraOperatorInterface() {
 
     this.do_when_init_done = function (cb) {
         if (this.op_info == null) {
+            sakura.common.debug('callback delayed');
             this._early_callbacks.push(cb);
         }
         else {
+            sakura.common.debug('callback called directly');
             cb(this.op_info);
         }
     };
@@ -88,7 +83,7 @@ function SakuraOperatorInterface() {
     this.ws_request_with_op_id = function (path, args, kwargs, cb) {
         this.do_when_init_done(function(op_info) {
             args.unshift(op_info.op_id);    // insert op_id as 1st arg
-            ws_request(path, args, kwargs, cb);
+            sakura.common.ws_request(path, args, kwargs, cb);
         });
     };
 
@@ -143,15 +138,6 @@ function SakuraOperatorInterface() {
     };
 }
 
-function sakura_operator_init() {
-    sakura.operator.init();
-}
+sakura.operator = new SakuraOperatorInterface();
+sakura.operator.init();
 
-sakura = {
-    operator: new SakuraOperatorInterface()
-}
-
-// load required js files, then call sakura_operator_init
-load_files(REQUIRED_JS, sakura_operator_init);
-// load required css files
-load_files(REQUIRED_CSS, function do_nothing() {});

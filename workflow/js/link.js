@@ -9,7 +9,7 @@ var link_focus_id = null;
 
 function create_link(js_id, src_id, dst_id, js_connection) {
     
-    ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
+    sakura.common.ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
         if (possible_links.length == 0) {
             alert("These two operators cannot be linked");
             jsPlumb.detach(js_connection);
@@ -23,8 +23,8 @@ function create_link(js_id, src_id, dst_id, js_connection) {
                         dst: dst_id,
                         params: []});
                         
-            ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
-                ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
+            sakura.common.ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
+                sakura.common.ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
                         create_link_modal(  possible_links,
                                             global_links[global_links.length - 1], 
                                             instance_from_id(src_id).cl, 
@@ -49,9 +49,9 @@ function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui)
                                 'params': [],
                                 'modal': false});
                                 
-    ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
-        ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
-            ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
+    sakura.common.ws_request('get_possible_links', [src_id, dst_id], {}, function (possible_links) {
+        sakura.common.ws_request('get_operator_instance_info', [src_id], {}, function (source_inst_info) {
+            sakura.common.ws_request('get_operator_instance_info', [dst_id], {}, function (target_inst_info) {
                 create_link_modal(  possible_links,
                                     global_links[l - 1], 
                                     instance_from_id(src_id).cl, 
@@ -170,9 +170,9 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
 
 
 function refresh_link_modal(link) {
-    ws_request('get_possible_links', [link.src, link.dst], {}, function (p_links) {
-        ws_request('get_operator_instance_info', [link.src], {}, function (source_inst_info) {
-            ws_request('get_operator_instance_info', [link.dst], {}, function (target_inst_info) {
+    sakura.common.ws_request('get_possible_links', [link.src, link.dst], {}, function (p_links) {
+        sakura.common.ws_request('get_operator_instance_info', [link.src], {}, function (source_inst_info) {
+            sakura.common.ws_request('get_operator_instance_info', [link.dst], {}, function (target_inst_info) {
                 //sources
                 for(var i=0; i<source_inst_info.outputs.length;i++) {
                     var found = false;
@@ -290,7 +290,7 @@ function delete_link_params(link, and_main_link) {
     var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
     for (var i=0; i< link.params.length; i++) {
         var para = link.params[i];
-        ws_request('delete_link', [para.hub_id], {}, function (result) {
+        sakura.common.ws_request('delete_link', [para.hub_id], {}, function (result) {
             if (result) {
                 console.log("Issue with 'delete_link' function from hub:", result);
             }
@@ -334,7 +334,7 @@ function delete_link_param(link, side, id) {
         }
     }
     if (link_p) {
-        ws_request('delete_link', [link_p.hub_id], {}, function (result) {
+        sakura.common.ws_request('delete_link', [link_p.hub_id], {}, function (result) {
             if (result) {
                 console.log("Issue with 'delete_link' function from hub:", result);
             }

@@ -228,48 +228,18 @@ function init(){
 
 }
 
-sakura.operator.onready(onReady);
 function onReady(){
-  if(jQuery && jQuery.ui){
     init();
     generateTree();
     openOperator();
-  }
-  else{
-    // console.log(jQuery);
-    // console.log(jQuery.ui);
-    loadJquery();
-    loadJqueryUI();
-    setTimeout(function(){onReady();},1000);
-  }
 }
+
 // open the operator.py
 function openOperator(){
     if($(".jstree-leaf[data-path='operator.py'] a")[0] != undefined){
       openFile($(".jstree-leaf[data-path='operator.py'] a")[0]);
     }
-    else{setTimeout(openOperator,100);}
-}
-
-// if jquery load failed
-function loadJquery(){
-    try{
-      jQuery;
-    }catch(e){
-          //load jquery
-          var script = document.createElement("SCRIPT");
-          script.src = "https://code.jquery.com/jquery-3.1.1.min.js";
-          script.type = 'text/javascript';
-          script.onload = function() {
-              var $ = window.jQuery;
-          };
-          document.getElementsByTagName("head")[0].appendChild(script);
+    else{
+        setTimeout(openOperator,100);
     }
-}
-// if jqueryUi load failed
-function loadJqueryUI(){
-  if(typeof jQuery.ui === 'undefined'){
-    //load ui
-    $.getScript("https://code.jquery.com/ui/1.12.1/jquery-ui.js",function (data, textStatus, jqxhr){});
-  }
 }

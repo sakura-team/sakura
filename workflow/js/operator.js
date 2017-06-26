@@ -4,7 +4,7 @@
 function create_operator_instance_on_hub(drop_x, drop_y, id) {
     
     //We first send the creation command to the sakura hub
-    ws_request('create_operator_instance', [parseInt(id)], {}, function (result) {
+    sakura.common.ws_request('create_operator_instance', [parseInt(id)], {}, function (result) {
         var hub_id = result.op_id;
         
         //Then we create the instance here
@@ -137,7 +137,7 @@ function remove_operator_instance(id, on_hub) {
     global_ops_inst.splice(instance_index_from_id(hub_id), 1);
     
     if (on_hub)
-        ws_request('delete_operator_instance', [hub_id], {}, function (result) {});
+        sakura.common.ws_request('delete_operator_instance', [hub_id], {}, function (result) {});
 }
 
 function remove_all_operators_instances() {

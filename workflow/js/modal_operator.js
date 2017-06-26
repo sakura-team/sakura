@@ -50,7 +50,7 @@ function fill_all(id) {
 
 function fill_tabs(id) {
     var op_hub_id = parseInt(id.split("_")[2]);
-    ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
+    sakura.common.ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
         var index = 0;
         instance_info.tabs.forEach( function(tab) {
             var iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
@@ -63,7 +63,7 @@ function fill_tabs(id) {
 
 
 function fill_params(id) {
-    ws_request('get_operator_instance_info', [parseInt(id.split("_")[2])], {}, function (result) {
+    sakura.common.ws_request('get_operator_instance_info', [parseInt(id.split("_")[2])], {}, function (result) {
             var d = document.getElementById('modal_'+id+'_tab_params');
             while (d.firstChild) {
                 d.removeChild(d.firstChild);
@@ -109,9 +109,9 @@ function fill_params(id) {
 function params_onChange(op_id, param_index, select_id) {
 
     var index = document.getElementById(select_id).selectedIndex;
-    ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
+    sakura.common.ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
         var param_value = index;
-        ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
+        sakura.common.ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
             if (result2)
                 console.log(result2);
             else
@@ -131,7 +131,7 @@ function fill_in_out(in_out, id) {
     }
 
     //infos
-    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
+    sakura.common.ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
         var nb_in_out = result_info[in_out+'s'].length;
 
         if (nb_in_out == 0) {
@@ -179,8 +179,8 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
     }
 
     //infos
-    ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
-        ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
+    sakura.common.ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
+        sakura.common.ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
                 s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed; margin-bottom: 1px;">\n';

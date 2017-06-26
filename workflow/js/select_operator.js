@@ -18,7 +18,7 @@ function select_op_new_modal() {
     $("#select_op_update_button").hide();    
     
     //Before opening the modal, we have to ask about the existing operators, and then make the tags list
-    ws_request('list_operators_classes', [], {}, function (result) {
+    sakura.common.ws_request('list_operators_classes', [], {}, function (result) {
         var tags_list = [];
         var sostl = document.getElementById('select_op_tags_select');
         var sosnl = document.getElementById('select_op_names_select');
@@ -64,7 +64,7 @@ function select_op_reopen_modal(id) {
     $("#select_op_update_button").show();
     
     //Before opening the modal, we have to ask about the existing operators, and then make the tags list
-    ws_request('list_operators_classes', [], {}, function (result) {
+    sakura.common.ws_request('list_operators_classes', [], {}, function (result) {
         var tags_list = [];
         var sostl = document.getElementById('select_op_tags_select');
         var sosnl = document.getElementById('select_op_names_select');
