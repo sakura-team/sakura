@@ -28,12 +28,12 @@ def web_greenlet(context, webapp_path):
         print(' ->', resp.status_line)
         return resp
 
-    @app.route('/tpl/<filepath:path>', method=['POST'])
+    @app.route('/modules/workflow/tpl/<filepath:path>', method=['POST'])
     def serve_template(filepath):
         params = json.loads(
                     bottle.request.forms['params'],
                     object_hook = lambda d: to_namedtuple('Params', d))
-        with (Path(webapp_path) / filepath).open() as f:
+        with (Path(webapp_path) / 'modules' / 'workflow' / filepath).open() as f:
             return template(f.read(), **params._asdict())
 
     # if no route was found above, look for static files in webapp subdir
