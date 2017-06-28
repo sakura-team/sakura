@@ -4,6 +4,11 @@ HEATMAP_REFRESH_DELAY = 0.3;
 
 function update_heatmap_callback(result) {
     var icon;
+    if ('issue' in result)
+    {
+        infobox.update({ 'icon': 'alert', 'text': result.issue });
+        return;
+    }
     if (result.heatmap.done)
     {   // input data is complete for this map
         icon = 'check';
@@ -28,7 +33,7 @@ function update_heatmap_callback(result) {
     });
     heatmap_layer.addTo(map);
     // update infobox
-    infobox.update({ "icon": icon, 'count': result.heatmap.count});
+    infobox.update({ "icon": icon, 'text': result.heatmap.count + ' points' });
     var t1 = new Date().getTime();
     console.log('map update: ' + ((t1 - t0)/1000.0) + " seconds");
 }
@@ -124,7 +129,7 @@ function init_map() {
 
     // method that we will use to update the control based on feature properties passed
     infobox.update = function (props) {
-        this._div.innerHTML = props.count + ' points ' +
+        this._div.innerHTML = props.text + ' ' +
                     '<span class="glyphicon glyphicon-' + props.icon + '"></span>';
     };
 

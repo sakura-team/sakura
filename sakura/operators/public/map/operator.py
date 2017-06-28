@@ -38,6 +38,8 @@ class MapOperator(Operator):
         return stream
 
     def handle_event(self, event):
+        if not self.input_stream.connected():
+            return { 'issue': 'NO DATA: Input is not connected.' }
         ev_type = event[0]
         time_credit = event[1]
         if ev_type == 'map_move':
