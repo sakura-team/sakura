@@ -37,6 +37,8 @@ class GuiToHubAPI(object):
         return self.context.op_instances[op_id].input_streams[in_id].get_range(row_start, row_end)
     
     def get_operator_output_range(self, op_id, out_id, row_start, row_end):
+        if not self.context.op_instances[op_id].is_ready():
+            return None
         return self.context.op_instances[op_id].output_streams[out_id].get_range(row_start, row_end)
     
     def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):
