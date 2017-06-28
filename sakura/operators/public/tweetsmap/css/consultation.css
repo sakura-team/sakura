@@ -1,0 +1,25 @@
+#hideConsultation{
+    position: absolute;
+    top: 0px;
+    left: -18px;
+    background-color: white;
+    width: 16px;
+    height: 32px;
+    font-size: 16px;
+    padding-top: 14px;
+    padding-left: 6px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+#tweetsConsultation {
+    height: 400px;
+}
+
+#hashtagsConsultation {
+    height: 30px;
+}
+
+#keywordsConsultation {
+    height: 30px;
+}
