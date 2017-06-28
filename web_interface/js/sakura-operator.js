@@ -104,6 +104,10 @@ function SakuraOperatorInterface() {
         });
     };
 
+    this.info = function (cb) {
+        this.ws_request_with_op_id(
+            'get_operator_instance_info', [], {}, cb);
+    };
     this.fire_event = function (event, cb) {
         this.ws_request_with_op_id(
             'fire_operator_event', [event], {}, cb);
