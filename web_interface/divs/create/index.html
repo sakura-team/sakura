@@ -1,0 +1,46 @@
+
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg" id="fullwidthmodalCreate" style="width: 95%;">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" id="idButtonCloseModalCreate" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="container">
+                    <div class="row-fluid">
+                        <div class="col-md">
+                            <h6>Create :</h6>
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <form role="form" method="post" id="createForm">
+                                        <div class="form-group control-group" data-original-title="Give a name.">
+                                            <label for="nameX">Name</label>
+                                            <input class="form-control" id="nameX" name="nameX" placeholder="Enter a name"/>
+                                        </div>
+                                        <div class="form-group control-group" data-original-title="Give short description.">
+                                            <label for="shortDescriptionX">Short Description</label>
+                                            <input class="form-control" id="shortDescriptionX" name="shortDescriptionX" placeholder="Enter short description"/>
+                                        </div>
+                                        <div class="form-group control-group" data-original-title="Give tags.">
+                                            <label for="tagX">Tag</label>
+                                            <input class="form-control" id="tagX" name="tagX" placeholder="Enter tags"/>
+                                        </div>
+                                        <div class="form-group control-group" data-original-title="Give Beginning date.">
+                                            <label for="beginningDateX">Beginning date</label>
+                                            <input class="form-control" id="beginningDateX" name="beginningDateX" placeholder="Enter Beginning date"/>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input id="publicAccess" name="publicAccess" type="checkbox" /> Public
+                                            </label>
+                                        </div>
+                                        <input name="authentification" value="create" type="hidden" />
+                                        <button type="submit" class="btn btn-default" id="createSubmit" onclick="not_yet();">Submit</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

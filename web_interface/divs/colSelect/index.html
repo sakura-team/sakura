@@ -1,0 +1,65 @@
+
+<div class="modal fade" id="colSelectModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg" id="fullwidthmodal" style="width: 35%;">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" id="idButtonCloseModal" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="container">
+                    <div class="row-fluid">
+                        <div class="col-md-4">
+                            <h6>Select colums:</h6>
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <!--form role="form" method="post" id="colSelectForm"-->
+                                        <div class="checkbox">
+                                            <label>
+                                                <input checked="true" disabled="disabled" id="cbColSelectName" name="cbColSelectName" type="checkbox" /> Name
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input id="cbColSelectId" name="cbColSelectId" type="checkbox" /> Id
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input checked="true" id="cbColSelectTags" name="cbColSelectTags" type="checkbox" /> Tag
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input checked="true" id="cbColSelectShortDesc" name="cbColSelectShortDesc" type="checkbox" /> Short Description
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input checked="true" id="cbColSelectDate" name="cbColSelectDate" type="checkbox" /> Date
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input id="cbColSelectModification" name="cbColSelectModification" type="checkbox" /> Modification
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input id="cbColSelectAuthor" name="cbColSelectAuthor" type="checkbox" /> Author
+                                            </label>
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input checked="true" disabled="disabled" id="cbColSelectTools" name="cbColSelectTools" type="checkbox" /> Tools
+                                            </label>
+                                        </div>
+                                        <button type="button" id="idButtonReturn" class="btn btn-default"  onclick="chgShowColumns(event);" data-dismiss="modal" aria-hidden="true">Return</button>
+										<!--button type="submit" class="btn btn-default" id="colSelectSubmit" onclick=";">Apply</button-->
+                                    <!--/form  -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

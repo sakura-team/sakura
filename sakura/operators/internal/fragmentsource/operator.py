@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import InternalOperator
-from sakura.daemon.processing.stream import SimpleStream
-import numpy as np
+from .stream import FragmentSourceStream
 
 # This internal operator (not accessible from users)
 # is used when a user links 2 operators running in
@@ -23,23 +22,6 @@ class FragmentSourceOperator(InternalOperator):
         remote_op = hub.context.op_instances[remote_op_id]
         self.remote_out_stream = remote_op.output_streams[remote_out_id]
     def construct(self):
-        out_stream_info = self.remote_out_stream.get_info_serializable()
         # just one output, copy info from remote stream
-        self.output_stream = self.register_output(SimpleStream(
-                out_stream_info['label'], self.compute))
-        self.output_stream.length = out_stream_info['length']
-        for col_label, col_type, col_tags in out_stream_info['columns']:
-            self.output_stream.add_column(col_label, np.dtype(col_type), col_tags)
-    def compute(self):
-        # we just pull and transmit the output from the remote operator.
-        # however, for performance reasons, we do not pull rows 1 by 1,
-        # we pull FRAGMENT_BUFFER rows at a time.
-        row_idx = 0
-        last_row_idx = 0
-        while True:
-            for row in self.remote_out_stream.get_range(row_idx, row_idx + FRAGMENT_BUFFER):
-                yield row
-                row_idx += 1
-            if row_idx < last_row_idx + FRAGMENT_BUFFER:
-                break
-            last_row_idx += FRAGMENT_BUFFER
+        self.output_stream = self.register_output(
+                FragmentSourceStream(self.remote_out_stream))

@@ -26,6 +26,12 @@ class InputStream(object):
                 connected = False
             )
         return info
+    def get_range(self, *args, **kwargs):
+        # redirect call to the connected output stream
+        if self.connected():
+            return self.source_stream.get_range(*args, **kwargs)
+        else:
+            return None
     def __getattr__(self, attr):
         # redirect calls to the connected output stream
         if self.connected():

@@ -5,6 +5,7 @@ from sakura.daemon.processing.stream import InputStream, InternalStream
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.parameter import ParameterException
+from gevent.lock import Semaphore
 
 class Operator(Registry):
     IGNORED_FILENAMES = ("__pycache__", ".DS_Store")
@@ -17,6 +18,7 @@ class Operator(Registry):
         self.tabs = []
         operator_py_path = Path(inspect.getabsfile(self.__class__))
         self.root_dir = operator_py_path.parent
+        self.event_lock = Semaphore()
     def register_input(self, input_stream_label):
         return self.register(self.input_streams, InputStream, input_stream_label)
     def register_output(self, output):
@@ -73,10 +75,7 @@ class Operator(Registry):
                 continue
             param.unset_value()
     def serve_file(self, request):
-        print('serving ' + request.filepath, end="")
-        resp = request.serve(str(self.root_dir))
-        print(' ->', resp)
-        return resp
+        return request.serve(str(self.root_dir))
     def get_file_content(self, file_path):
         with (self.root_dir / file_path).open() as f:
             return f.read()
@@ -123,6 +122,11 @@ class Operator(Registry):
             p.rmdir()
         else:
             p.unlink()
+    def sync_handle_event(self, event):
+        # operators handle events one at a time
+        # (easier for the operator developer)
+        with self.event_lock:
+            return self.handle_event(event)
 
 class InternalOperator(Operator):
     def __init__(self):

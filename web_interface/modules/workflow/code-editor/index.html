@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Code Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="/bootstrap-3.3.7/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/bootstrap-3.3.7/css/bootstrap-select.min.css"/>
+    <link rel="stylesheet" href="style.css?version=0.1">
+</head>
+<body onload="onReady()">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.6/ext-modelist.js" type="text/javascript" charset="utf-8"></script>
+    <script src = "/js/sakura-common.js"></script>
+	<script src = "/js/sakura-operator.js"></script>
+    <script src = "js/index.js?version=0.1" defer></script>
+    <script src = "js/tabClasses.js?version=0.1"></script>
+    <script src = "js/library.js?version=0.1"></script>
+	<div id="main">
+	    <div class="topMenu">
+			<!-- top of the window -->
+			<div id="toolBox">
+					<div title="Save current file" class='divToolBox' id='save'><span class="glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></div>
+					<div title="Save all files" class='divToolBox' id='saveAll'><span class="back glyphicon glyphicon-floppy-disk" aria-hidden="true"></span><span class="front glyphicon glyphicon-floppy-disk" aria-hidden="true"></span></div>
+					<div title="New file" class='divToolBox' id='divNewFile'><span class="glyphicon glyphicon-plus" aria-hidden="true"></span><span class="glyphicon glyphicon-file" aria-hidden="true"></span></div>
+					<div title="New folder" class='divToolBox' id='divNewDir'><span class="glyphicon glyphicon-plus" aria-hidden="true"></span><span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span></div>
+					<div title="Delete current file" class='divToolBox' id='divTrash'><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></div>
+					<div id="editorStatus" class="divToolBox">
+							<select id="selectFontSize">
+									<option value="6">6</option>
+									<option value="7">7</option>
+									<option value="8">8</option>
+									<option value="9" selected>9</option>
+									<option value="10">10</option>
+									<option value="11">11</option>
+									<option value="12">12</option>
+									<option value="13">13</option>
+									<option value="14">14</option>
+									<option value="15">15</option>
+									<option value="16">16</option>
+									<option value="17">17</option>
+									<option value="18">18</option>
+									<option value="19">19</option>
+									<option value="20">20</option>
+									<option value="21">21</option>
+									<option value="22">22</option>
+									<option value="23">23</option>
+									<option value="24">24</option>
+							</select>
+					</div>
+			</div>
+			<div id="tab">
+			    <ul id="tabList" class="nav nav-tabs"></ul>
+			</div>
+			<div id="expandDiv"><span data-state="o" id="expand" class="glyphicon glyphicon-collapse-down" aria-hidden="true"></span></div>
+		</div>
+		<!-- body of the editor -->
+		<div class="bodyEditor">
+			<div id="treeDiv"></div>
+			<div id="editor"></div>
+		</div>
+	</div>
+	<div id='dialog' title=''>
+		    <input class="dialogInput" id="dialogInput" type="text" placeholder=""/>
+				<p id="forbiddenCharMessage">forbidden character in the string (/ " ')</p>
+		    <button class="dialogButton" title="click to confirm"></button>
+	</div>
+	<div id='popup' title='Beware'>
+		    <p id="popupMessage"></p>
+		    <button id="btnConfirm">Yes</button>
+		    <button id="btnAbort">No</button>
+	</div>
+</body>
+</html>

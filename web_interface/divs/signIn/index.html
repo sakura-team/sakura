@@ -1,0 +1,123 @@
+
+<div class="modal fade" id="signInModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg" id="fullwidthmodal" style="width: 95%;">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" id="idButtonCloseModal" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <div class="container">
+                    <div class="row-fluid">
+                        <div class="col-md-4">
+                            <h6>Sign in:</h6>
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <form role="form" method="post" id="signInForm">
+                                        <div class="form-group control-group" data-placement="top" data-original-title="Unknown email adress, if you don't have one, please create a new account.">
+                                            <label for="signInEmail">Email address</label>
+                                            <input class="form-control" id="signInEmail" name="signInEmail" placeholder="Enter email" type="email" />
+                                        </div>
+                                        <div class="form-group" data-placement="top" data-original-title="Your password doesn't match your email adress.">
+                                            <label for="signInPassword">Password</label>
+                                            <input name="signInPassword" class="form-control" id="signInPassword" placeholder="Password" type="password" />
+                                        </div>
+                                        <div class="checkbox">
+                                            <label>
+                                                <input id="signInRememberMe" name="signInRememberMe" type="checkbox" /> Remember me
+                                            </label>
+                                        </div>
+                                        <input name="authentification" value="connect" type="hidden" />
+                                        <button type="submit" class="btn btn-default" id="signInSubmit" onclick="signInSubmitControl(event);">Connect</button>
+                                    </form>
+                                </div>
+                            </div>
+							<!-- Password Recovery -->
+								<div id="pwdRecovery" class="panel panel-default">
+									<a data-toggle="collapse" data-parent="#accordion" href="#collapsePWD">
+										<div class="panel-heading">
+											<h4 class="panel-title">Forgot Password ?</h4>
+										</div>
+									</a>
+									<div id="collapsePWD" class="panel-collapse collapse">
+										<div class="panel-body">
+											<form role="form" method="post" id="pwdRecoveryForm">
+												<div class="form-group control-group" data-placement="top" data-original-title="Unknown email adress">
+													<label for="pwdRecoveryEmail">Email address</label>
+													<input class="form-control" id="pwdRecoveryEmail" name="pwdRecoveryEmail" placeholder="Enter email" type="email" />
+												</div>
+												<input name="authentification" value="send" type="hidden" />
+												<button type="submit" onclick="not_yet();" class="btn btn-default" id="pwdRecoverySubmit">Send</button>
+											</form>
+										</div>
+									</div>
+								</div>
+							<!-- Password Recovery[END] -->
+                        </div>
+                        <!-- New Account -->
+                        <div class="col-md-7">
+                            <h6>New account:</h6>
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <form role="form" method="post" id="signUpForm">
+                                        <div class="col-md-6">
+                                            <div class="form-group control-group" data-placement="right" data-original-title="This email adress is already in use, use the link below if you lost your password">
+                                                <label for="signUpEmail">Email address*</label>
+                                                <input class="form-control" id="signUpEmail" name="signUpEmail" placeholder="Enter email" type="email" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpPassword">Password*</label>
+                                                <input class="form-control" id="signUpPassword" placeholder="Password" type="password" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpConfirmPassword">Confirm Password*</label>
+                                                <input class="form-control" id="signUpConfirmPassword" placeholder="Confirm Password" type="password" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpInstitution">Institution*</label>
+                                                <input class="form-control" id="signUpInstitution" name="signInstitution" placeholder="Your institution" type="text" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpFirstName">First name*</label>
+                                                <input class="form-control" id="signUpFirstName" name="signUpFirstName" placeholder="Your first name" type="text" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpLastName">Last name*</label>
+                                                <input class="form-control" id="signUpLastName" name="signUpLastName" placeholder="Your last name" type="text" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="signUpCountry">Country*</label>
+                                                <input class="form-control" id="signUpCountry" name="signUpCountry" placeholder="Your Country" type="text" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpStatus">Status</label>
+                                                <input class="form-control" id="signUpStatus" name="signUpStatus" placeholder="Your status" type="text" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpDomain">Domain</label>
+                                                <input class="form-control" id="signUpDomain" name="signUpDomain" placeholder="Your domain" type="text" />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="signUpCaptcha">Captcha* </label>
+                                                <p class="help-block">Click on the image to change</p>
+                                                <p><img id="captchaImage" src="/php/include/captcha/simple-php-captcha.php?_CAPTCHA&amp;amp;t=0.26144000+1490866936" /></p>
+                                                <input class="form-control" id="signUpCaptcha" name="signUpCaptcha" placeholder="Enter the word as it appears" type="text" />
+                                            </div>
+                                            <div class="checkbox">
+                                                <label>
+                                                    <input id="signInCGU" value="cguNotRead" name="signInCGU" type="checkbox" /> I have read and I accept <a onclick="showDivCGU(event);" href="http://sakura.imag.fr/CGU">terms</a>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <input name="authentification" value="newAccount" type="hidden" />
+                                        <button type="submit" onclick="not_yet();" id="signUpSubmit" class="col-md-5 pull-right btn btn-default">Create account</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- New Account[END] -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

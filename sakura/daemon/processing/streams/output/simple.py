@@ -22,15 +22,13 @@ class SimpleStream(OutputStreamBase):
             if chunk.size == 0:
                 break
             yield chunk
-    def select_columns(self, *columns):
-        indexes = list(col.index for col in columns)
+    def __select_columns__(self, *col_indexes):
         def filtered_compute_cb():
             for record in self.compute_cb():
-                yield tuple(record[i] for i in indexes)
+                yield tuple(record[i] for i in col_indexes)
+        columns = tuple(self.columns[i] for i in col_indexes)
         return SimpleStream(self.label, filtered_compute_cb, columns)
-    def filter(self, cond):
-        col, comp_op, other = cond
-        col_index = col.index
+    def __filter__(self, col_index, comp_op, other):
         def filtered_compute_cb():
             for record in self.compute_cb():
                 if comp_op(record[col_index], other):

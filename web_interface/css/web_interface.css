@@ -1,0 +1,72 @@
+/* 
+ * LIG March 2017
+*/
+
+.label-primary {
+  background-color:blue;
+  color:white;}
+
+input.search-query {
+    padding-left:26px;
+	border-radius: 15px;
+	width: 90%; 
+}
+
+form.form-search {
+    position: relative;
+}
+
+form.form-search:before {
+    content:'';
+    display: block;
+    width: 14px;
+    height: 14px;
+    background-image: url(http://getbootstrap.com/2.3.2/assets/img/glyphicons-halflings.png);
+    background-position: -48px 0;
+    position: absolute;
+    top:8px;
+    left:8px;
+    opacity: .5;
+    z-index: 1000;
+}
+
+.commentList {
+    padding:0;
+    list-style:none;
+    max-height:200px;
+    overflow:auto;
+}
+.commentList li {
+    margin:0;
+    margin-top:10px;
+}
+.commentList li > div {
+    display:table-cell;
+}
+.commenterImage {
+    width:30px;
+    margin-right:5px;
+    height:100%;
+    float:left;
+}
+.commenterImage img {
+    width:100%;
+    border-radius:50%;
+}
+.commentText p {
+    margin:0;
+}
+.sub-text {
+    color:#aaa;
+    font-family:verdana;
+    font-size:11px;
+}
+
+
+.editableDescriptionField > span > a {
+    visibility: hidden;
+}
+
+.editableDescriptionField:hover > span > a {
+    visibility: visible;
+}
