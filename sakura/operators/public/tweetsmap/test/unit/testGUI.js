@@ -46,6 +46,11 @@ console.log("Expected result: Research infor updated name");
 console.log(myGUI.getResearchByRid(4).toString());
 console.log(i+++"--------------------------------------------------");
 myGUI.changeCurrentResearchByRid(rid = 2);
-console.log("Changed current research to research of rid = 2")
+console.log("Changed current research by rid to research of rid = 2")
 console.log("Expected result: color of research of rid = 2 reupdated point color to green");
+console.log(myGUI.toString());
+console.log(i+++"--------------------------------------------------");
+myGUI.changeCurrentResearch(1);
+console.log("Changed current research by index to research of index = 1")
+console.log("Expected result: current research is the research of rid = 4 with the name reseted to Current Name");
 console.log(myGUI.toString());

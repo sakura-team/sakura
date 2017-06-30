@@ -75,6 +75,7 @@ function GUI(){
 
     // change current research to researches[index]
     this.changeCurrentResearch = function(index) {
+        gui.currentResearch = gui.researches[index].research;
         gui.actualize();
     };
 
