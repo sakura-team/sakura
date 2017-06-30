@@ -119,6 +119,17 @@ function addField(field,event) {
     field.parentElement.children[field.parentElement.children.length-2].insertAdjacentHTML("afterend","<dt class='description-terms-align-left'>"+res+"</dt><dd class='editableDescriptionField'>value?<span class='editZoneContextualMenu'><a class='editDescriptionField' href='' onclick='editField(this,event);'><i class='glyphicon glyphicon-edit'></i></a></span></dd>");
     return;}}
 
+	
+function addComment(field,event,idComment) {
+  var comment = document.getElementById(idComment).value;
+  document.getElementById(idComment).value = "Your comments";
+  document.getElementById("commentAnalysis").parentElement.parentElement.nextSibling.nextSibling.firstChild.insertAdjacentHTML("beforebegin",
+             '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
+	      + '<div class="commentText"><p class="">'+comment+'</p> '
+		  + '<span class="date sub-text">you just now</span></div></li>');		  
+  return;}
+
+	
 function saveModeSubmitControl(event) {
   sav=confirm("Save modification (or abort)?");
   if (sav) {
@@ -449,8 +460,8 @@ if (result.fileSystem.length>0) {
 //Comments
 s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3>' 
       + '<span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
-      + '<input class="form-control" type="text" placeholder="Your comments" onclick="not_yet()"/></div>'
-      + '<div class="form-group"><button onclick="not_yet();" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></div></form><hr />'
+      + '<textarea class="form-control" rows="1" id="comment'+elt+'">Your comments</textarea></div>'
+      + '<div class="form-group"><button onclick="addComment(this,event,\'comment'+elt+'\');" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></div></form><hr />'
 	  + '<ul class="commentList">';
 for(i=0;i<result.comments.length;i++) {
 	s = s + '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
