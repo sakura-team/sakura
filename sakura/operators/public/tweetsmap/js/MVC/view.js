@@ -174,6 +174,85 @@ function View(){
             return this._select.value;
         }
     });
+
+    L.SelectBox = L.Control.extend({
+        options: {
+            position: 'topright'
+        },
+
+        initialize: function(options){
+            this._config = {};
+            L.Util.extend(this.options, options);
+            this.setConfig(options);
+        },
+
+        setConfig: function(options){
+            this._config = {
+                listOptions: options.listOptions,
+                titleBox: options.titleBox
+            };
+        },
+
+        onAdd: function(map) {
+            // container div in HTML
+            var container = L.DomUtil.create('div');
+            this._container = container;
+
+            var select = L.DomUtil.create('select','leaflet-control leaflet-bar', container);
+            this._select = select;
+            select.title = this._config.titleBox;
+    
+            
+            for(var i = 0; i < this._config.listOptions.length ; i++){
+                
+            }
+            
+            L.DomEvent
+                .addListener(this._container, 'click', L.DomEvent.stop);
+            
+            L.DomEvent.disableClickPropagation(this._select);
+
+            return select;
+        },
+
+        getSelect: function(){
+            return this._select;
+        },
+
+        getColor: function() {
+            return this._select.value;
+        },
+
+        addOption: function(text) {
+            var option = document.createElement("option",'',this._container);
+            option.text = text;
+            this._select.add(option);
+            L.DomEvent
+                    .on(option, 'click', L.DomEvent.stop)
+            L.DomEvent.disableClickPropagation(option);
+        },
+
+        removeOption:function(index) {
+            this._select.remove(index);
+        },
+
+        setTextOfOption(index, text) {
+            this._select.options[index].text = text;
+            if(index == this._select.selectedIndex){
+                this._select.text = text;
+            }
+        }
+    });
+
+    this.createSelector = function(map, list, title){
+        var res  = new L.SelectBox({
+            listOptions: list,
+            titleBox: title
+        });
+        res.addTo(map);
+
+        return res;
+    }
     
     this.createColorSelector = function (map, listColor, title){
         var res = new L.ColorSelector({
@@ -220,7 +299,8 @@ function View(){
             });
     var deleteShape = function (e) {
       if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()){
-        this.editor.deleteShapeAt(e.latlng);
+        var poly = this.editor.deleteShapeAt(e.latlng);
+        myController.deletePolygons(poly);
       }
     };
     map.on('layeradd', function (e) {
@@ -273,7 +353,16 @@ function View(){
     this.tweetsColorSelector =
         thisView.createColorSelector(map,colors,'Tweets Color');
 
+//----------------------------------TOP RIGHT------------------------------------///
     
+    /**
+     * Add recherche select box
+     */
+    
+    this.researchSelector =
+        this.createSelector(map, [], 'Research List');
+
+
     /**
      * Add layers control panel
      */
@@ -289,6 +378,7 @@ function View(){
     this.overlaysPanel =
         L.control.layers();
     this.overlaysPanel.addTo(map);
+    
 }
 
 var myView = new View();

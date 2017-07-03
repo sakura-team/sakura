@@ -22,12 +22,14 @@ function Controller(){
         // add new Research in list research of thisControl
         myModel.researches[0] = 
             {rid: myModel.currentResearch.rid, research: myModel.currentResearch};
+        // update research list in research box
+        myView.researchSelector.addOption(myModel.currentResearch.nameResearch);
     }
 
     /**
      *  Handle event function
      */ 
-    
+
     // Event when finish drawing a poly
     this.registrerPoly = function(layer) {
         myModel.currentResearch.roi.addLayer(layer);
@@ -68,6 +70,17 @@ function Controller(){
         });
     }
 
+    this.deletePolygons = function(poly){
+        myModel.currentResearch.roi.eachLayer(function (layer){
+            if(layer.getLatLngs()[0].length==0){
+                myModel.currentResearch.roi.removeLayer(layer);
+                myView.overlaysPanel.removeLayer(layer);
+                return;
+            }
+        });
+    }
+
+    //-------------------------------------------------------------------------------------//
     /**
      *  View -> Model : These functions is intended for getting informations from GUI (FGUI)
      */ 
@@ -141,6 +154,13 @@ function Controller(){
         }).research;
     };
 
+    this.getIndexByResearch = function(research) {
+        for(var i = 0; i < myModel.researches.length; i++) {
+            if(myModel.researches[i].research === research ){
+                return i;
+            }
+        }
+    }
     // change current research to research of rid
     this.changeCurrentResearchByRid = function(rid) {
         myModel.currentResearch = thisControl.getResearchByRid(rid);
@@ -185,6 +205,11 @@ function Controller(){
         myView.nameBox.setMessage(message);
 
         this.updateRoiColor();
+        
+        // update research list box
+        myView.researchSelector.setTextOfOption(
+            this.getIndexByResearch(myModel.currentResearch), 
+            myModel.currentResearch.nameResearch);
         
     };
 
