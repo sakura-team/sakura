@@ -1,9 +1,13 @@
 .message{
-    font-family: 'Times New Roman', Times, serif;
     font-size: 12px;
 }
 
-.red{
-    color: red;
+.text-basic{
+    color: blue;
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: bold;
 }
 
+.text-border{
+    text-shadow: 2px 0 0 #fff, -2px 0 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff, 1px 1px #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff;
+}

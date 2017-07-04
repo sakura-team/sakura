@@ -19,20 +19,15 @@ function Research() {
     var thisResearch = this;
 
     this.rid = null;
-    this.nameResearch = null;
+    this.nameResearch = '';
     this.colorBound = null;
-    this.colorPoint = null;
-    this.colorBackground = null;
+    this.colorPoint = 'Olive';
+    this.colorBackground = 'Olive';
     this.roi = new L.LayerGroup;
     this.timeRange = null;  
 
     this.actualize = function() {
-        thisResearch.nameResearch = myController.getNameFGUI();
-        thisResearch.colorBound = myController.getColorBoundFGUI();
-        thisResearch.colorPoint = myController.getColorPointFGUI();
-        thisResearch.colorBackground = myController.getColorBackgroundFGUI();
-        //thisResearch.roi = myController.getRoiFGUI();
-        thisResearch.timeRange = myController.getTimeRange();
+        
     };
 
     this.removeAllRoi = function() {
@@ -43,7 +38,7 @@ function Research() {
 Research.prototype.toString = function() {
     return "    [Research Infor]rid = " + this.rid + " | name = " + this.nameResearch + " | Bound color = " + this.colorBound
             + " | Point color " + this.colorPoint + " | Background color " + this.colorBackground
-            + " | Time Range " + this.timeRange.startDate + " -> " + this.timeRange.endDate;
+            + " | Time Range " + this.timeRange ;
 };
 
 // Manipulate list of layers
