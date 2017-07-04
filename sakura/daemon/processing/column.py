@@ -14,7 +14,7 @@ class Column(object):
         for record in self.filtered_stream():
             yield record[0]
     def chunks(self, *args, **kwargs):
-        for chunk in self.filtered_stream().chunks():
+        for chunk in self.filtered_stream().chunks(*args, **kwargs):
             yield chunk.columns[0]
     def filtered_stream(self):
         return self.output_stream.select_columns(self)
