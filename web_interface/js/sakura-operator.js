@@ -1,14 +1,32 @@
 //Code started by Etienne Dublé for the LIG
 //February 16th, 2017
 
-function InternalStreamInterface(op_id, stream_index) {
-    this.op_id = op_id;
-    this.stream_index = stream_index;
+function StreamInterface(op, stream_type, stream_label) {
     this.get_range = function (row_start, row_end, cb) {
-            sakura.common.ws_request( 'get_operator_internal_range',
-                        [this.op_id, this.stream_index, row_start, row_end],
-                        {},
-                        cb);
+        op.do_when_init_done(function(op_info) {
+            var streams;
+            if (stream_type == 'input') {
+                streams = op_info.inputs;
+            }
+            else if (stream_type == 'internal') {
+                streams = op_info.internal_streams;
+            }
+            else if (stream_type == 'output') {
+                streams = op_info.outputs;
+            }
+            else {
+                console.error('UNKNOWN stream_type ' + stream_type);
+                return;
+            }
+            for(var stream_id = 0; stream_id < streams.length; stream_id++) {
+                if (streams[stream_id].label == stream_label) {
+                    sakura.common.ws_request( 'get_operator_' + stream_type + '_range',
+                            [op_info.op_id, stream_id, row_start, row_end],
+                            {},
+                            cb);
+                }
+            }
+        });
     };
 }
 
@@ -87,14 +105,16 @@ function SakuraOperatorInterface() {
         });
     };
 
+    this.get_input_stream = function (stream_label) {
+        return new StreamInterface(this, 'input', stream_label);
+    };
+
     this.get_internal_stream = function (stream_label) {
-        this.do_when_init_done(function(op_info) {
-            var result = null;
-            for (id in op_info.internal_streams) {
-                if (op_info.internal_streams[id].label == stream_label)
-                    return new InternalStreamInterface(op_info.op_id, parseInt(id));
-            }
-        });
+        return new StreamInterface(this, 'internal', stream_label);
+    };
+
+    this.get_output_stream = function (stream_label) {
+        return new StreamInterface(this, 'output', stream_label);
     };
 
     this.onready = function(cb) {
