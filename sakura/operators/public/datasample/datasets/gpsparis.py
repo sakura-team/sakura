@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from pkg_resources import resource_string
 import zlib, pickle, numpy as np
-from sakura.daemon.processing.stream import NumpyStream
+from sakura.daemon.processing.stream import NumpyArrayStream
 
 def load_data():
     global data
@@ -20,7 +20,7 @@ def load_data():
     return data
 
 # dataset description
-STREAM = NumpyStream('GPS Data, Paris', load_data())
+STREAM = NumpyArrayStream('GPS Data, Paris', load_data())
 STREAM.columns[0].add_tags('longitude')
 STREAM.columns[1].add_tags('latitude')
 # we consider LENGTH is unknown

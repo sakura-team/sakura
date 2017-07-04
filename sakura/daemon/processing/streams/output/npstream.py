@@ -5,7 +5,7 @@ from sakura.common.chunk import NumpyChunk
 
 DEFAULT_CHUNK_SIZE = 100000
 
-class NumpyStream(OutputStreamBase):
+class NumpyArrayStream(OutputStreamBase):
     def __init__(self, label, array):
         OutputStreamBase.__init__(self, label)
         self.array = array
@@ -21,7 +21,7 @@ class NumpyStream(OutputStreamBase):
     def __select_columns__(self, *col_indexes):
         col_labels = list(self.columns[col_index].label for col_index in col_indexes)
         filtered_array = self.array[col_labels]
-        return NumpyStream(self.label, filtered_array)
+        return NumpyArrayStream(self.label, filtered_array)
     def __filter__(self, col_index, comp_op, other):
         col_label = self.columns[col_index].label
         # we generate a condition of the form:
@@ -30,4 +30,4 @@ class NumpyStream(OutputStreamBase):
         # self.array['age'] > 20
         array_cond = comp_op(self.array[col_label], other)
         # then we apply this condition on the array
-        return NumpyStream(self.label, self.array[array_cond])
+        return NumpyArrayStream(self.label, self.array[array_cond])
