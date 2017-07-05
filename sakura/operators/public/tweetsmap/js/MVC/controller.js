@@ -28,10 +28,107 @@ function Controller(){
         myView.researchSelector.addOption(myModel.currentResearch.nameResearch);        
         myView.researchCheckBoxList.addCheckBox(myModel.currentResearch.nameResearch);
         myView.rois.addTo(map);
+        this.updateTweetsmap();
         this.actualize();
     };
 
-//-----------------------------Event Handling---------------------------------------
+    //-----------------------------GUI->BD----------------------------
+    this.updateTweetsmap = function(){
+    
+        // get data by operators
+        sakura.operator.fire_event(['new_zone'], function (result) {
+            // data = {lat: x, lng: y}
+            var data = result.tweetsmap;
+            // markers layer creation
+            for (var i = 0; i < data.lat.length; i++) {
+                // Corresponding marker
+                var marker = new PruneCluster.Marker(data.lat[i], data.lng[i]);
+                // filtre by ROIS
+                myModel.allMarkers.RegisterMarker(marker);
+            }
+            console.log(myModel.allMarkers.GetMarkers().length);
+            
+        });
+
+
+    };
+
+    this.updateMarkers = function(){
+        // remove all layers in displaed Markers for reupdating
+        myView.displayedMarkers.clearLayers();
+        var i = 0;
+        var listPoly = [];
+        var listMarkers = [];
+        myView.rois.eachLayer(function(layer){
+            layer.eachLayer(function(l){
+                if(map.hasLayer(l)){
+                    listPoly[i] = l;
+                    // List markers corresponding to listPoly[i]
+                    listMarkers[i] = new PruneClusterForLeaflet(160);
+                    i++;
+                }
+            });
+        });
+
+        var marker;
+        for(var i = 0; i < myModel.allMarkers.GetMarkers().length; i++){
+            marker = myModel.allMarkers.GetMarkers()[i];
+            for(var j=0;j<listPoly.length;j++){
+                // Check if there are no selected ROIs or if marker is inside the selected ROIs
+                if(this.insideOfAPoly(marker, listPoly[j])){
+                    listMarkers[j].RegisterMarker(marker);
+                }
+            }
+        }
+        
+        for(var j=0;j<listPoly.length;j++){
+            myView.displayedMarkers.addLayer(listMarkers[j]);
+        }
+    };
+
+    //----------------------------------Data Filtering--------------------------------
+    
+    /** @function insideOfAPoly void
+    * @param marker L.Marker representing the point
+    * @param poly L.Poly representing the zone of intesrest
+    * checking a point if it is located inside zone using the Ray Casting Method
+    */   
+    this.insideOfAPoly = function(marker, poly) {
+        var x = marker.position.lat, y = marker.position.lng;
+        var latlngPoly = poly.getLatLngs();
+        var res = false;
+        for (var ii = 0; ii < latlngPoly.length; ii++ ){
+            var polyPoint = latlngPoly[ii];
+            
+            for (var i = 0, j = polyPoint.length -1; i< polyPoint.length;j = i++) {
+                var xi = polyPoint[i].lat, yi = polyPoint[i].lng;
+                var xj = polyPoint[j].lat, yj = polyPoint[j].lng;
+
+                var intersect = ((yi > y) != (yj > y))
+                    && (x < (xj - xi)*(y - yi)/(yj-yi) + xi);
+                if (intersect) res = !res; 
+            }
+        }
+
+        return res;
+    };
+
+    this.getMarkers = function(layer) {
+        var res = new PruneClusterForLeaflet(160);
+        var marker;
+        for(var i = 0; i < myModel.allMarkers.GetMarkers().length; i++){
+            marker = myModel.allMarkers.GetMarkers()[i];
+            // Check if there are no selected ROIs or if marker is inside the selected ROIs
+            if(this.insideOfAPoly(marker, layer)){
+                res.RegisterMarker(marker);
+            }
+        }
+        layer.markers.addTo(map);
+
+    };
+
+
+    //----------------------------------Event Handling-------------------------------------
     /**
      *  Event Handling function
      */ 
@@ -106,17 +203,18 @@ function Controller(){
 
     /**
      * @function addOverlays() called by event 'finished drawing' of newPolygonButton
-     *  add new overlay
+     * layer: ROI 
+     * add new overlay with the layer as the inside point of layer
      * @see view.js
      */
     this.addOverlays = function(layer, name){
-        myView.overlaysPanel.addOverlay(layer, name);
+        myView.layersPanel.addOverlay(layer, name);
     }
 
     // @function removeAllOverlays()
     this.removeAllOverlays = function(){
         myModel.currentResearch.roi.eachLayer(function(layer){
-            myView.overlaysPanel.removeLayer(layer);
+            myView.layersPanel.removeLayer(layer);
         });
     }
 
@@ -124,7 +222,7 @@ function Controller(){
         myModel.currentResearch.roi.eachLayer(function (layer){
             if(layer.getLatLngs()[0].length==0){
                 myModel.currentResearch.roi.removeLayer(layer);
-                myView.overlaysPanel.removeLayer(layer);
+                myView.layersPanel.removeLayer(layer);
                 return;
             }
         });
@@ -200,7 +298,7 @@ function Controller(){
         var i = 0;
         group.eachLayer(function(layer){
             i++;
-            myView.overlaysPanel.addOverlay(layer, layer.namePoly);
+            myView.layersPanel.addOverlay(layer, layer.namePoly);
         });
    
     };
@@ -211,7 +309,7 @@ function Controller(){
     // used when change current research
     this.removePolygonsFGUI = function(group){
         group.eachLayer(function(layer){
-            myView.overlaysPanel.removeLayer(layer);
+            myView.layersPanel.removeLayer(layer);
         });
         myView.rois.removeLayer(group);        
     };
@@ -219,7 +317,7 @@ function Controller(){
     this.removeAllPolygonsFGUI = function(){
         myView.rois.eachLayer(function(layer){
             layer.eachLayer(function(souslayer){
-                myView.overlaysPanel.removeLayer(souslayer);
+                myView.layersPanel.removeLayer(souslayer);
             });
         });
         myView.rois.clearLayers();
@@ -394,6 +492,8 @@ function Controller(){
             this.getIndexByResearch(myModel.currentResearch),
             true
         );
+
+        this.updateMarkers();
         
     };
 

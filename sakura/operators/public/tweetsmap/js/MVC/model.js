@@ -7,6 +7,7 @@ function Model(){
     this.currentResearch = null;
     this.rid = 0;
     this.mapLayers = new MapLayers;
+    this.allMarkers = new PruneClusterForLeaflet(160);
 }
 
 // Research class that contains:
@@ -24,6 +25,8 @@ function Research() {
     this.colorPoint = 'Olive';
     this.colorBackground = 'Olive';
     this.roi = new L.LayerGroup;
+    this.expandRoi = new L.LayerGroup;
+    this.expandRoi.addLayer(this.roi);
     this.timeRange = null;  
 
     this.actualize = function() {

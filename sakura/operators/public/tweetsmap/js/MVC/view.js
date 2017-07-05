@@ -330,11 +330,11 @@ function View(){
             L.DomEvent.on(checkbox, "click", function(){
                 var lineIndex = Array.prototype.indexOf.call(thisNow._container.children, line);
                 if(checkbox.checked){
-                    console.log(lineIndex);
                     myController.displayResearch(lineIndex);
                 } else {
                     myController.hideResearch(lineIndex);                    
                 }
+                myController.actualize();
             });
                                 
         },
@@ -453,7 +453,6 @@ function View(){
         if (e.layer instanceof L.Path) e.layer.on('dblclick', L.DomEvent.stop).on('dblclick', e.layer.toggleEdit);
     });
 
-
     // when finish drawing
     map.on('editable:drawing:end', function (e) {
         // save Poly
@@ -461,6 +460,11 @@ function View(){
         var namePoly = myModel.currentResearch.nameResearch + " " + index;
         e.layer.namePoly = namePoly;
         e.layer.bindTooltip(e.layer.namePoly).openTooltip();
+        // e.layer.markers = new PruneClusterForLeaflet(160);
+        // myController.getMarkers(e.layer);
+        // var group = new L.LayerGroup;
+        // group.addLayer(e.layer);
+        // group.addLayer(e.layer.markers);
         myController.addOverlays(e.layer, e.layer.namePoly);
         myController.actualize();
     });
@@ -469,7 +473,7 @@ function View(){
      *  Add button for save current research
      */ 
     this.saveResearchButton =
-        thisView.createButton(map,'⊕','New Research');
+        thisView.createButton(map,'↓ ','Save Research');
     L.DomEvent.on(this.saveResearchButton.getLink(), 'click', function() {
                         myController.addResearch();
                     });
@@ -544,14 +548,16 @@ function View(){
         L.control.layers(myModel.mapLayers.dict);
     this.layersPanel.addTo(map);
     myModel.mapLayers.getDefault().addTo(map);
-
+    L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
+        myController.actualize();
+    });
     /**
      * Add overlays control panel
      */
     
-    this.overlaysPanel =
-        L.control.layers();
-    this.overlaysPanel.addTo(map);
+    // this.overlaysPanel =
+    //     L.control.layers();
+    // this.overlaysPanel.addTo(map);
     
     /**
      *  LayerGroup contain all ROIs displayed on Map 
@@ -563,6 +569,9 @@ function View(){
         new L.LayerGroup;
     this.rois.addTo(map);
 
+    this.displayedMarkers =
+        new L.LayerGroup;
+    this.displayedMarkers.addTo(map);
 }
 
 var myView = new View();
