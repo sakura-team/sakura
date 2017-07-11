@@ -14,7 +14,7 @@ function Model(){
 // - A zone of interst 
 // - Time range 
 // - Color
-// Attention: using GUI.addResearch to create new research.
+// Attention: please use GUI.addResearch to create new research
 function Research() {
 
     var thisResearch = this;
@@ -37,14 +37,15 @@ function Research() {
         thisResearch.roi.clearLayers();
     };
 }
-// override toString()
+
+// Override toString() for degging
 Research.prototype.toString = function() {
     return "    [Research Infor]rid = " + this.rid + " | name = " + this.nameResearch + " | Bound color = " + this.colorBound
             + " | Point color " + this.colorPoint + " | Background color " + this.colorBackground
             + " | Time Range " + this.timeRange ;
 };
 
-// Manipulate list of layers
+// Manipulate layers
 function MapLayers(){
 
     this.dict = {};
@@ -78,7 +79,21 @@ function MapLayers(){
         return this.dict["Plan"];
     };
 
+    // // -- Rivers baseMap --
+    layer = L.tileLayer('//stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+                subdomains: 'abcd',
+                maxZoom: 20,
+                minZoom: 0,
+            })
+    this.dict["Toner"] = layer;
+
+    this.getDefault = function() {
+        return this.dict["Plan"];
+    };
+
 }
 
+//---------------------------------------------Model Singleton------------------------------------//
 var myModel = new Model;
 

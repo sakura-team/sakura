@@ -4,6 +4,11 @@ function View(){
 
     var thisView = this;
 
+    //----------------------------------------Classes-------------------------------------------
+    /**
+     * Each class below represents a entiti on GUI 
+     */
+
     L.TextBox = L.Control.extend({
         options: {
             position: 'topleft'
@@ -367,6 +372,48 @@ function View(){
 
     });
 
+    L.MessageBox = L.Control.extend({
+        options: {
+            position: "bottomright"
+        },
+
+        onAdd: function(map) {
+            this._container= L.DomUtil.create('div');
+            return this._container;
+        },
+
+        setClass: function(className) {
+            this._container.className = className;
+            this._container.style.float = 'right';  
+            this._container.style.margin = '0px 6px 6px 0px';
+        },
+
+        update: function(text) {
+            this._container.innerHTML = text;
+        },
+
+        hide: function(){
+            this._container.style.display = 'none';
+        },
+        show: function(){
+            this._container.style.display = 'inline';
+        }
+    });
+
+    //-----------------------------------------Creater------------------------------------------------
+
+    /**
+     * These functions are intended for creating the instances of the classes aboves
+     * @return Entite on GUI
+     */
+    this.createMessageBox = function(map) {
+        var res = new L.MessageBox;
+        res.addTo(map);
+
+        return res;
+    }
+
+
     this.createSelector = function(map, list, title){
         var res  = new L.SelectBox({
             listOptions: list,
@@ -418,7 +465,9 @@ function View(){
 
         return res;
     }
-//-------------------------------------TOP LEFT-----------------------------------//
+
+    //--------------------------------------Instances----------------------------------------------
+    //---------------------------------------TOP LEFT----------------------------------------------
     this.nameBox = 
         thisView.createTextBox(map,"ResearchBox", "Current Research");
 
@@ -460,15 +509,15 @@ function View(){
         var namePoly = myModel.currentResearch.nameResearch + " " + index;
         e.layer.namePoly = namePoly;
         e.layer.bindTooltip(e.layer.namePoly).openTooltip();
-        // e.layer.markers = new PruneClusterForLeaflet(160);
-        // myController.getMarkers(e.layer);
-        // var group = new L.LayerGroup;
-        // group.addLayer(e.layer);
-        // group.addLayer(e.layer.markers);
         myController.addOverlays(e.layer, e.layer.namePoly);
         myController.actualize();
+        myController.updateMarkers();
     });
-        
+
+    // when edit 
+    map.on('editable:editing', function (e) {
+        myController.updateMarkers();
+    });   
     /**
      *  Add button for save current research
      */ 
@@ -522,7 +571,7 @@ function View(){
     this.tweetsColorSelector =
         thisView.createColorSelector(map,colors,'Tweets Color');
 
-//----------------------------------TOP RIGHT------------------------------------///
+    //----------------------------------TOP RIGHT------------------------------------///
     
     /**
      * Add recherche selectable checkbox list
@@ -549,15 +598,23 @@ function View(){
     this.layersPanel.addTo(map);
     myModel.mapLayers.getDefault().addTo(map);
     L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
-        myController.actualize();
+        myController.updateMarkers();
     });
     /**
      * Add overlays control panel
      */
     
-    // this.overlaysPanel =
-    //     L.control.layers();
-    // this.overlaysPanel.addTo(map);
+    this.overlaysPanel =
+        L.control.layers();
+    this.overlaysPanel.addTo(map);
+    
+    //---------------------------------Botton right-----------------------------
+   
+
+    this.pointNumber = this.createMessageBox(map);
+    this.pointNumber.setClass("text-basic text-border");
+    this.pointNumber.update(" Data loading...")
+
     
     /**
      *  LayerGroup contain all ROIs displayed on Map 
@@ -574,4 +631,5 @@ function View(){
     this.displayedMarkers.addTo(map);
 }
 
+//---------------------------------------View Singleton-----------------------------------------------/
 var myView = new View();
