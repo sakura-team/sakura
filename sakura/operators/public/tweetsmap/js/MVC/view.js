@@ -368,6 +368,10 @@ function View(){
         // set box to uncheckable (bool = false)/ checkable (bool = true)
         setCheckable: function(index, disabled) {     
             this._container.children[index].children[0].disabled = disabled;
+        },
+
+        getChecked: function(index) {
+            return this._container.children[index].children[0].checked;
         }
 
     });
@@ -494,6 +498,7 @@ function View(){
     var deleteShape = function (e) {
       if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()){
         var poly = this.editor.deleteShapeAt(e.latlng);
+        //var poly = this.editor.deleteShapeAt(e.latlng);
         myController.deletePolygons(poly);
       }
     };
@@ -515,9 +520,13 @@ function View(){
     });
 
     // when edit 
-    map.on('editable:editing', function (e) {
+    map.on('editable:vertex:dragend', function (e) {
         myController.updateMarkers();
-    });   
+    });
+    map.on('editable:dragend', function (e) {
+        myController.updateMarkers();
+    });    
+    
     /**
      *  Add button for save current research
      */ 

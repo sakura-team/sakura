@@ -38,7 +38,6 @@ function Controller(){
     function updateTweetsmapCallback(result){
         if(result.done) {
             myView.pointNumber.hide();
-            console.log("[TRACE]");
         }
         else
         {
@@ -56,6 +55,9 @@ function Controller(){
             myModel.allMarkers.RegisterMarker(marker);
         }
     };
+
+    
+
 
     this.updateTweetsmap = function(){
     
@@ -103,57 +105,40 @@ function Controller(){
                     listPoly[i] = thisControl.convertPolygonToArray(l);
                     // List markers corresponding to listPoly[i]
                     listMarkers[i] = new PruneClusterForLeaflet(160);
+                    myView.displayedMarkers.addLayer(listMarkers[i]);
                     i++;
                 }
             });
         });
+        var nbPoint = 0;
+
+        function updateMarkersCallback(result){
+            if(result.done) {
+                myView.pointNumber.hide();
+            }
+            else
+            {
+                sakura.operator.fire_event(["abc", HEATMAP_REFRESH_DELAY, listPoly], updateMarkersCallback);
+                myView.pointNumber.update(nbPoint + " points loaded ..");
+            } 
+
+            for(var i = 0 ; i < result.tweetsmap.length;i++){
+                var marker = null;
+                for(var j = 0; j< result.tweetsmap[i].length;j++){
+                    marker = new PruneCluster.Marker(
+                    result.tweetsmap[i][j][0], result.tweetsmap[i][j][1]);
+                    listMarkers[i].RegisterMarker(marker);
+                    nbPoint++;
+                }
+                listMarkers[i].ProcessView();
+            }
+        }
 
         if(listPoly.length != 0) {
-        sakura.operator.fire_event(["polygons_update", listPoly ]
-                , function(result){
-                    // // data = {lat: x, lng: y}
-                    // var data = result.tweetsmap;
-                    // // markers layer creation
-                    // for (var i = 0; i < data.lat.length; i++) {
-                    //     // Corresponding marker
-                    //     var marker = new PruneCluster.Marker(data.lat[i], data.lng[i]);
-                    //     // filtre by ROIS
-                    //     markers.RegisterMarker(marker);
-                    // }
-                    // myView.displayedMarkers.addLayer(markers);
-                    
-                    for(var i = 0 ; i < result.tweetsmap.length;i++){
-                        var marker = null;
-                        for(var j = 0; j< result.tweetsmap[i].length;j++){
-                            marker = new PruneCluster.Marker(
-                                result.tweetsmap[i][j][0], result.tweetsmap[i][j][1]);
-                            listMarkers[i].RegisterMarker(marker);
-                        }
-                        myView.displayedMarkers.addLayer(listMarkers[i]);
-                    }
-
-                    myView.displayedMarkers.addTo(map);
-                });
+        sakura.operator.fire_event(["polygons_update", HEATMAP_REFRESH_DELAY, listPoly ]
+                , updateMarkersCallback);
         }
-        // for(var i; i < listPoly.length;i++){
-        //     listPoly[i].typeROI = "polygon";
-        //     this.updateMarkersUnit(listMarkers[i], listPoly[i]);
-        // }
-
-        // var marker;
-        // for(var i = 0; i < myModel.allMarkers.GetMarkers().length; i++){
-        //     marker = myModel.allMarkers.GetMarkers()[i];
-        //     for(var j=0;j<listPoly.length;j++){
-        //         // Check if there are no selected ROIs or if marker is inside the selected ROIs
-        //         if(this.insideOfAPoly(marker, listPoly[j])){
-        //             listMarkers[j].RegisterMarker(marker);
-        //         }
-        //     }
-        // }
-        
-        // for(var j=0;j<listPoly.length;j++){
-        //     myView.displayedMarkers.addLayer(listMarkers[j]);
-        // }
+    
     };
 
     //----------------------------------Data Filtering--------------------------------
@@ -189,17 +174,31 @@ function Controller(){
      */
     this.convertPolygonToArray = function(poly){
         var res = [];
-        //res.push("polygon");
-        var latlngPoly = poly.getLatLngs();
-        // exemple a triangle:  [[1, 2], [3, 4], [5, 6]]  
-        // latlngPoly.length = 1, polyPoints.length =3
-        for(var i = 0; i < latlngPoly.length; i++){
-            var polyPoints = latlngPoly[i];
-            for(var j = 0; j < polyPoints.length; j++){
-                res.push([polyPoints[j].lat, polyPoints[j].lng]);
+        var data;
+        var type;
+        if(poly instanceof L.Rectangle || poly instanceof L.Polygon) {
+            type = "polygon";
+        
+            //res.push("polygon");
+            var latlngPoly = poly.getLatLngs();
+            // exemple a triangle:  [[1, 2], [3, 4], [5, 6]]  
+            // latlngPoly.length = 1, polyPoints.length =3
+            for(var i = 0; i < latlngPoly.length; i++){
+                var polyPoints = latlngPoly[i];
+                for(var j = 0; j < polyPoints.length; j++){
+                    res.push([polyPoints[j].lat, polyPoints[j].lng]);
+                }
             }
+            data = [res];
         }
-        return [res];
+        else if (poly instanceof L.Circle){
+            type = 'circle';
+            data = {'center': { 'lat': poly.getLatLng().lat, 
+                                'lng': poly.getLatLng().lng}, 
+                'radius': poly.getRadius()};
+        }
+        
+        return {'type' : type, 'data' : data};
     }
 
     this.getMarkers = function(layer) {
@@ -339,7 +338,8 @@ function Controller(){
 
     this.deletePolygons = function(poly){
         myModel.currentResearch.roi.eachLayer(function (layer){
-            if(layer.getLatLngs()[0].length==0){
+            if((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
+                && layer.getLatLngs()[0].length==0){
                 myModel.currentResearch.roi.removeLayer(layer);
                 myView.layersPanel.removeLayer(layer);
                 return;
@@ -474,6 +474,8 @@ function Controller(){
 
         // Say good bye to previous research
         var researchObsolete = myModel.currentResearch;
+        // Check if next-currentResearch is checked or not
+        var nextCurrentResearchChecked = myView.researchCheckBoxList.getChecked(index);
         // If previos research is still in the research list
         if(this.getIndexByResearch(researchObsolete) != null) 
         {
@@ -495,7 +497,7 @@ function Controller(){
         this.setNameToGUI(myModel.currentResearch.nameResearch);
         this.setColorBackgroundToGUI(myModel.currentResearch.colorBackground);
         this.setColorPointToGUI(myModel.currentResearch.colorPoint);
-        this.addPolygonsToGUI(myModel.currentResearch.roi);
+        if(!nextCurrentResearchChecked) this.addPolygonsToGUI(myModel.currentResearch.roi);
         if(myModel.currentResearch.nameResearch === "Current Research"){
             myView.nameBox.setValue('');
         }
