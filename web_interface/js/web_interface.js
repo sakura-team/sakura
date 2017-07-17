@@ -456,7 +456,10 @@ if (result.fileSystem.length>0) {
         + '<tr><th>Name</th><th colspan=2>Description</th></tr></thead><tbody>';
   for(i=0;i<result.fileSystem.length;i++) {
 	s = s + '<tr><td><a onclick="not_yet();">'+result.fileSystem[i].filename+'</a></td><td>'+result.fileSystem[i].description+'</td></tr>';}
-  s = s + '</tbody></table></div>';}
+  if (document.getElementById("idSignInWidget").innerText.match("Hello") && (boolAlea(0.1)=="true")) { //todo : ameliorer test hello == test droit en edition
+    s = s + '</tbody></table><span class="btn  btn-primary start"><i class="glyphicon glyphicon-plus"></i><span> Add file...</span><input type="file" onchange="not_yet()" /></span></span></div>';}
+  else { //pas auteur ou pas logge'
+  s = s + '</tbody></table></div>';}}
 //Comments
 s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3>' 
       + '<span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
