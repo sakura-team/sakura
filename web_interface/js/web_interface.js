@@ -7,6 +7,7 @@ function not_yet(s = '') {
     alert('Not implemented yet: '+ s);}}
 
 function showDiv(event,dir) {
+//todo : déplacer les event.preventDefault() ici ?
 //save mode ?
 if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
   res=confirm("Leave edit mode?");
@@ -84,7 +85,7 @@ function editModeSubmitControl(event) {
   //alert("Entering edit mode.");
   menuSpans=document.getElementsByClassName('editZoneContextualMenu');
   for(i=0;i<menuSpans.length;i++) {
-	menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a>';}
+	menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);" title="edit"><i class="glyphicon glyphicon-edit"></i></a>';}
   document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';
   plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
   for(i=0;i<plusFieldButtons.length;i++) {
@@ -93,9 +94,9 @@ function editModeSubmitControl(event) {
 function editField(field,event) {
   event.preventDefault();	
   initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
-  field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField'><i class='glyphicon glyphicon-ok'></i></a>"
-    +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-ban-circle'></i></a>"
-    +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField'><i class='glyphicon glyphicon-remove'></i></a></span>";}
+  field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField' title='save'><i class='glyphicon glyphicon-ok'></i></a>"
+    +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField' title='cancel'><i class='glyphicon glyphicon-ban-circle'></i></a>"
+    +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField' title='delete'><i class='glyphicon glyphicon-remove'></i></a></span>";}
 
 function saveField(field,event) {
   event.preventDefault();	
@@ -428,7 +429,7 @@ if (result.results.length>0) {
   for(i=0;i<result.results.length;i++) {
     s = s + "<a onclick=\"showDiv(event,'Results/tmpResult');\" href=\"http://sakura.imag.fr/Results/tmpResult\">"+result.results[i].name+"</a>, ";}
   s = s + '</dd>';}
-s = s + '<a class="clPlusFieldButton" onclick="addField(this,event);" style="cursor: pointer; display:none;"><span style="left:33%;" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>';
+s = s + '<a class="clPlusFieldButton" onclick="addField(this,event);" style="cursor: pointer; display:none;" title="add field"><span style="left:33%;" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>';
 s = s + '</dl>'
 	  + '<ul class="list-group col-md-6">'
 	  +   '<li class="list-group-item list-group-item-info"><strong>About <em>'+result.name+'</em> :</strong></li>'
