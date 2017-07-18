@@ -465,18 +465,26 @@ s = s + '</dl>'
 	  +   '<li class="list-group-item"><strong>Contact:</strong> <span class="label label-primary pull-right">'+result.userName+'@mail.uni</span></li>'
       + '</ul></div>';
 // Description
+desc = shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /> '
+	         +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+	         +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+			 +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+			 +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+			 + '<ul><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li></ul>'
+			 +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+			 +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />';
+s = s + '<div id="descriptionModalAbout'+elt+'" class="modal fade" role="dialog"><div class="modal-dialog">'
+        + '<div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
+        + '<h4 class="modal-title">Edit Explanation About</h4></div><div class="modal-body">';
+s = s + '<form><textarea name="editor1'+elt+'" id="editor1'+elt+'" rows="10" cols="60">'+desc+'</textarea></form>';
+s = s + '<textarea id="processAboutArea'+elt+'" class="form-control" style="display:none;">'+desc+'</textarea>';			 
+s = s + '</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal" onClick="not_yet();">Save and close</button></div></div></div></div>'
 s = s + '<br /><br /><div class="panel panel-primary"><div class="panel-heading">'
       + '<table width="100%"><tbody><tr><td><h4 class="">'
-	  + '<font color="#ffffff">Explanation About '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px' src='media/"+imageEltInverse+"' alt='CC-BY-3.0 Wikipedia Gears'></img></h3>"+'</font></h4></td></tr></tbody></table></div>'
-	  + '<div class="panel-body">'+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /> '
-	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
-	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
-	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
-	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
-								  + '<ul><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li></ul>'
-	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
-	                              +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
-	  +'</div></div>';
+	  + '<font color="#ffffff">Explanation About '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px' src='media/"+imageEltInverse+"' alt='CC-BY-3.0 Wikipedia Gears'></img></h3>"+'</font></h4></td>'
+	  + '<td align="right"><button title="Modification of the Explanation About" class="btn btn-default btn-xs pull-right clPlusFieldButton" style="cursor: pointer; display:none;" data-toggle="modal" data-target="#descriptionModalAbout'+elt+'"><span class=" glyphicon glyphicon-pencil"></span></button></td>'
+	  + '</tr></tbody></table></div>'
+	  + '<div id="processShownAboutArea'+elt+'" class="panel-body">'+desc+'</div></div>';
 //FileSystem	  	  
 if (result.fileSystem.length>0) {
   s = s + '<br /><br /><div class="well row"><h4 class="">Filesystem related to '+result.name+'</h4>'
@@ -498,7 +506,13 @@ for(i=0;i<result.comments.length;i++) {
 	      + '<div class="commentText"><p class="">'+result.comments[i].comment+'</p> '
 		  + '<span class="date sub-text">'+result.comments[i].name+' on '+result.comments[i].date+'</span></div></li><br />';}
 s = s + '<a href="javascript:eltRequestStub(\''+idDiv+'\',\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd
-document.getElementById(idDiv).innerHTML = s;}
+document.getElementById(idDiv).innerHTML = s;
+editorAbout = CKEDITOR.replace( "editor1"+elt);
+editorAbout.on( "change", function( evt ) { 
+  sDesc =  editorAbout.getData(); 
+  document.getElementById("processAboutArea"+elt).value = sDesc; 
+  document.getElementById("processShownAboutArea"+elt).innerHTML = sDesc;});
+}
 
 function eltRequestStub(idDiv,elt,bd) {
 if (!bd) {  // version local
