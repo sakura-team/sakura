@@ -91,6 +91,33 @@ function editModeSubmitControl(event) {
   for(i=0;i<plusFieldButtons.length;i++) {
 	plusFieldButtons[i].style.display='';}} 
 
+// if (document.getElementById("idSignInWidget").innerText.match("Hello") && (boolAlea(0.1)=="true")) { //todo : ameliorer test hello == test droit en edition
+//    s = s + '</tbody></table><span class="btn  btn-primary start"><i class="glyphicon glyphicon-plus"></i><span> Add file...</span><input type="file" onchange="not_yet()" /></span></span></div>';}
+//  else { //pas auteur ou pas logge'
+//  s = s + '</tbody></table></div>';}}
+function addFile(fileSystem,event) {
+  event.preventDefault();	
+  fileSystem.parentElement.children[1].children[1].children[fileSystem.parentElement.children[1].children[1].children.length-1].insertAdjacentHTML("afterend",
+//     '<tr><td><span class="btn  btn-primary start"><i class="glyphicon glyphicon-plus"></i><span> Add file...</span><input type="file" onchange="not_yet()" /></span></td>'
+     '<tr><td><input type="file" /></td>'
+   + '<td><input value="description" type="text" size="60"></td>'
+   + '<td><a onclick="saveFile(this,event);" class="validateDescriptionFile" title="save"><i class="glyphicon glyphicon-ok"></i></a></td></tr>');
+
+//	"<dt class='description-terms-align-left'>"+res+"</dt><dd class='editableDescriptionField'>value?<span class='editZoneContextualMenu'><a class='editDescriptionField' href='' onclick='editField(this,event);'><i class='glyphicon glyphicon-edit'></i></a></span></dd>");
+//  initFileValue = fileSystem.parentElement.parentElement.childNodes[0].textContent;
+  }
+
+function saveFile(fileSystem,event) {
+  event.preventDefault();	
+  if (fileSystem.parentElement.parentElement.children[0].children[0].files.length == 0) {
+    alert('select file');}
+  else {
+    fileSystem.parentElement.parentElement.innerHTML = '<tr><td><a onclick="not_yet();">'+fileSystem.parentElement.parentElement.children[0].children[0].files[0].name+'</a></td>'
+      + '<td>'+fileSystem.parentElement.parentElement.children[1].children[0].value+'</td></tr>';}}
+//	'<tr><td><a onclick="not_yet();">'+result.fileSystem[i].filename+'</a></td><td>'+result.fileSystem[i].description+'</td></tr>';
+//  fileSystemInitValue = fileSystem.parentElement.childNodes[0].value;
+//  fileSystem.parentElement.parentElement.innerHTML=fileSystemInitValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';}
+  
 function editField(field,event) {
   event.preventDefault();	
   initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
@@ -457,10 +484,9 @@ if (result.fileSystem.length>0) {
         + '<tr><th>Name</th><th colspan=2>Description</th></tr></thead><tbody>';
   for(i=0;i<result.fileSystem.length;i++) {
 	s = s + '<tr><td><a onclick="not_yet();">'+result.fileSystem[i].filename+'</a></td><td>'+result.fileSystem[i].description+'</td></tr>';}
-  if (document.getElementById("idSignInWidget").innerText.match("Hello") && (boolAlea(0.1)=="true")) { //todo : ameliorer test hello == test droit en edition
-    s = s + '</tbody></table><span class="btn  btn-primary start"><i class="glyphicon glyphicon-plus"></i><span> Add file...</span><input type="file" onchange="not_yet()" /></span></span></div>';}
-  else { //pas auteur ou pas logge'
-  s = s + '</tbody></table></div>';}}
+  s = s + '</tbody></table>';
+  s = s + '<a class="clPlusFieldButton" onclick="addFile(this,event);" style="cursor: pointer; display:none;" title="add file"><span style="left:33%;" class="glyphicon glyphicon-plus" aria-hidden="true"></span></a>';
+  s = s + '</div>';}
 //Comments
 s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3>' 
       + '<span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
