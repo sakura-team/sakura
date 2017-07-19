@@ -477,7 +477,6 @@ s = s + '<div id="descriptionModalAbout'+elt+'" class="modal fade" role="dialog"
         + '<div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
         + '<h4 class="modal-title">Edit Explanation About</h4></div><div class="modal-body">';
 s = s + '<form><textarea name="editor1'+elt+'" id="editor1'+elt+'" rows="10" cols="60">'+desc+'</textarea></form>';
-s = s + '<textarea id="processAboutArea'+elt+'" class="form-control" style="display:none;">'+desc+'</textarea>';			 
 s = s + '</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal" onClick="not_yet();">Save and close</button></div></div></div></div>'
 s = s + '<br /><br /><div class="panel panel-primary"><div class="panel-heading">'
       + '<table width="100%"><tbody><tr><td><h4 class="">'
@@ -510,9 +509,7 @@ document.getElementById(idDiv).innerHTML = s;
 editorAbout = CKEDITOR.replace( "editor1"+elt);
 editorAbout.on( "change", function( evt ) { 
   sDesc =  editorAbout.getData(); 
-  document.getElementById("processAboutArea"+elt).value = sDesc; 
-  document.getElementById("processShownAboutArea"+elt).innerHTML = sDesc;});
-}
+  document.getElementById("processShownAboutArea"+elt).innerHTML = sDesc;});}
 
 function eltRequestStub(idDiv,elt,bd) {
 if (!bd) {  // version local
