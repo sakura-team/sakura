@@ -549,18 +549,18 @@ function Controller(){
 
         // hide save button when an error occurs
         if(message){
-            myView.saveResearchButton.setDisabled(true);
+            //myView.saveResearchButton.setDisabled(true);
             myView.newPolygonButton.setDisabled(true);
             myView.newRectangleButton.setDisabled(true);
             myView.newCircleButton.setDisabled(true);
-            myView.removeResearchButton.setDisabled(true);
+            //myView.removeResearchButton.setDisabled(true);
         }
         else{
-            myView.saveResearchButton.setDisabled(false);  
+            //myView.saveResearchButton.setDisabled(false);  
             myView.newPolygonButton.setDisabled(false);
             myView.newRectangleButton.setDisabled(false);
             myView.newCircleButton.setDisabled(false);
-            myView.removeResearchButton.setDisabled(false);
+            //myView.removeResearchButton.setDisabled(false);
         }
         if(name == "ton nom?")
             message = "Salut, Je suis Tweetsmap !"

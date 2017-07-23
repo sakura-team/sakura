@@ -1,6 +1,6 @@
 var hideC = false;
 
-function hideConsultation(){
+function hideManagement(){
     if(hideC==true){
         document.getElementById("consultation").style.right="-40%";
         document.getElementById("hideConsultation").innerHTML='<i class="fa fa-angle-left" aria-hidden="true"></i>';

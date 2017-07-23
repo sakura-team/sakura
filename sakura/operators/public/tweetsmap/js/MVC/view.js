@@ -9,9 +9,80 @@ function View(){
      * Each class below represents a entiti on GUI 
      */
 
+    L.Class.extend = function (props) {
+
+	// @function extend(props: Object): Function
+	// [Extends the current class](#class-inheritance) given the properties to be included.
+	// Returns a Javascript function that is a class constructor (to be called with `new`).
+	var NewClass = function () {
+
+		// call the constructor
+		if (this.initialize) {
+			this.initialize.apply(this, arguments);
+		}
+
+		// call all constructor hooks
+		this.callInitHooks();
+	};
+
+	var parentProto = NewClass.__super__ = this.prototype;
+
+	var proto = L.Util.create(parentProto);
+	proto.constructor = NewClass;
+
+	NewClass.prototype = proto;
+
+	// inherit parent's statics
+	for (var i in this) {
+		if (this.hasOwnProperty(i) && i !== 'prototype') {
+			NewClass[i] = this[i];
+		}
+	}
+
+	// mix static properties into the class
+	if (props.statics) {
+		L.extend(NewClass, props.statics);
+		delete props.statics;
+	}
+
+	// mix includes into the prototype
+	if (props.includes) {
+		L.Util.extend.apply(null, [proto].concat(props.includes));
+		delete props.includes;
+	}
+
+	// merge options
+	if (proto.options) {
+		props.options = L.Util.extend(L.Util.create(proto.options), props.options);
+	}
+
+	// mix given properties into the prototype
+	L.extend(proto, props);
+
+	proto._initHooks = [];
+
+	// add method for calling all hooks
+	proto.callInitHooks = function () {
+
+		if (this._initHooksCalled) { return; }
+
+		if (parentProto.callInitHooks) {
+			parentProto.callInitHooks.call(this);
+		}
+
+		this._initHooksCalled = true;
+
+		for (var i = 0, len = proto._initHooks.length; i < len; i++) {
+			proto._initHooks[i].call(this);
+		}
+	};
+
+	return NewClass;
+    };
+
     L.TextBox = L.Control.extend({
         options: {
-            position: 'topleft'
+            position: 'topright'
         },
 
         initialize: function (options) {
@@ -47,7 +118,6 @@ function View(){
             this._messageBox = messageBox;
 
             L.DomEvent
-                .addListener(this._textBox, 'click', L.DomEvent.stop)
                 .addListener(this._textBox, 'keyup', this._onKeyUp, this);
                 
             L.DomEvent.disableClickPropagation(this._textBox);
@@ -96,11 +166,11 @@ function View(){
             };
         },
 
-        onAdd: function(map) {
+        onAdd: function() {
             // container div in HTML
             var container = document.createElement('div'),
                 link = document.createElement('a');
-            container.className = 'leaflet-control leaflet-bar';
+            container.className = 'leaflet-bar';
             container.appendChild(link);
             this._container = container;
             this._link = link;
@@ -121,15 +191,40 @@ function View(){
 
         setDisabled: function(bool){
             if(bool){
-                L.DomUtil.removeClass(this._container, 'leaflet-control');
+                //L.DomUtil.removeClass(this._container, 'leaflet-control');
                 L.DomUtil.removeClass(this._container, 'leaflet-bar');
                 this._container.style.display = 'none';
             }
             else{
-                L.DomUtil.addClass(this._container, 'leaflet-control');
+                //L.DomUtil.addClass(this._container, 'leaflet-control');
                 L.DomUtil.addClass(this._container, 'leaflet-bar');
                 this._container.style.display = 'inline';
             }
+        },
+
+        addOn: function(parent) {
+            parent.appendChild(this._container);
+        },
+
+        addClass: function(className) {
+            L.DomUtil.addClass(this._container, className);
+        },
+
+        // removeClass: function(className) {
+        //     L.DomUtil.removeClass()
+        // },
+
+        invisible: function(bool) {
+            if(bool) this._container.style.visibility = 'hidden';
+            else this._container.style.visibility = 'visible';
+        },
+
+        setSign: function(sign) {
+            this._link.innerHTML = sign;
+        },
+
+        getContainer: function() {
+            return this._container;
         }
     });
 
@@ -168,7 +263,6 @@ function View(){
                 option.style.color = this._config.listColor[i];
                 select.add(option);
                 L.DomEvent
-                    .on(option, 'click', L.DomEvent.stop)
                     .on(option, 'click', function(){
                         select.style.background = select.options[select.selectedIndex].value;
                         select.style.color = select.options[select.selectedIndex].value;
@@ -178,10 +272,7 @@ function View(){
             
             select.style.background = select.options[select.selectedIndex].value;
             select.style.color = select.options[select.selectedIndex].value;
-            L.DomEvent
-                .addListener(this._container, 'click', L.DomEvent.stop);
             
-            L.DomEvent.disableClickPropagation(this._select);
 
             return select;
         },
@@ -198,6 +289,10 @@ function View(){
             this._select.style.background = color;
             this._select.style.color = color;
             this._select.value = color;
+        },
+        
+        getContainer: function(){
+            return this._container;
         }
 
     });
@@ -404,6 +499,7 @@ function View(){
         }
     });
 
+
     //-----------------------------------------Creater------------------------------------------------
 
     /**
@@ -444,7 +540,7 @@ function View(){
             listColor: listColor,
             titleBox: title
         });
-        res.addTo(map);
+        res.onAdd(map);
 
         return res;
     };
@@ -462,39 +558,20 @@ function View(){
         return res;
     };
 
-    this.createButton = function(map, sign, titleButton) {
+    this.createButton = function(sign, titleButton) {
         var res = new L.Button({sign: sign, titleButton: titleButton});
 
-        res.addTo(map);
+        res.onAdd();
 
         return res;
     }
 
     //--------------------------------------Instances----------------------------------------------
     //---------------------------------------TOP LEFT----------------------------------------------
-    this.nameBox = 
-        thisView.createTextBox(map,"ResearchBox", "Current Research");
+    // this.nameBox = 
+    //     thisView.createTextBox(map,"ResearchBox", "Current Research");
 
-    /**
-     *  Add button for creating a zone
-    */ 
-    this.newPolygonButton =
-        thisView.createButton(map,'▱','New polygon');
-    // set up event for ROI creation
-    L.DomEvent.on(this.newPolygonButton.getLink(), 'click', function () {
-                      map.editTools.startPolygon(); 
-            });
-    this.newRectangleButton =
-        thisView.createButton(map,'▭','New rectangle');
-    L.DomEvent.on(this.newRectangleButton.getLink(), 'click', function(){
-                    map.editTools.startRectangle();
-    });
-    this.newCircleButton =
-        thisView.createButton(map,'◯','New Circle');
-    L.DomEvent.on(this.newCircleButton.getLink(), 'click', function(){
-                    map.editTools.startCircle();
-    });
-
+    
     var deleteShape = function (e) {
       if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()){
         var poly = this.editor.deleteShapeAt(e.latlng);
@@ -519,85 +596,85 @@ function View(){
         myController.updateMarkers();
     });
 
-    // when edit 
-    map.on('editable:vertex:dragend', function (e) {
-        myController.updateMarkers();
-    });
-    map.on('editable:dragend', function (e) {
-        myController.updateMarkers();
-    });    
+    // // when edit 
+    // map.on('editable:vertex:dragend', function (e) {
+    //     myController.updateMarkers();
+    // });
+    // map.on('editable:dragend', function (e) {
+    //     myController.updateMarkers();
+    // });    
     
-    /**
-     *  Add button for save current research
-     */ 
-    this.saveResearchButton =
-        thisView.createButton(map,'↓ ','Save Research');
-    L.DomEvent.on(this.saveResearchButton.getLink(), 'click', function() {
-                        myController.addResearch();
-                    });
+    // /**
+    //  *  Add button for save current research
+    //  */ 
+    // this.saveResearchButton =
+    //     thisView.createButton(map,'↓ ','Save Research');
+    // L.DomEvent.on(this.saveResearchButton.getLink(), 'click', function() {
+    //                     myController.addResearch();
+    //                 });
 
-    /**
-    *  Add button for reset current research
-    */ 
-    this.resetResearchButton =
-        thisView.createButton(map,'♺','Reset Research');
-    L.DomEvent.on(this.resetResearchButton.getLink(), 'click', function(){
-        myController.resetResearch();
-    });
+    // /**
+    // *  Add button for reset current research
+    // */ 
+    // this.resetResearchButton =
+    //     thisView.createButton(map,'♺','Reset Research');
+    // L.DomEvent.on(this.resetResearchButton.getLink(), 'click', function(){
+    //     myController.resetResearch();
+    // });
 
-    /**
-     *  Add button for remove current research
-     */
-    this.removeResearchButton =
-        thisView.createButton(map,'❎','Delete Research');
-    L.DomEvent.on(this.removeResearchButton.getLink(), 'click', function(){
-        myController.removeResearch();
-    });
+    // /**
+    //  *  Add button for remove current research
+    //  */
+    // this.removeResearchButton =
+    //     thisView.createButton(map,'❎','Delete Research');
+    // L.DomEvent.on(this.removeResearchButton.getLink(), 'click', function(){
+    //     myController.removeResearch();
+    // });
 
-    /**
-     *  Add button for remove current research
-     */
-    this.removeAllResearchButton =
-        thisView.createButton(map,'❌','Delete All Researchs');
-    L.DomEvent.on(this.removeAllResearchButton.getLink(), 'click', function(){
-        myController.removeAllResearch();
-    });
+    // /**
+    //  *  Add button for remove current research
+    //  */
+    // this.removeAllResearchButton =
+    //     thisView.createButton(map,'❌','Delete All Researchs');
+    // L.DomEvent.on(this.removeAllResearchButton.getLink(), 'click', function(){
+    //     myController.removeAllResearch();
+    // });
 
-    /**
-     *  Add background color selector 
-     */ 
-    var colors = ['Olive','Red', 'Orange', 'Yellow', 'Green', 'Cyan' , 'Blue' , 'Purple' ];
-    this.backgroundColorSelector =
-        thisView.createColorSelector(map,colors,'Background Color');
-    L.DomEvent.on(this.backgroundColorSelector.getSelect(), 'change', function(){
-        myController.actualize();
-    });
+    // /**
+    //  *  Add background color selector 
+    //  */ 
+    // var colors = ['Olive','Red', 'Orange', 'Yellow', 'Green', 'Cyan' , 'Blue' , 'Purple' ];
+    // this.backgroundColorSelector =
+    //     thisView.createColorSelector(map,colors,'Background Color');
+    // L.DomEvent.on(this.backgroundColorSelector.getSelect(), 'change', function(){
+    //     myController.actualize();
+    // });
     
     
-    /**
-     *  Add tweets color selector 
-     */ 
-    this.tweetsColorSelector =
-        thisView.createColorSelector(map,colors,'Tweets Color');
+    // /**
+    //  *  Add tweets color selector 
+    //  */ 
+    // this.tweetsColorSelector =
+    //     thisView.createColorSelector(map,colors,'Tweets Color');
 
     //----------------------------------TOP RIGHT------------------------------------///
     
-    /**
-     * Add recherche selectable checkbox list
-     */
+    // /**
+    //  * Add recherche selectable checkbox list
+    //  */
     
-    this.researchCheckBoxList =
-        this.createCheckBoxList(map, [], 'Research CheckBox List');
+    // this.researchCheckBoxList =
+    //     this.createCheckBoxList(map, [], 'Research CheckBox List');
     
-    /**
-     * Add recherche select box
-     */
+    // /**
+    //  * Add recherche select box
+    //  */
     
-    this.researchSelector =
-        this.createSelector(map, [], 'Research List');
-    L.DomEvent.on(this.researchSelector.getSelect(), 'change', function(){
-         myController.selectResearch();
-    })
+    // this.researchSelector =
+    //     this.createSelector(map, [], 'Research List');
+    // L.DomEvent.on(this.researchSelector.getSelect(), 'change', function(){
+    //      myController.selectResearch();
+    // })
    
     /**
      * Add layers control panel
@@ -606,23 +683,23 @@ function View(){
         L.control.layers(myModel.mapLayers.dict);
     this.layersPanel.addTo(map);
     myModel.mapLayers.getDefault().addTo(map);
-    L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
-        myController.updateMarkers();
-    });
-    /**
-     * Add overlays control panel
-     */
+    // L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
+    //     myController.updateMarkers();
+    // });
+    // /**
+    //  * Add overlays control panel
+    //  */
     
-    this.overlaysPanel =
-        L.control.layers();
-    this.overlaysPanel.addTo(map);
+    // this.overlaysPanel =
+    //     L.control.layers();
+    // this.overlaysPanel.addTo(map);
     
-    //---------------------------------Botton right-----------------------------
+    // //---------------------------------Botton right-----------------------------
    
 
-    this.pointNumber = this.createMessageBox(map);
-    this.pointNumber.setClass("text-basic text-border");
-    this.pointNumber.update(" Data loading...")
+    // this.pointNumber = this.createMessageBox(map);
+    // this.pointNumber.setClass("text-basic text-border");
+    // this.pointNumber.update(" Data loading...")
 
     
     /**
@@ -638,7 +715,255 @@ function View(){
     this.displayedMarkers =
         new L.LayerGroup;
     this.displayedMarkers.addTo(map);
+
+    //---------------------------------------------Button Organisation------------------------------------------//
+    /**
+     * @function stopEventOfLeaflet stop all map events
+     * @param div div on which we want to stop all map events
+     */
+    this.stopEventOfLeaflet = function(div) {
+         if (!L.Browser.touch) {
+            L.DomEvent.disableClickPropagation(div);
+            L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
+        } else {
+            L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
+        }
+    }
+    
+    /**
+     * ChildBox div
+     * under-div of Edit box or Research div
+     * @param name name of box Ex Time Interval
+     * @param parent the parent element 
+     * @param bool true if this is the last child 
+     * 
+     */
+    this.createChildBox = function(name, parent, bool) {
+        var res;
+        res = L.DomUtil.create("div", 'champComposant leaflet-control leaflet-bar ', parent);
+        var firtChild = L.DomUtil.create("div", 'underChampComposant title firstComposant', res);
+        firtChild.innerHTML = name;
+
+        return res;
+    }
+    
+    /**
+     * Edit box div 
+     * Position: left
+     * id = research
+     * see research.css
+     */ 
+    var mapDiv = document.getElementById('map')
+    this.editionDiv = L.DomUtil.create("div", "leaflet-bar title text-border scrollable", mapDiv);
+    this.editionDiv.id = "research";
+    // hide varable
+    this.editionDiv.hide = false;
+    thisView.stopEventOfLeaflet(this.editionDiv);
+
+    // research name
+    this.editionTitle = L.DomUtil.create('div','edition-title text-basic text-border', mapDiv);
+    this.editionTitle.innerHTML = 'Name research';
+    // hide div
+    function hideResearch(){
+
+        if(thisView.editionDiv.hide == true){
+            thisView.editionTitle.style.visibility = 'hidden';
+            thisView.editionDiv.style.visibility = 'hidden';
+            thisView.hideButton.setSign("►");
+            thisView.hideButton.getContainer().style.left = '0px';
+        }
+        else {
+            thisView.editionTitle.style.visibility = 'visible';
+            thisView.editionDiv.style.visibility = 'visible';
+            thisView.hideButton.setSign("◄");
+            thisView.hideButton.getContainer().style.left = '25%';
+        }    
+            thisView.editionDiv.hide = !thisView.editionDiv.hide;
+    }
+
+    this.hideButton = this.createButton('►', 'hide research');
+    L.DomEvent.on(this.hideButton.getLink(), 'click', hideResearch);
+    this.hideButton.addOn(mapDiv);
+    this.hideButton.addClass('hideResearch');
+    
+    var editBox = this.createChildBox("Edition Tools", this.editionDiv);
+    var timeBox = this.createChildBox("Time Interval", this.editionDiv);
+    var colorBox = this.createChildBox("Color Selections", this.editionDiv);
+    
+
+    //--------------- Fill Editiontools box --------------------
+    /**
+     *  Add button for creating a zone
+    */ 
+    this.newPolygonButton =
+        thisView.createButton('▱','New polygon');
+    // set up event for ROI creation
+    L.DomEvent.on(this.newPolygonButton.getLink(), 'click', function () {
+                      map.editTools.startPolygon(); 
+            });
+    this.newRectangleButton =
+        thisView.createButton('▭','New rectangle');
+    L.DomEvent.on(this.newRectangleButton.getLink(), 'click', function(){
+                    map.editTools.startRectangle();
+    });
+    this.newCircleButton =
+        thisView.createButton('◯','New Circle');
+    L.DomEvent.on(this.newCircleButton.getLink(), 'click', function(){
+                    map.editTools.startCircle();
+    });
+
+    /**
+    *  Add button for reset current research
+    */ 
+    this.resetResearchButton =
+        thisView.createButton('♺','Reset Research');
+    L.DomEvent.on(this.resetResearchButton.getLink(), 'click', function(){
+        myController.resetResearch();
+    });
+
+    this.newPolygonButton.addOn(editBox);
+    this.newPolygonButton.addClass("childOfEditTools");
+    this.newRectangleButton.addOn(editBox);
+    this.newRectangleButton.addClass("childOfEditTools");
+    this.newCircleButton.addOn(editBox);
+    this.newCircleButton.addClass("childOfEditTools");
+    this.resetResearchButton.addOn(editBox);
+    this.resetResearchButton.addClass("childOfEditTools");
+
+    // for(var i=1; i < editBox.children.length;i++){
+    //     editBox.children[i].style.top = -(i-2)*20 + 'px' ;
+    //     editBox.children[i].style.left = (i*30)+'px';
+    // }
+    
+    //---------------Fill TimeInterval box-------------------
+
+    function timeSelector(text, date, month, year, parent){
+        this.create = function(text, date, month, year, parent)
+        {
+            var container = L.DomUtil.create('div','timeSelector',parent);
+            this._container = container;
+            this._textDiv = L.DomUtil.create('div', 'text-border',container);
+            this._textDiv.innerHTML = text ;
+            this._dateDiv = L.DomUtil.create('select', '',container);
+            for(var i=1;i<31; i++){
+                var option = L.DomUtil.create('option', 'timeOption', this._dateDiv);
+                option.text = i;
+                
+            }
+
+            this._dateDiv.defaultValue = date;
+            this._dateDiv.text = date;
+            this._dateDiv.value = date;
+            
+            this._monthDiv = L.DomUtil.create('select', '',container);
+            for(var i=0;i<this.monthsShort.length; i++){
+                var option = L.DomUtil.create('option', 'timeOption', this._monthDiv);
+                option.text = this.monthsShort[i];
+            }
+            this._monthDiv.defaultValue = month;
+            this._monthDiv.value = month;
+
+            this._yearDiv = L.DomUtil.create('select', '',container);
+            for(var i = 2007; i<= 2017; i++){
+                var option = L.DomUtil.create('option', 'timeOption', this._yearDiv);
+                option.text = i;
+            }
+            this._yearDiv.defaultValue = year;
+            this._yearDiv.value = year;
+
+            return this;
+        };
+
+        this.monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        this.getDate = function(){
+            return this._dateDiv.value;
+        };
+
+        this.create(text, date, month, year, parent);
+    };
+
+    this.starTimetDiv = new timeSelector("Start", 23, 'Dec', 2017, timeBox);
+    this.endTimetDiv = new timeSelector("End", 23, 'Dec', 2017, timeBox);
+
+    //-------------------Fill Color Selector--------------------------------//
+    /**
+     *  Add background color selector 
+     */ 
+    var colors = ['Olive','Red', 'Orange', 'Yellow', 'Green', 'Cyan' , 'Blue' , 'Purple' ];
+    this.backgroundColorSelector =
+        thisView.createColorSelector(map,colors,'Background Color');
+    L.DomEvent.on(this.backgroundColorSelector.getSelect(), 'change', function(){
+        myController.actualize();
+    });
+    this.boundColorSelector =
+        thisView.createColorSelector(map,colors,'Bound Color');
+    
+    /**
+     *  Add tweets color selector 
+     */ 
+    this.tweetsColorSelector =
+        thisView.createColorSelector(map,colors,'Tweets Color');
+
+    function addColorSelector(text, child, parent){
+        
+        var container = L.DomUtil.create('div','colorSelector',parent);
+        
+        var textDiv = L.DomUtil.create('div', 'text-border',container);
+        textDiv.innerHTML = text ;
+        var colorSelector = child;
+        container.appendChild(colorSelector);
+
+        return container;
+    }
+
+    addColorSelector('Bound', thisView.boundColorSelector.getContainer(), colorBox);
+    addColorSelector('Background', thisView.backgroundColorSelector.getContainer() ,colorBox);
+    addColorSelector('Tweets', thisView.tweetsColorSelector.getContainer() ,colorBox);
+
+    /**
+     * Recherche Management box div 
+     * Position: right
+     * id = management
+     * see management.css
+     */ 
+    this.managementDiv = L.DomUtil.create("div", "leaflet-bar title text-border", mapDiv);
+    this.managementDiv.id = "management";
+    // hide varable
+    this.managementDiv.hide = false;
+
+    function hideManangement(){
+
+        if(thisView.managementDiv.hide == true){
+            thisView.managementDiv.style.right="-30%";
+            thisView.hideManagementButton.setSign("◄");
+        }
+        else {
+            thisView.managementDiv.style.right="0px";
+            thisView.hideManagementButton.setSign("►"); 
+        }    
+        thisView.managementDiv.hide = !thisView.managementDiv.hide;
+
+    }
+    this.hideManagementButton = this.createButton('◄', 'hide management');
+    L.DomEvent.on(this.hideManagementButton.getLink(), 'click', hideManangement);
+    this.hideManagementButton.addOn(this.managementDiv);
+    this.hideManagementButton.addClass('hideManagement');
+
+    // research name
+    //this.editionTitle = L.DomUtil.create('div','firstComposant text-basic text-border',this.editionDiv);
+    //this.editionTitle.innerHTML = 'Name research';
+
+    this.basemapsBox = this.createChildBox("Base Maps", this.managementDiv);
+    this.userlayersBox = this.createChildBox("User Layer", this.managementDiv);
+
+    //----------------------Fill basemapsBox----------------------------------------/
+
+    //----------------------Fill userlayersBox-------------------------------------/
 }
+
+
 
 //---------------------------------------View Singleton-----------------------------------------------/
 var myView = new View();
+

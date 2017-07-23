@@ -1,6 +1,6 @@
-body {
+ body {
     overflow: hidden;
-}
+}      
 
 #map {
     position: fixed;
@@ -26,17 +26,44 @@ div#size {
 
 #research {
     position: absolute;
-    top: 10%;
-    left: -20%;
-    width: 20%;
-    height: 90%;
+    top: 80px;
+    left: 0%;
+    width: 25%;
+    height: auto;
+    max-height: 80%;
+    /* z-index of the leaflet pannes <= 700
+    */
+    z-index: 701;
+    padding-top: 24px;
+    visibility: hidden;
+     background-color:#e6f7ff; 
 }
 
-#consultation {
+.hideResearch {
+    position: fixed;
+    top: 80px;
+    left: 0px;
+    z-index: 701;
+}
+
+.edition-title {
+    position: fixed;
+    top: 65px;
+    left: 10px;
+    z-index: 702;
+    visibility: hidden;
+    font-size: 16px;
+    /* color: #0066ff; */
+}
+
+#management {
     position: absolute;
-    top: 10%;
-    right: -40%;
-    width: 40%;
-    height: 90%;
+    top: 80px;
+    right: 0%; 
+    z-index: 701;
+    width: 30%;
+    height: auto;
+    padding-top: 24px;
+
 }
 
