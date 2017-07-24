@@ -9,77 +9,195 @@ function View(){
      * Each class below represents a entiti on GUI 
      */
 
-    L.Class.extend = function (props) {
+    var V = {};
 
-	// @function extend(props: Object): Function
-	// [Extends the current class](#class-inheritance) given the properties to be included.
-	// Returns a Javascript function that is a class constructor (to be called with `new`).
-	var NewClass = function () {
+    V.Util = {
+        extend: function(dst){
+            var i, j, len, src;
 
-		// call the constructor
-		if (this.initialize) {
-			this.initialize.apply(this, arguments);
-		}
+            for(i = 1, len = arguments.length; i < len; i++){
+                src = arguments[i];
+                for(j in src){
+                    dst[j] = src[j];
+                }
+            }
 
-		// call all constructor hooks
-		this.callInitHooks();
-	};
+            return dst;
+        },
 
-	var parentProto = NewClass.__super__ = this.prototype;
-
-	var proto = L.Util.create(parentProto);
-	proto.constructor = NewClass;
-
-	NewClass.prototype = proto;
-
-	// inherit parent's statics
-	for (var i in this) {
-		if (this.hasOwnProperty(i) && i !== 'prototype') {
-			NewClass[i] = this[i];
-		}
-	}
-
-	// mix static properties into the class
-	if (props.statics) {
-		L.extend(NewClass, props.statics);
-		delete props.statics;
-	}
-
-	// mix includes into the prototype
-	if (props.includes) {
-		L.Util.extend.apply(null, [proto].concat(props.includes));
-		delete props.includes;
-	}
-
-	// merge options
-	if (proto.options) {
-		props.options = L.Util.extend(L.Util.create(proto.options), props.options);
-	}
-
-	// mix given properties into the prototype
-	L.extend(proto, props);
-
-	proto._initHooks = [];
-
-	// add method for calling all hooks
-	proto.callInitHooks = function () {
-
-		if (this._initHooksCalled) { return; }
-
-		if (parentProto.callInitHooks) {
-			parentProto.callInitHooks.call(this);
-		}
-
-		this._initHooksCalled = true;
-
-		for (var i = 0, len = proto._initHooks.length; i < len; i++) {
-			proto._initHooks[i].call(this);
-		}
-	};
-
-	return NewClass;
+        // @function setOptions(obj: Object, options: Object): Object
+	    // Merges the given properties to the `options` of the `obj` object, returning the resulting options. See `Class options`. Has an `L.setOptions` shortcut.
+	    setOptions: function (obj, options) {
+		    if (!obj.hasOwnProperty('options')) {
+			    obj.options = obj.options ? Object.create(obj.options) : {};
+		    }
+		    for (var i in options) {
+			    obj.options[i] = options[i];
+		    }
+		    return obj.options;
+        }
+        
     };
 
+    V.DomUtil = L.DomUtil;
+
+    V.create = V.DomUtil.create;
+    V.addClass = V.DomUtil.addClass;
+    V.toFront = V.DomUtil.toFront;
+
+    // shortcuts for most used utility functions
+    V.extend = V.Util.extend;
+    V.setOptions = V.Util.setOptions;
+
+    V.Class = function(){};
+
+    V.Class.extend = function(props){
+
+        var NewClass = function() {
+
+            // call the constructor
+            if(this.initialize){
+                this.initialize.apply(this, arguments);
+            }
+        };
+        
+        var parentProto = NewClass.__super__ = this.prototype;
+
+        var proto = Object.create(parentProto);
+        proto.constructor = NewClass;
+
+        NewClass.prototype = proto;
+
+        for(var i in this) {
+            if(this.hasOwnProperty(i) && i!== 'prototype'){
+                NewClass[i] = this[i];
+            }
+        }
+
+        if(proto.options) {
+            props.options = V.Util.extend(L.Util.create(proto.options), props.options);
+        }
+
+        V.extend(proto, props);
+
+        return NewClass;
+
+    }
+
+        // An element HTML
+    V.Element = V.Class.extend({
+
+        options: {
+
+            // Contain a text div for displaying a message
+            // for example error message 
+            hasMessage: false
+        },
+
+        initialize: function(options) {
+            options = V.setOptions(this,options);
+
+            
+        },
+
+        // @function show
+        // set Element visble
+        show: function(){
+            this._container.style.visibility = 'visible';
+        },
+
+        // @function hide
+        // set Element invisible
+        hide: function(){
+            this._container.style.visibility = 'hidden';
+        },
+
+        nonedisplay: function(){
+            this._container.display = 'none';
+        },
+
+        display: function(){
+            this._container.display = 'inline';
+        },
+
+        setTitle: function(title) {
+            if(title)
+                this._container.title = title;
+            else if(this.options.titleElement)
+                this._container.title = this.options.titleElement;
+        },
+        
+        // @function setMessage(message: String)
+        // set messgage to message box
+        // example: notify a duplication name
+        setMessage: function(message){
+            if(this.options.hasMessage && !this._message){
+                 // create message box in container in HTML
+                var messageBox =
+                    V.create('div','message text-basic text-border');
+                this._messageBox = messageBox;
+                this._container.append(this._messageBox);
+                this._messageBox.innerHTML = message;
+            }
+            
+        },
+
+        addOn: function(parent) {
+            parent.appendChild(this._container);
+        },
+
+        addClass: function(className) {
+            V.addClass(this._container, className);
+        },
+
+        getContainer: function() {
+            return this._container;
+        }
+
+    });
+
+
+    
+    V.Div = V.Element.extend({
+        
+        initialize: function(options){
+            options = V.setOptions(this, options);
+            this._container = V.create('div');
+            this.setTitle();
+            if(options.class)
+                V.addClass(this._container,options.class);
+            if(options.idDiv)
+                this._container.id = options.idDiv;
+            if(options.scrollable)
+                this._container.style.overflow = 'auto';
+            if(options.titleDiv){
+                var firtChild = V.create("div", options.titleDivClass, this._container);
+                firtChild.innerHTML = options.titleDiv;
+            }
+            if(options.parentElement){
+                if(options.parentElement.addChild)
+                    options.parentElement.addChild(this._container);
+                else 
+                    options.parentElement.append(this._container);
+            }
+
+        },
+
+        // @function addChild(child HTMLelement?L.Class) 
+        // Add child to container  
+        addChild: function(child){
+            if(child._container)
+                child = child._container;
+            this._container.append(child);
+            if(this.options.childClass){
+                V.addClass(child,this.options.childClass);
+            }
+
+            return this;
+        }
+
+    });
+    
     L.TextBox = L.Control.extend({
         options: {
             position: 'topright'
@@ -148,40 +266,22 @@ function View(){
 
     });
 
-    L.Button = L.Control.extend({
-        options: {
-            position: 'topleft'
-        },
+
+    V.Button = V.Element.extend({
 
         initialize: function(options){
-            this._config = {};
-            L.Util.extend(this.options, options);
-            this.setConfig(options);
-        },
+            options = V.setOptions(this,options);
 
-        setConfig: function(options){
-            this._config = {
-                sign: options.sign,
-                titleButton: options.titleButton
-            };
-        },
-
-        onAdd: function() {
-            // container div in HTML
-            var container = document.createElement('div'),
-                link = document.createElement('a');
-            container.className = 'leaflet-bar';
-            container.appendChild(link);
+            var container = V.create('div', 'leaflet-bar'),
+                link = V.create('a', '', container);
             this._container = container;
+            this.setTitle();
             this._link = link;
 
             // div attributs
             link.href = '#';
-            link.title = this._config.titleButton;
-            link.innerHTML =  this._config.sign;
+            link.innerHTML =  this.options.sign;
 
-            L.DomEvent.on(link, 'click', L.DomEvent.stop);
-         
             return container;
         },
 
@@ -201,19 +301,6 @@ function View(){
                 this._container.style.display = 'inline';
             }
         },
-
-        addOn: function(parent) {
-            parent.appendChild(this._container);
-        },
-
-        addClass: function(className) {
-            L.DomUtil.addClass(this._container, className);
-        },
-
-        // removeClass: function(className) {
-        //     L.DomUtil.removeClass()
-        // },
-
         invisible: function(bool) {
             if(bool) this._container.style.visibility = 'hidden';
             else this._container.style.visibility = 'visible';
@@ -221,46 +308,28 @@ function View(){
 
         setSign: function(sign) {
             this._link.innerHTML = sign;
-        },
-
-        getContainer: function() {
-            return this._container;
         }
     });
 
-    L.ColorSelector = L.Control.extend({
-        options: {
-            position: 'topleft'
-        },
+    V.ColorSelector = V.Element.extend({
 
         initialize: function(options){
-            this._config = {};
-            L.Util.extend(this.options, options);
-            this.setConfig(options);
-        },
-
-        setConfig: function(options){
-            this._config = {
-                listColor: options.listColor,
-                titleBox: options.titleBox
-            };
-        },
-
-        onAdd: function(map) {
+            options = V.setOptions(this,options);
+        
             // container div in HTML
             var container = L.DomUtil.create('div');
             this._container = container;
+            this.setTitle();
 
-            var select = L.DomUtil.create('select','leaflet-control leaflet-bar', container);
+            var select = V.create('select','leaflet-control leaflet-bar', container);
             this._select = select;
-            select.title = this._config.titleBox;
     
             
-            for(var i = 0; i < this._config.listColor.length ; i++){
-                var option = document.createElement("option",'', container);
-                option.text = this._config.listColor[i];
-                option.style.background = this._config.listColor[i];
-                option.style.color = this._config.listColor[i];
+            for(var i = 0; i < this.options.listColor.length ; i++){
+                var option = V.create("option",'', container);
+                option.text = this.options.listColor[i];
+                option.style.background = this.options.listColor[i];
+                option.style.color = this.options.listColor[i];
                 select.add(option);
                 L.DomEvent
                     .on(option, 'click', function(){
@@ -536,11 +605,10 @@ function View(){
 
 
     this.createColorSelector = function (map, listColor, title){
-        var res = new L.ColorSelector({
+        var res = new V.ColorSelector({
             listColor: listColor,
             titleBox: title
         });
-        res.onAdd(map);
 
         return res;
     };
@@ -559,9 +627,7 @@ function View(){
     };
 
     this.createButton = function(sign, titleButton) {
-        var res = new L.Button({sign: sign, titleButton: titleButton});
-
-        res.onAdd();
+        var res = new V.Button({sign: sign, titleElement: titleButton});
 
         return res;
     }
@@ -741,8 +807,7 @@ function View(){
     this.createChildBox = function(name, parent, bool) {
         var res;
         res = L.DomUtil.create("div", 'champComposant leaflet-control leaflet-bar ', parent);
-        var firtChild = L.DomUtil.create("div", 'underChampComposant title firstComposant', res);
-        firtChild.innerHTML = name;
+        
 
         return res;
     }
@@ -754,8 +819,9 @@ function View(){
      * see research.css
      */ 
     var mapDiv = document.getElementById('map')
-    this.editionDiv = L.DomUtil.create("div", "leaflet-bar title text-border scrollable", mapDiv);
-    this.editionDiv.id = "research";
+    this.editionDivB = new V.Div({parentElement: mapDiv, class: "leaflet-bar title text-border",
+                            childClass: 'champComposant leaflet-control leaflet-bar', idDiv: 'research'});
+    this.editionDiv = this.editionDivB.getContainer();
     // hide varable
     this.editionDiv.hide = false;
     thisView.stopEventOfLeaflet(this.editionDiv);
@@ -781,33 +847,27 @@ function View(){
             thisView.editionDiv.hide = !thisView.editionDiv.hide;
     }
 
-    this.hideButton = this.createButton('►', 'hide research');
+    this.hideButton = new V.Button({sign: '►', titleElement: 'Hide research'});
     L.DomEvent.on(this.hideButton.getLink(), 'click', hideResearch);
     this.hideButton.addOn(mapDiv);
     this.hideButton.addClass('hideResearch');
     
-    var editBox = this.createChildBox("Edition Tools", this.editionDiv);
-    var timeBox = this.createChildBox("Time Interval", this.editionDiv);
-    var colorBox = this.createChildBox("Color Selections", this.editionDiv);
     
 
     //--------------- Fill Editiontools box --------------------
     /**
      *  Add button for creating a zone
     */ 
-    this.newPolygonButton =
-        thisView.createButton('▱','New polygon');
+    this.newPolygonButton = new V.Button({sign: '▱', titleElement: 'New polygon'});
     // set up event for ROI creation
-    L.DomEvent.on(this.newPolygonButton.getLink(), 'click', function () {
+    L.DomEvent.on(this.newPolygonButton.getContainer(), 'click', function () {
                       map.editTools.startPolygon(); 
             });
-    this.newRectangleButton =
-        thisView.createButton('▭','New rectangle');
+    this.newRectangleButton = new V.Button({sign: '▭', titleElement: 'New rectangle'});
     L.DomEvent.on(this.newRectangleButton.getLink(), 'click', function(){
                     map.editTools.startRectangle();
     });
-    this.newCircleButton =
-        thisView.createButton('◯','New Circle');
+    this.newCircleButton = new V.Button({sign: '◯', titleElement: 'New Circle'});
     L.DomEvent.on(this.newCircleButton.getLink(), 'click', function(){
                     map.editTools.startCircle();
     });
@@ -815,20 +875,34 @@ function View(){
     /**
     *  Add button for reset current research
     */ 
-    this.resetResearchButton =
-        thisView.createButton('♺','Reset Research');
+    this.resetResearchButton = new V.Button({sign: '♺', titleElement: 'Reset Research'});
     L.DomEvent.on(this.resetResearchButton.getLink(), 'click', function(){
         myController.resetResearch();
     });
 
-    this.newPolygonButton.addOn(editBox);
-    this.newPolygonButton.addClass("childOfEditTools");
-    this.newRectangleButton.addOn(editBox);
-    this.newRectangleButton.addClass("childOfEditTools");
-    this.newCircleButton.addOn(editBox);
-    this.newCircleButton.addClass("childOfEditTools");
-    this.resetResearchButton.addOn(editBox);
-    this.resetResearchButton.addClass("childOfEditTools");
+    var editBox = new V.Div({titleDiv: "Edition Tools", parentElement: this.editionDivB,
+                            childClass: 'childOfEditTools',
+                            titleDivClass: 'underChampComposant title firstComposant'});
+
+    var timeBox = new V.Div({titleDiv: "Time Interval", parentElement: this.editionDivB,
+                            titleDivClass: 'underChampComposant title firstComposant'});
+    var colorBox = new V.Div({titleDiv: "Color Selections", parentElement: this.editionDivB,
+                            titleDivClass: 'underChampComposant title firstComposant'});
+
+    // this.newPolygonButton.addOn(editBox);
+    // this.newPolygonButton.addClass("childOfEditTools");
+    // this.newRectangleButton.addOn(editBox);
+    // this.newRectangleButton.addClass("childOfEditTools");
+    // this.newCircleButton.addOn(editBox);
+    // this.newCircleButton.addClass("childOfEditTools");
+    // this.resetResearchButton.addOn(editBox);
+    // this.resetResearchButton.addClass("childOfEditTools");
+    editBox.addChild(this.newPolygonButton)
+            .addChild(this.newRectangleButton)
+            .addChild(this.newCircleButton)
+            .addChild(this.resetResearchButton);
+
+
 
     // for(var i=1; i < editBox.children.length;i++){
     //     editBox.children[i].style.top = -(i-2)*20 + 'px' ;
@@ -837,9 +911,13 @@ function View(){
     
     //---------------Fill TimeInterval box-------------------
 
-    function timeSelector(text, date, month, year, parent){
-        this.create = function(text, date, month, year, parent)
-        {
+    V.timeSelector = V.Element.extend({
+        options: {
+            hasMessage: true
+        },
+
+
+        initialize: function(text, date, month, year, parent){
             var container = L.DomUtil.create('div','timeSelector',parent);
             this._container = container;
             this._textDiv = L.DomUtil.create('div', 'text-border',container);
@@ -871,20 +949,24 @@ function View(){
             this._yearDiv.defaultValue = year;
             this._yearDiv.value = year;
 
+
+
             return this;
-        };
+        },
 
-        this.monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
-        this.getDate = function(){
+        getDate: function(){
             return this._dateDiv.value;
-        };
+        }
 
-        this.create(text, date, month, year, parent);
-    };
+    });
 
-    this.starTimetDiv = new timeSelector("Start", 23, 'Dec', 2017, timeBox);
-    this.endTimetDiv = new timeSelector("End", 23, 'Dec', 2017, timeBox);
+    this.startTimetDiv = new V.timeSelector("Start", 23, 'Dec', 2017);
+    this.startTimetDiv.setMessage("Hello, Wolrd!");
+    this.endTimetDiv = new V.timeSelector("End", 23, 'Dec', 2017);
+
+    timeBox.addChild(this.startTimetDiv).addChild(this.endTimetDiv);
 
     //-------------------Fill Color Selector--------------------------------//
     /**
@@ -917,9 +999,9 @@ function View(){
         return container;
     }
 
-    addColorSelector('Bound', thisView.boundColorSelector.getContainer(), colorBox);
-    addColorSelector('Background', thisView.backgroundColorSelector.getContainer() ,colorBox);
-    addColorSelector('Tweets', thisView.tweetsColorSelector.getContainer() ,colorBox);
+    addColorSelector('Bound', thisView.boundColorSelector.getContainer(), colorBox.getContainer());
+    addColorSelector('Background', thisView.backgroundColorSelector.getContainer() ,colorBox.getContainer());
+    addColorSelector('Tweets', thisView.tweetsColorSelector.getContainer() ,colorBox.getContainer());
 
     /**
      * Recherche Management box div 
