@@ -184,6 +184,10 @@ function View(){
                 else 
                     options.parentElement.appendChild(this._container);
             }
+            if(options.eventClick){
+            	L.DomEvent.on(this.getContainer(), 'click', function(){
+            	options.eventClick.functionName.call(options.eventClick.className)});
+            }
         },
         
         stopEventOfLeaflet: function() {
@@ -194,7 +198,9 @@ function View(){
         	} else {
             	L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
         	}
-    	}
+    	},
+    	
+    	
 
     });
 
@@ -203,8 +209,8 @@ function View(){
     V.Div = V.Element.extend({
         
         initialize: function(options){
-            options = V.setOptions(this, options);
-            this._container = this.setContainer(V.create('div'));
+            V.setOptions(this, options);
+            this.setContainer(V.create('div'));
         },
 
         // @function addChild(child HTMLelement?L.Class) 
@@ -220,6 +226,15 @@ function View(){
             return this;
         }
 
+    });
+    
+    V.Selector = V.Div.extend({
+    	initialize: function(options){
+    		V.setOptions(this, options);
+    		this.setContainer(V.create('div', 'selector'));
+    	}
+    	
+    	
     });
     
     L.TextBox = L.Control.extend({
@@ -342,9 +357,7 @@ function View(){
             options = V.setOptions(this,options);
         
             // container div in HTML
-            var container = L.DomUtil.create('div');
-            this._container = container;
-            this.setTitle();
+            var container = this.setContainer(V.create('div'));
 
             var select = V.create('select','leaflet-control leaflet-bar', container);
             this._select = select;
@@ -384,10 +397,6 @@ function View(){
             this._select.style.color = color;
             this._select.value = color;
         },
-        
-        getContainer: function(){
-            return this._container;
-        }
 
     });
 
@@ -872,30 +881,12 @@ function View(){
             thisView.editionDiv.hideState = !thisView.editionDiv.hideState;
     }
 
-    this.hideButton = new V.Button({sign: '►', titleElement: 'Hide research'});
+    this.hideButton = new V.Button({sign: '►', titleElement: 'Hide research', 
+    				class: 'hideResearch', parentElement: mapDiv});
     L.DomEvent.on(this.hideButton.getLink(), 'click', hideResearch);
-    this.hideButton.addOn(mapDiv);
-    this.hideButton.addClass('hideResearch');
-    
-    
 
     //--------------- Fill Editiontools box --------------------
-    /**
-     *  Add button for creating a zone
-    */ 
-    this.newPolygonButton = new V.Button({sign: '▱', titleElement: 'New polygon'});
-    // set up event for ROI creation
-    L.DomEvent.on(this.newPolygonButton.getContainer(), 'click', function () {
-                      map.editTools.startPolygon(); 
-            });
-    this.newRectangleButton = new V.Button({sign: '▭', titleElement: 'New rectangle'});
-    L.DomEvent.on(this.newRectangleButton.getLink(), 'click', function(){
-                    map.editTools.startRectangle();
-    });
-    this.newCircleButton = new V.Button({sign: '◯', titleElement: 'New Circle'});
-    L.DomEvent.on(this.newCircleButton.getLink(), 'click', function(){
-                    map.editTools.startCircle();
-    });
+   
 
     /**
     *  Add button for reset current research
@@ -922,11 +913,28 @@ function View(){
     // this.newCircleButton.addClass("childOfEditTools");
     // this.resetResearchButton.addOn(editBox);
     // this.resetResearchButton.addClass("childOfEditTools");
-    editBox.addChild(this.newPolygonButton)
+    /**editBox.addChild(this.newPolygonButton)
             .addChild(this.newRectangleButton)
             .addChild(this.newCircleButton)
-            .addChild(this.resetResearchButton);
-
+            .addChild(this.resetResearchButton);*/
+	 /**
+     *  Add button for creating a zone
+    */ 
+    this.newPolygonButton = new V.Button({sign: '▱', titleElement: 'New polygon',
+    						parentElement: editBox, 
+    						eventClick: {className: map.editTools, functionName: 
+    							map.editTools.startPolygon}});
+    
+    this.newRectangleButton = new V.Button({sign: '▭', titleElement: 'New rectangle',
+    						parentElement: editBox,
+    						eventClick: {className: map.editTools, functionName: 
+    							map.editTools.startRectangle}});
+   
+    this.newCircleButton = new V.Button({sign: '◯', titleElement: 'New Circle',
+    						parentElement: editBox,
+    						eventClick: {className: map.editTools, functionName: 
+    							map.editTools.startCircle}});
+    
 
 
     // for(var i=1; i < editBox.children.length;i++){
@@ -998,19 +1006,25 @@ function View(){
      *  Add background color selector 
      */ 
     var colors = ['Olive','Red', 'Orange', 'Yellow', 'Green', 'Cyan' , 'Blue' , 'Purple' ];
-    this.backgroundColorSelector =
-        thisView.createColorSelector(map,colors,'Background Color');
+    this.backgroundColorSelector = new V.ColorSelector({
+            listColor: colors,
+            titleElement: 'Background Color'
+    	});
     L.DomEvent.on(this.backgroundColorSelector.getSelect(), 'change', function(){
         myController.actualize();
     });
-    this.boundColorSelector =
-        thisView.createColorSelector(map,colors,'Bound Color');
+    this.boundColorSelector = new V.ColorSelector({
+    		listColor: colors,
+    		titleElement: 'Bound Color'		
+    	});
     
     /**
      *  Add tweets color selector 
      */ 
-    this.tweetsColorSelector =
-        thisView.createColorSelector(map,colors,'Tweets Color');
+    this.tweetsColorSelector = new V.ColorSelector({
+    		listColor: colors,
+    		titleElement: 'Tweets Color'
+    	});
 
     function addColorSelector(text, child, parent){
         
@@ -1034,36 +1048,47 @@ function View(){
      * id = management
      * see management.css
      */ 
-    this.managementDiv = L.DomUtil.create("div", "leaflet-bar title text-border", mapDiv);
-    this.managementDiv.id = "management";
+    this.managementDiv = new V.Div({class: "leaflet-control leaflet-bar title text-border",
+    								parentElement: mapDiv, childClass:'champComposant leaflet-control leaflet-bar',
+    								idDiv: "management"});
+    
     // hide varable
-    this.managementDiv.hide = false;
+    				
+    // hide varable
+    this.managementDiv.hideState = false;
 
     function hideManangement(){
 
-        if(thisView.managementDiv.hide == true){
-            thisView.managementDiv.style.right="-30%";
+        if(thisView.managementDiv.hideState == true){
+            thisView.managementDiv.hide();
+            thisView.hideManangementButton.setTitle('Show management');
             thisView.hideManagementButton.setSign("◄");
         }
         else {
-            thisView.managementDiv.style.right="0px";
+            thisView.managementDiv.show();
+            thisView.hideManagementButton.setTitle('Hide management');
             thisView.hideManagementButton.setSign("►"); 
         }    
-        thisView.managementDiv.hide = !thisView.managementDiv.hide;
+        thisView.managementDiv.hideState = !thisView.managementDiv.hideState;
 
     }
-    this.hideManagementButton = this.createButton('◄', 'hide management');
-    L.DomEvent.on(this.hideManagementButton.getLink(), 'click', hideManangement);
-    this.hideManagementButton.addOn(this.managementDiv);
-    this.hideManagementButton.addClass('hideManagement');
+    this.hideManagementButton = new V.Button({sign: '►', titleElement: 'Hide management', 
+    				class: 'hideManagement', parentElement: mapDiv});
+    			
+    L.DomEvent.on(this.hideManagementButton.getContainer(), 'click', hideManangement);
+    
 
     // research name
     //this.editionTitle = L.DomUtil.create('div','firstComposant text-basic text-border',this.editionDiv);
     //this.editionTitle.innerHTML = 'Name research';
 
-    this.basemapsBox = this.createChildBox("Base Maps", this.managementDiv);
-    this.userlayersBox = this.createChildBox("User Layer", this.managementDiv);
-
+   
+    this.createChildBox 
+    					=  new V.Div({titleDiv: "Base Maps", parentElement: this.managementDiv,
+                            titleDivClass: 'underChampComposant title firstComposant'});
+    this.userlayersBox = 
+    					new V.Div({titleDiv: "User Layer", parentElement: this.managementDiv,
+                            titleDivClass: 'underChampComposant title firstComposant'});
     //----------------------Fill basemapsBox----------------------------------------/
 
     //----------------------Fill userlayersBox-------------------------------------/
