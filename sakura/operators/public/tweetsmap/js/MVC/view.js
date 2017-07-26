@@ -136,7 +136,7 @@ function View(){
                 var messageBox =
                     V.create('div','message text-basic text-border');
                 this._messageBox = messageBox;
-                this._container.append(this._messageBox);
+                this._container.appendChild(this._messageBox);
                 this._messageBox.innerHTML = message;
             }
             
@@ -152,19 +152,23 @@ function View(){
 
         getContainer: function() {
             return this._container;
-        }
-
-    });
-
-
-    
-    V.Div = V.Element.extend({
+        },
         
-        initialize: function(options){
-            options = V.setOptions(this, options);
-            this._container = V.create('div');
-            this.setTitle();
-            if(options.class)
+        // @function setContainer(element: HTMLElement)
+        setContainer: function(element) {
+        	this._container = element;
+        	this._classOptions();
+        	
+        	return this._container;
+        },
+        
+        // @function _classOptions() 
+        // Check and add attributs for container 
+        _classOptions: function(){
+        	var options = this.options;
+        	if(this.options.titleElement)
+                this._container.title = this.options.titleElement;
+        	if(options.class)
                 V.addClass(this._container,options.class);
             if(options.idDiv)
                 this._container.id = options.idDiv;
@@ -178,9 +182,29 @@ function View(){
                 if(options.parentElement.addChild)
                     options.parentElement.addChild(this._container);
                 else 
-                    options.parentElement.append(this._container);
+                    options.parentElement.appendChild(this._container);
             }
+        },
+        
+        stopEventOfLeaflet: function() {
+        	var div = this._container;
+        	if (!L.Browser.touch) {
+        	    L.DomEvent.disableClickPropagation(div);
+        	    L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
+        	} else {
+            	L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
+        	}
+    	}
 
+    });
+
+
+    
+    V.Div = V.Element.extend({
+        
+        initialize: function(options){
+            options = V.setOptions(this, options);
+            this._container = this.setContainer(V.create('div'));
         },
 
         // @function addChild(child HTMLelement?L.Class) 
@@ -188,7 +212,7 @@ function View(){
         addChild: function(child){
             if(child._container)
                 child = child._container;
-            this._container.append(child);
+            this._container.appendChild(child);
             if(this.options.childClass){
                 V.addClass(child,this.options.childClass);
             }
@@ -267,12 +291,13 @@ function View(){
     });
 
 
+	// Notice: O
     V.Button = V.Element.extend({
 
         initialize: function(options){
             options = V.setOptions(this,options);
 
-            var container = V.create('div', 'leaflet-bar'),
+            var container = this.setContainer(V.create('div', 'leaflet-bar')),
                 link = V.create('a', '', container);
             this._container = container;
             this.setTitle();
@@ -787,6 +812,7 @@ function View(){
      * @function stopEventOfLeaflet stop all map events
      * @param div div on which we want to stop all map events
      */
+    /**
     this.stopEventOfLeaflet = function(div) {
          if (!L.Browser.touch) {
             L.DomEvent.disableClickPropagation(div);
@@ -794,7 +820,7 @@ function View(){
         } else {
             L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
         }
-    }
+    }*/
     
     /**
      * ChildBox div
@@ -819,32 +845,31 @@ function View(){
      * see research.css
      */ 
     var mapDiv = document.getElementById('map')
-    this.editionDivB = new V.Div({parentElement: mapDiv, class: "leaflet-bar title text-border",
+    this.editionDiv = new V.Div({parentElement: mapDiv, class: "leaflet-bar title text-border",
                             childClass: 'champComposant leaflet-control leaflet-bar', idDiv: 'research'});
-    this.editionDiv = this.editionDivB.getContainer();
     // hide varable
-    this.editionDiv.hide = false;
-    thisView.stopEventOfLeaflet(this.editionDiv);
+    this.editionDiv.hideState = false;
+    this.editionDiv.stopEventOfLeaflet();
 
     // research name
-    this.editionTitle = L.DomUtil.create('div','edition-title text-basic text-border', mapDiv);
-    this.editionTitle.innerHTML = 'Name research';
+    this.editionTitle = new V.Div({class: 'edition-title text-basic text-border', parentElement: mapDiv});
+    this.editionTitle.getContainer().innerHTML = 'Name research';
     // hide div
     function hideResearch(){
 
-        if(thisView.editionDiv.hide == true){
-            thisView.editionTitle.style.visibility = 'hidden';
-            thisView.editionDiv.style.visibility = 'hidden';
+        if(thisView.editionDiv.hideState == true){
+            thisView.editionTitle.hide();
+            thisView.editionDiv.hide();
             thisView.hideButton.setSign("►");
             thisView.hideButton.getContainer().style.left = '0px';
         }
         else {
-            thisView.editionTitle.style.visibility = 'visible';
-            thisView.editionDiv.style.visibility = 'visible';
+            thisView.editionTitle.show();
+            thisView.editionDiv.show();
             thisView.hideButton.setSign("◄");
             thisView.hideButton.getContainer().style.left = '25%';
         }    
-            thisView.editionDiv.hide = !thisView.editionDiv.hide;
+            thisView.editionDiv.hideState = !thisView.editionDiv.hideState;
     }
 
     this.hideButton = new V.Button({sign: '►', titleElement: 'Hide research'});
@@ -880,13 +905,13 @@ function View(){
         myController.resetResearch();
     });
 
-    var editBox = new V.Div({titleDiv: "Edition Tools", parentElement: this.editionDivB,
+    var editBox = new V.Div({titleDiv: "Edition Tools", parentElement: this.editionDiv,
                             childClass: 'childOfEditTools',
                             titleDivClass: 'underChampComposant title firstComposant'});
 
-    var timeBox = new V.Div({titleDiv: "Time Interval", parentElement: this.editionDivB,
+    var timeBox = new V.Div({titleDiv: "Time Interval", parentElement: this.editionDiv,
                             titleDivClass: 'underChampComposant title firstComposant'});
-    var colorBox = new V.Div({titleDiv: "Color Selections", parentElement: this.editionDivB,
+    var colorBox = new V.Div({titleDiv: "Color Selections", parentElement: this.editionDiv,
                             titleDivClass: 'underChampComposant title firstComposant'});
 
     // this.newPolygonButton.addOn(editBox);
