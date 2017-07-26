@@ -200,6 +200,27 @@ function View(){
         	}
     	},
     	
+        // @function addChild(child HTMLelement?V.Class) 
+        // Add child to container  
+        addChild: function(child){
+            if(child._container)
+                child = child._container;
+            this._container.appendChild(child);
+            if(this.options.childClass){
+                V.addClass(child,this.options.childClass);
+            }
+
+            return this;
+        },
+        
+        // @function rmChild(child HTMLelement?V.Class) 
+        // Remove a child from container
+        rmChild: function(child){
+        	if(child._container)
+        		child = child._container;
+        	this._container.rmChild(child);
+        }
+    	
     	
 
     });
@@ -211,31 +232,65 @@ function View(){
         initialize: function(options){
             V.setOptions(this, options);
             this.setContainer(V.create('div'));
-        },
-
-        // @function addChild(child HTMLelement?L.Class) 
-        // Add child to container  
-        addChild: function(child){
-            if(child._container)
-                child = child._container;
-            this._container.appendChild(child);
-            if(this.options.childClass){
-                V.addClass(child,this.options.childClass);
-            }
-
-            return this;
         }
 
     });
     
-    V.Selector = V.Div.extend({
+    V.Selector = V.Element.extend({
     	initialize: function(options){
     		V.setOptions(this, options);
-    		this.setContainer(V.create('div', 'selector'));
+    		
+    	},
+    	
+    	initSelector(){
+    		this._rows = [];
+    		this._selectorOptions();
+    		var len = this.rowSource.length;
+    		for(var i; i<len; i++){
+    			// createRow is defined by child class of selector
+    			this.addRow(this.createRow(this.rowSource[i]));
+    		}
+    	},
+    	
+    	_selectorOptions: function(){
+    		var options = this.options;
+    		if(options.rowSource){
+    			// create shortcut for rowSource
+    			this.rowSource = options.rowSource;
+    		}
+    	},
+    	
+    	// @function addRows(element HTMLElement?V.Class)
+    	// add a Row to selector
+    	addRow: function(element){
+    		this.getContainer.addChild(element);
+    		this._rows.push(element);
+    	},
+    	
+    	// @function removeRows(index int)
+    	// remove a Row by index in rows
+    	removeRow: function(index){
+    		// get Element to remove
+    		var element = this._rows.slice(index, 1)[0];
+    		// remove from container
+    		this.rmChild(element);
+    	},
+    	
+    	// empty the selector: 
+    	removeAllRow: function(){
+    		var len = this._rows.length;
+    		for(var i=len-1; i>=0; i--){
+    			this.removeRow(i);
+    		}
     	}
     	
-    	
     });
+    
+    V.MaplayersSelector = V.Selector.extend({
+    	initialize: function(){
+    		this.setContainer(V.create('div'));
+    	}
+    }); 
     
     L.TextBox = L.Control.extend({
         options: {
