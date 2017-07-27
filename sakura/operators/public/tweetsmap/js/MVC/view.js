@@ -112,12 +112,12 @@ function View(){
             this._container.style.visibility = 'hidden';
         },
 
-        nonedisplay: function(){
-            this._container.display = 'none';
+        noneDisplay: function(){
+            this._container.style.display = 'none';
         },
 
         display: function(){
-            this._container.display = 'inline';
+            this._container.style.display = 'inline';
         },
 
         setTitle: function(title) {
@@ -290,25 +290,26 @@ function View(){
     V.MaplayersSelector = V.Selector.extend({
     	initialize: function(options){
 			V.setOptions(this, options);
-    		this.setContainer(V.create('div'));
+    		this.setContainer(V.create('div', 'mapLayersSelector'));
 			this.initSelector();
     	},
 		
 		createRow: function(layerName){
 			console.log('ok');
-			var res = new V.Div({class: 'roundedOne'});
-			var child1 = V.create('input','', res.getContainer());
+			var res = new V.Div({class: 'rowBox'});
+			var checkBox = new V.Div({class: 'roundedOne', parentElement: res});
+			var child1 = V.create('input','', checkBox.getContainer());
 			res.box = child1;
 			child1.type = 'checkbox';
 			child1.value = 'None';
 			child1.name = 'check';
 			child1.id = layerName;
-			var child2 = V.create('label', '', res.getContainer());
+			var child2 = V.create('label', '', checkBox.getContainer());
 			child2.htmlFor = layerName;
 			var child3 = V.create('p', '', res.getContainer());
 			child3.innerHTML = layerName;
 
-			child1.addEventListener('click', this._onClick, false);
+			child1.addEventListener('click', this._onClick.bind(this), false);
 			return res;
 			
 		},
@@ -320,15 +321,12 @@ function View(){
 				this._rows[i].box.checked = (i==index);
 			}
 			this.currentCheckedBox = this._rows[index].box;
-			console.log(this);
-			
 		},
 		
 		_onClick: function(e){
-			console.log(this);
 			var target = e.target || e.srcElement;
-			//this.currentCheckedBox.checked = false;
-			//this.currentCheckedBox = taget;
+			this.currentCheckedBox.checked = false;
+			this.currentCheckedBox = target;
 			myController.setBasemap(target.id);
 		}
 
@@ -882,7 +880,7 @@ function View(){
     ////this.layersPanel =
     ////    L.control.layers(myModel.mapLayers.dict);
     ////this.layersPanel.addTo(map);
-    ////myModel.mapLayers.getDefault().addTo(map);
+    myModel.mapLayers.dict['Plan'].addTo(map);
     // L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
     //     myController.updateMarkers();
     // });
@@ -1024,7 +1022,7 @@ function View(){
     						parentElement: editBox, 
     						eventClick: {className: map.editTools, functionName: 
     							map.editTools.startPolygon}});
-    
+
     this.newRectangleButton = new V.Button({sign: '▭', titleElement: 'New rectangle',
     						parentElement: editBox,
     						eventClick: {className: map.editTools, functionName: 
@@ -1190,6 +1188,7 @@ function View(){
     this.userlayersBox = 
     					new V.Div({titleDiv: "User Layer", parentElement: this.managementDiv,
                             titleDivClass: 'underChampComposant title firstComposant'});
+	
     //----------------------Fill basemapsBox----------------------------------------/
 	this.maplayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox,
 							rowSource: Object.keys(myModel.mapLayers.dict)});
