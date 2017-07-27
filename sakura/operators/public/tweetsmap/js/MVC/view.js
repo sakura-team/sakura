@@ -296,20 +296,43 @@ function View(){
 		
 		createRow: function(layerName){
 			console.log('ok');
-			var res = new V.Div({class: 'roundedCheckbox'});
-			var child1 = V.create('input');
+			var res = new V.Div({class: 'roundedOne'});
+			var child1 = V.create('input','', res.getContainer());
+			res.box = child1;
 			child1.type = 'checkbox';
 			child1.value = 'None';
 			child1.name = 'check';
 			child1.id = layerName;
-			child1.style.checked = true;
-			var child2 = V.create('label');
-			child2.for = layerName;
-			child2.innerHTML = layerName;
-			res.addChild(child1);
-			res.addChild(child2);
+			var child2 = V.create('label', '', res.getContainer());
+			child2.htmlFor = layerName;
+			var child3 = V.create('p', '', res.getContainer());
+			child3.innerHTML = layerName;
+
+			child1.addEventListener('click', this._onClick, false);
 			return res;
+			
+		},
+
+		check: function(index){
+			
+			var len = this._rows.length;
+			for(var i =0; i<len; i++){
+				this._rows[i].box.checked = (i==index);
+			}
+			this.currentCheckedBox = this._rows[index].box;
+			console.log(this);
+			
+		},
+		
+		_onClick: function(e){
+			console.log(this);
+			var target = e.target || e.srcElement;
+			//this.currentCheckedBox.checked = false;
+			//this.currentCheckedBox = taget;
+			myController.setBasemap(target.id);
 		}
+
+		
 		
     }); 
 
@@ -856,10 +879,10 @@ function View(){
     /**
      * Add layers control panel
      */
-    this.layersPanel =
-        L.control.layers(myModel.mapLayers.dict);
-    this.layersPanel.addTo(map);
-    myModel.mapLayers.getDefault().addTo(map);
+    ////this.layersPanel =
+    ////    L.control.layers(myModel.mapLayers.dict);
+    ////this.layersPanel.addTo(map);
+    ////myModel.mapLayers.getDefault().addTo(map);
     // L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
     //     myController.updateMarkers();
     // });
@@ -1129,7 +1152,7 @@ function View(){
     								parentElement: mapDiv, childClass:'champComposant leaflet-control leaflet-bar',
     								idDiv: "management"});
     
-    
+    this.managementDiv.stopEventOfLeaflet();
     // hide varable
     				
     // hide varable
@@ -1170,6 +1193,7 @@ function View(){
     //----------------------Fill basemapsBox----------------------------------------/
 	this.maplayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox,
 							rowSource: Object.keys(myModel.mapLayers.dict)});
+	
     //----------------------Fill userlayersBox-------------------------------------/
 }
 

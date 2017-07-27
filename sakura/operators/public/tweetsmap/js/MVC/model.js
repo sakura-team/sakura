@@ -85,7 +85,7 @@ function MapLayers(){
     this.dict["Toner"] = layer;
 
     this.getDefault = function() {
-        return this.dict["Plan"];
+        return 0;
     };
 
 }

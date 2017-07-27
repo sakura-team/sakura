@@ -27,10 +27,11 @@ function Controller(){
         // add roi of current research to myView.rois
         myView.rois.addLayer(myModel.currentResearch.roi);
         // update research list in research box
-        myView.researchSelector.addOption(myModel.currentResearch.nameResearch);        
-        myView.researchCheckBoxList.addCheckBox(myModel.currentResearch.nameResearch);
+        //myView.researchSelector.addOption(myModel.currentResearch.nameResearch);        
+        //myView.researchCheckBoxList.addCheckBox(myModel.currentResearch.nameResearch);
         myView.rois.addTo(map);
         //this.updateTweetsmap();
+		myView.maplayersSelector.check(myModel.mapLayers.getDefault());
         this.actualize();
     };
 
@@ -218,6 +219,13 @@ function Controller(){
 
     //----------------------------------Event Handling-------------------------------------
     
+	// @function setBasemap(layerName string)
+	// change the basemap which is determined by layerName as its key in mapLayers
+	this.setBasemap = function(layerName){
+		if(this.baseMap) 
+			map.removeLayer(this.baseMap);
+		this.baseMap = myModel.mapLayers.dict[layerName].addTo(map);
+	};
 
     this.addResearch = function(){
         var check = this.getResearchByName("Current Research");
@@ -355,7 +363,7 @@ function Controller(){
     // @function getNamFGUI(): String
     // Returns name of research filled in the the name-research text box
     this.getNameFGUI = function(){
-        var res = myView.nameBox.getValue();
+        var res ////= myView.nameBox.getValue();
         return res || "Current Research";
     };
 
@@ -531,7 +539,7 @@ function Controller(){
         myModel.currentResearch.colorPoint = this.getColorPointFGUI();
         myModel.currentResearch.colorBackground = this.getColorBackgroundFGUI();
         myModel.currentResearch.timeRange = this.getTimeRange();
-
+		
         // check message box
         var message = "";
         var name = myModel.currentResearch.nameResearch
@@ -568,16 +576,16 @@ function Controller(){
             message = "Sakura"
         if(name == "ta copine?")
             message = "Je suis une fille ..."          
-        myView.nameBox.setMessage(message);
+        ////myView.nameBox.setMessage(message);
 
         this.updateRoiColor();
         
-        // update research selectable list box
-        myView.researchSelector.setSelectedOption(
-            this.getIndexByResearch(myModel.currentResearch)
-        );
-        myView.researchSelector.setTextOfOption(
-            this.getIndexByResearch(myModel.currentResearch), 
+        /** update research selectable list box
+        ////myView.researchSelector.setSelectedOption(
+        ////    this.getIndexByResearch(myModel.currentResearch)
+        ////);
+        ////myView.researchSelector.setTextOfOption(
+        ////    this.getIndexByResearch(myModel.currentResearch), 
             myModel.currentResearch.nameResearch);
         // update research checkbox list
         myView.researchCheckBoxList.setTextOfCheckBox(
@@ -594,7 +602,7 @@ function Controller(){
             true
         );
 
-        //this.updateMarkers();
+        //this.updateMarkers(); **/
         
     };
 
