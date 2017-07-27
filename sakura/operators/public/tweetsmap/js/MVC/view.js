@@ -246,9 +246,10 @@ function View(){
     		this._rows = [];
     		this._selectorOptions();
     		var len = this.rowSource.length;
-    		for(var i; i<len; i++){
+    		for(var i=0; i<len; i++){
     			// createRow is defined by child class of selector
     			this.addRow(this.createRow(this.rowSource[i]));
+
     		}
     	},
     	
@@ -263,7 +264,7 @@ function View(){
     	// @function addRows(element HTMLElement?V.Class)
     	// add a Row to selector
     	addRow: function(element){
-    		this.getContainer.addChild(element);
+    		this.addChild(element);
     		this._rows.push(element);
     	},
     	
@@ -287,11 +288,32 @@ function View(){
     });
     
     V.MaplayersSelector = V.Selector.extend({
-    	initialize: function(){
+    	initialize: function(options){
+			V.setOptions(this, options);
     		this.setContainer(V.create('div'));
-    	}
+			this.initSelector();
+    	},
+		
+		createRow: function(layerName){
+			console.log('ok');
+			var res = new V.Div({class: 'roundedCheckbox'});
+			var child1 = V.create('input');
+			child1.type = 'checkbox';
+			child1.value = 'None';
+			child1.name = 'check';
+			child1.id = layerName;
+			child1.style.checked = true;
+			var child2 = V.create('label');
+			child2.for = layerName;
+			child2.innerHTML = layerName;
+			res.addChild(child1);
+			res.addChild(child2);
+			return res;
+		}
+		
     }); 
-    
+
+	
     L.TextBox = L.Control.extend({
         options: {
             position: 'topright'
@@ -1107,6 +1129,7 @@ function View(){
     								parentElement: mapDiv, childClass:'champComposant leaflet-control leaflet-bar',
     								idDiv: "management"});
     
+    
     // hide varable
     				
     // hide varable
@@ -1138,14 +1161,15 @@ function View(){
     //this.editionTitle.innerHTML = 'Name research';
 
    
-    this.createChildBox 
+    this.baseMapsBox 
     					=  new V.Div({titleDiv: "Base Maps", parentElement: this.managementDiv,
                             titleDivClass: 'underChampComposant title firstComposant'});
     this.userlayersBox = 
     					new V.Div({titleDiv: "User Layer", parentElement: this.managementDiv,
                             titleDivClass: 'underChampComposant title firstComposant'});
     //----------------------Fill basemapsBox----------------------------------------/
-
+	this.maplayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox,
+							rowSource: Object.keys(myModel.mapLayers.dict)});
     //----------------------Fill userlayersBox-------------------------------------/
 }
 
