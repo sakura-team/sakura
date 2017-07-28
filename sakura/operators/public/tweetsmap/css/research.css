@@ -61,9 +61,9 @@
     position: absolute;
     width: 90%;
     left: 5%;
-    margin-top: 8px;
     margin-bottom: 24px;   
     padding-bottom: 5%;
+    padding-top: 1%;
     background-color: #b3e7ff;
 }
 
@@ -74,8 +74,16 @@
 .title {
     width: auto;
     font-family: 'Times New Roman', Times, serif;
-    color: black;
+    color: DarkBlue;
     font-weight: bold;
+    font-size: 16px;
+}
+
+.normal-text{
+    font-family: 'Time New Roman';
+    font-weight: bold;
+    color: dark;
+    font-size: 11px;
 }
 
 .button {
@@ -100,8 +108,11 @@
 .timeSelector{
     position: relative;
     margin-top:5%;
-    font-size: 13px;
     clear:left;
+}
+
+.timeSelector select {
+    font-size: 13px;
 }
 
 .timeSelector :nth-child(n+1){

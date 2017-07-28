@@ -64,6 +64,6 @@ div#size {
     width: 30%;
     height: auto;
     padding-top: 24px;
-
+    visibility: hidden;
 }
 

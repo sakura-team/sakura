@@ -1,7 +1,8 @@
 .hideManagement{
     position: absolute;
-    top: 0px;
-    left: -7%;
+    top: 80px;
+    right: 0%;
+    z-index: 800;
     /* background-color: white;
     width: 16px;
     height: 32px;
@@ -68,7 +69,7 @@
   box-shadow: inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5);
 }
 .roundedOne label:hover::after {
-  opacity: 0.3;
+  opacity: 0.7;
 }
 .roundedOne input[type=checkbox] {
   visibility: hidden;
@@ -97,3 +98,40 @@
 .mapLayerSelector{
 	left: 5%;
 }
+
+.icon {
+    width: 26px;
+    height: 26px;
+    position: relative;
+    border-radius: 50px;
+    float: left;
+    margin: 16px 0px 0px 14px;
+    /*box-shadow: inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5);*/
+}
+.icon i {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    margin: 2px auto auto 3px;
+}
+
+.enabled i:hover{
+    color: blue;
+}
+
+.row-researches-panel {
+    padding-left: 10px;
+}
+.row-researches-panel p {
+    margin-top: 17px;
+    margin-left: 5px;
+    float: left;
+    font-size: 13px;
+}
+
+.iconsBarre {
+    min-width: 60%;
+    float: right;
+}
+

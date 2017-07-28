@@ -170,10 +170,8 @@ function View(){
                 this._container.title = this.options.titleElement;
         	if(options.class)
                 V.addClass(this._container,options.class);
-            if(options.idDiv)
-                this._container.id = options.idDiv;
-            if(options.scrollable)
-                this._container.style.overflow = 'auto';
+            this._container.id = options.idDiv || '';
+            this._container.style.overflow = options.scroll || 'visible'  ;
             if(options.titleDiv){
                 var firtChild = V.create("div", options.titleDivClass, this._container);
                 firtChild.innerHTML = options.titleDiv;
@@ -255,10 +253,9 @@ function View(){
     	
     	_selectorOptions: function(){
     		var options = this.options;
-    		if(options.rowSource){
-    			// create shortcut for rowSource
-    			this.rowSource = options.rowSource;
-    		}
+    		// create shortcut for rowSource
+    	    this.rowSource = options.rowSource || [];
+    		
     	},
     	
     	// @function addRows(element HTMLElement?V.Class)
@@ -295,7 +292,6 @@ function View(){
     	},
 		
 		createRow: function(layerName){
-			console.log('ok');
 			var res = new V.Div({class: 'rowBox'});
 			var checkBox = new V.Div({class: 'roundedOne', parentElement: res});
 			var child1 = V.create('input','', checkBox.getContainer());
@@ -324,8 +320,9 @@ function View(){
 		},
 		
 		_onClick: function(e){
-			var target = e.target || e.srcElement;
-			this.currentCheckedBox.checked = false;
+			var target = e.target || e.srcElement;  
+			this.currentCheckedBox.checked = 
+			   (this.currentCheckedBox == target);
 			this.currentCheckedBox = target;
 			myController.setBasemap(target.id);
 		}
@@ -448,6 +445,130 @@ function View(){
             this._link.innerHTML = sign;
         }
     });
+    
+    V.Icon = V.Element.extend({
+        initialize: function(options){
+            V.setOptions(this, options);
+        },
+        
+        initIcon: function(){
+            this.setContainer(V.create('div', 'icon'));
+            this._iconOptions();
+            var className = (this.checked)?this.iconChecked:this.iconUnchecked;
+            this._icon = V.create('i',className, this._container);
+            (this.enabled)?this.enable():this.disable();
+            
+        },
+        
+        disable: function(){
+            if(this.checked) this._onClick();
+            this._container.style.backgroundColor = 'transparent';
+            this.enabled = false;
+            this._container.style.cursor = 'initial';
+            this._container.style.boxShadow = '';
+            V.DomUtil.removeClass(this._container, 'enabled');
+        },
+        
+        enable: function(){
+            this._container.style.backgroundColor = 'white';
+            V.DomUtil.addClass(this._container,'enabled');
+            this.enabled = true;
+            this._container.addEventListener('click', this._onClick.bind(this), false);
+            this._container.style.cursor = 'pointer';
+            this._container.style.boxShadow ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
+        }
+        ,
+        
+        _iconOptions: function(){
+            var options = this.options;
+            
+            this.iconUnchecked = options.iconUnchecked || 'fa fa-bath';
+            this.iconChecked = options.iconChecked || 'fa fa-bath';
+            this.checked = options.checked;
+            this.index = options.index || -1;
+            this.enabled = options.enabled;
+        },
+        
+        _onClick: function(){
+            this.checked = !this.checked;
+            var className = (this.checked)?this.iconChecked:this.iconUnchecked;
+            V.DomUtil.setClass(this._icon, className);
+            this._eventHandle();
+        }
+    });
+    
+    V.PlusIcon = V.Icon.extend({
+        options: {
+            iconUnchecked: 'fa fa-plus',
+            iconChecked: 'fa fa-minus'
+        },
+        initialize: function(options){
+            V.setOptions(this, options);
+            this.initIcon();
+            this.isEye = true;
+        },
+        _eventHandle: function(){
+            null
+        }
+    });
+    
+    V.EyeIcon = V.Icon.extend({
+        options: {
+            iconUnchecked: 'fa fa-eye-slash',
+            iconChecked: 'fa fa-eye'
+        },
+        initialize: function(options){
+            V.setOptions(this, options);
+            this.initIcon();
+            this.isEye = true;
+        },
+        _eventHandle: function(){
+            null
+        }
+    });
+    
+    V.EditionIcon = V.Icon.extend({
+        options: {
+            iconChecked: 'fa fa-pencil',
+            iconUnchecked: 'fa fa-pencil-square'
+        },
+        initialize: function(options){
+            V.setOptions(this, options);
+            this.initIcon();
+        },
+        _eventHandle: function(){
+            null
+        }
+    });
+    
+    V.TrashIcon = V.Icon.extend({
+        options: {
+            iconUnchecked: 'fa fa-trash',
+            iconChecked: 'fa fa-truck'
+        },
+        initialize: function(options){
+            V.setOptions(this, options);
+            this.initIcon();
+        },
+        _eventHandle: function(){
+            null
+        }
+    });
+    
+    V.ExportationIcon = V.Icon.extend({
+        options: {
+            iconUnchecked: 'fa fa-cloud-download',
+            iconChecked: 'fa fa-cloud-download'
+        },
+        initialize: function(options){
+            V.setOptions(this, options);
+            this.initIcon();
+        },
+        _eventHandle: function(){
+            null
+        }
+    });
+    
 
     V.ColorSelector = V.Element.extend({
 
@@ -952,7 +1073,7 @@ function View(){
      * see research.css
      */ 
     var mapDiv = document.getElementById('map')
-    this.editionDiv = new V.Div({parentElement: mapDiv, class: "leaflet-bar title text-border",
+    this.editionDiv = new V.Div({parentElement: mapDiv, class: "leaflet-bar normal-text",
                             childClass: 'champComposant leaflet-control leaflet-bar', idDiv: 'research'});
     // hide varable
     this.editionDiv.hideState = false;
@@ -996,12 +1117,12 @@ function View(){
 
     var editBox = new V.Div({titleDiv: "Edition Tools", parentElement: this.editionDiv,
                             childClass: 'childOfEditTools',
-                            titleDivClass: 'underChampComposant title firstComposant'});
+                            titleDivClass: 'underChampComposant title text-border firstComposant'});
 
     var timeBox = new V.Div({titleDiv: "Time Interval", parentElement: this.editionDiv,
-                            titleDivClass: 'underChampComposant title firstComposant'});
+                            titleDivClass: 'underChampComposant title text-border firstComposant'});
     var colorBox = new V.Div({titleDiv: "Color Selections", parentElement: this.editionDiv,
-                            titleDivClass: 'underChampComposant title firstComposant'});
+                            titleDivClass: 'underChampComposant title text-border firstComposant'});
 
     // this.newPolygonButton.addOn(editBox);
     // this.newPolygonButton.addClass("childOfEditTools");
@@ -1049,9 +1170,9 @@ function View(){
 
 
         initialize: function(text, date, month, year, parent){
-            var container = L.DomUtil.create('div','timeSelector',parent);
+            var container = V.create('div','timeSelector',parent);
             this._container = container;
-            this._textDiv = L.DomUtil.create('div', 'text-border',container);
+            this._textDiv = V.create('div', '',container);
             this._textDiv.innerHTML = text ;
             this._dateDiv = L.DomUtil.create('select', '',container);
             for(var i=1;i<31; i++){
@@ -1126,9 +1247,9 @@ function View(){
 
     function addColorSelector(text, child, parent){
         
-        var container = L.DomUtil.create('div','colorSelector',parent);
+        var container = V.create('div','colorSelector',parent);
         
-        var textDiv = L.DomUtil.create('div', 'text-border',container);
+        var textDiv = V.create('div', 'normal-text',container);
         textDiv.innerHTML = text ;
         var colorSelector = child;
         container.appendChild(colorSelector);
@@ -1146,7 +1267,7 @@ function View(){
      * id = management
      * see management.css
      */ 
-    this.managementDiv = new V.Div({class: "leaflet-control leaflet-bar title text-border",
+    this.managementDiv = new V.Div({class: "leaflet-control leaflet-bar",
     								parentElement: mapDiv, childClass:'champComposant leaflet-control leaflet-bar',
     								idDiv: "management"});
     
@@ -1160,18 +1281,21 @@ function View(){
 
         if(thisView.managementDiv.hideState == true){
             thisView.managementDiv.hide();
-            thisView.hideManangementButton.setTitle('Show management');
+            thisView.hideManagementButton.setTitle('Show management');
             thisView.hideManagementButton.setSign("◄");
+            thisView.hideManagementButton.getContainer().style.right = '0px';
         }
         else {
             thisView.managementDiv.show();
             thisView.hideManagementButton.setTitle('Hide management');
             thisView.hideManagementButton.setSign("►"); 
+            thisView.hideManagementButton.getContainer().style.right = '30%';  
+            
         }    
         thisView.managementDiv.hideState = !thisView.managementDiv.hideState;
 
     }
-    this.hideManagementButton = new V.Button({sign: '►', titleElement: 'Hide management', 
+    this.hideManagementButton = new V.Button({sign: '◄', titleElement: 'Hide management', 
     				class: 'hideManagement', parentElement: mapDiv});
     			
     L.DomEvent.on(this.hideManagementButton.getContainer(), 'click', hideManangement);
@@ -1182,18 +1306,29 @@ function View(){
     //this.editionTitle.innerHTML = 'Name research';
 
    
-    this.baseMapsBox 
-    					=  new V.Div({titleDiv: "Base Maps", parentElement: this.managementDiv,
-                            titleDivClass: 'underChampComposant title firstComposant'});
-    this.userlayersBox = 
-    					new V.Div({titleDiv: "User Layer", parentElement: this.managementDiv,
-                            titleDivClass: 'underChampComposant title firstComposant'});
+    this.baseMapsBox =  new V.Div({titleDiv: "Base Maps", parentElement: this.managementDiv,
+                            titleDivClass: 'underChampComposant title text-border firstComposant'});
+    this.userlayersBox = new V.Div({titleDiv: "User Layer", parentElement: this.managementDiv,
+                            titleDivClass: 'underChampComposant title text-border firstComposant'});
 	
     //----------------------Fill basemapsBox----------------------------------------/
-	this.maplayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox,
+	this.maplayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox, class: 'normal-text',
 							rowSource: Object.keys(myModel.mapLayers.dict)});
 	
     //----------------------Fill userlayersBox-------------------------------------/
+    this.researchesPanel = new V.Div({parentElement: this.userlayersBox, class: 'researches-panel'});
+    var row = new V.Div({parentElement: this.researchesPanel, class: 'row-researches-panel'});
+    var plusIcon = new V.PlusIcon({checked:false, enabled: true});
+    var nameResearch = V.create('p','normal-text');
+    nameResearch.innerHTML = "Parisf";
+    var eyeIcon = new V.EyeIcon({checked: false, enabled: true});
+    var editionIcon = new V.EditionIcon({checked: true, enabled: true});
+    var trashIcon = new V.TrashIcon({checked: false, enabled: true});
+    var exportationIcon = new V.ExportationIcon({cheked: true, enabled: false});
+    var iconsBarre = new V.Div({class:  'iconsBarre'});
+    iconsBarre.addChild(eyeIcon).addChild(editionIcon)
+        .addChild(trashIcon).addChild(exportationIcon);
+    row.addChild(plusIcon).addChild(nameResearch).addChild(iconsBarre);
 }
 
 

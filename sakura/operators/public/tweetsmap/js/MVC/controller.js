@@ -556,7 +556,8 @@ function Controller(){
         }
 
         // hide save button when an error occurs
-        if(message){
+        /////
+        /**if(message){
             //myView.saveResearchButton.setDisabled(true);
             myView.newPolygonButton.setDisabled(true);
             myView.newRectangleButton.setDisabled(true);
@@ -569,7 +570,7 @@ function Controller(){
             myView.newRectangleButton.setDisabled(false);
             myView.newCircleButton.setDisabled(false);
             //myView.removeResearchButton.setDisabled(false);
-        }
+        } **/
         if(name == "ton nom?")
             message = "Salut, Je suis Tweetsmap !"
         if(name == "ton pere?")
