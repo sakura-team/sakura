@@ -244,10 +244,11 @@ function Controller(){
         myModel.researches[currentLength] = 
             {rid: research.rid, research: research};
         // update research select box
-        myView.researchSelector.addOption(research.nameResearch);
+        //// myView.researchSelector.addOption(research.nameResearch);
         // update research checkbox list
-        myView.researchCheckBoxList.addCheckBox(research.nameResearch);
+        //// myView.researchCheckBoxList.addCheckBox(research.nameResearch);
         // change current research to research
+        myView.researchesPanel.addRow(myModel.currentResearch);
         this.changeCurrentResearch(this.getIndexByResearch(research));
         this.updateMarkers();
     };
@@ -289,19 +290,22 @@ function Controller(){
     };
     
     // remove current research
-    this.removeResearch = function(){
-        var indexResearchObsolete = 
-            this.getIndexByResearch(myModel.currentResearch);
+    this.removeResearch = function(indexResearchObsolete){
+        console.log(indexResearchObsolete);
+        console.log(myModel.researches[indexResearchObsolete]);
+        ////var indexResearchObsolete = 
+            /////this.getIndexByResearch(myModel.currentResearch);
         
         // remove from research checkboxes
-        myView.researchCheckBoxList.removeCheckBox(indexResearchObsolete);
+        ////myView.researchCheckBoxList.removeCheckBox(indexResearchObsolete);
         // remove from research selector
-        myView.researchSelector.removeOption(indexResearchObsolete);
+        ////myView.researchSelector.removeOption(indexResearchObsolete);
         // remove Rois
-        this.removePolygonsFGUI(myModel.currentResearch.roi);
+        ////this.removePolygonsFGUI(myModel.currentResearch.roi);
+        this.removePolygonsFGUI(myModel.researches[indexResearchObsolete].research.roi);
         
         myModel.researches.splice(indexResearchObsolete, 1);
-        this.addResearch();
+        //this.addResearch();
         this.updateMarkers();
     };
     
@@ -334,7 +338,8 @@ function Controller(){
      * @see view.js
      */
     this.addOverlays = function(layer, name){
-        myView.layersPanel.addOverlay(layer, name);
+        //myView.layersPanel.addOverlay(layer, name);
+        console.log("added new overlay");
     };
 
     // @function removeAllOverlays()
@@ -363,14 +368,14 @@ function Controller(){
     // @function getNamFGUI(): String
     // Returns name of research filled in the the name-research text box
     this.getNameFGUI = function(){
-        var res ////= myView.nameBox.getValue();
+        var res = myView.nameBox.getValue();
         return res || "Current Research";
     };
 
     // @function getColorBoundFGUI(): String
     // Returns color of ROI Bound selected in the color box
     this.getColorBoundFGUI = function(){
-        var res = null;
+        var res = myView.boundColorSelector.getColor();
         return res || "red";
     };
 
@@ -482,8 +487,9 @@ function Controller(){
 
         // Say good bye to previous research
         var researchObsolete = myModel.currentResearch;
+        ////
         // Check if next-currentResearch is checked or not
-        var nextCurrentResearchChecked = myView.researchCheckBoxList.getChecked(index);
+        /*var nextCurrentResearchChecked = myView.researchCheckBoxList.getChecked(index);
         // If previos research is still in the research list
         if(this.getIndexByResearch(researchObsolete) != null) 
         {
@@ -497,7 +503,7 @@ function Controller(){
             );
             // remove polygons of old research
             this.removePolygonsFGUI(researchObsolete.roi);
-        }
+        } */
     
         myModel.currentResearch = myModel.researches[index].research;
         
@@ -505,7 +511,7 @@ function Controller(){
         this.setNameToGUI(myModel.currentResearch.nameResearch);
         this.setColorBackgroundToGUI(myModel.currentResearch.colorBackground);
         this.setColorPointToGUI(myModel.currentResearch.colorPoint);
-        if(!nextCurrentResearchChecked) this.addPolygonsToGUI(myModel.currentResearch.roi);
+        ////if(!nextCurrentResearchChecked) this.addPolygonsToGUI(myModel.currentResearch.roi);
         if(myModel.currentResearch.nameResearch === "Current Research"){
             myView.nameBox.setValue('');
         }
@@ -571,13 +577,19 @@ function Controller(){
             myView.newCircleButton.setDisabled(false);
             //myView.removeResearchButton.setDisabled(false);
         } **/
+        
+        if(message){
+            myView.nameBox.disable();
+        } else {
+            myView.nameBox.enable();
+        }
         if(name == "ton nom?")
             message = "Salut, Je suis Tweetsmap !"
         if(name == "ton pere?")
             message = "Sakura"
         if(name == "ta copine?")
             message = "Je suis une fille ..."          
-        ////myView.nameBox.setMessage(message);
+        myView.nameBox.setMessage(message);
 
         this.updateRoiColor();
         

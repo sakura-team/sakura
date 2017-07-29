@@ -57,6 +57,8 @@ function View(){
 
             // call the constructor
             if(this.initialize){
+                // create options for obj
+                V.setOptions(this, this.options);
                 this.initialize.apply(this, arguments);
             }
         };
@@ -95,9 +97,7 @@ function View(){
         },
 
         initialize: function(options) {
-            options = V.setOptions(this,options);
-
-            
+            V.extend(this.options,options);
         },
 
         // @function show
@@ -131,14 +131,13 @@ function View(){
         // set messgage to message box
         // example: notify a duplication name
         setMessage: function(message){
-            if(this.options.hasMessage && !this._message){
+            if(!this._messageBox){
                  // create message box in container in HTML
-                var messageBox =
+                this._messageBox =
                     V.create('div','message text-basic text-border');
-                this._messageBox = messageBox;
                 this._container.appendChild(this._messageBox);
-                this._messageBox.innerHTML = message;
             }
+            this._messageBox.innerHTML = message;
             
         },
 
@@ -216,7 +215,7 @@ function View(){
         rmChild: function(child){
         	if(child._container)
         		child = child._container;
-        	this._container.rmChild(child);
+        	this._container.removeChild(child);
         }
     	
     	
@@ -228,7 +227,7 @@ function View(){
     V.Div = V.Element.extend({
         
         initialize: function(options){
-            V.setOptions(this, options);
+            V.extend(this.options, options);
             this.setContainer(V.create('div'));
         }
 
@@ -236,7 +235,7 @@ function View(){
     
     V.Selector = V.Element.extend({
     	initialize: function(options){
-    		V.setOptions(this, options);
+    		V.extend(this.options, options);
     		
     	},
     	
@@ -246,8 +245,7 @@ function View(){
     		var len = this.rowSource.length;
     		for(var i=0; i<len; i++){
     			// createRow is defined by child class of selector
-    			this.addRow(this.createRow(this.rowSource[i]));
-
+    			this._addRow(this._createRow(this.rowSource[i]));
     		}
     	},
     	
@@ -260,9 +258,25 @@ function View(){
     	
     	// @function addRows(element HTMLElement?V.Class)
     	// add a Row to selector
-    	addRow: function(element){
+    	_addRow: function(element){
     		this.addChild(element);
+    		element.getContainer().addEventListener('click', this._onClickRow.bind(this), false);
     		this._rows.push(element);
+    	},
+    	
+    	_getIndex: function(DomEl){
+    	    var i, len = this._rows.length;
+    	    for(i = 0; i<len ; i++){
+    	        if(this._rows[i].getContainer() == DomEl)
+    	            return i;
+    	    }
+    	},
+    	
+    	_onClickRow: function(e){
+    	    var target = e.currentTarget;
+    	    
+    	    this.clickedRowIndex = this._getIndex(target);
+    	    console.log(this.clickedRowIndex);
     	},
     	
     	// @function removeRows(index int)
@@ -286,13 +300,13 @@ function View(){
     
     V.MaplayersSelector = V.Selector.extend({
     	initialize: function(options){
-			V.setOptions(this, options);
+			V.extend(this.options, options);
     		this.setContainer(V.create('div', 'mapLayersSelector'));
 			this.initSelector();
     	},
 		
-		createRow: function(layerName){
-			var res = new V.Div({class: 'rowBox'});
+		_createRow: function(layerName){
+			var res = new V.Div({class: 'row-box'});
 			var checkBox = new V.Div({class: 'roundedOne', parentElement: res});
 			var child1 = V.create('input','', checkBox.getContainer());
 			res.box = child1;
@@ -311,7 +325,6 @@ function View(){
 		},
 
 		check: function(index){
-			
 			var len = this._rows.length;
 			for(var i =0; i<len; i++){
 				this._rows[i].box.checked = (i==index);
@@ -331,50 +344,87 @@ function View(){
 		
     }); 
 
-	
-    L.TextBox = L.Control.extend({
+    V.UserLayersSelector = V.Selector.extend({
         options: {
-            position: 'topright'
+            rowSource: myModel.researches
+        },
+        
+        initialize: function(options){
+            V.extend(this.options, options);
+            this.setContainer(V.create('div'));
+            this.initSelector();
+        },
+        
+        _createRow: function(research){
+            var row = new V.Div({
+                class: 'row-researches-panel leaflet-bar'});
+            var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
+            row.plusIcon = new V.PlusIcon({checked:false, enabled: true, 
+                                parentElement: row});
+            row.nameResearch = V.create('p','normal-text', row.getContainer());
+            row.nameResearch.innerHTML = research.nameResearch;
+            row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
+                                parentElement: iconsBarre});
+            row.editionIcon = new V.EditionIcon({checked: true, enabled: true, 
+                                parentElement: iconsBarre});
+            row.trashIcon = new V.TrashIcon({checked: false, enabled: true, 
+                                parentElement: iconsBarre});
+            row.exportationIcon = new V.ExportationIcon({cheked: true, 
+                                enabled: false, parentElement: iconsBarre});
+            row.trashIcon.getContainer().addEventListener('click',
+                                this._deleteResearch.bind(this), false);
+            
+            return row;
+        },
+        
+        addRow: function(research){
+            var el = this._createRow(research);
+            this._addRow(el);
+        },
+        
+        _deleteResearch: function(){
+            var i = this.clickedRowIndex;
+            this.removeRow(i);
+            myController.removeResearch(i);
+        }
+    });
+    
+	
+    V.TextBox = V.Element.extend({
+        options: {
+            class: 'text-box leaf-bar',
+            hasMessage: true
         },
 
         initialize: function (options) {
-            this._config = {};
-            L.Util.extend(this.options, options);
-            this.setConfig(options);
-        },
-
-        setConfig: function(options) {
-            this._config = {
-                'tbid': options.tbid || '',
-                'textdefault': options.textdefault || '',
-            };
-        },
-
-        onAdd: function(map) {
-            // create div container in HTML
-            var container = 
-                L.DomUtil.create('div', 'leaflet-control leaf-bar');
-            this._container = container;
-
+            V.extend(this.options, options);
+            
+            this.setContainer(V.create('div'));
+            this.textboxOptions();
+            
+            
             // create text box in container in HTML 
             var textBox = 
-                L.DomUtil.create('input','',container);
-            textBox.id = this._config.tbid;
+                V.create('input','',this._container);
+            textBox.id = this.tbid;
             textBox.type = 'text';
-            textBox.placeholder = this._config.textdefault;
+            textBox.placeholder = this.textdefault;
             this._textBox = textBox;
+            
+            this._submitButton = new V.PlusIcon({iconChecked: 'fa fa-plus', 
+                enabled: true, checked: true, parentElement: this._container});
+            
+            
+            this._textBox.addEventListener('keyup', this._onKeypressed, false);
+            
+        },
 
-            // create message box in container in HTML
-            var messageBox =
-                L.DomUtil.create('div','message text-basic text-border',container);
-            this._messageBox = messageBox;
-
-            L.DomEvent
-                .addListener(this._textBox, 'keyup', this._onKeyUp, this);
-                
-            L.DomEvent.disableClickPropagation(this._textBox);
-
-            return this._container;
+        textboxOptions: function() {
+            var options = this.options;
+            
+            this._tbid = options.tbid || '';
+            this._textdefault = options.textdefault || '';
+           
         },
 
         // get current text in the box
@@ -385,28 +435,41 @@ function View(){
         // reset Value of text box to default
         setValue: function(name){
             this._textBox.value = name;
-        }
-        ,
-
-        setMessage: function(message){
-            this._messageBox.innerHTML = message;
+        },
+        
+        disable: function() {
+            this._submitButton.getContainer().removeEventListener('click', 
+                                    this._onClick, false);
+            this._submitButton.disable();
         },
 
+        enable: function() {
+            this._submitButton.getContainer().addEventListener('click', 
+                                    this._onClick, false);
+            this._submitButton.enable();
+        },
         // update data when text box is changed
-        _onKeyUp: function(e){
+        _onClick: function(e){
+            myController.actualize();
+            myController.addResearch();
+        },
+        
+        _onKeypressed: function(){
             myController.actualize();
         }
 
 
     });
 
+   
+    // this.nameBox = 
+    //     thisView.createTextBox(map,"ResearchBox", "Current Research");
 
 	// Notice: O
     V.Button = V.Element.extend({
 
         initialize: function(options){
-            options = V.setOptions(this,options);
-
+            V.extend(this.options,options);
             var container = this.setContainer(V.create('div', 'leaflet-bar')),
                 link = V.create('a', '', container);
             this._container = container;
@@ -448,7 +511,7 @@ function View(){
     
     V.Icon = V.Element.extend({
         initialize: function(options){
-            V.setOptions(this, options);
+            V.extend(this.options, options);
         },
         
         initIcon: function(){
@@ -467,15 +530,19 @@ function View(){
             this._container.style.cursor = 'initial';
             this._container.style.boxShadow = '';
             V.DomUtil.removeClass(this._container, 'enabled');
+            this._container.removeEventListener('click', 
+                                               this._onClick.bind(this), false);
         },
         
         enable: function(){
             this._container.style.backgroundColor = 'white';
             V.DomUtil.addClass(this._container,'enabled');
             this.enabled = true;
-            this._container.addEventListener('click', this._onClick.bind(this), false);
+            this._container.addEventListener('click', 
+                                               this._onClick.bind(this), false);
             this._container.style.cursor = 'pointer';
-            this._container.style.boxShadow ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
+            this._container.style.boxShadow 
+                     ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
         }
         ,
         
@@ -503,9 +570,9 @@ function View(){
             iconChecked: 'fa fa-minus'
         },
         initialize: function(options){
-            V.setOptions(this, options);
+
+            V.extend(this.options, options);
             this.initIcon();
-            this.isEye = true;
         },
         _eventHandle: function(){
             null
@@ -518,7 +585,8 @@ function View(){
             iconChecked: 'fa fa-eye'
         },
         initialize: function(options){
-            V.setOptions(this, options);
+
+            V.extend(this.options, options);
             this.initIcon();
             this.isEye = true;
         },
@@ -533,7 +601,7 @@ function View(){
             iconUnchecked: 'fa fa-pencil-square'
         },
         initialize: function(options){
-            V.setOptions(this, options);
+            V.extend(this.options, options);
             this.initIcon();
         },
         _eventHandle: function(){
@@ -547,7 +615,7 @@ function View(){
             iconChecked: 'fa fa-truck'
         },
         initialize: function(options){
-            V.setOptions(this, options);
+            V.extend(this.options, options);
             this.initIcon();
         },
         _eventHandle: function(){
@@ -561,7 +629,7 @@ function View(){
             iconChecked: 'fa fa-cloud-download'
         },
         initialize: function(options){
-            V.setOptions(this, options);
+            V.extend(this.options, options);
             this.initIcon();
         },
         _eventHandle: function(){
@@ -573,12 +641,12 @@ function View(){
     V.ColorSelector = V.Element.extend({
 
         initialize: function(options){
-            options = V.setOptions(this,options);
+            options = V.extend(this.options,options);
         
             // container div in HTML
             var container = this.setContainer(V.create('div'));
 
-            var select = V.create('select','leaflet-control leaflet-bar', container);
+            var select = V.create('select','leaflet-bar', container);
             this._select = select;
     
             
@@ -635,26 +703,6 @@ function View(){
                 listOptions: options.listOptions,
                 titleBox: options.titleBox
             };
-        },
-
-        onAdd: function(map) {
-            // container div in HTML
-            var container = L.DomUtil.create('div');
-            this._container = container;
-
-            var select = L.DomUtil.create('select','leaflet-control leaflet-bar', container);
-            this._select = select;
-            select.title = this._config.titleBox;
-            for(var i = 0; i < this._config.listOptions.length ; i++){
-                this.addOption(this._config.listOptions[i]);
-            }
-            
-            L.DomEvent
-                .addListener(this._container, 'click', L.DomEvent.stop);
-            
-            L.DomEvent.disableClickPropagation(this._select);
-
-            return select;
         },
 
         getSelect: function(){
@@ -1060,7 +1108,7 @@ function View(){
      */
     this.createChildBox = function(name, parent, bool) {
         var res;
-        res = L.DomUtil.create("div", 'champComposant leaflet-control leaflet-bar ', parent);
+        res = L.DomUtil.create("div", 'champComposant leaflet-bar ', parent);
         
 
         return res;
@@ -1074,7 +1122,7 @@ function View(){
      */ 
     var mapDiv = document.getElementById('map')
     this.editionDiv = new V.Div({parentElement: mapDiv, class: "leaflet-bar normal-text",
-                            childClass: 'champComposant leaflet-control leaflet-bar', idDiv: 'research'});
+                            childClass: 'champComposant leaflet-bar', idDiv: 'research'});
     // hide varable
     this.editionDiv.hideState = false;
     this.editionDiv.stopEventOfLeaflet();
@@ -1107,14 +1155,7 @@ function View(){
     //--------------- Fill Editiontools box --------------------
    
 
-    /**
-    *  Add button for reset current research
-    */ 
-    this.resetResearchButton = new V.Button({sign: '♺', titleElement: 'Reset Research'});
-    L.DomEvent.on(this.resetResearchButton.getLink(), 'click', function(){
-        myController.resetResearch();
-    });
-
+    
     var editBox = new V.Div({titleDiv: "Edition Tools", parentElement: this.editionDiv,
                             childClass: 'childOfEditTools',
                             titleDivClass: 'underChampComposant title text-border firstComposant'});
@@ -1153,7 +1194,12 @@ function View(){
     						parentElement: editBox,
     						eventClick: {className: map.editTools, functionName: 
     							map.editTools.startCircle}});
-    
+    /**
+    *  Add button for reset current research
+    */ 
+    this.resetResearchButton = new V.Button({sign: '♺', titleElement: 'Reset Research',
+                            parentElement: editBox});
+  
 
 
     // for(var i=1; i < editBox.children.length;i++){
@@ -1267,8 +1313,8 @@ function View(){
      * id = management
      * see management.css
      */ 
-    this.managementDiv = new V.Div({class: "leaflet-control leaflet-bar",
-    								parentElement: mapDiv, childClass:'champComposant leaflet-control leaflet-bar',
+    this.managementDiv = new V.Div({class: "leaflet-bar",
+    								parentElement: mapDiv, childClass:' champComposant leaflet-bar',
     								idDiv: "management"});
     
     this.managementDiv.stopEventOfLeaflet();
@@ -1316,19 +1362,12 @@ function View(){
 							rowSource: Object.keys(myModel.mapLayers.dict)});
 	
     //----------------------Fill userlayersBox-------------------------------------/
-    this.researchesPanel = new V.Div({parentElement: this.userlayersBox, class: 'researches-panel'});
-    var row = new V.Div({parentElement: this.researchesPanel, class: 'row-researches-panel'});
-    var plusIcon = new V.PlusIcon({checked:false, enabled: true});
-    var nameResearch = V.create('p','normal-text');
-    nameResearch.innerHTML = "Parisf";
-    var eyeIcon = new V.EyeIcon({checked: false, enabled: true});
-    var editionIcon = new V.EditionIcon({checked: true, enabled: true});
-    var trashIcon = new V.TrashIcon({checked: false, enabled: true});
-    var exportationIcon = new V.ExportationIcon({cheked: true, enabled: false});
-    var iconsBarre = new V.Div({class:  'iconsBarre'});
-    iconsBarre.addChild(eyeIcon).addChild(editionIcon)
-        .addChild(trashIcon).addChild(exportationIcon);
-    row.addChild(plusIcon).addChild(nameResearch).addChild(iconsBarre);
+    this.nameBox = new V.TextBox({tbid : 'ResearchBox', textdefault: 'Current Research'});
+    this.userlayersBox.addChild(this.nameBox);
+    this.researchesPanel = //new V.Div({parentElement: this.userlayersBox, class: 'researches-panel'});
+                 new V.UserLayersSelector({parentElement: this.userlayersBox, 
+                            class: 'researches-panel'});
+    
 }
 
 

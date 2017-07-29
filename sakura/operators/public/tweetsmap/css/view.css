@@ -1,6 +1,11 @@
 
 .message{
     font-size: 12px;
+    position: relative;
+    float: left;
+    clear: both;
+    left: 2%;
+    top: 3px;
 }
 
 .text-basic{

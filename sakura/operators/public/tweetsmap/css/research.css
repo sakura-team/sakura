@@ -58,13 +58,16 @@
 }
 
 .champComposant {
-    position: absolute;
+    position: relative;
     width: 90%;
     left: 5%;
     margin-bottom: 24px;   
     padding-bottom: 5%;
     padding-top: 1%;
     background-color: #b3e7ff;
+    height: auto;
+    float: left;
+    clear: both;
 }
 
 .underChampComposant {

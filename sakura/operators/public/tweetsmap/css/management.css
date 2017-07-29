@@ -13,20 +13,6 @@
     border-bottom-left-radius: 4px; */
 }
 
-#tweetsConsultation {
-    height: 400px;
-}
-
-#hashtagsConsultation {
-    height: 30px;
-}
-
-#keywordsConsultation {
-    height: 30px;
-}
-
-
-
 /* end .slideThree */
 /* .roundedOne */
 .roundedOne {
@@ -81,7 +67,7 @@
 
 /* end .roundedOne */
 
-.rowBox {
+.row-box {
 	height: auto;
 	width: 35%;
 	position: relative;
@@ -89,7 +75,7 @@
 	margin-left: 8%;
 }
 
-.rowBox p{
+.row-box p{
 	position: absolute;
 	top: 7px;
 	left: 40%;
@@ -105,7 +91,7 @@
     position: relative;
     border-radius: 50px;
     float: left;
-    margin: 16px 0px 0px 14px;
+    margin: 8px 0px 0px 14px;
     /*box-shadow: inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5);*/
 }
 .icon i {
@@ -113,7 +99,7 @@
     width: 22px;
     height: 22px;
     position: absolute;
-    margin: 2px auto auto 3px;
+    margin: 2px auto auto 4px;
 }
 
 .enabled i:hover{
@@ -121,17 +107,43 @@
 }
 
 .row-researches-panel {
-    padding-left: 10px;
+    position: relative;
+    float: left;
+    width: 90%;
+    left: 5%;
+    background-color: #e6f7ff;
+    margin-bottom: 2px;
 }
 .row-researches-panel p {
-    margin-top: 17px;
-    margin-left: 5px;
+    
     float: left;
+    margin-left: 4px;
     font-size: 13px;
+    
 }
 
 .iconsBarre {
     min-width: 60%;
     float: right;
+}
+
+.text-box {
+    margin-top: 15px;
+    width: 80%;
+    left: 5%;
+    float: left;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.text-box input{
+    width: 55%;
+    float: left;
+}
+
+.text-box div{
+    position: relative;
+    right: 4px;
+    bottom: 6px;
 }
 
