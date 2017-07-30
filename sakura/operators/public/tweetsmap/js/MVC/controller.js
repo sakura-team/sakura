@@ -16,22 +16,23 @@ function Controller(){
     // Created first Research
     this.initModel = function(){
        // increment id 
-        myModel.rid ++;
+        /////myModel.rid ++;
         // create new Research
-        myModel.currentResearch = new Research;
+        ////this.editableResearch = new Research;
         // update id in new Research
-        myModel.currentResearch.rid = myModel.rid;
+        ////this.editableResearch.rid = myModel.rid;
         // add new Research in list research of thisControl
-        myModel.researches[0] = 
-            {rid: myModel.currentResearch.rid, research: myModel.currentResearch};
+        ////myModel.researches[0] = 
+            ////{rid: this.editableResearch.rid, research: this.editableResearch};
         // add roi of current research to myView.rois
-        myView.rois.addLayer(myModel.currentResearch.roi);
+        ////myView.rois.addLayer(this.editableResearch.roi);
         // update research list in research box
-        //myView.researchSelector.addOption(myModel.currentResearch.nameResearch);        
-        //myView.researchCheckBoxList.addCheckBox(myModel.currentResearch.nameResearch);
+        //myView.researchSelector.addOption(this.editableResearch.nameResearch);        
+        //myView.researchCheckBoxList.addCheckBox(this.editableResearch.nameResearch);
         myView.rois.addTo(map);
         //this.updateTweetsmap();
 		myView.maplayersSelector.check(myModel.mapLayers.getDefault());
+		this.changeEditableResearch(-1);
         this.actualize();
     };
 
@@ -228,29 +229,34 @@ function Controller(){
 	};
 
     this.addResearch = function(){
-        var check = this.getResearchByName("Current Research");
+
+        /*var check = this.getResearchByName("Current Research");
         if(check){
             this.changeCurrentResearch(this.getIndexByResearch(check));
             return;
-        }
+        }*/
         // increment id 
-        myModel.rid ++;
+        ////myModel.rid ++;
         // create new Research
         var research = new Research;
+        research.nameResearch = myView.nameBox.getValue();
         // update id in new Research
-        research.rid = myModel.rid;
+        ////research.rid = myModel.rid;
         var currentLength = myModel.researches.length;
         // add new Research in list research of thisControl
-        myModel.researches[currentLength] = 
-            {rid: research.rid, research: research};
+        myModel.researches[currentLength] = research;
         // update research select box
         //// myView.researchSelector.addOption(research.nameResearch);
         // update research checkbox list
         //// myView.researchCheckBoxList.addCheckBox(research.nameResearch);
         // change current research to research
-        myView.researchesPanel.addRow(myModel.currentResearch);
-        this.changeCurrentResearch(this.getIndexByResearch(research));
-        this.updateMarkers();
+        ////this.displayResearch(currentLength);
+        myView.researchesPanel.addRow(research);
+        this.changeEditableResearch(this.getIndexByResearch(research));
+        ////this.updateMarkers();
+        myView.nameBox.setValue('');
+        
+        this.actualize();
     };
 
     /**
@@ -261,50 +267,51 @@ function Controller(){
     // @function displayReseach(int)
     // index = index of to-display Research in the research list
     this.displayResearch = function (index) {
-        this.addPolygonsToGUI(myModel.researches[index].research.roi);
-        this.updateMarkers();
+        this.addPolygonsToGUI(myModel.researches[index].roi);
+        ////this.updateMarkers();
     }
 
     this.hideResearch = function (index) {
-        this.removePolygonsFGUI(myModel.researches[index].research.roi);
+        this.removePolygonsFGUI(myModel.researches[index].roi);
         this.updateMarkers();
     }
     // Event when select an item on research selector
     this.selectResearch = function(){
-        this.changeCurrentResearch(myView.researchSelector.getSelect().selectedIndex);
+        this.changeEditableResearch(myView.researchSelector.getSelect().selectedIndex);
         this.updateMarkers();
     };
 
     // Event when finish drawing a poly
-    this.registrerPoly = function(layer) {
-        myModel.currentResearch.roi.addLayer(layer);
-        return myModel.currentResearch.roi.getLayers().length;            
+    this.registerPoly = function(layer) {
+        this.editableResearch.roi.addLayer(layer);
+        return this.editableResearch.roi.getLayers().length;            
     };
 
     this.resetResearch = function(){
         this.removeAllOverlays();
         myView.nameBox.setValue('');
-        myModel.currentResearch.removeAllRoi();
+        this.editableResearch.removeAllRoi();
         thisControl.actualize();
         this.updateMarkers();
     };
     
     // remove current research
-    this.removeResearch = function(indexResearchObsolete){
-        console.log(indexResearchObsolete);
-        console.log(myModel.researches[indexResearchObsolete]);
+    this.removeResearch = function(index){
+        var research = myModel.researches[index];
+        if(this.editableResearch == research) this.editableResearch = null; 
         ////var indexResearchObsolete = 
-            /////this.getIndexByResearch(myModel.currentResearch);
+            /////this.getIndexByResearch(this.editableResearch);
         
         // remove from research checkboxes
         ////myView.researchCheckBoxList.removeCheckBox(indexResearchObsolete);
         // remove from research selector
         ////myView.researchSelector.removeOption(indexResearchObsolete);
         // remove Rois
-        ////this.removePolygonsFGUI(myModel.currentResearch.roi);
-        this.removePolygonsFGUI(myModel.researches[indexResearchObsolete].research.roi);
+        ////this.removePolygonsFGUI(this.editableResearch.roi);
+        this.removePolygonsFGUI(research.roi);
         
-        myModel.researches.splice(indexResearchObsolete, 1);
+        myModel.researches.splice(index, 1);
+
         //this.addResearch();
         this.updateMarkers();
     };
@@ -316,7 +323,7 @@ function Controller(){
         // remove all from research selector
         myView.researchSelector.removeAllOptions();
         // remove all Rois
-        this.removeAllPolygonsFGUI(myModel.currentResearch.roi);
+        this.removeAllPolygonsFGUI(this.editableResearch.roi);
         
         myModel.researches.splice(0, myModel.researches.length);
         this.addResearch();
@@ -326,8 +333,8 @@ function Controller(){
     //  Change the roi color  
     //  @see view.js
     this.updateRoiColor = function(){
-        myModel.currentResearch.roi.eachLayer(function (layer) {
-            layer.setStyle({color : myModel.currentResearch.colorBackground});
+        this.editableResearch.roi.eachLayer(function (layer) {
+            layer.setStyle({color : thisControl.editableResearch.colorBackground});
         });
     };
 
@@ -344,16 +351,16 @@ function Controller(){
 
     // @function removeAllOverlays()
     this.removeAllOverlays = function(){
-        myModel.currentResearch.roi.eachLayer(function(layer){
+        this.editableResearch.roi.eachLayer(function(layer){
             myView.layersPanel.removeLayer(layer);
         });
     };
 
     this.deletePolygons = function(poly){
-        myModel.currentResearch.roi.eachLayer(function (layer){
+        this.editableResearch.roi.eachLayer(function (layer){
             if((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
                 && layer.getLatLngs()[0].length==0){
-                myModel.currentResearch.roi.removeLayer(layer);
+                this.editableResearch.roi.removeLayer(layer);
                 myView.layersPanel.removeLayer(layer);
                 return;
             }
@@ -369,7 +376,7 @@ function Controller(){
     // Returns name of research filled in the the name-research text box
     this.getNameFGUI = function(){
         var res = myView.nameBox.getValue();
-        return res || "Current Research";
+        return res ;
     };
 
     // @function getColorBoundFGUI(): String
@@ -431,7 +438,7 @@ function Controller(){
         var i = 0;
         group.eachLayer(function(layer){
             i++;
-            myView.layersPanel.addOverlay(layer, layer.namePoly);
+            ////myView.layersPanel.addOverlay(layer, layer.namePoly);
         });
    
     };
@@ -441,9 +448,10 @@ function Controller(){
     // update the overlay panel
     // used when change current research
     this.removePolygonsFGUI = function(group){
-        group.eachLayer(function(layer){
+        /*group.eachLayer(function(layer){
+            console.log("OK");
             myView.layersPanel.removeLayer(layer);
-        });
+        });*/
         myView.rois.removeLayer(group);        
     };
 
@@ -469,24 +477,38 @@ function Controller(){
 
     this.getResearchByName = function(name) {
         var res = myModel.researches.find(function (item){
-            return item.research.nameResearch === name;
+            return item.nameResearch === name;
         })
         return (res)?res.research:null;
     };
 
     this.getIndexByResearch = function(research) {
         for(var i = 0; i < myModel.researches.length; i++) {
-            if(myModel.researches[i].research === research ){
+            if(myModel.researches[i] === research ){
                 return i;
             }
         }
     }
 
     // change current research to researches[index]
-    this.changeCurrentResearch = function(index) {
+    this.changeEditableResearch = function(index) {
+        
+        // there are no editable research
+        if(index == -1){
+            myView.editionDiv.hide();
+            myView.editionTitle.hide();
+            myView.editionHide.hide();
+            return;
+        }
+        else {
+            myView.editionDiv.show();
+            myView.editionHide.show();
+            myView.editionTitle.show();
+        }
+            
 
         // Say good bye to previous research
-        var researchObsolete = myModel.currentResearch;
+        var researchObsolete = this.editableResearch;
         ////
         // Check if next-currentResearch is checked or not
         /*var nextCurrentResearchChecked = myView.researchCheckBoxList.getChecked(index);
@@ -500,21 +522,19 @@ function Controller(){
             myView.researchCheckBoxList.setChecked(
                 this.getIndexByResearch(researchObsolete),
                 false
-            );
-            // remove polygons of old research
+            ); */
+        // remove polygons of old research 
+        if(researchObsolete)
             this.removePolygonsFGUI(researchObsolete.roi);
-        } */
+        
     
-        myModel.currentResearch = myModel.researches[index].research;
+        this.editableResearch = myModel.researches[index];
         
         // set value of name Box to current research name 
-        this.setNameToGUI(myModel.currentResearch.nameResearch);
-        this.setColorBackgroundToGUI(myModel.currentResearch.colorBackground);
-        this.setColorPointToGUI(myModel.currentResearch.colorPoint);
-        ////if(!nextCurrentResearchChecked) this.addPolygonsToGUI(myModel.currentResearch.roi);
-        if(myModel.currentResearch.nameResearch === "Current Research"){
-            myView.nameBox.setValue('');
-        }
+        ////this.setNameToGUI(this.editableResearch.nameResearch);
+        this.setColorBackgroundToGUI(this.editableResearch.colorBackground);
+        this.setColorPointToGUI(this.editableResearch.colorPoint);
+        this.addPolygonsToGUI(this.editableResearch.roi);
         // update interface
         this.actualize();
     };
@@ -522,8 +542,8 @@ function Controller(){
     // remove researches[i]
     this.removeResearchByIndex = function(index) {
         var bool= false;
-        if(myModel.currentResearch === myModel.researches[index].research){
-            myModel.currentResearch = null;
+        if(this.editableResearch === myModel.researches[index]){
+            this.editableResearch = null;
             bool = true;
         }
         myModel.researches.splice(index, 1);
@@ -540,23 +560,26 @@ function Controller(){
         // View -> Model
         // update currentResearch attribut from Interface
         // Check for first call
-        myModel.currentResearch.nameResearch = this.getNameFGUI();
-        myModel.currentResearch.colorBound = this.getColorBoundFGUI();
-        myModel.currentResearch.colorPoint = this.getColorPointFGUI();
-        myModel.currentResearch.colorBackground = this.getColorBackgroundFGUI();
-        myModel.currentResearch.timeRange = this.getTimeRange();
-		
+        ////
+        if(this.editableResearch){
+        ////this.editableResearch.nameResearch = this.getNameFGUI();
+        this.editableResearch.colorBound = this.getColorBoundFGUI();
+        this.editableResearch.colorPoint = this.getColorPointFGUI();
+        this.editableResearch.colorBackground = this.getColorBackgroundFGUI();
+        this.editableResearch.timeRange = this.getTimeRange();
+                this.updateRoiColor();
+		}
         // check message box
         var message = "";
-        var name = myModel.currentResearch.nameResearch
-        if(name == "Current Research"){
+        var name = myView.nameBox.getValue();
+        if(name == ""){
             message = "Enter a research name";
         } 
         else 
         {
             for(var i = 0; i < myModel.researches.length; i++){
-                if(name == myModel.researches[i].research.nameResearch
-                && myModel.currentResearch!= myModel.researches[i].research)
+                if(name == myModel.researches[i].nameResearch)
+                ////&& this.editableResearch!= myModel.researches[i].research)
                     message = 'Name existed already';
             }
         }
@@ -591,27 +614,27 @@ function Controller(){
             message = "Je suis une fille ..."          
         myView.nameBox.setMessage(message);
 
-        this.updateRoiColor();
+        console.log(this.toString());
         
         /** update research selectable list box
         ////myView.researchSelector.setSelectedOption(
-        ////    this.getIndexByResearch(myModel.currentResearch)
+        ////    this.getIndexByResearch(this.editableResearch)
         ////);
         ////myView.researchSelector.setTextOfOption(
-        ////    this.getIndexByResearch(myModel.currentResearch), 
-            myModel.currentResearch.nameResearch);
+        ////    this.getIndexByResearch(this.editableResearch), 
+            this.editableResearch.nameResearch);
         // update research checkbox list
         myView.researchCheckBoxList.setTextOfCheckBox(
-            this.getIndexByResearch(myModel.currentResearch),
-            myModel.currentResearch.nameResearch);
+            this.getIndexByResearch(this.editableResearch),
+            this.editableResearch.nameResearch);
         // set current research checkbox to be checked
         myView.researchCheckBoxList.setChecked(
-            this.getIndexByResearch(myModel.currentResearch),
+            this.getIndexByResearch(this.editableResearch),
             true
         );
         // set current reserach checkbox to uncheckable
         myView.researchCheckBoxList.setCheckable(
-            this.getIndexByResearch(myModel.currentResearch),
+            this.getIndexByResearch(this.editableResearch),
             true
         );
 
@@ -625,8 +648,8 @@ function Controller(){
 Controller.prototype.toString = function(){
     var string = "[GUI Infor] " + myModel.researches.length + " researches";
     for(var i = 0; i < myModel.researches.length; i++)
-        string +="\n"+ myModel.researches[i].research.toString();
-    string +="\n <current research> : " + myModel.currentResearch.toString();
+        string +="\n"+ myModel.researches[i].toString();
+    string +="\n <current research> : " + this.editableResearch;
     return string;
 };
 

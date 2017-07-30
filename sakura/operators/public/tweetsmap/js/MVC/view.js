@@ -260,7 +260,6 @@ function View(){
     	// add a Row to selector
     	_addRow: function(element){
     		this.addChild(element);
-    		element.getContainer().addEventListener('click', this._onClickRow.bind(this), false);
     		this._rows.push(element);
     	},
     	
@@ -272,18 +271,11 @@ function View(){
     	    }
     	},
     	
-    	_onClickRow: function(e){
-    	    var target = e.currentTarget;
-    	    
-    	    this.clickedRowIndex = this._getIndex(target);
-    	    console.log(this.clickedRowIndex);
-    	},
-    	
     	// @function removeRows(index int)
     	// remove a Row by index in rows
     	removeRow: function(index){
     		// get Element to remove
-    		var element = this._rows.slice(index, 1)[0];
+    		var element = this._rows.splice(index, 1)[0];
     		// remove from container
     		this.rmChild(element);
     	},
@@ -294,8 +286,16 @@ function View(){
     		for(var i=len-1; i>=0; i--){
     			this.removeRow(i);
     		}
-    	}
-    	
+    	},
+       
+        _getIndexById: function(name){
+            var i, len = this._rows.length;
+            console.log(len);
+            for(i = 0; i < len; i++){
+                if(this._rows[i].id == name) return i;
+                console.log(this._rows[i].id);
+            }
+        }   	
     });
     
     V.MaplayersSelector = V.Selector.extend({
@@ -360,7 +360,7 @@ function View(){
                 class: 'row-researches-panel leaflet-bar'});
             var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
             row.plusIcon = new V.PlusIcon({checked:false, enabled: true, 
-                                parentElement: row});
+                                parentElement: row, idDiv: research.nameResearch});
             row.nameResearch = V.create('p','normal-text', row.getContainer());
             row.nameResearch.innerHTML = research.nameResearch;
             row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
@@ -368,11 +368,12 @@ function View(){
             row.editionIcon = new V.EditionIcon({checked: true, enabled: true, 
                                 parentElement: iconsBarre});
             row.trashIcon = new V.TrashIcon({checked: false, enabled: true, 
-                                parentElement: iconsBarre});
+                                parentElement: iconsBarre, idDiv: research.nameResearch});
             row.exportationIcon = new V.ExportationIcon({cheked: true, 
                                 enabled: false, parentElement: iconsBarre});
             row.trashIcon.getContainer().addEventListener('click',
                                 this._deleteResearch.bind(this), false);
+            row.id = research.nameResearch;
             
             return row;
         },
@@ -381,9 +382,14 @@ function View(){
             var el = this._createRow(research);
             this._addRow(el);
         },
+  
         
-        _deleteResearch: function(){
-            var i = this.clickedRowIndex;
+        _deleteResearch: function(e){
+            console.log(e.currentTarget);
+            var nameResearch = e.currentTarget.id;
+            console.log(nameResearch);
+            var i = this._getIndexById(nameResearch);
+            console.log(i);
             this.removeRow(i);
             myController.removeResearch(i);
         }
@@ -406,9 +412,9 @@ function View(){
             // create text box in container in HTML 
             var textBox = 
                 V.create('input','',this._container);
-            textBox.id = this.tbid;
+            textBox.id = this._tbid;
             textBox.type = 'text';
-            textBox.placeholder = this.textdefault;
+            textBox.placeholder = this._textdefault;
             this._textBox = textBox;
             
             this._submitButton = new V.PlusIcon({iconChecked: 'fa fa-plus', 
@@ -421,7 +427,7 @@ function View(){
 
         textboxOptions: function() {
             var options = this.options;
-            
+            console.log(options);
             this._tbid = options.tbid || '';
             this._textdefault = options.textdefault || '';
            
@@ -954,11 +960,11 @@ function View(){
     // when finish drawing
     map.on('editable:drawing:end', function (e) {
         // save Poly
-        var index = myController.registrerPoly(e.layer);
-        var namePoly = myModel.currentResearch.nameResearch + " " + index;
+        var index = myController.registerPoly(e.layer);
+        var namePoly = myController.editableResearch.nameResearch + " " + index;
         e.layer.namePoly = namePoly;
         e.layer.bindTooltip(e.layer.namePoly).openTooltip();
-        myController.addOverlays(e.layer, e.layer.namePoly);
+        ////myController.addOverlays(e.layer, e.layer.namePoly);
         myController.actualize();
         myController.updateMarkers();
     });
@@ -1124,7 +1130,7 @@ function View(){
     this.editionDiv = new V.Div({parentElement: mapDiv, class: "leaflet-bar normal-text",
                             childClass: 'champComposant leaflet-bar', idDiv: 'research'});
     // hide varable
-    this.editionDiv.hideState = false;
+    this.editionDiv.hideState = true;
     this.editionDiv.stopEventOfLeaflet();
 
     // research name
@@ -1136,21 +1142,21 @@ function View(){
         if(thisView.editionDiv.hideState == true){
             thisView.editionTitle.hide();
             thisView.editionDiv.hide();
-            thisView.hideButton.setSign("►");
-            thisView.hideButton.getContainer().style.left = '0px';
+            thisView.editionHide.setSign("►");
+            thisView.editionHide.getContainer().style.left = '0px';
         }
         else {
             thisView.editionTitle.show();
             thisView.editionDiv.show();
-            thisView.hideButton.setSign("◄");
-            thisView.hideButton.getContainer().style.left = '25%';
-        }    
+            thisView.editionHide.setSign("◄");
+            thisView.editionHide.getContainer().style.left = '25%';
+        }   
             thisView.editionDiv.hideState = !thisView.editionDiv.hideState;
     }
 
-    this.hideButton = new V.Button({sign: '►', titleElement: 'Hide research', 
+    this.editionHide = new V.Button({sign: '◄', titleElement: 'Hide research', 
     				class: 'hideResearch', parentElement: mapDiv});
-    L.DomEvent.on(this.hideButton.getLink(), 'click', hideResearch);
+    L.DomEvent.on(this.editionHide.getLink(), 'click', hideResearch);
 
     //--------------- Fill Editiontools box --------------------
    
@@ -1362,7 +1368,7 @@ function View(){
 							rowSource: Object.keys(myModel.mapLayers.dict)});
 	
     //----------------------Fill userlayersBox-------------------------------------/
-    this.nameBox = new V.TextBox({tbid : 'ResearchBox', textdefault: 'Current Research'});
+    this.nameBox = new V.TextBox({tbid : 'ResearchBox', textdefault: 'Name'});
     this.userlayersBox.addChild(this.nameBox);
     this.researchesPanel = //new V.Div({parentElement: this.userlayersBox, class: 'researches-panel'});
                  new V.UserLayersSelector({parentElement: this.userlayersBox, 
