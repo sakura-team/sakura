@@ -492,12 +492,15 @@ function Controller(){
 
     // change current research to researches[index]
     this.changeEditableResearch = function(index) {
+        // Say good bye to previous research
+        var researchObsolete = this.editableResearch;
         
         // there are no editable research
         if(index == -1){
             myView.editionDiv.hide();
             myView.editionTitle.hide();
             myView.editionHide.hide();
+            this.editableResearch = null;
             return;
         }
         else {
@@ -507,8 +510,7 @@ function Controller(){
         }
             
 
-        // Say good bye to previous research
-        var researchObsolete = this.editableResearch;
+        
         ////
         // Check if next-currentResearch is checked or not
         /*var nextCurrentResearchChecked = myView.researchCheckBoxList.getChecked(index);

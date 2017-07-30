@@ -170,6 +170,7 @@ function View(){
         	if(options.class)
                 V.addClass(this._container,options.class);
             this._container.id = options.idDiv || '';
+            this.id = options.idDiv;
             this._container.style.overflow = options.scroll || 'visible'  ;
             if(options.titleDiv){
                 var firtChild = V.create("div", options.titleDivClass, this._container);
@@ -203,6 +204,17 @@ function View(){
             if(child._container)
                 child = child._container;
             this._container.appendChild(child);
+            if(this.options.childClass){
+                V.addClass(child,this.options.childClass);
+            }
+
+            return this;
+        },
+        
+        addChildToTop: function(child){
+            if(child._container)
+                child = child._container;
+            this._container.insertBefore(child, this._container.firstChild);
             if(this.options.childClass){
                 V.addClass(child,this.options.childClass);
             }
@@ -259,7 +271,7 @@ function View(){
     	// @function addRows(element HTMLElement?V.Class)
     	// add a Row to selector
     	_addRow: function(element){
-    		this.addChild(element);
+    		this.addChildToTop(element);
     		this._rows.push(element);
     	},
     	
@@ -365,31 +377,46 @@ function View(){
             row.nameResearch.innerHTML = research.nameResearch;
             row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
                                 parentElement: iconsBarre});
-            row.editionIcon = new V.EditionIcon({checked: true, enabled: true, 
-                                parentElement: iconsBarre});
+            row.editionIcon = new V.EditionIcon({checked: false, enabled: true, 
+                                parentElement: iconsBarre, idDiv: "editi"+research.nameResearch});
             row.trashIcon = new V.TrashIcon({checked: false, enabled: true, 
-                                parentElement: iconsBarre, idDiv: research.nameResearch});
+                                parentElement: iconsBarre, idDiv: "trash"+research.nameResearch});
             row.exportationIcon = new V.ExportationIcon({cheked: true, 
                                 enabled: false, parentElement: iconsBarre});
-            row.trashIcon.getContainer().addEventListener('click',
-                                this._deleteResearch.bind(this), false);
+            
+            row.trashIcon.eventHandle = this._deleteResearch.bind(this);
+            row.editionIcon.eventHandle = this._editResearch.bind(this);
+            //row.trashIcon.getContainer().addEventListener('click',
+            //                    this._deleteResearch.bind(this), false);
             row.id = research.nameResearch;
+            
+            this.checkedEditionIcon = null;
             
             return row;
         },
         
         addRow: function(research){
+            var i , len = this._rows.length;
+            for(i=0; i<len; i++){
+                if(this._rows[i].editionIcon.checked) 
+                    this._rows[i].editionIcon.check();
+            }
             var el = this._createRow(research);
             this._addRow(el);
+            el.editionIcon.check();
+            
         },
   
+        _editResearch: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            if(button.checked = true)
+                myController.changeEditableResearch(i);
+            else
+                myController.changeEditableResearch(-1);
+        },
         
-        _deleteResearch: function(e){
-            console.log(e.currentTarget);
-            var nameResearch = e.currentTarget.id;
-            console.log(nameResearch);
-            var i = this._getIndexById(nameResearch);
-            console.log(i);
+        _deleteResearch: function(button){
+            var i = this._getIndexById(button.id.slice(5));
             this.removeRow(i);
             myController.removeResearch(i);
         }
@@ -562,11 +589,17 @@ function View(){
             this.enabled = options.enabled;
         },
         
+        // attention: eventHandle will be defined by button
         _onClick: function(){
             this.checked = !this.checked;
             var className = (this.checked)?this.iconChecked:this.iconUnchecked;
             V.DomUtil.setClass(this._icon, className);
-            this._eventHandle();
+            this.eventHandle(this);
+        },
+        
+        check: function(){
+            this._onClick();
+            console.log("ok");
         }
     });
     
@@ -580,7 +613,7 @@ function View(){
             V.extend(this.options, options);
             this.initIcon();
         },
-        _eventHandle: function(){
+        eventHandle: function(button){
             null
         }
     });
@@ -596,7 +629,7 @@ function View(){
             this.initIcon();
             this.isEye = true;
         },
-        _eventHandle: function(){
+        eventHandle: function(button){
             null
         }
     });
@@ -610,7 +643,7 @@ function View(){
             V.extend(this.options, options);
             this.initIcon();
         },
-        _eventHandle: function(){
+        eventHandle: function(){
             null
         }
     });
@@ -624,7 +657,7 @@ function View(){
             V.extend(this.options, options);
             this.initIcon();
         },
-        _eventHandle: function(){
+        eventHandle: function(){
             null
         }
     });
@@ -638,7 +671,7 @@ function View(){
             V.extend(this.options, options);
             this.initIcon();
         },
-        _eventHandle: function(){
+        eventHandle: function(){
             null
         }
     });
