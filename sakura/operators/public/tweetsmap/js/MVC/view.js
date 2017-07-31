@@ -367,7 +367,7 @@ function View(){
         
         _createRow: function(research){
             var row = new V.Div({
-                class: 'row-researches-panel leaflet-bar'});
+                class: 'nice-box row-researches-panel'});
             var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
             row.plusIcon = new V.PlusIcon({checked:false, enabled: true, 
                                 parentElement: row, idDiv: research.nameResearch});
@@ -406,6 +406,7 @@ function View(){
             this.checkedEditionIcon(-1);
             var el = this._createRow(research);
             this._addRow(el);
+            el.getContainer().style.backgroundColor = research.colorBackground;
             el.editionIcon.check();
             
         },
@@ -414,11 +415,9 @@ function View(){
             var i = this._getIndexById(button.id.slice(5));
             if(button.checked == true){
                 this.checkedEditionIcon(i);
-                this._rows[i].getContainer().style.backgroundColor = "red";
                 myController.changeEditableResearch(i);
             }
             else{
-                this._rows[i].getContainer().style.backgroundColor = "blue";
                 myController.changeEditableResearch(-1);
             }
         },
@@ -427,7 +426,17 @@ function View(){
             var i = this._getIndexById(button.id.slice(5));
             this.removeRow(i);
             myController.removeResearch(i);
-        }
+        },
+        
+        changeBackground: function(research, color){
+            var i = this._getIndexById(research.nameResearch);
+            this._rows[i].getContainer().style.backgroundColor = color;
+        },
+        
+        changeBorder: function(research, color){
+            var i = this._getIndexById(research.nameResearch);
+            this._rows[i].getContainer().style.borderColor = color;
+        },
     });
     
 	
@@ -525,19 +534,6 @@ function View(){
 
         getLink: function() {
             return this._link;
-        },
-
-        setDisabled: function(bool){
-            if(bool){
-                //L.DomUtil.removeClass(this._container, 'leaflet-control');
-                L.DomUtil.removeClass(this._container, 'leaflet-bar');
-                this._container.style.display = 'none';
-            }
-            else{
-                //L.DomUtil.addClass(this._container, 'leaflet-control');
-                L.DomUtil.addClass(this._container, 'leaflet-bar');
-                this._container.style.display = 'inline';
-            }
         },
         invisible: function(bool) {
             if(bool) this._container.style.visibility = 'hidden';
@@ -691,7 +687,7 @@ function View(){
             // container div in HTML
             var container = this.setContainer(V.create('div'));
 
-            var select = V.create('select','leaflet-bar', container);
+            var select = V.create('select','nice-box', container);
             this._select = select;
     
             
@@ -708,10 +704,10 @@ function View(){
                         });
                 L.DomEvent.disableClickPropagation(option);
             }
-            
             select.style.background = select.options[select.selectedIndex].value;
             select.style.color = select.options[select.selectedIndex].value;
-            
+            select.addEventListener('change', 
+                function(){ myController.actualize(); }, false );
 
             return select;
         },
@@ -1144,30 +1140,14 @@ function View(){
     }*/
     
     /**
-     * ChildBox div
-     * under-div of Edit box or Research div
-     * @param name name of box Ex Time Interval
-     * @param parent the parent element 
-     * @param bool true if this is the last child 
-     * 
-     */
-    this.createChildBox = function(name, parent, bool) {
-        var res;
-        res = L.DomUtil.create("div", 'champComposant leaflet-bar ', parent);
-        
-
-        return res;
-    }
-    
-    /**
      * Edit box div 
      * Position: left
      * id = research
      * see research.css
      */ 
     var mapDiv = document.getElementById('map')
-    this.editionDiv = new V.Div({parentElement: mapDiv, class: "leaflet-bar normal-text",
-                            childClass: 'champComposant leaflet-bar', idDiv: 'research'});
+    this.editionDiv = new V.Div({parentElement: mapDiv, class: "nice-box normal-text",
+                            childClass: 'champComposant nice-box', idDiv: 'research'});
     // hide varable
     this.editionDiv.hideState = true;
     this.editionDiv.stopEventOfLeaflet();
@@ -1320,14 +1300,12 @@ function View(){
             listColor: colors,
             titleElement: 'Background Color'
     	});
-    L.DomEvent.on(this.backgroundColorSelector.getSelect(), 'change', function(){
-        myController.actualize();
-    });
-    this.boundColorSelector = new V.ColorSelector({
+
+    this.borderColorSelector = new V.ColorSelector({
     		listColor: colors,
-    		titleElement: 'Bound Color'		
+    		titleElement: 'Border Color'		
     	});
-    
+
     /**
      *  Add tweets color selector 
      */ 
@@ -1348,8 +1326,8 @@ function View(){
         return container;
     }
 
-    addColorSelector('Bound', thisView.boundColorSelector.getContainer(), colorBox.getContainer());
-    addColorSelector('Background', thisView.backgroundColorSelector.getContainer() ,colorBox.getContainer());
+    addColorSelector('Background', thisView.backgroundColorSelector.getContainer(), colorBox.getContainer());
+    addColorSelector('Border', thisView.borderColorSelector.getContainer() ,colorBox.getContainer());
     addColorSelector('Tweets', thisView.tweetsColorSelector.getContainer() ,colorBox.getContainer());
 
     /**
@@ -1358,8 +1336,8 @@ function View(){
      * id = management
      * see management.css
      */ 
-    this.managementDiv = new V.Div({class: "leaflet-bar",
-    								parentElement: mapDiv, childClass:' champComposant leaflet-bar',
+    this.managementDiv = new V.Div({class: "nice-box",
+    								parentElement: mapDiv, childClass:' champComposant nice-box',
     								idDiv: "management"});
     
     this.managementDiv.stopEventOfLeaflet();

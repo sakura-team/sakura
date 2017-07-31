@@ -21,7 +21,7 @@ function Research() {
 
     this.rid = null;
     this.nameResearch = '';
-    this.colorBound = null;
+    this.colorBorder = 'Olive';
     this.colorPoint = 'Olive';
     this.colorBackground = 'Olive';
     this.roi = new L.LayerGroup;
@@ -40,7 +40,7 @@ function Research() {
 
 // Override toString() for degging
 Research.prototype.toString = function() {
-    return "    [Research Infor]rid = " + this.rid + " | name = " + this.nameResearch + " | Bound color = " + this.colorBound
+    return "    [Research Infor]rid = " + this.rid + " | name = " + this.nameResearch + " | Border color = " + this.colorBorder
             + " | Point color " + this.colorPoint + " | Background color " + this.colorBackground
             + " | Time Range " + this.timeRange ;
 };

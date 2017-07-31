@@ -113,7 +113,9 @@
     left: 5%;
     background-color: #e6f7ff;
     margin-bottom: 2px;
+    border-width: 2px;
 }
+
 .row-researches-panel p {
     
     float: left;

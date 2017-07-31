@@ -330,13 +330,19 @@ function Controller(){
         this.addResearch();
     };
     
-    //  @function updateRoiColor() called by event 'change' of tweetColorSelector 
-    //  Change the roi color  
+    //  @function updateColor() called by event 'change' of tweetColorSelector 
+    //  Change the roi color, researches panel color
     //  @see view.js
-    this.updateRoiColor = function(){
+    this.updateColor = function(){
         this.editableResearch.roi.eachLayer(function (layer) {
-            layer.setStyle({color : thisControl.editableResearch.colorBackground});
+            layer.setStyle({color : thisControl.editableResearch.colorBorder
+                     ,fillColor: thisControl.editableResearch.colorBackground});
         });
+        
+        myView.researchesPanel.changeBackground(this.editableResearch, 
+            this.editableResearch.colorBorder);
+        myView.editionTitle.getContainer().style.color = 
+            this.editableResearch.colorBorder;
     };
 
     /**
@@ -361,7 +367,7 @@ function Controller(){
         this.editableResearch.roi.eachLayer(function (layer){
             if((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
                 && layer.getLatLngs()[0].length==0){
-                this.editableResearch.roi.removeLayer(layer);
+                thisControl.editableResearch.roi.removeLayer(layer);
                 myView.layersPanel.removeLayer(layer);
                 return;
             }
@@ -380,10 +386,10 @@ function Controller(){
         return res ;
     };
 
-    // @function getColorBoundFGUI(): String
-    // Returns color of ROI Bound selected in the color box
-    this.getColorBoundFGUI = function(){
-        var res = myView.boundColorSelector.getColor();
+    // @function getColorBorderFGUI(): String
+    // Returns color of ROI border selected in the color box
+    this.getColorBorderFGUI = function(){
+        var res = myView.borderColorSelector.getColor();
         return res || "red";
     };
 
@@ -429,6 +435,10 @@ function Controller(){
     this.setColorBackgroundToGUI = function(color){
         myView.backgroundColorSelector.setColor(color);
     };
+    
+    this.setColorBorderToGUI = function(color){
+        myView.borderColorSelector.setColor(color);
+    };
 
     this.setColorPointToGUI = function(color){
         myView.tweetsColorSelector.setColor(color);
@@ -454,6 +464,18 @@ function Controller(){
             myView.layersPanel.removeLayer(layer);
         });*/
         myView.rois.removeLayer(group);        
+    };
+    
+    this.disablePolygons = function(group){
+        group.eachLayer(function(layer){
+            layer.editor.disable();
+        });       
+    };
+    
+    this.enablePolygons = function(group){
+        group.eachLayer(function(layer){
+            layer.editor.enable();
+        });       
     };
 
     this.removeAllPolygonsFGUI = function(){
@@ -495,7 +517,11 @@ function Controller(){
     this.changeEditableResearch = function(index) {
         // Say good bye to previous research
         var researchObsolete = this.editableResearch;
-        
+        // disable Editing its polygons
+        if(researchObsolete)
+            //this.removePolygonsFGUI(researchObsolete.roi);
+            this.disablePolygons(researchObsolete.roi);
+            
         // there are no editable research
         if(index == -1){
             myView.editionDiv.hide();
@@ -527,17 +553,20 @@ function Controller(){
                 false
             ); */
         // remove polygons of old research 
-        if(researchObsolete)
-            this.removePolygonsFGUI(researchObsolete.roi);
         
-    
+        
+        // welcome new research
         this.editableResearch = myModel.researches[index];
         myView.editionTitle.getContainer().innerHTML = this.editableResearch.nameResearch;
+        
+        //enable its polygons
+        this.enablePolygons(this.editableResearch.roi);
         
         // set value of name Box to current research name 
         ////this.setNameToGUI(this.editableResearch.nameResearch);
         this.setColorBackgroundToGUI(this.editableResearch.colorBackground);
         this.setColorPointToGUI(this.editableResearch.colorPoint);
+        this.setColorBorderToGUI(this.editableResearch.colorBorder);
         this.addPolygonsToGUI(this.editableResearch.roi);
         // update interface
         this.actualize();
@@ -560,12 +589,12 @@ function Controller(){
         // Check for first call
         ////
         if(this.editableResearch){
-        ////this.editableResearch.nameResearch = this.getNameFGUI();
-        this.editableResearch.colorBound = this.getColorBoundFGUI();
-        this.editableResearch.colorPoint = this.getColorPointFGUI();
-        this.editableResearch.colorBackground = this.getColorBackgroundFGUI();
-        this.editableResearch.timeRange = this.getTimeRange();
-                this.updateRoiColor();
+            ////this.editableResearch.nameResearch = this.getNameFGUI();
+            this.editableResearch.colorBorder = this.getColorBorderFGUI();
+            this.editableResearch.colorPoint = this.getColorPointFGUI();
+            this.editableResearch.colorBackground = this.getColorBackgroundFGUI();
+            this.editableResearch.timeRange = this.getTimeRange();
+            this.updateColor();
 		}
         // check message box
         var message = "";
@@ -581,24 +610,7 @@ function Controller(){
                     message = 'Name existed already';
             }
         }
-
-        // hide save button when an error occurs
-        /////
-        /**if(message){
-            //myView.saveResearchButton.setDisabled(true);
-            myView.newPolygonButton.setDisabled(true);
-            myView.newRectangleButton.setDisabled(true);
-            myView.newCircleButton.setDisabled(true);
-            //myView.removeResearchButton.setDisabled(true);
-        }
-        else{
-            //myView.saveResearchButton.setDisabled(false);  
-            myView.newPolygonButton.setDisabled(false);
-            myView.newRectangleButton.setDisabled(false);
-            myView.newCircleButton.setDisabled(false);
-            //myView.removeResearchButton.setDisabled(false);
-        } **/
-        
+      
         if(message){
             myView.nameBox.disable();
         } else {
