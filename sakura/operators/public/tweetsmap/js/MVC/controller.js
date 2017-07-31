@@ -298,7 +298,8 @@ function Controller(){
     // remove current research
     this.removeResearch = function(index){
         var research = myModel.researches[index];
-        if(this.editableResearch == research) this.editableResearch = null; 
+        if(this.editableResearch == research) 
+            this.changeEditableResearch(-1);
         ////var indexResearchObsolete = 
             /////this.getIndexByResearch(this.editableResearch);
         
@@ -531,6 +532,7 @@ function Controller(){
         
     
         this.editableResearch = myModel.researches[index];
+        myView.editionTitle.getContainer().innerHTML = this.editableResearch.nameResearch;
         
         // set value of name Box to current research name 
         ////this.setNameToGUI(this.editableResearch.nameResearch);
@@ -543,16 +545,10 @@ function Controller(){
 
     // remove researches[i]
     this.removeResearchByIndex = function(index) {
-        var bool= false;
-        if(this.editableResearch === myModel.researches[index]){
-            this.editableResearch = null;
-            bool = true;
-        }
+        if(this.editableResearch == myModel.researches[index])
+            this.changeEditableResearch(-1);
         myModel.researches.splice(index, 1);
-        if(bool)
-            thisControl.addResearch();
-        else
-            thisControl.actualize();
+        thisControl.actualize();
     };
 
     //------------------------------------Actualize--------------------------------

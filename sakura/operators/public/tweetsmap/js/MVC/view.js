@@ -302,10 +302,8 @@ function View(){
        
         _getIndexById: function(name){
             var i, len = this._rows.length;
-            console.log(len);
             for(i = 0; i < len; i++){
                 if(this._rows[i].id == name) return i;
-                console.log(this._rows[i].id);
             }
         }   	
     });
@@ -390,17 +388,22 @@ function View(){
             //                    this._deleteResearch.bind(this), false);
             row.id = research.nameResearch;
             
-            this.checkedEditionIcon = null;
-            
             return row;
         },
         
-        addRow: function(research){
+        
+        
+        checkedEditionIcon: function(index){
+            console.log("ok");
             var i , len = this._rows.length;
             for(i=0; i<len; i++){
-                if(this._rows[i].editionIcon.checked) 
+                if(this._rows[i].editionIcon.checked && i!= index) 
                     this._rows[i].editionIcon.check();
             }
+        },
+        
+        addRow: function(research){
+            this.checkedEditionIcon(-1);
             var el = this._createRow(research);
             this._addRow(el);
             el.editionIcon.check();
@@ -409,10 +412,15 @@ function View(){
   
         _editResearch: function(button){
             var i = this._getIndexById(button.id.slice(5));
-            if(button.checked = true)
+            if(button.checked == true){
+                this.checkedEditionIcon(i);
+                this._rows[i].getContainer().style.backgroundColor = "red";
                 myController.changeEditableResearch(i);
-            else
+            }
+            else{
+                this._rows[i].getContainer().style.backgroundColor = "blue";
                 myController.changeEditableResearch(-1);
+            }
         },
         
         _deleteResearch: function(button){
@@ -483,7 +491,6 @@ function View(){
         },
         // update data when text box is changed
         _onClick: function(e){
-            myController.actualize();
             myController.addResearch();
         },
         
@@ -599,7 +606,6 @@ function View(){
         
         check: function(){
             this._onClick();
-            console.log("ok");
         }
     });
     
@@ -636,8 +642,8 @@ function View(){
     
     V.EditionIcon = V.Icon.extend({
         options: {
-            iconChecked: 'fa fa-pencil',
-            iconUnchecked: 'fa fa-pencil-square'
+            iconChecked: 'fa fa-pencil-square',
+            iconUnchecked: 'fa fa-pencil'
         },
         initialize: function(options){
             V.extend(this.options, options);
@@ -1167,7 +1173,7 @@ function View(){
     this.editionDiv.stopEventOfLeaflet();
 
     // research name
-    this.editionTitle = new V.Div({class: 'edition-title text-basic text-border', parentElement: mapDiv});
+    this.editionTitle = new V.Div({class: ' text-basic text-border edition-title', parentElement: mapDiv});
     this.editionTitle.getContainer().innerHTML = 'Name research';
     // hide div
     function hideResearch(){
@@ -1384,11 +1390,6 @@ function View(){
     				class: 'hideManagement', parentElement: mapDiv});
     			
     L.DomEvent.on(this.hideManagementButton.getContainer(), 'click', hideManangement);
-    
-
-    // research name
-    //this.editionTitle = L.DomUtil.create('div','firstComposant text-basic text-border',this.editionDiv);
-    //this.editionTitle.innerHTML = 'Name research';
 
    
     this.baseMapsBox =  new V.Div({titleDiv: "Base Maps", parentElement: this.managementDiv,

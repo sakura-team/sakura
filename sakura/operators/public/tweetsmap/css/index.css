@@ -47,12 +47,13 @@ div#size {
 }
 
 .edition-title {
+    color: red;
     position: fixed;
-    top: 65px;
+    top: 60px;
     left: 10px;
     z-index: 702;
     visibility: hidden;
-    font-size: 16px;
+    font-size: 24px;
     /* color: #0066ff; */
 }
 
