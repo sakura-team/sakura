@@ -14,7 +14,6 @@ function View(){
     V.Util = {
         extend: function(dst){
             var i, j, len, src;
-
             for(i = 1, len = arguments.length; i < len; i++){
                 src = arguments[i];
                 for(j in src){
@@ -374,16 +373,20 @@ function View(){
             row.nameResearch = V.create('p','normal-text', row.getContainer());
             row.nameResearch.innerHTML = research.nameResearch;
             row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
-                                parentElement: iconsBarre});
+                                parentElement: iconsBarre, 
+                                idDiv: "eye  " + research.nameResearch});
             row.editionIcon = new V.EditionIcon({checked: false, enabled: true, 
-                                parentElement: iconsBarre, idDiv: "editi"+research.nameResearch});
+                                parentElement: iconsBarre, 
+                                idDiv: "editi" + research.nameResearch});
             row.trashIcon = new V.TrashIcon({checked: false, enabled: true, 
-                                parentElement: iconsBarre, idDiv: "trash"+research.nameResearch});
+                                parentElement: iconsBarre, 
+                                idDiv: "trash" + research.nameResearch});
             row.exportationIcon = new V.ExportationIcon({cheked: true, 
                                 enabled: false, parentElement: iconsBarre});
             
             row.trashIcon.eventHandle = this._deleteResearch.bind(this);
             row.editionIcon.eventHandle = this._editResearch.bind(this);
+            row.eyeIcon.eventHandle = this._hideResearch.bind(this);
             //row.trashIcon.getContainer().addEventListener('click',
             //                    this._deleteResearch.bind(this), false);
             row.id = research.nameResearch;
@@ -391,41 +394,25 @@ function View(){
             return row;
         },
         
-        
-        
-        checkedEditionIcon: function(index){
-            console.log("ok");
-            var i , len = this._rows.length;
-            for(i=0; i<len; i++){
-                if(this._rows[i].editionIcon.checked && i!= index) 
-                    this._rows[i].editionIcon.check();
-            }
+        checkedEditionIcon: function(){
+            // if there are no editable Research
+            if(!myController.editableResearch)
+                return;
+            var i = this._getIndexById(myController.editableResearch.nameResearch);
+            // if rows[i] is removed from researches panel
+            if(i==null) 
+                return;
+            this._rows[i].editionIcon.check();
+            
         },
         
         addRow: function(research){
-            this.checkedEditionIcon(-1);
+            this.checkedEditionIcon();
             var el = this._createRow(research);
             this._addRow(el);
             el.getContainer().style.backgroundColor = research.colorBackground;
             el.editionIcon.check();
             
-        },
-  
-        _editResearch: function(button){
-            var i = this._getIndexById(button.id.slice(5));
-            if(button.checked == true){
-                this.checkedEditionIcon(i);
-                myController.changeEditableResearch(i);
-            }
-            else{
-                myController.changeEditableResearch(-1);
-            }
-        },
-        
-        _deleteResearch: function(button){
-            var i = this._getIndexById(button.id.slice(5));
-            this.removeRow(i);
-            myController.removeResearch(i);
         },
         
         changeBackground: function(research, color){
@@ -436,7 +423,42 @@ function View(){
         changeBorder: function(research, color){
             var i = this._getIndexById(research.nameResearch);
             this._rows[i].getContainer().style.borderColor = color;
+        },        
+  
+        _editResearch: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            if(button.checked == true){
+                // uncheck previous editable research
+                this.checkedEditionIcon(i);
+                // display polygons of editable research et disable eye icon
+                this._rows[i].eyeIcon.disable();
+                if(!this._rows[i].eyeIcon.checked)
+                    this._rows[i].eyeIcon.check();
+                // add border to the current editable research row
+                this._rows[i].getContainer().style.border = 'solid black';
+                myController.changeEditableResearch(i);
+            }
+            else{
+                this._rows[i].eyeIcon.enable();
+                // remove border of previous editable research row
+                this._rows[i].getContainer().style.border = 'none';
+                myController.changeEditableResearch(-1);
+            }
         },
+        
+        _deleteResearch: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            this.removeRow(i);
+            myController.removeResearch(i);
+        },
+        
+        _hideResearch: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            if(this._rows[i].eyeIcon.checked)
+                myController.addPolygonsToGUI(this.rowSource[i].roi);
+            else
+                myController.removePolygonsFGUI(this.rowSource[i].roi);        
+        }
     });
     
 	
@@ -471,7 +493,6 @@ function View(){
 
         textboxOptions: function() {
             var options = this.options;
-            console.log(options);
             this._tbid = options.tbid || '';
             this._textdefault = options.textdefault || '';
            
@@ -560,22 +581,24 @@ function View(){
         },
         
         disable: function(){
-            if(this.checked) this._onClick();
+            //if(this.checked) this._onClick();
             this._container.style.backgroundColor = 'transparent';
             this.enabled = false;
             this._container.style.cursor = 'initial';
             this._container.style.boxShadow = '';
             V.DomUtil.removeClass(this._container, 'enabled');
+            if(!this._maskOnClick) this._maskOnClick = this._onClick.bind(this);
             this._container.removeEventListener('click', 
-                                               this._onClick.bind(this), false);
+                                               this._maskOnClick, false);
         },
         
         enable: function(){
             this._container.style.backgroundColor = 'white';
             V.DomUtil.addClass(this._container,'enabled');
             this.enabled = true;
+            if(!this._maskOnClick) this._maskOnClick = this._onClick.bind(this);
             this._container.addEventListener('click', 
-                                               this._onClick.bind(this), false);
+                                               this._maskOnClick, false);
             this._container.style.cursor = 'pointer';
             this._container.style.boxShadow 
                      ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
@@ -991,7 +1014,11 @@ function View(){
         if (e.layer instanceof L.Path) e.layer.on('click', L.DomEvent.stop).on('click', deleteShape, e.layer);
         if (e.layer instanceof L.Path) e.layer.on('dblclick', L.DomEvent.stop).on('dblclick', e.layer.toggleEdit);
     });
-
+    
+    map.on('ediable:drag', function(e){e.layer.onDrag(); })
+       .on('ediable:dragstart', function(e){ console.log(e);e.layer.onDragStart();})
+       .on('ediable:dragend', function(e){e.layer.onDragEnd();});
+            
     // when finish drawing
     map.on('editable:drawing:end', function (e) {
         // save Poly

@@ -268,6 +268,7 @@ function Controller(){
     // index = index of to-display Research in the research list
     this.displayResearch = function (index) {
         this.addPolygonsToGUI(myModel.researches[index].roi);
+
         ////this.updateMarkers();
     }
 
@@ -353,7 +354,6 @@ function Controller(){
      */
     this.addOverlays = function(layer, name){
         //myView.layersPanel.addOverlay(layer, name);
-        console.log("added new overlay");
     };
 
     // @function removeAllOverlays()
@@ -445,13 +445,14 @@ function Controller(){
     };
 
     this.addPolygonsToGUI = function(group){
-        myView.rois.addLayer(group);
-        var i = 0;
+        //myView.rois.addLayer(group);
+        group.setZIndex(1000);
         group.eachLayer(function(layer){
-            i++;
-            ////myView.layersPanel.addOverlay(layer, layer.namePoly);
-        });
-   
+            //myView.rois.addLayer(layer);
+            //layer.addTo(map);
+        });   
+        if(!this.editableResearch || this.editableResearch.roi != group) 
+            this.disablePolygons(group);
     };
 
     // @function removePolygonsFGUI(LayerGroup): void
@@ -459,22 +460,28 @@ function Controller(){
     // update the overlay panel
     // used when change current research
     this.removePolygonsFGUI = function(group){
-        /*group.eachLayer(function(layer){
-            console.log("OK");
-            myView.layersPanel.removeLayer(layer);
-        });*/
-        myView.rois.removeLayer(group);        
+        this.enablePolygons(group);
+        group.setZIndex(-1);
+        group.eachLayer(function(layer){
+            //myView.rois.removeLayer(layer);
+            //layer.removeFrom(map);
+        });   
+        //myView.rois.removeLayer(group);        
     };
     
     this.disablePolygons = function(group){
         group.eachLayer(function(layer){
             layer.editor.disable();
+            
         });       
     };
     
     this.enablePolygons = function(group){
+        
         group.eachLayer(function(layer){
             layer.editor.enable();
+            layer.bringToFront();
+            //layer.editor.addHooks();
         });       
     };
 
@@ -624,7 +631,7 @@ function Controller(){
             message = "Je suis une fille ..."          
         myView.nameBox.setMessage(message);
 
-        console.log(this.toString());
+        //console.log(this.toString());
         
         /** update research selectable list box
         ////myView.researchSelector.setSelectedOption(
