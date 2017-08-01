@@ -337,13 +337,14 @@ function Controller(){
     this.updateColor = function(){
         this.editableResearch.roi.eachLayer(function (layer) {
             layer.setStyle({color : thisControl.editableResearch.colorBorder
-                     ,fillColor: thisControl.editableResearch.colorBackground});
+                     ,fillColor: thisControl.editableResearch.colorBackground,
+                     fillOpacity: 0.2,  weight: 5});
         });
         
         myView.researchesPanel.changeBackground(this.editableResearch, 
-            this.editableResearch.colorBorder);
+            this.editableResearch.colorBackground);
         myView.editionTitle.getContainer().style.color = 
-            this.editableResearch.colorBorder;
+            this.editableResearch.colorBackground;
     };
 
     /**
@@ -444,12 +445,10 @@ function Controller(){
         myView.tweetsColorSelector.setColor(color);
     };
 
-    this.addPolygonsToGUI = function(group){
-        //myView.rois.addLayer(group);
-        group.setZIndex(1000);
+    this.showPolygonsToGUI = function(group){
         group.eachLayer(function(layer){
             //myView.rois.addLayer(layer);
-            //layer.addTo(map);
+            layer.setStyle({stroke: true, fill: true});
         });   
         if(!this.editableResearch || this.editableResearch.roi != group) 
             this.disablePolygons(group);
@@ -460,11 +459,17 @@ function Controller(){
     // update the overlay panel
     // used when change current research
     this.removePolygonsFGUI = function(group){
-        this.enablePolygons(group);
-        group.setZIndex(-1);
+        group.eachLayer(function(layer){
+            layer.removeFrom(map);
+        });   
+        //myView.rois.removeLayer(group);        
+    };
+    
+    this.hidePolygonsFGUI = function(group){
         group.eachLayer(function(layer){
             //myView.rois.removeLayer(layer);
             //layer.removeFrom(map);
+            layer.setStyle({stroke: false, fill: false});
         });   
         //myView.rois.removeLayer(group);        
     };
@@ -472,7 +477,7 @@ function Controller(){
     this.disablePolygons = function(group){
         group.eachLayer(function(layer){
             layer.editor.disable();
-            
+            layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
         });       
     };
     
@@ -481,6 +486,7 @@ function Controller(){
         group.eachLayer(function(layer){
             layer.editor.enable();
             layer.bringToFront();
+            layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
             //layer.editor.addHooks();
         });       
     };
@@ -574,7 +580,7 @@ function Controller(){
         this.setColorBackgroundToGUI(this.editableResearch.colorBackground);
         this.setColorPointToGUI(this.editableResearch.colorPoint);
         this.setColorBorderToGUI(this.editableResearch.colorBorder);
-        this.addPolygonsToGUI(this.editableResearch.roi);
+        this.showPolygonsToGUI(this.editableResearch.roi);
         // update interface
         this.actualize();
     };

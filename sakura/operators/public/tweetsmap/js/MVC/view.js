@@ -455,9 +455,9 @@ function View(){
         _hideResearch: function(button){
             var i = this._getIndexById(button.id.slice(5));
             if(this._rows[i].eyeIcon.checked)
-                myController.addPolygonsToGUI(this.rowSource[i].roi);
+                myController.showPolygonsToGUI(this.rowSource[i].roi);
             else
-                myController.removePolygonsFGUI(this.rowSource[i].roi);        
+                myController.hidePolygonsFGUI(this.rowSource[i].roi);        
         }
     });
     
