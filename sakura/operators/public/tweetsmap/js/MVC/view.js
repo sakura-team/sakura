@@ -267,9 +267,14 @@ function View(){
     		
     	},
     	
-    	// @function addRows(element HTMLElement?V.Class)
+    	// @function addRow(element HTMLElement?V.Class)
     	// add a Row to selector
     	_addRow: function(element){
+    		this.addChild(element);
+    		this._rows.push(element);
+    	},
+    	
+    	_addRowToTop: function(element){
     		this.addChildToTop(element);
     		this._rows.push(element);
     	},
@@ -368,25 +373,27 @@ function View(){
             var row = new V.Div({
                 class: 'nice-box row-researches-panel'});
             var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
-            row.plusIcon = new V.PlusIcon({checked:false, enabled: true, 
-                                parentElement: row, idDiv: research.nameResearch});
+            row.plusIcon = new V.PlusIcon({checked: true, enabled: true, 
+                                parentElement: row, idDiv:"plus " + research.nameResearch});
             row.nameResearch = V.create('p','normal-text', row.getContainer());
             row.nameResearch.innerHTML = research.nameResearch;
             row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "eye  " + research.nameResearch});
-            row.editionIcon = new V.EditionIcon({checked: false, enabled: true, 
-                                parentElement: iconsBarre, 
-                                idDiv: "editi" + research.nameResearch});
             row.trashIcon = new V.TrashIcon({checked: false, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "trash" + research.nameResearch});
+            row.editionIcon = new V.EditionIcon({checked: false, enabled: true, 
+                                parentElement: iconsBarre, 
+                                idDiv: "editi" + research.nameResearch});
             row.exportationIcon = new V.ExportationIcon({cheked: true, 
                                 enabled: false, parentElement: iconsBarre});
-            
+            row.roiSelector = new V.RoiSelector({rowSource: research.roi,
+                                parentElement: row});
             row.trashIcon.eventHandle = this._deleteResearch.bind(this);
             row.editionIcon.eventHandle = this._editResearch.bind(this);
             row.eyeIcon.eventHandle = this._hideResearch.bind(this);
+            row.plusIcon.eventHandle = this._hideRoiSelector.bind(this);
             //row.trashIcon.getContainer().addEventListener('click',
             //                    this._deleteResearch.bind(this), false);
             row.id = research.nameResearch;
@@ -409,10 +416,20 @@ function View(){
         addRow: function(research){
             this.checkedEditionIcon();
             var el = this._createRow(research);
-            this._addRow(el);
+            this._addRowToTop(el);
             el.getContainer().style.backgroundColor = research.colorBackground;
             el.editionIcon.check();
             
+        },
+        
+        addUnderRow: function(research, layer){
+            var i = this._getIndexById(research.nameResearch);
+            this._rows[i].roiSelector.addRow(layer);
+        },
+        
+        removeUnderRow: function(research, layer){
+            var i = this._getIndexById(research.nameResearch);
+            this._rows[i].roiSelector.removeRowByLayer(layer);
         },
         
         changeBackground: function(research, color){
@@ -458,9 +475,61 @@ function View(){
                 myController.showPolygonsToGUI(this.rowSource[i].roi);
             else
                 myController.hidePolygonsFGUI(this.rowSource[i].roi);        
+        },
+        
+        _hideRoiSelector: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            if(this._rows[i].plusIcon.checked)
+                this._rows[i].roiSelector.display();
+            else
+                this._rows[i].roiSelector.noneDisplay();        
         }
     });
     
+    V.RoiSelector = V.Selector.extend({
+    
+        initialize: function(options){
+            V.extend(this.options, options);
+            this.setContainer(V.create('div'));
+            this.initSelector();
+        },
+        
+        _createRow: function(layer){
+                        //console.log(layer.namePoly);
+            var row = new V.Div({
+                class: 'row-roi'});
+            var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
+            row.namePoly = V.create('p','normal-text', row.getContainer());
+            row.namePoly.innerHTML = layer.namePoly;
+            row.eyeIcon = new V.EyeIcon({class: 'small-icon',checked: true, enabled: true, 
+                                parentElement: iconsBarre, 
+                                idDiv: "eye  " + layer.namePoly});
+            row.trashIcon = new V.TrashIcon({class: 'small-icon',checked: false, enabled: true, 
+                                parentElement: iconsBarre, 
+                                idDiv: "trash" + layer.namePoly});
+            row.trashIcon.eventHandle = this._removePolygon.bind(this);
+            row.id = layer.namePoly;
+            return row;
+        },
+        
+        addRow: function(layer){
+            var el = this._createRow(layer);
+            this._addRow(el);
+        },
+        
+        removeRowByLayer: function(layer){
+            var i = this._getIndexById(layer.namePoly);
+            this.removeRow(i);
+        },
+        
+        _removePolygon: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            var layer = this.rowSource.getLayers()[i];
+            var poly = layer.editor.deleteShapeAt(layer.latlng);
+            myController.deletePolygons(poly);
+            this.removeRow(i);
+        }
+    });
 	
     V.TextBox = V.Element.extend({
         options: {
@@ -1006,7 +1075,6 @@ function View(){
     var deleteShape = function (e) {
       if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()){
         var poly = this.editor.deleteShapeAt(e.latlng);
-        //var poly = this.editor.deleteShapeAt(e.latlng);
         myController.deletePolygons(poly);
       }
     };
@@ -1014,18 +1082,15 @@ function View(){
         if (e.layer instanceof L.Path) e.layer.on('click', L.DomEvent.stop).on('click', deleteShape, e.layer);
         if (e.layer instanceof L.Path) e.layer.on('dblclick', L.DomEvent.stop).on('dblclick', e.layer.toggleEdit);
     });
-    
-    map.on('ediable:drag', function(e){e.layer.onDrag(); })
-       .on('ediable:dragstart', function(e){ console.log(e);e.layer.onDragStart();})
-       .on('ediable:dragend', function(e){e.layer.onDragEnd();});
             
     // when finish drawing
     map.on('editable:drawing:end', function (e) {
         // save Poly
+        e.namePoly = '';
         var index = myController.registerPoly(e.layer);
-        var namePoly = myController.editableResearch.nameResearch + " " + index;
-        e.layer.namePoly = namePoly;
+        //console.log(e.layer);
         e.layer.bindTooltip(e.layer.namePoly).openTooltip();
+        e.layer.getTooltip().setOpacity(1);
         ////myController.addOverlays(e.layer, e.layer.namePoly);
         myController.actualize();
         myController.updateMarkers();

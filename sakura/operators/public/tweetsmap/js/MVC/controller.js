@@ -15,6 +15,8 @@ function Controller(){
 
     // Created first Research
     this.initModel = function(){
+        // L.LayerGroup contains all polygons displayed actually
+        this.rois = new L.LayerGroup(); 
        // increment id 
         /////myModel.rid ++;
         // create new Research
@@ -29,7 +31,7 @@ function Controller(){
         // update research list in research box
         //myView.researchSelector.addOption(this.editableResearch.nameResearch);        
         //myView.researchCheckBoxList.addCheckBox(this.editableResearch.nameResearch);
-        myView.rois.addTo(map);
+        //myView.rois.addTo(map);
         //this.updateTweetsmap();
 		myView.maplayersSelector.check(myModel.mapLayers.getDefault());
 		this.changeEditableResearch(-1);
@@ -285,7 +287,12 @@ function Controller(){
     // Event when finish drawing a poly
     this.registerPoly = function(layer) {
         this.editableResearch.roi.addLayer(layer);
-        return this.editableResearch.roi.getLayers().length;            
+        var index = this.editableResearch.roi.getLayers().length;
+        var namePoly = this.editableResearch.nameResearch + " " + index;
+        layer.namePoly = namePoly;
+        this.rois.addLayer(layer);
+        // add to researched panel
+        myView.researchesPanel.addUnderRow(this.editableResearch,layer);
     };
 
     this.resetResearch = function(){
@@ -369,7 +376,7 @@ function Controller(){
             if((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
                 && layer.getLatLngs()[0].length==0){
                 thisControl.editableResearch.roi.removeLayer(layer);
-                myView.layersPanel.removeLayer(layer);
+                myView.researchesPanel.removeUnderRow(thisControl.editableResearch, layer);
                 return;
             }
         });
@@ -447,8 +454,9 @@ function Controller(){
 
     this.showPolygonsToGUI = function(group){
         group.eachLayer(function(layer){
-            //myView.rois.addLayer(layer);
+            thisControl.rois.addLayer(layer);
             layer.setStyle({stroke: true, fill: true});
+            layer.openTooltip();
         });   
         if(!this.editableResearch || this.editableResearch.roi != group) 
             this.disablePolygons(group);
@@ -460,16 +468,16 @@ function Controller(){
     // used when change current research
     this.removePolygonsFGUI = function(group){
         group.eachLayer(function(layer){
+            thisControl.rois.removeLayer(layer);
             layer.removeFrom(map);
         });   
-        //myView.rois.removeLayer(group);        
     };
     
     this.hidePolygonsFGUI = function(group){
         group.eachLayer(function(layer){
-            //myView.rois.removeLayer(layer);
-            //layer.removeFrom(map);
+            thisControl.rois.removeLayer(layer);
             layer.setStyle({stroke: false, fill: false});
+            layer.closeTooltip();
         });   
         //myView.rois.removeLayer(group);        
     };
@@ -662,6 +670,7 @@ function Controller(){
         );
 
         //this.updateMarkers(); **/
+        //console.log(this.toString());
         
     };
 
@@ -672,7 +681,11 @@ Controller.prototype.toString = function(){
     var string = "[GUI Infor] " + myModel.researches.length + " researches";
     for(var i = 0; i < myModel.researches.length; i++)
         string +="\n"+ myModel.researches[i].toString();
-    string +="\n <current research> : " + this.editableResearch;
+    string +="\n <editable research> : " + this.editableResearch;
+    string +="\n rois: "
+    this.rois.eachLayer(function(layer){
+       string += layer.namePoly + " ,"; 
+    });
     return string;
 };
 

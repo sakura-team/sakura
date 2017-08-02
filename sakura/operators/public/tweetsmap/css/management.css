@@ -117,11 +117,9 @@
 }
 
 .row-researches-panel p {
-    
     float: left;
     margin-left: 4px;
     font-size: 13px;
-    
 }
 
 .iconsBarre {
@@ -139,7 +137,7 @@
 }
 
 .text-box input{
-    width: 55%;
+    width: 70%;
     float: left;
 }
 
@@ -149,3 +147,24 @@
     bottom: 6px;
 }
 
+.row-roi {
+    position: relative;
+    left: 5%;
+    width: 90%;
+    float: left;
+}
+
+.row-roi p{
+    float: left;
+    margin-left: 26px;
+    font-size: 12px;
+}
+
+.small-icon {
+    width: 24px;
+    height: 24px;
+}
+.small-icon i {
+    font-size: 20px;
+    width: 20px;
+}
