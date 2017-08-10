@@ -287,7 +287,10 @@ function Controller(){
     // Event when finish drawing a poly
     this.registerPoly = function(layer) {
         this.editableResearch.roi.addLayer(layer);
-        var index = this.editableResearch.roi.getLayers().length;
+        layer.research = this.editableResearch;
+        if(!this.editableResearch.roi.currentIndex)
+            this.editableResearch.roi.currentIndex = 0;
+        var index = ++this.editableResearch.roi.currentIndex;
         var namePoly = this.editableResearch.nameResearch + " " + index;
         layer.namePoly = namePoly;
         this.rois.addLayer(layer);
@@ -375,6 +378,7 @@ function Controller(){
         this.editableResearch.roi.eachLayer(function (layer){
             if((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
                 && layer.getLatLngs()[0].length==0){
+                layer.closeTooltip();
                 thisControl.editableResearch.roi.removeLayer(layer);
                 myView.researchesPanel.removeUnderRow(thisControl.editableResearch, layer);
                 return;
@@ -454,12 +458,16 @@ function Controller(){
 
     this.showPolygonsToGUI = function(group){
         group.eachLayer(function(layer){
-            thisControl.rois.addLayer(layer);
-            layer.setStyle({stroke: true, fill: true});
-            layer.openTooltip();
+            thisControl.showPolygonToGUI(layer);
         });   
-        if(!this.editableResearch || this.editableResearch.roi != group) 
-            this.disablePolygons(group);
+    };
+
+    this.showPolygonToGUI = function(layer){
+        thisControl.rois.addLayer(layer);
+        layer.setStyle({stroke: true, fill: true});
+        layer.openTooltip();
+        if(layer.research == this.editableResearch)
+            this.enablePolygon(layer);
     };
 
     // @function removePolygonsFGUI(LayerGroup): void
@@ -472,31 +480,44 @@ function Controller(){
             layer.removeFrom(map);
         });   
     };
-    
+
     this.hidePolygonsFGUI = function(group){
         group.eachLayer(function(layer){
-            thisControl.rois.removeLayer(layer);
-            layer.setStyle({stroke: false, fill: false});
-            layer.closeTooltip();
+            thisControl.hidePolygonFGUI(layer);
         });   
-        //myView.rois.removeLayer(group);        
     };
     
+    this.hidePolygonFGUI = function(layer){
+        thisControl.rois.removeLayer(layer);
+        layer.setStyle({stroke: false, fill: false});
+        layer.closeTooltip();
+        this.disablePolygon(layer);
+    };
+
     this.disablePolygons = function(group){
         group.eachLayer(function(layer){
             layer.editor.disable();
             layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
         });       
     };
+
+    this.disablePolygon = function(layer){
+        layer.editor.disable();
+        layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
+    };
     
     this.enablePolygons = function(group){
-        
         group.eachLayer(function(layer){
             layer.editor.enable();
             layer.bringToFront();
             layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
-            //layer.editor.addHooks();
         });       
+    };
+
+    this.enablePolygon = function(layer){
+        layer.editor.enable();
+        layer.bringToFront();
+        layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
     };
 
     this.removeAllPolygonsFGUI = function(){
@@ -555,6 +576,9 @@ function Controller(){
             myView.editionDiv.show();
             myView.editionHide.show();
             myView.editionTitle.show();
+            myView.editionHide.setSign("◄");
+            myView.editionHide.getContainer().style.left = '25%';
+            myView.editionDiv.hideState = true;
         }
             
 

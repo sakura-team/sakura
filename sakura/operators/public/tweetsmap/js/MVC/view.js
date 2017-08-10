@@ -34,6 +34,10 @@ function View(){
 			    obj.options[i] = options[i];
 		    }
 		    return obj.options;
+        },
+
+        convertColor: function (colorCode, opacity){
+            return colorCode.substr(0,colorCode.length-5)+opacity+')';
         }
         
     };
@@ -375,19 +379,23 @@ function View(){
             var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
             row.plusIcon = new V.PlusIcon({checked: true, enabled: true, 
                                 parentElement: row, idDiv:"plus " + research.nameResearch});
+            var researchIcon = new V.Icon({ parentElement: row, enabled: false, 
+                iconChecked: 'fa fa-tasks', checked: true, class: 'researchIcon'
+            });
+            
             row.nameResearch = V.create('p','normal-text', row.getContainer());
             row.nameResearch.innerHTML = research.nameResearch;
             row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "eye  " + research.nameResearch});
-            row.trashIcon = new V.TrashIcon({checked: false, enabled: true, 
+            row.trashIcon = new V.TrashIcon({checked: true, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "trash" + research.nameResearch});
             row.editionIcon = new V.EditionIcon({checked: false, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "editi" + research.nameResearch});
-            row.exportationIcon = new V.ExportationIcon({cheked: true, 
-                                enabled: false, parentElement: iconsBarre});
+            row.exportationIcon = new V.ExportationIcon({checked: true, 
+                                enabled: true, parentElement: iconsBarre});
             row.roiSelector = new V.RoiSelector({rowSource: research.roi,
                                 parentElement: row});
             row.trashIcon.eventHandle = this._deleteResearch.bind(this);
@@ -434,7 +442,8 @@ function View(){
         
         changeBackground: function(research, color){
             var i = this._getIndexById(research.nameResearch);
-            this._rows[i].getContainer().style.backgroundColor = color;
+            console.log(color);
+            this._rows[i].getContainer().style.backgroundColor = V.Util.convertColor(color, 0.6);
         },
         
         changeBorder: function(research, color){
@@ -444,7 +453,7 @@ function View(){
   
         _editResearch: function(button){
             var i = this._getIndexById(button.id.slice(5));
-            if(button.checked == true){
+            if(button.checked){
                 // uncheck previous editable research
                 this.checkedEditionIcon(i);
                 // display polygons of editable research et disable eye icon
@@ -454,12 +463,14 @@ function View(){
                 // add border to the current editable research row
                 this._rows[i].getContainer().style.border = 'solid black';
                 myController.changeEditableResearch(i);
+                this._rows[i].roiSelector.enableTrashIcons();
             }
             else{
                 this._rows[i].eyeIcon.enable();
                 // remove border of previous editable research row
                 this._rows[i].getContainer().style.border = 'none';
                 myController.changeEditableResearch(-1);
+                this._rows[i].roiSelector.disableTrashIcons();
             }
         },
         
@@ -470,11 +481,13 @@ function View(){
         },
         
         _hideResearch: function(button){
-            var i = this._getIndexById(button.id.slice(5));
-            if(this._rows[i].eyeIcon.checked)
-                myController.showPolygonsToGUI(this.rowSource[i].roi);
-            else
-                myController.hidePolygonsFGUI(this.rowSource[i].roi);        
+            var layer,j, i = this._getIndexById(button.id.slice(5));
+            if(button.checked){
+                this._rows[i].roiSelector.enableEyeIcons();
+            }
+            else{
+                this._rows[i].roiSelector.disableEyeIcons();
+            }
         },
         
         _hideRoiSelector: function(button){
@@ -495,18 +508,21 @@ function View(){
         },
         
         _createRow: function(layer){
-                        //console.log(layer.namePoly);
             var row = new V.Div({
-                class: 'row-roi'});
+                class: ' nice-box row-roi'});
             var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
+            var polyIcon = new V.Icon({ parentElement: row, enabled: false, 
+                iconChecked: 'fa fa-bandcamp', checked: true, class: 'researchIcon'
+            });
             row.namePoly = V.create('p','normal-text', row.getContainer());
             row.namePoly.innerHTML = layer.namePoly;
             row.eyeIcon = new V.EyeIcon({class: 'small-icon',checked: true, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "eye  " + layer.namePoly});
-            row.trashIcon = new V.TrashIcon({class: 'small-icon',checked: false, enabled: true, 
+            row.trashIcon = new V.TrashIcon({class: 'small-icon',checked: true, enabled: true, 
                                 parentElement: iconsBarre, 
                                 idDiv: "trash" + layer.namePoly});
+            row.eyeIcon.eventHandle = this._hidePolygon.bind(this);
             row.trashIcon.eventHandle = this._removePolygon.bind(this);
             row.id = layer.namePoly;
             return row;
@@ -521,13 +537,56 @@ function View(){
             var i = this._getIndexById(layer.namePoly);
             this.removeRow(i);
         },
+
+        enableTrashIcons: function(){
+            var i, len = this.rowSource.getLayers().length;
+            for(i = 0; i  < len; i++){
+                this._rows[i].trashIcon.enable();
+            }
+        },
+
+        disableTrashIcons: function(){
+            var i, len = this.rowSource.getLayers().length;
+            for(i = 0; i  < len; i++){
+                this._rows[i].trashIcon.disable();
+            }
+        },
+
+        enableEyeIcons: function(){
+            var layer, i, len = this.rowSource.getLayers().length;
+            for(i = 0; i  < len; i++){
+                this._rows[i].eyeIcon.enable();
+                layer = this.rowSource.getLayers()[i];
+                if(this._rows[i].eyeIcon.checked)
+                    myController.showPolygonToGUI(layer);
+            }
+        },
+
+        disableEyeIcons: function(){
+            var layer, i, len = this.rowSource.getLayers().length;
+            for(i = 0; i  < len; i++){
+                this._rows[i].eyeIcon.disable();
+                layer = this.rowSource.getLayers()[i];
+                if(this._rows[i].eyeIcon.checked)
+                    myController.hidePolygonToGUI(layer);
+            }
+        },
         
         _removePolygon: function(button){
             var i = this._getIndexById(button.id.slice(5));
             var layer = this.rowSource.getLayers()[i];
-            var poly = layer.editor.deleteShapeAt(layer.latlng);
+            var poly = layer.editor.deleteShape(layer.getLatLngs());
             myController.deletePolygons(poly);
-            this.removeRow(i);
+            //this.removeRow(i);
+        },
+
+        _hidePolygon: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            var layer = this.rowSource.getLayers()[i];
+            if(this._rows[i].eyeIcon.checked)
+                myController.showPolygonToGUI(layer);
+            else
+                myController.hidePolygonFGUI(layer);        
         }
     });
 	
@@ -638,6 +697,7 @@ function View(){
     V.Icon = V.Element.extend({
         initialize: function(options){
             V.extend(this.options, options);
+            this.initIcon();
         },
         
         initIcon: function(){
@@ -646,7 +706,6 @@ function View(){
             var className = (this.checked)?this.iconChecked:this.iconUnchecked;
             this._icon = V.create('i',className, this._container);
             (this.enabled)?this.enable():this.disable();
-            
         },
         
         disable: function(){
@@ -656,6 +715,8 @@ function View(){
             this._container.style.cursor = 'initial';
             this._container.style.boxShadow = '';
             V.DomUtil.removeClass(this._container, 'enabled');
+            V.DomUtil.removeClass(this._container, 'checked');
+            V.DomUtil.removeClass(this._container, 'unchecked');
             if(!this._maskOnClick) this._maskOnClick = this._onClick.bind(this);
             this._container.removeEventListener('click', 
                                                this._maskOnClick, false);
@@ -669,8 +730,15 @@ function View(){
             this._container.addEventListener('click', 
                                                this._maskOnClick, false);
             this._container.style.cursor = 'pointer';
-            this._container.style.boxShadow 
-                     ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
+            // this._container.style.boxShadow 
+                    //  ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
+            if(this.checked) {
+                V.DomUtil.removeClass(this._container, 'unchecked');
+                V.DomUtil.addClass(this._container, 'checked');
+            } else {
+                V.DomUtil.removeClass(this._container, 'checked');
+                V.DomUtil.addClass(this._container, 'unchecked');
+            }  
         }
         ,
         
@@ -689,11 +757,27 @@ function View(){
             this.checked = !this.checked;
             var className = (this.checked)?this.iconChecked:this.iconUnchecked;
             V.DomUtil.setClass(this._icon, className);
+            if(!this.enabled) {
+                V.DomUtil.removeClass(this._container, 'unchecked');
+                V.DomUtil.removeClass(this._container, 'checked');
+                return;
+            }
+            if(this.checked) {
+                V.DomUtil.removeClass(this._container, 'unchecked');
+                V.DomUtil.addClass(this._container, 'checked');
+            } else {
+                V.DomUtil.removeClass(this._container, 'checked');
+                V.DomUtil.addClass(this._container, 'unchecked');
+            }
             this.eventHandle(this);
         },
         
         check: function(){
             this._onClick();
+        },
+
+        getIcon: function(){
+            return this._icon;
         }
     });
     
@@ -722,6 +806,7 @@ function View(){
             V.extend(this.options, options);
             this.initIcon();
             this.isEye = true;
+            this._icon.style.left = "-1px";
         },
         eventHandle: function(button){
             null
@@ -745,7 +830,7 @@ function View(){
     V.TrashIcon = V.Icon.extend({
         options: {
             iconUnchecked: 'fa fa-trash',
-            iconChecked: 'fa fa-truck'
+            iconChecked: 'fa fa-trash'
         },
         initialize: function(options){
             V.extend(this.options, options);
@@ -764,6 +849,7 @@ function View(){
         initialize: function(options){
             V.extend(this.options, options);
             this.initIcon();
+            this._icon.style.left = "-2px";
         },
         eventHandle: function(){
             null
@@ -779,27 +865,38 @@ function View(){
             // container div in HTML
             var container = this.setContainer(V.create('div'));
 
-            var select = V.create('select','nice-box', container);
+            var select = V.create('div','nice-box', container);
+            select._showList = false;
+            var selectedColor = new V.Div({parentElement: select, class: "nice-box colorRow"});
+            this._selectedColor = selectedColor;
+            var list = new V.Div({parentElement: select, class:"colorList"});
+            list.noneDisplay();
             this._select = select;
-    
+            this._selectedColor.getContainer().addEventListener('click', 
+                function(){
+                    select._showList = !select._showList;
+                    if(!select._showList) 
+                        list.noneDisplay();
+                    else
+                        list.display();
+                }, false);
             
             for(var i = 0; i < this.options.listColor.length ; i++){
-                var option = V.create("option",'', container);
-                option.text = this.options.listColor[i];
-                option.style.background = this.options.listColor[i];
-                option.style.color = this.options.listColor[i];
-                select.add(option);
-                L.DomEvent
-                    .on(option, 'click', function(){
-                        select.style.background = select.options[select.selectedIndex].value;
-                        select.style.color = select.options[select.selectedIndex].value;
-                        });
-                L.DomEvent.disableClickPropagation(option);
+                var option = new V.Div({parentElement:list, class: "nice-box colorRow"});
+                option.getContainer().valueColor = this.options.listColor[i];
+                option.getContainer().style.backgroundColor = this.options.listColor[i];
+                option.getContainer().addEventListener('click', function(e){
+                        select.valueColor = e.currentTarget.valueColor;
+                        select.style.background = e.currentTarget.valueColor;
+                        select._showList = false;
+                        list.noneDisplay();
+                        myController.actualize();                    
+                        }, false);
             }
-            select.style.background = select.options[select.selectedIndex].value;
-            select.style.color = select.options[select.selectedIndex].value;
-            select.addEventListener('change', 
-                function(){ myController.actualize(); }, false );
+            //select.style.background = select.options[select.selectedIndex].value;
+            //select.style.color = select.options[select.selectedIndex].value;
+            // select.addEventListener('change', 
+            //     function(){ myController.actualize(); }, false );
 
             return select;
         },
@@ -809,13 +906,13 @@ function View(){
         },
 
         getColor: function() {
-            return this._select.value;
+            return this._select.valueColor;
         },
 
         setColor: function(color) {
             this._select.style.background = color;
             this._select.style.color = color;
-            this._select.value = color;
+            this._select.valueColor = color;
         },
 
     });
@@ -1088,7 +1185,6 @@ function View(){
         // save Poly
         e.namePoly = '';
         var index = myController.registerPoly(e.layer);
-        //console.log(e.layer);
         e.layer.bindTooltip(e.layer.namePoly).openTooltip();
         e.layer.getTooltip().setOpacity(1);
         ////myController.addOverlays(e.layer, e.layer.namePoly);
@@ -1378,7 +1474,6 @@ function View(){
     });
 
     this.startTimetDiv = new V.timeSelector("Start", 23, 'Dec', 2017);
-    this.startTimetDiv.setMessage("Hello, Wolrd!");
     this.endTimetDiv = new V.timeSelector("End", 23, 'Dec', 2017);
 
     timeBox.addChild(this.startTimetDiv).addChild(this.endTimetDiv);
@@ -1387,7 +1482,9 @@ function View(){
     /**
      *  Add background color selector 
      */ 
-    var colors = ['Olive','Red', 'Orange', 'Yellow', 'Green', 'Cyan' , 'Blue' , 'Purple' ];
+    // var colors = ['OliveDrab','Red', 'Orange', 'Yellow', 'Green', 'LightSkyBlue ' , 'Blue' , 'Purple' ];
+    // attention: format of color : '*x.y)' 
+    var colors = ['rgba(107, 142, 35, 1.0)','rgba(255, 0, 0, 1.0)', 'rgba(255, 165, 0, 1.0)', 'rgba(230, 230, 0, 1.0)', 'rgba(0, 128, 0, 1.0)', 'rgba(135, 206, 250, 1.0)' , 'rgba(0, 0, 255, 1.0)' , 'rgba(128, 0, 128, 1.0)'];
     this.backgroundColorSelector = new V.ColorSelector({
             listColor: colors,
             titleElement: 'Background Color'
@@ -1430,13 +1527,14 @@ function View(){
      */ 
     this.managementDiv = new V.Div({class: "nice-box",
     								parentElement: mapDiv, childClass:' champComposant nice-box',
-    								idDiv: "management"});
-    
+    								idDiv: "management", scroll: 'auto'});
+    thisView.managementDiv.show();
+
     this.managementDiv.stopEventOfLeaflet();
     // hide varable
     				
     // hide varable
-    this.managementDiv.hideState = false;
+    this.managementDiv.hideState = true;
 
     function hideManangement(){
 
@@ -1450,13 +1548,13 @@ function View(){
             thisView.managementDiv.show();
             thisView.hideManagementButton.setTitle('Hide management');
             thisView.hideManagementButton.setSign("►"); 
-            thisView.hideManagementButton.getContainer().style.right = '30%';  
+            thisView.hideManagementButton.getContainer().style.right = '33%';  
             
         }    
         thisView.managementDiv.hideState = !thisView.managementDiv.hideState;
 
     }
-    this.hideManagementButton = new V.Button({sign: '◄', titleElement: 'Hide management', 
+    this.hideManagementButton = new V.Button({sign: '►', titleElement: 'Hide management', 
     				class: 'hideManagement', parentElement: mapDiv});
     			
     L.DomEvent.on(this.hideManagementButton.getContainer(), 'click', hideManangement);

@@ -1,8 +1,4 @@
-.hideManagement{
-    position: absolute;
-    top: 80px;
-    right: 0%;
-    z-index: 800;
+
     /* background-color: white;
     width: 16px;
     height: 32px;
@@ -11,7 +7,7 @@
     padding-left: 6px;
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px; */
-}
+
 
 /* end .slideThree */
 /* .roundedOne */
@@ -76,35 +72,63 @@
 }
 
 .row-box p{
-	position: absolute;
-	top: 7px;
-	left: 40%;
+    position: absolute;
+    left: 40%;
+    top: 8px;
 }
 
-.mapLayerSelector{
+.mapLayersSelector{
 	left: 5%;
 }
 
 .icon {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     position: relative;
     border-radius: 50px;
     float: left;
-    margin: 8px 0px 0px 14px;
-    /*box-shadow: inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5);*/
+    margin: 8px 0px 0px 12px;
 }
+
 .icon i {
     font-size: 22px;
     width: 22px;
     height: 22px;
     position: absolute;
-    margin: 2px auto auto 4px;
+    margin: 3px auto auto 5px;
+    color:#e9e6e4;
+}
+
+/* .checked {
+     box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .3), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5);  
+    border-radius: 50%;
+} */
+
+.checked i{
+    color: black;
+}
+
+.unchecked i{
+    color: gray;
+}
+
+.unchecked i:hover{
+    color: black;
+}
+
+.enabled {
+    border: solid 1px black;        
 }
 
 .enabled i:hover{
-    color: blue;
+    border-radius: 50%;
+    box-shadow: inset 0px 1px 1px white, 0px 1px 1px rgba(0, 0, 0, 0.5); 
+    background-image: -webkit-linear-gradient(top, #f4f1c0, #fff);
+    background-image: linear-gradient(top, #f4f1c0, #fff);
+    border-radius: 50%;
+    box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .5), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5); 
 }
+
 
 .row-researches-panel {
     position: relative;
@@ -112,19 +136,38 @@
     width: 90%;
     left: 5%;
     background-color: #e6f7ff;
-    margin-bottom: 2px;
+    margin-bottom: 5px; 
     border-width: 2px;
 }
 
 .row-researches-panel p {
+    position: relative;
     float: left;
-    margin-left: 4px;
-    font-size: 13px;
+    font-size: 15px;
+    /* width: 15px; */
+    /* height: auto; */
+}
+
+.researchIcon {
+    position: relative;
+    float: left;
+    top: 4px;
+    left: -6px;
+}
+
+.researchIcon i{
+    font-size: 16px;
+    color: black;    
 }
 
 .iconsBarre {
-    min-width: 60%;
+    min-width: 53%;
     float: right;
+}
+
+input[type="text"]{
+    font-size: 15px;
+    font-family: 'Time New Roman';
 }
 
 .text-box {
@@ -137,7 +180,8 @@
 }
 
 .text-box input{
-    width: 70%;
+    width: 80%;
+    height: 22px;
     float: left;
 }
 
@@ -148,23 +192,27 @@
 }
 
 .row-roi {
+    padding-bottom: 5px;
     position: relative;
-    left: 5%;
-    width: 90%;
+    left: 12%;
+    width: 82%;
     float: left;
+    margin-bottom: 5px;
 }
 
 .row-roi p{
+    position: relative;
+    font-size: 13px;
     float: left;
-    margin-left: 26px;
-    font-size: 12px;
+    top: 2px;
 }
 
-.small-icon {
+
+/* .small-icon {
     width: 24px;
     height: 24px;
 }
 .small-icon i {
     font-size: 20px;
     width: 20px;
-}
+} */

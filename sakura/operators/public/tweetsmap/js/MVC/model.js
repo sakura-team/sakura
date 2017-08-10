@@ -21,9 +21,9 @@ function Research() {
 
     this.rid = null;
     this.nameResearch = '';
-    this.colorBorder = 'Olive';
-    this.colorPoint = 'Olive';
-    this.colorBackground = 'Olive';
+    this.colorBorder = 'rgba(107, 142, 35, 1.0)';
+    this.colorPoint = 'rgba(107, 142, 35, 1.0)';
+    this.colorBackground = 'rgba(107, 142, 35, 1.0)';
     this.roi = new L.LayerGroup;
     this.expandRoi = new L.LayerGroup;
     this.expandRoi.addLayer(this.roi);
