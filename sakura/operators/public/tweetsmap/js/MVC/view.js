@@ -38,6 +38,33 @@ function View(){
 
         convertColor: function (colorCode, opacity){
             return colorCode.substr(0,colorCode.length-5)+opacity+')';
+        },
+
+        reverseArray: function(array){
+            var i, len = array.length;
+            var res = [];
+            for(i = 0; i<len ; i++){
+                var res_el = [];
+                res_el.push(array[i][1]);
+                res_el.push(array[i][0]);
+                res.push(res_el);
+            }
+            return res;
+        },
+        
+
+        convertMarkerColor: function (colorCode){
+            var i,colors = ['olivedrab','red', 'orange', 'pink', 'green', 'lightskyblue' , 'blue' , 'purple' ];
+            var len = colors.length, lenCode = colorCode.length;
+            for(i=0; i<len;i++){
+                if(colorCode.substr(0,lenCode-5) == thisView.colors[i].substr(0,lenCode-5)){
+                    switch(colors[i]){
+                        case "olivedrab": return "darkgreen";
+                        case "lightskyblue": return "lightblue";
+                        case "blue": return "darkblue";
+                        default: return colors[i];
+                    }                }
+            }
         }
         
     };
@@ -89,6 +116,52 @@ function View(){
 
     }
 
+    // V.GeoSearch = {};
+    // V.GeoSearch.Provider = {};
+
+    // // jQuery.support.cors = true;
+
+    // V.GeoSearch.Result = function(x,y, label) {
+    //     this.X = x;
+    //     this.Y = y;
+    //     this.Label = label;
+    // };
+
+    // V.GeoSearch.Provider.OpenStreetMap = V.Class.extend({
+    // options: {
+
+    // },
+
+    // initialize: function(options) {
+    //     options = L.Util.setOptions(this, options);
+    // },
+
+    // GetServiceUrl: function (qry) {
+    //     var parameters = L.Util.extend({
+    //         q: qry,
+    //         format: 'json'
+    //     }, this.options);
+
+    //     return 'http://nominatim.openstreetmap.org/search'
+    //         + L.Util.getParamString(parameters);
+    // },
+
+    // ParseJSON: function (data) {
+    //     if (data.length == 0)
+    //         return [];
+
+    //     var results = [];
+    //     for (var i = 0; i < data.length; i++) 
+    //         results.push(new L.GeoSearch.Result(
+    //             data[i].lon, 
+    //             data[i].lat, 
+    //             data[i].display_name
+    //         ));
+        
+    //     return results;
+    // }
+    // });
+
         // An element HTML
     V.Element = V.Class.extend({
 
@@ -120,7 +193,7 @@ function View(){
         },
 
         display: function(){
-            this._container.style.display = 'inline';
+            this._container.style.display = 'block';
         },
 
         setTitle: function(title) {
@@ -140,7 +213,13 @@ function View(){
                     V.create('div','message text-basic text-border');
                 this._container.appendChild(this._messageBox);
             }
-            this._messageBox.innerHTML = message;
+            if(message){
+                this._messageBox.style.display = 'block';
+                this._messageBox.innerHTML = message;
+            }
+            else{
+                this._messageBox.style.display = 'none';
+            }
             
         },
 
@@ -236,8 +315,6 @@ function View(){
     	
 
     });
-
-
     
     V.Div = V.Element.extend({
         
@@ -247,11 +324,11 @@ function View(){
         }
 
     });
-    
+
     V.Selector = V.Element.extend({
     	initialize: function(options){
     		V.extend(this.options, options);
-    		
+    		this.initSelector();
     	},
     	
     	initSelector(){
@@ -315,7 +392,182 @@ function View(){
             }
         }   	
     });
+
     
+    V.SearchBar = V.Element.extend({
+
+        initialize: function(options){
+            V.extend(this.options, options);
+            this.setContainer(V.create('div', 'searchBar', mapDiv));
+            this._searchBarOptions();
+
+            var searchBoxDiv = V.create('div', 'search-box', this._container);
+            this.polygonIcon = new V.Icon({parentElement: this._container,
+                iconChecked: 'fa fa-bandcamp',iconUnchecked: 'fa fa-location-arrow', 
+                enabled: true, checked: false,
+                class: 'poly-icon'});
+            this.polygonIcon.getContainer().style.position = 'absolute';
+            this.polygonIcon.getContainer().style.right = '9px';
+            this.polygonIcon.getContainer().style.top = '0px';
+            this.polygonIcon.getContainer().style.border = 'none';
+            this.polygonIcon.eventHandle = function(){
+                this._resultsListDiv.display();
+                this._resultsListDiv.setSource(this.geoSearch(this._searchBox.value));
+            }.bind(this);
+            var searchBox = V.create('input', '', searchBoxDiv);
+            searchBox.id = 'searchbox';
+            searchBox.type = 'text';
+            searchBox.placeholder = this.searchLabel;
+            this._searchBox = searchBox;
+            var resultsListDiv = new V.ResultListSelector({parentElement: this._container, rowSource: [,,,,,],
+                class: "suggestions"});
+            this._resultsListDiv = resultsListDiv;
+
+            this._searchBox.addEventListener('keyup', this._onKeyUp.bind(this), false);
+            $('#searchbox').blur(function(e){
+                // this._resultsListDiv.noneDisplay(); 
+                // this._resultsListDiv.hide();
+                null;
+            }.bind(this));
+            $('#searchbox').focus(function(){
+                if(myController.editableResearch){
+                    thisView.locationResearchButton.noneDisplay();
+                    thisView.newPolyAdminButton.noneDisplay();
+                }
+                if(this.currentMarker)
+                    this.currentMarker.removeFrom(map);
+                if(this.currentPoly)
+                    this.currentPoly.removeFrom(map);
+                // this._resultsListDiv.display();
+                this._resultsListDiv.display();
+                this._resultsListDiv.show();
+            }.bind(this));
+        },
+
+        geoSearch: function(qry) {
+            var polygon = (this.polygonIcon.checked)?1:0;
+            $.getJSON('http://nominatim.openstreetmap.org/search?format=json&limit=5&q=' + qry+'&polygon='+polygon, function(data) {
+                var items = [];
+                    var i=0;
+                $.each(data, function(key, val) {
+                    items.push(val);
+                    i++;
+                });
+                this._resultsListDiv.setSource(items);
+            }.bind(this));
+        },
+
+        currentMarker: null,
+
+        currentPoly: null,
+
+        _processResults: function(results){
+            console.log(results[0]);
+        },
+
+        _searchBarOptions: function(){
+            var options = this.options;
+            this.country = options.country || '';
+            this.provider = options.provider;
+
+            this.searchLabel = options.searchLabel || 'Search for address';
+            this.zoomLevel = options.zoomLevel || 18
+        },
+
+        _onKeyUp: function(e){
+            var escapeKey = 27;
+            var enterKey = 13;
+            var value = this._searchBox.value;
+            this._resultsListDiv.setSource([,,,,,]);
+            if(e.keyCode === escapeKey){
+                this._searchBox.value = '';
+                return;
+            }
+
+            if(!this.polygonIcon.checked || e.keyCode == enterKey){
+                if(value != '')
+                    this.geoSearch(value);
+                else
+                    this._resultsListDiv.setSource([,,,,,,]);
+            }
+        },
+
+
+    });
+
+    V.ResultListSelector = V.Selector.extend({
+        initialize: function(options){
+            V.extend(this.options, options);
+    		this.setContainer(V.create('div'));
+            this.initSelector();
+        },
+
+        _createRow: function(result){
+            var res = new V.Div({class: 'suggest'});
+            var text = V.create('div','suggest-text',res.getContainer());
+            res.getContainer().result = result;
+            res._text = text;
+            res.getContainer().addEventListener('click',this._onClick.bind(this), false);
+            if(result)
+                text.innerHTML = result.display_name;
+            else
+                res.noneDisplay();
+            return res;
+        },
+
+        setSource: function(rowSource){
+ 
+            if( rowSource ){
+                var i, len = rowSource.length;
+                this.rowSource = rowSource;
+                for(i=0; i<len; i++){
+                    if(this.rowSource[i]){
+                        this._rows[i]._text.innerHTML = this.rowSource[i].display_name;
+                        this._rows[i].getContainer().result = this.rowSource[i];
+                        this._rows[i].display();
+                    } else
+                        this._rows[i].noneDisplay();
+                    }
+            }
+            
+        },
+        
+
+        _onClick: function(e){
+            var target = e.currentTarget;
+            if(target.result){
+                var val = target.result;
+                if(!thisView.searchBar.currentMarker){
+                    thisView.searchBar.currentMarker = L.marker([val.lat, val.lon]);
+                    thisView.searchBar.currentMarker.addTo(map);
+                }
+                if(!thisView.searchBar.currentPoly){
+                    thisView.searchBar.currentPoly = L.polygon([]);
+                }
+                var point = L.latLng(val.lat, val.lon);
+                thisView.searchBar.currentMarker.setLatLng(point).addTo(map);
+                if(myController.editableResearch)
+                    thisView.locationResearchButton.display();
+                if(val.polygonpoints){
+                    var latlngs = V.Util.reverseArray(val.polygonpoints);                    
+                    thisView.searchBar.currentPoly.setLatLngs(latlngs).addTo(map);
+                    map.fitBounds(thisView.searchBar.currentPoly.getBounds());
+                    if(myController.editableResearch)
+                        thisView.newPolyAdminButton.display();
+                }
+                else{
+                    map.setView(point,7);
+                }
+                this.setSource([,,,,,]);
+            }
+            this.noneDisplay();
+        }
+
+
+    });
+
+    
+
     V.MaplayersSelector = V.Selector.extend({
     	initialize: function(options){
 			V.extend(this.options, options);
@@ -336,7 +588,6 @@ function View(){
 			child2.htmlFor = layerName;
 			var child3 = V.create('p', '', res.getContainer());
 			child3.innerHTML = layerName;
-
 			child1.addEventListener('click', this._onClick.bind(this), false);
 			return res;
 			
@@ -380,9 +631,11 @@ function View(){
             row.plusIcon = new V.PlusIcon({checked: true, enabled: true, 
                                 parentElement: row, idDiv:"plus " + research.nameResearch});
             var researchIcon = new V.Icon({ parentElement: row, enabled: false, 
-                iconChecked: 'fa fa-tasks', checked: true, class: 'researchIcon'
+                iconChecked: 'fa fa-tasks',iconUnchecked: 'fa fa-tasks',
+                clearBackground: true, checked: true, class: 'researchIcon',
+                idDiv: 'resch' + research.nameResearch
             });
-            
+            row.researchIcon = researchIcon;
             row.nameResearch = V.create('p','normal-text', row.getContainer());
             row.nameResearch.innerHTML = research.nameResearch;
             row.eyeIcon = new V.EyeIcon({checked: false, enabled: true, 
@@ -402,6 +655,7 @@ function View(){
             row.editionIcon.eventHandle = this._editResearch.bind(this);
             row.eyeIcon.eventHandle = this._hideResearch.bind(this);
             row.plusIcon.eventHandle = this._hideRoiSelector.bind(this);
+            researchIcon.eventHandle = this._setView.bind(this);
             //row.trashIcon.getContainer().addEventListener('click',
             //                    this._deleteResearch.bind(this), false);
             row.id = research.nameResearch;
@@ -419,6 +673,11 @@ function View(){
                 return;
             this._rows[i].editionIcon.check();
             
+        },
+
+        enableResearchIcon: function(){
+            var i = this._getIndexById(myController.editableResearch.nameResearch);
+            this._rows[i].researchIcon.enable();
         },
         
         addRow: function(research){
@@ -442,7 +701,6 @@ function View(){
         
         changeBackground: function(research, color){
             var i = this._getIndexById(research.nameResearch);
-            console.log(color);
             this._rows[i].getContainer().style.backgroundColor = V.Util.convertColor(color, 0.6);
         },
         
@@ -464,6 +722,10 @@ function View(){
                 this._rows[i].getContainer().style.border = 'solid black';
                 myController.changeEditableResearch(i);
                 this._rows[i].roiSelector.enableTrashIcons();
+                if(thisView.searchBar.currentMarker)
+                    thisView.searchBar.currentMarker.removeFrom(map);
+                if(thisView.searchBar.currentPoly)
+                    thisView.searchBar.currentPoly.removeFrom(map);
             }
             else{
                 this._rows[i].eyeIcon.enable();
@@ -496,6 +758,12 @@ function View(){
                 this._rows[i].roiSelector.display();
             else
                 this._rows[i].roiSelector.noneDisplay();        
+        },
+        
+        _setView: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            var research = this.rowSource[i];
+            map.setView(research.locationMarker.getLatLng(),7);        
         }
     });
     
@@ -511,8 +779,11 @@ function View(){
             var row = new V.Div({
                 class: ' nice-box row-roi'});
             var iconsBarre = new V.Div({class:  'iconsBarre', parentElement: row});
-            var polyIcon = new V.Icon({ parentElement: row, enabled: false, 
-                iconChecked: 'fa fa-bandcamp', checked: true, class: 'researchIcon'
+            var icon = (layer.editor)?'fa fa-paint-brush':'fa fa-bandcamp';
+            var polyIcon = new V.Icon({ parentElement: row, enabled: true, 
+                iconChecked: icon, iconUnchecked: icon,
+                checked: true, class: 'researchIcon',
+                clearBackground: true, idDiv: "poly " + layer.namePoly
             });
             row.namePoly = V.create('p','normal-text', row.getContainer());
             row.namePoly.innerHTML = layer.namePoly;
@@ -524,6 +795,7 @@ function View(){
                                 idDiv: "trash" + layer.namePoly});
             row.eyeIcon.eventHandle = this._hidePolygon.bind(this);
             row.trashIcon.eventHandle = this._removePolygon.bind(this);
+            polyIcon.eventHandle = this._fitBounds.bind(this);
             row.id = layer.namePoly;
             return row;
         },
@@ -575,8 +847,13 @@ function View(){
         _removePolygon: function(button){
             var i = this._getIndexById(button.id.slice(5));
             var layer = this.rowSource.getLayers()[i];
-            var poly = layer.editor.deleteShape(layer.getLatLngs());
-            myController.deletePolygons(poly);
+            var poly;
+            if(layer.editor){
+                poly = layer.editor.deleteShape(layer.getLatLngs());
+            } else {
+                poly = layer;
+            }
+            myController.deletePolygon(poly);
             //this.removeRow(i);
         },
 
@@ -587,6 +864,12 @@ function View(){
                 myController.showPolygonToGUI(layer);
             else
                 myController.hidePolygonFGUI(layer);        
+        },
+
+        _fitBounds: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            var layer = this.rowSource.getLayers()[i];
+            map.fitBounds(layer.getBounds());
         }
     });
 	
@@ -724,12 +1007,20 @@ function View(){
         
         enable: function(){
             this._container.style.backgroundColor = 'white';
-            V.DomUtil.addClass(this._container,'enabled');
+            
             this.enabled = true;
             if(!this._maskOnClick) this._maskOnClick = this._onClick.bind(this);
             this._container.addEventListener('click', 
                                                this._maskOnClick, false);
             this._container.style.cursor = 'pointer';
+            V.DomUtil.addClass(this._container,'enabled');
+            if(this.clearBackground)
+            {
+                this._container.style.backgroundColor = 'transparent';
+                this._container.style.boxShadow = '';
+                this._container.style.border = 'none';
+                return;
+            }
             // this._container.style.boxShadow 
                     //  ='inset 0px 1px 1px white, 0px 1px 3px rgba(0, 0, 0, 0.5)';
             if(this.checked) {
@@ -750,6 +1041,7 @@ function View(){
             this.checked = options.checked;
             this.index = options.index || -1;
             this.enabled = options.enabled;
+            this.clearBackground = options.clearBackground || false;
         },
         
         // attention: eventHandle will be defined by button
@@ -778,6 +1070,10 @@ function View(){
 
         getIcon: function(){
             return this._icon;
+        },
+
+        eventHandle: function(){
+            null
         }
     });
     
@@ -913,278 +1209,27 @@ function View(){
             this._select.style.background = color;
             this._select.style.color = color;
             this._select.valueColor = color;
-        },
-
-    });
-
-    L.SelectBox = L.Control.extend({
-        options: {
-            position: 'topright'
-        },
-
-        initialize: function(options){
-            this._config = {};
-            L.Util.extend(this.options, options);
-            this.setConfig(options);
-        },
-
-        setConfig: function(options){
-            this._config = {
-                listOptions: options.listOptions,
-                titleBox: options.titleBox
-            };
-        },
-
-        getSelect: function(){
-            return this._select;
-        },
-
-        getValue: function() {
-            return this._select.value;
-        },
-
-        addOption: function(text) {
-            var option = document.createElement("option",'',this._container);
-            option.text = text;
-            this._select.add(option);
-            L.DomEvent
-                    .on(option, 'click', L.DomEvent.stop)
-            L.DomEvent.disableClickPropagation(option);
-        },
-
-        removeOption:function(index) {
-            this._select.remove(index);
-        },
-
-        removeAllOptions:function() {
-            for(var i = this._select.options.length-1;i>=0;i--)
-            {
-                this._select.remove(i);
-            }
-        },
-
-        setTextOfOption(index, text) {
-            this._select.options[index].text = text;
-            if(index == this._select.selectedIndex){
-                this._select.text = text;
-            }
-        },
-
-        setSelectedOption(index) {
-            this._select.selectedIndex = index;
         }
     });
-
-    L.CheckBoxList = L.Control.extend({
-        options: {
-            position: 'topright'
-        },
-
-        initialize: function(options){
-            this._config = {};
-            L.Util.extend(this.options, options);
-            this.setConfig(options);
-        },
-
-        setConfig: function(options){
-            this._config = {
-                listBoxes: options.listBoxes,
-                titleBox: options.titleBox,
-            };
-        },
-
-        onAdd: function(map) {
-            // container div in HTML
-            var container = document.createElement('div')
-            container.className = 'leaflet-control leaflet-bar';
-            this._container = container;
-            container.title = this._config.titleBox;
-
-            for(var i = 0; i < this._config.listBoxes.length ; i++){
-                this.addCheckBox(this._config.listBoxes[i]);
-            }
-            
-            return container;
-        },
-
-        addCheckBox: function(text) {
-            // line = checkbox + lineText
-            var line = document.createElement("div");
-            this._container.appendChild(line);
-            // for line break
-            line.style.float = 'left';
-            line.style.fontSize = "14px";
-
-            var checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.style.float = 'left';
-            checkbox.className = 'leaflet-control-layers-selector';
-            line.appendChild(checkbox);
-
-            var lineText = L.DomUtil.create('div', '',line);
-            lineText.style.float = 'left';            
-            lineText.innerHTML = text;
-            lineText.className = 'text-basic text-border';
-            var thisNow = this;
-            
-            L.DomEvent.on(checkbox, "click", function(){
-                var lineIndex = Array.prototype.indexOf.call(thisNow._container.children, line);
-                if(checkbox.checked){
-                    myController.displayResearch(lineIndex);
-                } else {
-                    myController.hideResearch(lineIndex);                    
-                }
-                myController.actualize();
-            });
-                                
-        },
-
-        removeCheckBox: function(index) {
-            var line = this._container.children[index];
-            this._container.removeChild(line);
-        },
-
-        removeAllCheckboxes: function() {
-            for(var i = this._container.children.length-1;i>=0;i--)
-            {
-                this.removeCheckBox(i);
-            }
-        },
-
-        setTextOfCheckBox: function(index, text) {
-            this._container.children[index].children[1].innerHTML = text + "<br>";
-        },
-
-        // check the box
-        setChecked: function(index, checked) {
-            this._container.children[index].children[0].checked = checked;
-        },
-
-        // set box to uncheckable (bool = false)/ checkable (bool = true)
-        setCheckable: function(index, disabled) {     
-            this._container.children[index].children[0].disabled = disabled;
-        },
-
-        getChecked: function(index) {
-            return this._container.children[index].children[0].checked;
-        }
-
-    });
-
-    L.MessageBox = L.Control.extend({
-        options: {
-            position: "bottomright"
-        },
-
-        onAdd: function(map) {
-            this._container= L.DomUtil.create('div');
-            return this._container;
-        },
-
-        setClass: function(className) {
-            this._container.className = className;
-            this._container.style.float = 'right';  
-            this._container.style.margin = '0px 6px 6px 0px';
-        },
-
-        update: function(text) {
-            this._container.innerHTML = text;
-        },
-
-        hide: function(){
-            this._container.style.display = 'none';
-        },
-        show: function(){
-            this._container.style.display = 'inline';
-        }
-    });
-
-
-    //-----------------------------------------Creater------------------------------------------------
-
-    /**
-     * These functions are intended for creating the instances of the classes aboves
-     * @return Entite on GUI
-     */
-    this.createMessageBox = function(map) {
-        var res = new L.MessageBox;
-        res.addTo(map);
-
-        return res;
-    }
-
-
-    this.createSelector = function(map, list, title){
-        var res  = new L.SelectBox({
-            listOptions: list,
-            titleBox: title
-        });
-        res.addTo(map);
-
-        return res;
-    }
-    
-    this.createCheckBoxList = function(map, list, title){
-        var res  = new L.CheckBoxList({
-            listBoxes: list,
-            titleBox: title
-        });
-        res.addTo(map);
-
-        return res;
-    }
-
-
-    this.createColorSelector = function (map, listColor, title){
-        var res = new V.ColorSelector({
-            listColor: listColor,
-            titleBox: title
-        });
-
-        return res;
-    };
-
-    // add Box into Map
-    this.createTextBox = function(map, tbid, textdefault) {
-        // create box
-        var res = new L.TextBox({
-            tbid: tbid,
-            textdefault: textdefault
-        });
-        // Display Box on Map
-        res.addTo(map);
-
-        return res;
-    };
-
-    this.createButton = function(sign, titleButton) {
-        var res = new V.Button({sign: sign, titleElement: titleButton});
-
-        return res;
-    }
 
     //--------------------------------------Instances----------------------------------------------
-    //---------------------------------------TOP LEFT----------------------------------------------
-    // this.nameBox = 
-    //     thisView.createTextBox(map,"ResearchBox", "Current Research");
 
-    
     var deleteShape = function (e) {
       if ((e.originalEvent.ctrlKey || e.originalEvent.metaKey) && this.editEnabled()){
         var poly = this.editor.deleteShapeAt(e.latlng);
-        myController.deletePolygons(poly);
+        myController.deletePolygon(poly);
       }
     };
-    map.on('layeradd', function (e) {
-        if (e.layer instanceof L.Path) e.layer.on('click', L.DomEvent.stop).on('click', deleteShape, e.layer);
-        if (e.layer instanceof L.Path) e.layer.on('dblclick', L.DomEvent.stop).on('dblclick', e.layer.toggleEdit);
-    });
+    // map.on('layeradd', function (e) {
+    //     if (e.layer instanceof L.Path) e.layer.on('click', L.DomEvent.stop).on('click', deleteShape, e.layer);
+    //     if (e.layer instanceof L.Path) e.layer.on('dblclick', L.DomEvent.stop).on('dblclick', e.layer.toggleEdit);
+    // });
             
     // when finish drawing
     map.on('editable:drawing:end', function (e) {
         // save Poly
         e.namePoly = '';
-        var index = myController.registerPoly(e.layer);
+        myController.registerPoly(e.layer);
         e.layer.bindTooltip(e.layer.namePoly).openTooltip();
         e.layer.getTooltip().setOpacity(1);
         ////myController.addOverlays(e.layer, e.layer.namePoly);
@@ -1192,111 +1237,7 @@ function View(){
         myController.updateMarkers();
     });
 
-    // // when edit 
-    // map.on('editable:vertex:dragend', function (e) {
-    //     myController.updateMarkers();
-    // });
-    // map.on('editable:dragend', function (e) {
-    //     myController.updateMarkers();
-    // });    
-    
-    // /**
-    //  *  Add button for save current research
-    //  */ 
-    // this.saveResearchButton =
-    //     thisView.createButton(map,'↓ ','Save Research');
-    // L.DomEvent.on(this.saveResearchButton.getLink(), 'click', function() {
-    //                     myController.addResearch();
-    //                 });
-
-    // /**
-    // *  Add button for reset current research
-    // */ 
-    // this.resetResearchButton =
-    //     thisView.createButton(map,'♺','Reset Research');
-    // L.DomEvent.on(this.resetResearchButton.getLink(), 'click', function(){
-    //     myController.resetResearch();
-    // });
-
-    // /**
-    //  *  Add button for remove current research
-    //  */
-    // this.removeResearchButton =
-    //     thisView.createButton(map,'❎','Delete Research');
-    // L.DomEvent.on(this.removeResearchButton.getLink(), 'click', function(){
-    //     myController.removeResearch();
-    // });
-
-    // /**
-    //  *  Add button for remove current research
-    //  */
-    // this.removeAllResearchButton =
-    //     thisView.createButton(map,'❌','Delete All Researchs');
-    // L.DomEvent.on(this.removeAllResearchButton.getLink(), 'click', function(){
-    //     myController.removeAllResearch();
-    // });
-
-    // /**
-    //  *  Add background color selector 
-    //  */ 
-    // var colors = ['Olive','Red', 'Orange', 'Yellow', 'Green', 'Cyan' , 'Blue' , 'Purple' ];
-    // this.backgroundColorSelector =
-    //     thisView.createColorSelector(map,colors,'Background Color');
-    // L.DomEvent.on(this.backgroundColorSelector.getSelect(), 'change', function(){
-    //     myController.actualize();
-    // });
-    
-    
-    // /**
-    //  *  Add tweets color selector 
-    //  */ 
-    // this.tweetsColorSelector =
-    //     thisView.createColorSelector(map,colors,'Tweets Color');
-
-    //----------------------------------TOP RIGHT------------------------------------///
-    
-    // /**
-    //  * Add recherche selectable checkbox list
-    //  */
-    
-    // this.researchCheckBoxList =
-    //     this.createCheckBoxList(map, [], 'Research CheckBox List');
-    
-    // /**
-    //  * Add recherche select box
-    //  */
-    
-    // this.researchSelector =
-    //     this.createSelector(map, [], 'Research List');
-    // L.DomEvent.on(this.researchSelector.getSelect(), 'change', function(){
-    //      myController.selectResearch();
-    // })
-   
-    /**
-     * Add layers control panel
-     */
-    ////this.layersPanel =
-    ////    L.control.layers(myModel.mapLayers.dict);
-    ////this.layersPanel.addTo(map);
     myModel.mapLayers.dict['Plan'].addTo(map);
-    // L.DomEvent.on(this.layersPanel.getContainer(), 'click', function(){
-    //     myController.updateMarkers();
-    // });
-    // /**
-    //  * Add overlays control panel
-    //  */
-    
-    // this.overlaysPanel =
-    //     L.control.layers();
-    // this.overlaysPanel.addTo(map);
-    
-    // //---------------------------------Botton right-----------------------------
-   
-
-    // this.pointNumber = this.createMessageBox(map);
-    // this.pointNumber.setClass("text-basic text-border");
-    // this.pointNumber.update(" Data loading...")
-
     
     /**
      *  LayerGroup contain all ROIs displayed on Map 
@@ -1336,6 +1277,9 @@ function View(){
     var mapDiv = document.getElementById('map')
     this.editionDiv = new V.Div({parentElement: mapDiv, class: "nice-box normal-text",
                             childClass: 'champComposant nice-box', idDiv: 'research'});
+    this.editionDiv.show = function(){
+        thisView.editionDiv.getContainer().style.visibility = 'visible';
+    }
     // hide varable
     this.editionDiv.hideState = true;
     this.editionDiv.stopEventOfLeaflet();
@@ -1378,18 +1322,24 @@ function View(){
     var colorBox = new V.Div({titleDiv: "Color Selections", parentElement: this.editionDiv,
                             titleDivClass: 'underChampComposant title text-border firstComposant'});
 
-    // this.newPolygonButton.addOn(editBox);
-    // this.newPolygonButton.addClass("childOfEditTools");
-    // this.newRectangleButton.addOn(editBox);
-    // this.newRectangleButton.addClass("childOfEditTools");
-    // this.newCircleButton.addOn(editBox);
-    // this.newCircleButton.addClass("childOfEditTools");
-    // this.resetResearchButton.addOn(editBox);
-    // this.resetResearchButton.addClass("childOfEditTools");
-    /**editBox.addChild(this.newPolygonButton)
-            .addChild(this.newRectangleButton)
-            .addChild(this.newCircleButton)
-            .addChild(this.resetResearchButton);*/
+    this.setLocation = function() {
+        var l = this.searchBar.currentMarker.getLatLng();
+        if(!myController.editableResearch.locationMarker){
+            myController.editableResearch.locationMarker = 
+                L.marker([l.lat,l.lng], {icon: L.AwesomeMarkers.icon({icon: 'coffee', 
+                markerColor: V.Util.convertMarkerColor(myController.editableResearch.colorBackground), 
+                prefix: 'fa', iconColor: 'black'}) }).addTo(map);
+            myView.researchesPanel.enableResearchIcon();
+        }
+        else
+            myController.editableResearch.locationMarker.setLatLng(l);
+    }
+    this.locationResearchButton = new V.Button({sign: '⚀', titleElement: 'Set Location',
+                            parentElement: editBox,
+                            eventClick: {className: thisView, functionName:
+                                thisView.setLocation}});
+    this.locationResearchButton.noneDisplay();
+
 	 /**
      *  Add button for creating a zone
     */ 
@@ -1410,15 +1360,27 @@ function View(){
     /**
     *  Add button for reset current research
     */ 
-    this.resetResearchButton = new V.Button({sign: '♺', titleElement: 'Reset Research',
-                            parentElement: editBox});
+    // this.resetResearchButton = new V.Button({sign: '♺', titleElement: 'Reset Research',
+    //                         parentElement: editBox});
   
-
-
-    // for(var i=1; i < editBox.children.length;i++){
-    //     editBox.children[i].style.top = -(i-2)*20 + 'px' ;
-    //     editBox.children[i].style.left = (i*30)+'px';
-    // }
+    this.addPolyAdmin = function() {
+        var l = this.searchBar.currentPoly.getLatLngs();
+        var layer = 
+                L.polygon(l, {color: myController.editableResearch.colorBackground, 
+                        fillColor: myController.editableResearch.colorBound })
+                .addTo(map);
+        myController.registerPoly(layer);
+        layer.bindTooltip(layer.namePoly).openTooltip();
+        layer.getTooltip().setOpacity(1);
+    }
+    this.newPolyAdminButton = new V.Button({sign: '▶', titleElement: 'Add Polygon',
+                            parentElement: editBox,
+                            eventClick: {className: thisView, functionName:
+                                thisView.addPolyAdmin}});
+    this.newPolyAdminButton.noneDisplay();
+     
+                            
+                
     
     //---------------Fill TimeInterval box-------------------
 
@@ -1484,7 +1446,8 @@ function View(){
      */ 
     // var colors = ['OliveDrab','Red', 'Orange', 'Yellow', 'Green', 'LightSkyBlue ' , 'Blue' , 'Purple' ];
     // attention: format of color : '*x.y)' 
-    var colors = ['rgba(107, 142, 35, 1.0)','rgba(255, 0, 0, 1.0)', 'rgba(255, 165, 0, 1.0)', 'rgba(230, 230, 0, 1.0)', 'rgba(0, 128, 0, 1.0)', 'rgba(135, 206, 250, 1.0)' , 'rgba(0, 0, 255, 1.0)' , 'rgba(128, 0, 128, 1.0)'];
+    var colors = ['rgba(107, 142, 35, 1.0)','rgba(255, 0, 0, 1.0)', 'rgba(255, 165, 0, 1.0)', 'rgba(255, 192, 203, 1.0)', 'rgba(0, 128, 0, 1.0)', 'rgba(135, 206, 250, 1.0)' , 'rgba(0, 0, 255, 1.0)' , 'rgba(128, 0, 128, 1.0)'];
+    this.colors = colors;
     this.backgroundColorSelector = new V.ColorSelector({
             listColor: colors,
             titleElement: 'Background Color'
@@ -1576,6 +1539,8 @@ function View(){
                  new V.UserLayersSelector({parentElement: this.userlayersBox, 
                             class: 'researches-panel'});
     
+    this.searchBar = new V.SearchBar({});    
+    this.searchBar.stopEventOfLeaflet();                
 }
 
 

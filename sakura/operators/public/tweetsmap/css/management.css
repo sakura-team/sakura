@@ -120,13 +120,15 @@
     border: solid 1px black;        
 }
 
+.enabled:hover{
+    /* border-radius: 50%; */
+    /* box-shadow: inset 0px 1px 1px white, 0px 1px 1px rgba(0, 0, 0, 0.5);  */
+    /* background-image: -webkit-linear-gradient(top, #f4f1c0, #fff);
+    background-image: linear-gradient(top, #f4f1c0, #fff);  */
+    box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .8), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5); 
+}
 .enabled i:hover{
-    border-radius: 50%;
-    box-shadow: inset 0px 1px 1px white, 0px 1px 1px rgba(0, 0, 0, 0.5); 
-    background-image: -webkit-linear-gradient(top, #f4f1c0, #fff);
-    background-image: linear-gradient(top, #f4f1c0, #fff);
-    border-radius: 50%;
-    box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .5), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5); 
+    font-size: 25px;
 }
 
 

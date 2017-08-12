@@ -374,17 +374,19 @@ function Controller(){
         });
     };
 
-    this.deletePolygons = function(poly){
+    this.deletePolygon = function(poly){
+                console.log('ok');
         this.editableResearch.roi.eachLayer(function (layer){
-            if((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
-                && layer.getLatLngs()[0].length==0){
+            if(((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
+                && layer.getLatLngs()[0].length==0) || layer == poly){
+                layer.removeFrom(map);
                 layer.closeTooltip();
                 thisControl.editableResearch.roi.removeLayer(layer);
                 myView.researchesPanel.removeUnderRow(thisControl.editableResearch, layer);
-                return;
+                
             }
         });
-        this.updateMarkers();
+        // this.updateMarkers();
     }
 
     //---------------------------------View->Model-------------------------------------//
@@ -496,26 +498,30 @@ function Controller(){
 
     this.disablePolygons = function(group){
         group.eachLayer(function(layer){
-            layer.editor.disable();
+            if(layer.editor)
+                layer.editor.disable();
             layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
         });       
     };
 
     this.disablePolygon = function(layer){
-        layer.editor.disable();
+        if(layer.editor)
+            layer.editor.disable();
         layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
     };
     
     this.enablePolygons = function(group){
         group.eachLayer(function(layer){
-            layer.editor.enable();
+            if(layer.editor)
+                layer.editor.enable();
             layer.bringToFront();
             layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
         });       
     };
 
     this.enablePolygon = function(layer){
-        layer.editor.enable();
+        if(layer.editor)
+            layer.editor.enable();
         layer.bringToFront();
         layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
     };
@@ -576,6 +582,8 @@ function Controller(){
             myView.editionDiv.show();
             myView.editionHide.show();
             myView.editionTitle.show();
+            myView.newPolyAdminButton.noneDisplay();
+            myView.locationResearchButton.noneDisplay();
             myView.editionHide.setSign("◄");
             myView.editionHide.getContainer().style.left = '25%';
             myView.editionDiv.hideState = true;

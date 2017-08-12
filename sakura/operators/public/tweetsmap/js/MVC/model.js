@@ -28,6 +28,7 @@ function Research() {
     this.expandRoi = new L.LayerGroup;
     this.expandRoi.addLayer(this.roi);
     this.timeRange = null;  
+    this.loacationMarker = null;
 
     this.actualize = function() {
         
@@ -75,14 +76,12 @@ function MapLayers(){
     });
     this.dict["Rivers"] = layer;
 
-    // // -- Rivers baseMap --
-    layer = L.tileLayer('//stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-                subdomains: 'abcd',
-                maxZoom: 20,
-                minZoom: 0,
-            })
-    this.dict["Toner"] = layer;
+    // // -- Simple baseMap --
+    layer = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>'
+      });
+    this.dict["Simple"] = layer;
 
     this.getDefault = function() {
         return 0;

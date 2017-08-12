@@ -7,11 +7,14 @@
 .message{
     font-size: 12px;
     position: relative;
-    float: left;
+    display: block;
+    width: 95%;
     clear: both;
     left: 2%;
     top: 3px;
+    margin-bottom: 2px;
 }
+
 
 .text-basic{
     color: blue;

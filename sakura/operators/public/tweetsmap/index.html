@@ -13,6 +13,7 @@
         <link rel="stylesheet" href="css/management.css" />
         <link rel="stylesheet" type="text/css" href="libs/font-awesome-4.7.0/css/font-awesome.css" >
         <link rel="stylesheet" type="text/css" href="libs/font-awesome-4.7.0/css/font-awesome.min.css" >        
+        <link rel="stylesheet" type="text/css" href="libs/awesomemarkers/leaflet.awesome-markers.css" > 
         <link rel="stylesheet" href="libs/PruneClusters/LeafletStyleSheet.css" >
         <link rel="stylesheet" href="libs/leaflet/leaflet.css" >
         <!-- Miscellaneous things-->
@@ -23,6 +24,8 @@
         <script src="libs/leaflet/leaflet-src.js"></script>
         <script src="libs/editable/Leaflet.Editable.js"></script>
         <script src="libs/PruneClusters/PruneCluster.js"></script>
+        <script src="libs/awesomemarkers/leaflet.awesome-markers.js"></script>
+        <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
         <script src="/js/sakura-common.js"></script>
         <script src="/js/sakura-operator.js"></script>
         <script src="https://npmcdn.com/leaflet.path.drag/src/Path.Drag.js"></script>
@@ -40,7 +43,7 @@
                 editable: true,
                 attributionControl: false,
                 zoomControl: true,
-            }).setView(new L.LatLng(48.8, 2.5), 12);
+            }).setView(new L.LatLng(48.8, 2.5), 2);
 
             
         </script>
