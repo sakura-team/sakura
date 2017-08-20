@@ -7,7 +7,7 @@
 
 // Controller
 'use strict';
-var HEATMAP_REFRESH_DELAY = 0.0002;
+// var HEATMAP_REFRESH_DELAY = 0.0002;
 
 function Controller(){
 
@@ -39,6 +39,169 @@ function Controller(){
     };
 
     //-----------------------------GUI->BD----------------------------
+    
+    var HEATMAP_RADIUS = 15;
+    var HEATMAP_REFRESH_DELAY = 0.3;
+    var heatmap_layer = null
+    function update_heatmap_callback(result) {
+        var infobox = thisControl.infobox
+        var icon;
+        if ('issue' in result)
+        {
+            infobox.update({ 'icon': 'alert', 'text': result.issue });
+            return;
+        }
+        if (result.heatmap.done)
+        {   // input data is complete for this map
+            icon = 'check';
+        }
+        else {
+            icon = 'hourglass';
+            // request server for more complete data,
+            // while we refresh the screen
+            sakura.operator.fire_event(
+                    ["map_continue", HEATMAP_REFRESH_DELAY],
+                    update_heatmap_callback);
+        }
+
+        /* In order to lower network usage, heatmap data is transfered in
+ * a compressed form. lat / lng values are transmitted as integers
+ * and we must now recompute the actual values by applying a given
+ * scale and offset.
+ */
+function expand_heatmap_values(info) {
+    var data = info.data, scales = info.scales, offsets = info.offsets,
+        heatmap_values = [];
+    for(var i = 0; i < data.lat.length; i++) {
+        heatmap_values[i] = [
+            data.lat[i] * scales.lat + offsets.lat,
+            data.lng[i] * scales.lng + offsets.lng,
+            data.val[i]
+        ];
+    }
+    return heatmap_values;
+}
+        // expand compressed data
+        var heatmap_values = expand_heatmap_values(result.heatmap);
+        // refresh the heatmap layer
+        if (heatmap_layer != null)
+        {
+            map.removeLayer(heatmap_layer)
+        }
+        heatmap_layer = L.heatLayer(heatmap_values, {
+                    radius:     HEATMAP_RADIUS
+        });
+        heatmap_layer.addTo(map);
+        // update infobox
+        infobox.update({ "icon": icon, 'text': result.heatmap.count + ' points' });
+        var t1 = new Date().getTime();
+        console.log('map update: ' + ((t1 - thisControl.t0)/1000.0) + " seconds");
+    }
+    
+    function request_heatmap() {
+    
+        var t0 = new Date().getTime();
+        thisControl.t0 = t0;
+        // get lat / lng map bounds
+        var geo_bounds = map.getBounds();
+        var geo_sw = geo_bounds.getSouthWest();
+        var geo_ne = geo_bounds.getNorthEast();
+    
+        // get pixel width / height
+        // Note: map.getSize() gives us the whole map zone,
+        // including top and bottom margins if the user zooms out
+        // at maximum. Thus the height obtained this way may not
+        // be correct.
+        // We compute the size by projecting the lat / lng bounds
+        // instead.
+        var px_bottomleft = map.project(geo_sw);
+        var px_topright = map.project(geo_ne);
+        var width = Math.round(px_topright.x - px_bottomleft.x);
+        var height = Math.round(px_bottomleft.y - px_topright.y);
+    
+        if (width == 0 || height == 0) {
+            // the map is propably not displayed yet
+            return;
+        }
+    
+        // geo_bounds latitude values seem wrong when the users zooms
+        // out at maximum: they are outside the bounds given by the
+        // web mercator projection, i.e. [-85.051129, 85.051129].
+        // we unproject the pixel values to fix this.
+        geo_ne = map.unproject(px_topright);
+        geo_sw = map.unproject(px_bottomleft);
+        geo_bounds = L.latLngBounds(geo_sw, geo_ne);
+    
+        var info = {
+            'width': width,
+            'height': height,
+            'westlng': geo_sw.lng,
+            'eastlng': geo_ne.lng,
+            'southlat': geo_sw.lat,
+            'northlat': geo_ne.lat
+        }
+        // console.log(info);
+        var listPoly = [];
+        
+        var listMarkers = [];
+        var westlng_poly = 180.0;
+        var eastlng_poly = -180.0;
+        var southlat_poly = 85.0;
+        var northlat_poly = -85.0;
+
+        thisControl.rois.eachLayer(function(layer){
+            // check if polygon is currently in geo_bounds
+            var bound_poly = layer.getBounds();
+            console.log(info);
+            console.log(bound_poly);
+
+            if(bound_poly.intersects(geo_bounds)){
+                listPoly.push(thisControl.convertPolygonToArray(layer));
+                if(bound_poly.getWest() < westlng_poly) westlng_poly = bound_poly.getWest();
+                if(bound_poly.getSouth() < southlat_poly) southlat_poly = bound_poly.getSouth();
+                if(bound_poly.getEast() > eastlng_poly) eastlng_poly = bound_poly.getEast();
+                if(bound_poly.getNorth() > northlat_poly) northlat_poly = bound_poly.getNorth();
+            }
+                
+        });
+        var len = listPoly.length;
+        if(len == 0 || westlng_poly < geo_sw.lng) westlng_poly = geo_sw.lng;
+        if(len == 0 || eastlng_poly > geo_ne.lng) eastlng_poly = geo_ne.lng;
+        if(len == 0 || southlat_poly < geo_sw.lat) southlat_poly = geo_sw.lat;
+        if(len == 0 || northlat_poly < geo_ne.lat) northlat_poly = geo_ne.lat;
+
+        var info_poly = {
+            'westlng': westlng_poly,
+            'eastlng': eastlng_poly,
+            'southlat': southlat_poly,
+            'northlat': northlat_poly,
+            'disable': thisControl.rois.getLayers().length !=0 && listPoly.length == 0
+        }
+        
+        // send event, then update map
+        sakura.operator.fire_event(
+                ["map_move", HEATMAP_REFRESH_DELAY, info, listPoly, info_poly],
+                update_heatmap_callback);
+    }
+    
+    var infobox = L.control();
+    this.infobox = infobox;
+    
+    infobox.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'infobox'); // create a div with a class "infobox"
+        return this._div;
+    };
+    
+    // method that we will use to update the control based on feature properties passed
+    infobox.update = function (props) {
+        this._div.innerHTML = props.text + ' ' +
+                    '<span class="glyphicon glyphicon-' + props.icon + '"></span>';
+    };
+
+    infobox.addTo(map);
+
+    map.on('moveend', request_heatmap);
+
     function updateTweetsmapCallback(result){
         if(result.done) {
             myView.pointNumber.hide();
@@ -101,29 +264,33 @@ function Controller(){
         myView.displayedMarkers.clearLayers();
         var i = 0;
         var listPoly = [];
+        // var listPoly = myView.rois;
+        
         var listMarkers = [];
-        myView.rois.eachLayer(function(layer){
-            layer.eachLayer(function(l){
-                if(map.hasLayer(l)){
+        thisControl.rois.eachLayer(function(layer){
+            // layer.eachLayer(function(l){
+                // if(map.hasLayer(l)){
                     //listPoly[i] = l;
-                    listPoly[i] = thisControl.convertPolygonToArray(l);
+                    listPoly.push(thisControl.convertPolygonToArray(layer));
                     // List markers corresponding to listPoly[i]
                     listMarkers[i] = new PruneClusterForLeaflet(160);
                     myView.displayedMarkers.addLayer(listMarkers[i]);
-                    i++;
-                }
-            });
+                    // i++;
+                // }
+            // });
         });
         var nbPoint = 0;
 
         function updateMarkersCallback(result){
+            console.log(result);
             if(result.done) {
-                myView.pointNumber.hide();
+                // myView.pointNumber.hide();
+                null
             }
             else
             {
                 sakura.operator.fire_event(["abc", HEATMAP_REFRESH_DELAY, listPoly], updateMarkersCallback);
-                myView.pointNumber.update(nbPoint + " points loaded ..");
+                // myView.pointNumber.update(nbPoint + " points loaded ..");
             } 
 
             for(var i = 0 ; i < result.tweetsmap.length;i++){
@@ -139,8 +306,9 @@ function Controller(){
         }
 
         if(listPoly.length != 0) {
-        sakura.operator.fire_event(["polygons_update", HEATMAP_REFRESH_DELAY, listPoly ]
-                , updateMarkersCallback);
+        console.log('ok');
+        // sakura.operator.fire_event(["polygons_update", HEATMAP_REFRESH_DELAY, listPoly ]
+        //         , updateMarkersCallback);
         }
     
     };
@@ -271,18 +439,17 @@ function Controller(){
     this.displayResearch = function (index) {
         this.addPolygonsToGUI(myModel.researches[index].roi);
 
-        ////this.updateMarkers();
     }
 
-    this.hideResearch = function (index) {
-        this.removePolygonsFGUI(myModel.researches[index].roi);
-        this.updateMarkers();
-    }
-    // Event when select an item on research selector
-    this.selectResearch = function(){
-        this.changeEditableResearch(myView.researchSelector.getSelect().selectedIndex);
-        this.updateMarkers();
-    };
+    // this.hideResearch = function (index) {
+    //     this.removePolygonsFGUI(myModel.researches[index].roi);
+    //     this.updateMarkers();
+    // }
+    // // Event when select an item on research selector
+    // this.selectResearch = function(){
+    //     this.changeEditableResearch(myView.researchSelector.getSelect().selectedIndex);
+    //     this.updateMarkers();
+    // };
 
     // Event when finish drawing a poly
     this.registerPoly = function(layer) {
@@ -298,19 +465,21 @@ function Controller(){
         myView.researchesPanel.addUnderRow(this.editableResearch,layer);
     };
 
-    this.resetResearch = function(){
-        this.removeAllOverlays();
-        myView.nameBox.setValue('');
-        this.editableResearch.removeAllRoi();
-        thisControl.actualize();
-        this.updateMarkers();
-    };
+    // this.resetResearch = function(){
+    //     this.removeAllOverlays();
+    //     myView.nameBox.setValue('');
+    //     this.editableResearch.removeAllRoi();
+    //     thisControl.actualize();
+    //     this.updateMarkers();
+    // };
     
     // remove current research
     this.removeResearch = function(index){
         var research = myModel.researches[index];
         if(this.editableResearch == research) 
             this.changeEditableResearch(-1);
+        if(research.locationMarker)
+            research.locationMarker.removeFrom(map);
         ////var indexResearchObsolete = 
             /////this.getIndexByResearch(this.editableResearch);
         
@@ -325,7 +494,7 @@ function Controller(){
         myModel.researches.splice(index, 1);
 
         //this.addResearch();
-        this.updateMarkers();
+        // this.updateMarkers();
     };
     
      // remove current research
@@ -348,7 +517,7 @@ function Controller(){
         this.editableResearch.roi.eachLayer(function (layer) {
             layer.setStyle({color : thisControl.editableResearch.colorBorder
                      ,fillColor: thisControl.editableResearch.colorBackground,
-                     fillOpacity: 0.2,  weight: 5});
+                     fillOpacity: 0.2,  weight: WEIGHT_ROI});
         });
         
         myView.researchesPanel.changeBackground(this.editableResearch, 
@@ -375,7 +544,6 @@ function Controller(){
     };
 
     this.deletePolygon = function(poly){
-                console.log('ok');
         this.editableResearch.roi.eachLayer(function (layer){
             if(((layer instanceof L.Polygon || layer instanceof L.Rectangle ) 
                 && layer.getLatLngs()[0].length==0) || layer == poly){
@@ -383,7 +551,7 @@ function Controller(){
                 layer.closeTooltip();
                 thisControl.editableResearch.roi.removeLayer(layer);
                 myView.researchesPanel.removeUnderRow(thisControl.editableResearch, layer);
-                
+                thisControl.rois.removeLayer(layer);
             }
         });
         // this.updateMarkers();
@@ -500,14 +668,14 @@ function Controller(){
         group.eachLayer(function(layer){
             if(layer.editor)
                 layer.editor.disable();
-            layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
+            layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: WEIGHT_ROI});
         });       
     };
 
     this.disablePolygon = function(layer){
         if(layer.editor)
             layer.editor.disable();
-        layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: 2});
+        layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: WEIGHT_ROI});
     };
     
     this.enablePolygons = function(group){
@@ -515,7 +683,7 @@ function Controller(){
             if(layer.editor)
                 layer.editor.enable();
             layer.bringToFront();
-            layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
+            layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: WEIGHT_ROI});
         });       
     };
 
@@ -523,7 +691,7 @@ function Controller(){
         if(layer.editor)
             layer.editor.enable();
         layer.bringToFront();
-        layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: 5});
+        layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: WEIGHT_ROI});
     };
 
     this.removeAllPolygonsFGUI = function(){
@@ -700,9 +868,9 @@ function Controller(){
             this.getIndexByResearch(this.editableResearch),
             true
         );
-
-        //this.updateMarkers(); **/
-        //console.log(this.toString());
+**/
+        // this.updateMarkers(); 
+        // console.log(this.toString());
         
     };
 
@@ -721,5 +889,10 @@ Controller.prototype.toString = function(){
     return string;
 };
 
+//-------------------------------------DataBase Connection------------------------//
+
+
 //----------------------------------------Controller singleton---------------------------------------
 var myController = new Controller();
+
+

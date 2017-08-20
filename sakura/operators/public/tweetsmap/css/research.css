@@ -166,13 +166,12 @@
 
 .colorList {
     position: absolute;
-    width: 100%;
+    width: 27%;
 }
 
 .colorList .colorRow{
-    width: 27%;
+    width: 100%;
 }
 .colorList .colorRow:hover{
-    width: 27%;
     border: solid 2px black;
 }

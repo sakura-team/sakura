@@ -45,11 +45,26 @@ function View(){
             var res = [];
             for(i = 0; i<len ; i++){
                 var res_el = [];
-                res_el.push(array[i][1]);
-                res_el.push(array[i][0]);
+                res_el.push(parseFloat(array[i][1])*100);
+                res_el.push(parseFloat(array[i][0])*100);
                 res.push(res_el);
             }
-            return res;
+            var nbSommet = len, tolerance = 0.1
+            while(nbSommet >= 35) {
+                res = simplify(res, tolerance, false);
+                tolerance += 0.1;
+                console.log(res.length);
+                nbSommet = res.length;
+            }
+            var res1 = [], len = res.length;
+            for(i = 0; i<len ; i++){
+                var res_el = [];
+                res_el.push(parseFloat(res[i][0])/100.0);
+                res_el.push(parseFloat(res[i][1])/100.0);
+                res1.push(res_el);
+            }
+            console.log(res1);
+            return res1;
         },
         
 
@@ -440,7 +455,7 @@ function View(){
                     this.currentPoly.removeFrom(map);
                 // this._resultsListDiv.display();
                 this._resultsListDiv.display();
-                this._resultsListDiv.show();
+                // this._resultsListDiv.show();
             }.bind(this));
         },
 
@@ -454,6 +469,7 @@ function View(){
                     i++;
                 });
                 this._resultsListDiv.setSource(items);
+                console.log(data);
             }.bind(this));
         },
 
@@ -498,10 +514,18 @@ function View(){
     V.ResultListSelector = V.Selector.extend({
         initialize: function(options){
             V.extend(this.options, options);
-    		this.setContainer(V.create('div'));
+            this.setContainer(V.create('div'));
+            this.getContainer().id = 'list_result';
             this.initSelector();
         },
 
+        // display: function(){
+        //     $('list_result').fadeIn("slow");
+        // },
+
+        // noneDisplay: function(){
+        //     $('list_result').fadeOut("slow");
+        // },
         _createRow: function(result){
             var res = new V.Div({class: 'suggest'});
             var text = V.create('div','suggest-text',res.getContainer());
@@ -525,7 +549,7 @@ function View(){
                         this._rows[i]._text.innerHTML = this.rowSource[i].display_name;
                         this._rows[i].getContainer().result = this.rowSource[i];
                         this._rows[i].display();
-                    } else
+                    } else if(this._rows[i])
                         this._rows[i].noneDisplay();
                     }
             }
@@ -549,8 +573,12 @@ function View(){
                 if(myController.editableResearch)
                     thisView.locationResearchButton.display();
                 if(val.polygonpoints){
-                    var latlngs = V.Util.reverseArray(val.polygonpoints);                    
+                    var latlngs = V.Util.reverseArray(val.polygonpoints);
+                    // console.log(latlngs.splice(0,400));
+                    // console.log(latlngs.splice(0,1));
+                    // console.log(simplify(latlngs));
                     thisView.searchBar.currentPoly.setLatLngs(latlngs).addTo(map);
+                    console.log(thisView.searchBar.currentPoly.getBounds());
                     map.fitBounds(thisView.searchBar.currentPoly.getBounds());
                     if(myController.editableResearch)
                         thisView.newPolyAdminButton.display();
@@ -1170,6 +1198,12 @@ function View(){
             this._select = select;
             this._selectedColor.getContainer().addEventListener('click', 
                 function(){
+                    // check if window is too small for display selection list
+                    if(window.innerHeight < 500)
+                        thisView.editionDiv.getContainer().style.overflow ="auto";
+                    else
+                        thisView.editionDiv.getContainer().style.overflow ="visible";
+                    
                     select._showList = !select._showList;
                     if(!select._showList) 
                         list.noneDisplay();
@@ -1193,6 +1227,8 @@ function View(){
             //select.style.color = select.options[select.selectedIndex].value;
             // select.addEventListener('change', 
             //     function(){ myController.actualize(); }, false );
+
+            // check if window is too small
 
             return select;
         },
@@ -1245,9 +1281,9 @@ function View(){
      *  + Polygons of research
      *  + ROI admin (not implemented)
      */
-    this.rois =
-        new L.LayerGroup;
-    this.rois.addTo(map);
+    // this.rois =
+    //     new L.LayerGroup;
+    // this.rois.addTo(map);
 
     this.displayedMarkers =
         new L.LayerGroup;
@@ -1324,6 +1360,7 @@ function View(){
 
     this.setLocation = function() {
         var l = this.searchBar.currentMarker.getLatLng();
+
         if(!myController.editableResearch.locationMarker){
             myController.editableResearch.locationMarker = 
                 L.marker([l.lat,l.lng], {icon: L.AwesomeMarkers.icon({icon: 'coffee', 
@@ -1333,6 +1370,8 @@ function View(){
         }
         else
             myController.editableResearch.locationMarker.setLatLng(l);
+        this.searchBar.currentMarker.removeFrom(map);
+        this.locationResearchButton.noneDisplay();
     }
     this.locationResearchButton = new V.Button({sign: '⚀', titleElement: 'Set Location',
                             parentElement: editBox,
@@ -1366,12 +1405,15 @@ function View(){
     this.addPolyAdmin = function() {
         var l = this.searchBar.currentPoly.getLatLngs();
         var layer = 
-                L.polygon(l, {color: myController.editableResearch.colorBackground, 
-                        fillColor: myController.editableResearch.colorBound })
+                L.polygon(l, {color : myController.editableResearch.colorBorder
+                    ,fillColor: myController.editableResearch.colorBackground,
+                    fillOpacity: 0.2,  weight: WEIGHT_ROI })
                 .addTo(map);
         myController.registerPoly(layer);
         layer.bindTooltip(layer.namePoly).openTooltip();
         layer.getTooltip().setOpacity(1);
+        this.searchBar.currentPoly.removeFrom(map);
+        this.newPolyAdminButton.noneDisplay();
     }
     this.newPolyAdminButton = new V.Button({sign: '▶', titleElement: 'Add Polygon',
                             parentElement: editBox,
