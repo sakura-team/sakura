@@ -2,30 +2,31 @@
 <!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
 
 <div style="display:none;" id="idDivDataSets" class="classMainDiv">
-	
-	<div style="float:right;">
-	  <img width="80px" height="80px" src="media/Linecons_database.svg.png" alt="CC-BY-3.0 Wikipedia DataBase"></img>
-	  <br />
-	  <br />
-	  <button type="button" onclick="showDiv(event,'DataSets/tmpDataSet/Work');" class="btn btn-primary">Try it</button></div>
 
-	<h2>DataSets</h2>
-	Collect and store your data.<br /><br />
-	
-
-	<div class="row">
+    <div style="float:right;">
+        <img width="80px" height="80px" src="media/Linecons_database.svg.png" alt="CC-BY-3.0 Wikipedia DataBase"></img>
+        <br />
+        <br />
+        <button type="button" onclick="showDiv(event,'DataSets/tmpDataSet/Work');" class="btn btn-primary">Try it</button>
+    </div>
+    
+    <h2>DataSets</h2>
+    Collect and store your data.<br /><br />
+    
+    
+    <div class="row">
         <div class="col-md-10">
             <div class="panel panel-default panel-table">
                 <div class="panel-heading">
                     <div class="row">
-						<form class="form-search form-inline col-md-offset-6">
-							<input id="idInputSearchDataSets" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'DataSets');" />
-						</form>
+                        <form class="form-search form-inline col-md-offset-6">
+                            <input id="idInputSearchDataSets" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'DataSets');" />
+                        </form>
                     </div>
                 </div>
                 <div class="panel-body">
                     <table id="idTableDataSetsToFullfill" class="table table-striped table-bordered table-list">
-						<tr><td><a href="javascript:listRequestStub('idTableDataSetsToFullfill',10,'DataSets/tmpDataSet',false)" class="executeOnShow">liste à remplir</a></td></tr>
+                        <tr><td><a href="javascript:listRequestStub('idTableDataSetsToFullfill',10,'DataSets/tmpDataSet',false)" class="executeOnShow">liste à remplir</a></td></tr>
                     </table>
                 </div>
                 <div class="panel-footer">
@@ -38,7 +39,7 @@
                         </div>
                         <div class="col col-xs-3">
                             <div class="pull-right">
-                                <a class="btn btn-primary" data-toggle="modal" data-target="#createModal">
+                                <a class="btn btn-primary" data-toggle="modal" data-target="#createDSModal" onclick="fill_dbms();">
                                     <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                                     New DataSet
                                 </a>
@@ -50,5 +51,4 @@
         </div>
     </div>
     
-
-	</div>
+</div>
