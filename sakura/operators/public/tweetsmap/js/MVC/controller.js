@@ -33,7 +33,14 @@ function Controller(){
         //myView.researchCheckBoxList.addCheckBox(this.editableResearch.nameResearch);
         //myView.rois.addTo(map);
         //this.updateTweetsmap();
-		myView.maplayersSelector.check(myModel.mapLayers.getDefault());
+        myView.mapLayersSelector.check(myModel.mapLayers.getDefault());
+        this.setBasemap('Simple');        
+        myView.dataDisplaySelector.check(0);
+        this.displayType = 'Heatmap';
+        this.setDisplayType = function(name){
+            this.displayType = name;
+            this.actualize();
+        };
 		this.changeEditableResearch(-1);
         this.actualize();
     };
@@ -42,13 +49,74 @@ function Controller(){
     
     var HEATMAP_RADIUS = 15;
     var HEATMAP_REFRESH_DELAY = 0.3;
-    var heatmap_layer = null
+    var heatmap_layer = null;
+    /* In order to lower network usage, heatmap data is transfered in
+    * a compressed form. lat / lng values are transmitted as integers
+    * and we must now recompute the actual values by applying a given
+    * scale and offset.
+    */
+    function expand_heatmap_values(info) {
+        var data = info.data, scales = info.scales, offsets = info.offsets,
+        heatmap_values = [];
+        for(var i = 0; i < data.lat.length; i++) {
+            heatmap_values[i] = [
+                data.lat[i] * scales.lat + offsets.lat,
+                data.lng[i] * scales.lng + offsets.lng,
+                data.val[i]
+            ];
+        }
+        return heatmap_values;
+    }
+
+    function createMarkersLayer(info, maxPopulation) {
+        var data = info.data, scales = info.scales, offsets = info.offsets;
+        // function createIcon(cluster) {
+        //     var c = 'prunecluster prunecluster-';
+        //     var iconSize = 38;
+        //     if (cluster.population < Math.max(10, maxPopulation * 0.01)) {
+        //         c += 'small';
+        //     }
+        //     else if (cluster.population < Math.max(100, maxPopulation * 0.05)) {
+        //         c += 'medium';
+        //         iconSize = 40;
+        //     }
+        //     else {
+        //         c += 'large';
+        //         iconSize = 44;
+        //     }
+    
+        //     return new L.DivIcon({
+        //         html: "<div><span>" + cluster.population + "</span></div>",
+        //         className: c,
+        //         iconSize: L.point(iconSize, iconSize)
+        //     });
+        // }   
+        // var layer = new L.LayerGroup();
+        var layer = new PruneClusterForLeaflet();
+        for(var i = 0; i < data.lat.length; i++) {
+            // if(heatmap_values[i][2] < maxPopulation*0.005)
+            //     continue;
+            // var cluster = new Object;
+            // cluster.population = heatmap_values[i][2];
+            // var icon = createIcon(cluster);
+            // var m = new L.Marker(L.latLng(heatmap_values[i][0],heatmap_values[i][1]), {
+            //     icon: icon 
+            // });
+            // layer.addLayer(m);
+            var marker = new PruneCluster.Marker(data.lat[i] * scales.lat + offsets.lat,
+                data.lng[i] * scales.lng + offsets.lng);
+            for(var j=0; j < data.val[i]; j++){
+                layer.RegisterMarker(marker);
+            }
+        }
+        return layer;
+    }
+
     function update_heatmap_callback(result) {
-        var infobox = thisControl.infobox
         var icon;
         if ('issue' in result)
         {
-            infobox.update({ 'icon': 'alert', 'text': result.issue });
+            myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
             return;
         }
         if (result.heatmap.done)
@@ -56,7 +124,7 @@ function Controller(){
             icon = 'check';
         }
         else {
-            icon = 'hourglass';
+            icon = 'hourglass-half';
             // request server for more complete data,
             // while we refresh the screen
             sakura.operator.fire_event(
@@ -64,44 +132,27 @@ function Controller(){
                     update_heatmap_callback);
         }
 
-        /* In order to lower network usage, heatmap data is transfered in
- * a compressed form. lat / lng values are transmitted as integers
- * and we must now recompute the actual values by applying a given
- * scale and offset.
- */
-function expand_heatmap_values(info) {
-    var data = info.data, scales = info.scales, offsets = info.offsets,
-        heatmap_values = [];
-    for(var i = 0; i < data.lat.length; i++) {
-        heatmap_values[i] = [
-            data.lat[i] * scales.lat + offsets.lat,
-            data.lng[i] * scales.lng + offsets.lng,
-            data.val[i]
-        ];
-    }
-    return heatmap_values;
-}
-        // expand compressed data
-        var heatmap_values = expand_heatmap_values(result.heatmap);
         // refresh the heatmap layer
         if (heatmap_layer != null)
         {
             map.removeLayer(heatmap_layer)
         }
-        heatmap_layer = L.heatLayer(heatmap_values, {
-                    radius:     HEATMAP_RADIUS
-        });
-        heatmap_layer.addTo(map);
+        if(thisControl.displayType == 'Heatmap'){
+            heatmap_layer = L.heatLayer(expand_heatmap_values(result.heatmap), {
+                        radius:     HEATMAP_RADIUS
+            });
+            heatmap_layer.addTo(map);
+        }
+        else if(thisControl.displayType == 'Cluster' && result.heatmap.done){
+            heatmap_layer = createMarkersLayer(result.heatmap, result.heatmap.count);
+            heatmap_layer.addTo(map);
+        }
         // update infobox
-        infobox.update({ "icon": icon, 'text': result.heatmap.count + ' points' });
-        var t1 = new Date().getTime();
-        console.log('map update: ' + ((t1 - thisControl.t0)/1000.0) + " seconds");
+        myView.infobox.update({ "icon": icon, 'text': result.heatmap.count + ' points' });
     }
     
-    function request_heatmap() {
+    this.request_data = function() {
     
-        var t0 = new Date().getTime();
-        thisControl.t0 = t0;
         // get lat / lng map bounds
         var geo_bounds = map.getBounds();
         var geo_sw = geo_bounds.getSouthWest();
@@ -152,8 +203,6 @@ function expand_heatmap_values(info) {
         thisControl.rois.eachLayer(function(layer){
             // check if polygon is currently in geo_bounds
             var bound_poly = layer.getBounds();
-            console.log(info);
-            console.log(bound_poly);
 
             if(bound_poly.intersects(geo_bounds)){
                 listPoly.push(thisControl.convertPolygonToArray(layer));
@@ -184,23 +233,9 @@ function expand_heatmap_values(info) {
                 update_heatmap_callback);
     }
     
-    var infobox = L.control();
-    this.infobox = infobox;
+    map.setView([48.86, 2.34], 9);
     
-    infobox.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'infobox'); // create a div with a class "infobox"
-        return this._div;
-    };
-    
-    // method that we will use to update the control based on feature properties passed
-    infobox.update = function (props) {
-        this._div.innerHTML = props.text + ' ' +
-                    '<span class="glyphicon glyphicon-' + props.icon + '"></span>';
-    };
-
-    infobox.addTo(map);
-
-    map.on('moveend', request_heatmap);
+    map.on('moveend', this.request_data);
 
     function updateTweetsmapCallback(result){
         if(result.done) {
@@ -282,7 +317,6 @@ function expand_heatmap_values(info) {
         var nbPoint = 0;
 
         function updateMarkersCallback(result){
-            console.log(result);
             if(result.done) {
                 // myView.pointNumber.hide();
                 null
@@ -306,7 +340,7 @@ function expand_heatmap_values(info) {
         }
 
         if(listPoly.length != 0) {
-        console.log('ok');
+        // console.log('ok');
         // sakura.operator.fire_event(["polygons_update", HEATMAP_REFRESH_DELAY, listPoly ]
         //         , updateMarkersCallback);
         }
@@ -517,7 +551,7 @@ function expand_heatmap_values(info) {
         this.editableResearch.roi.eachLayer(function (layer) {
             layer.setStyle({color : thisControl.editableResearch.colorBorder
                      ,fillColor: thisControl.editableResearch.colorBackground,
-                     fillOpacity: 0.2,  weight: WEIGHT_ROI});
+                     fillOpacity: FILLOPACITY_ENABLED,  weight: WEIGHT_ROI});
         });
         
         myView.researchesPanel.changeBackground(this.editableResearch, 
@@ -668,14 +702,14 @@ function expand_heatmap_values(info) {
         group.eachLayer(function(layer){
             if(layer.editor)
                 layer.editor.disable();
-            layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: WEIGHT_ROI});
+            layer.setStyle({fillOpacity: FILLOPACITY_DISABLED, opacity: 0.8, weight: WEIGHT_ROI});
         });       
     };
 
     this.disablePolygon = function(layer){
         if(layer.editor)
             layer.editor.disable();
-        layer.setStyle({fillOpacity: 0.4, opacity: 0.8, weight: WEIGHT_ROI});
+        layer.setStyle({fillOpacity: FILLOPACITY_DISABLED, opacity: 0.8, weight: WEIGHT_ROI});
     };
     
     this.enablePolygons = function(group){
@@ -683,7 +717,7 @@ function expand_heatmap_values(info) {
             if(layer.editor)
                 layer.editor.enable();
             layer.bringToFront();
-            layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: WEIGHT_ROI});
+            layer.setStyle({fillOpacity: FILLOPACITY_ENABLED, opacity: 1.0, weight: WEIGHT_ROI});
         });       
     };
 
@@ -691,7 +725,7 @@ function expand_heatmap_values(info) {
         if(layer.editor)
             layer.editor.enable();
         layer.bringToFront();
-        layer.setStyle({fillOpacity: 0.2, opacity: 1.0, weight: WEIGHT_ROI});
+        layer.setStyle({fillOpacity: FILLOPACITY_ENABLED, opacity: 1.0, weight: WEIGHT_ROI});
     };
 
     this.removeAllPolygonsFGUI = function(){
@@ -845,6 +879,7 @@ function expand_heatmap_values(info) {
             message = "Je suis une fille ..."          
         myView.nameBox.setMessage(message);
 
+        this.request_data();
         //console.log(this.toString());
         
         /** update research selectable list box

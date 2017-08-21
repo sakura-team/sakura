@@ -53,7 +53,6 @@ function View(){
             while(nbSommet >= 35) {
                 res = simplify(res, tolerance, false);
                 tolerance += 0.1;
-                console.log(res.length);
                 nbSommet = res.length;
             }
             var res1 = [], len = res.length;
@@ -63,7 +62,6 @@ function View(){
                 res_el.push(parseFloat(res[i][1])/100.0);
                 res1.push(res_el);
             }
-            console.log(res1);
             return res1;
         },
         
@@ -469,17 +467,12 @@ function View(){
                     i++;
                 });
                 this._resultsListDiv.setSource(items);
-                console.log(data);
             }.bind(this));
         },
 
         currentMarker: null,
 
         currentPoly: null,
-
-        _processResults: function(results){
-            console.log(results[0]);
-        },
 
         _searchBarOptions: function(){
             var options = this.options;
@@ -578,7 +571,6 @@ function View(){
                     // console.log(latlngs.splice(0,1));
                     // console.log(simplify(latlngs));
                     thisView.searchBar.currentPoly.setLatLngs(latlngs).addTo(map);
-                    console.log(thisView.searchBar.currentPoly.getBounds());
                     map.fitBounds(thisView.searchBar.currentPoly.getBounds());
                     if(myController.editableResearch)
                         thisView.newPolyAdminButton.display();
@@ -626,8 +618,8 @@ function View(){
 			for(var i =0; i<len; i++){
 				this._rows[i].box.checked = (i==index);
 			}
-			this.currentCheckedBox = this._rows[index].box;
-		},
+            this.currentCheckedBox = this._rows[index].box;
+        },
 		
 		_onClick: function(e){
 			var target = e.target || e.srcElement;  
@@ -636,10 +628,26 @@ function View(){
 			this.currentCheckedBox = target;
 			myController.setBasemap(target.id);
 		}
-
 		
-		
-    }); 
+    });
+    
+    V.DataDisplaySelector = V.MaplayersSelector.extend({
+        initialize: function(options){
+			V.extend(this.options, options);
+    		this.setContainer(V.create('div', 'mapLayersSelector'));
+			this.initSelector();
+        },
+        
+        _onClick: function(e){
+			var target = e.target || e.srcElement;  
+			this.currentCheckedBox.checked = 
+			   (this.currentCheckedBox == target);
+			this.currentCheckedBox = target;
+            FILLOPACITY_DISABLED = (target.id == 'Heatmap')?0:0.4;
+            FILLOPACITY_ENABLED = (target.id == 'Heatmap')?0:0.2;
+            myController.setDisplayType(target.id);
+		}
+    });
 
     V.UserLayersSelector = V.Selector.extend({
         options: {
@@ -768,6 +776,7 @@ function View(){
             var i = this._getIndexById(button.id.slice(5));
             this.removeRow(i);
             myController.removeResearch(i);
+            myController.actualize();
         },
         
         _hideResearch: function(button){
@@ -860,6 +869,7 @@ function View(){
                 if(this._rows[i].eyeIcon.checked)
                     myController.showPolygonToGUI(layer);
             }
+            myController.actualize();
         },
 
         disableEyeIcons: function(){
@@ -868,8 +878,9 @@ function View(){
                 this._rows[i].eyeIcon.disable();
                 layer = this.rowSource.getLayers()[i];
                 if(this._rows[i].eyeIcon.checked)
-                    myController.hidePolygonToGUI(layer);
+                    myController.hidePolygonFGUI(layer);
             }
+            myController.actualize();
         },
         
         _removePolygon: function(button){
@@ -882,7 +893,7 @@ function View(){
                 poly = layer;
             }
             myController.deletePolygon(poly);
-            //this.removeRow(i);
+            myController.actualize();
         },
 
         _hidePolygon: function(button){
@@ -891,7 +902,8 @@ function View(){
             if(this._rows[i].eyeIcon.checked)
                 myController.showPolygonToGUI(layer);
             else
-                myController.hidePolygonFGUI(layer);        
+                myController.hidePolygonFGUI(layer); 
+            myController.actualize();       
         },
 
         _fitBounds: function(button){
@@ -1273,7 +1285,6 @@ function View(){
         myController.updateMarkers();
     });
 
-    myModel.mapLayers.dict['Plan'].addTo(map);
     
     /**
      *  LayerGroup contain all ROIs displayed on Map 
@@ -1414,6 +1425,7 @@ function View(){
         layer.getTooltip().setOpacity(1);
         this.searchBar.currentPoly.removeFrom(map);
         this.newPolyAdminButton.noneDisplay();
+        myController.actualize();
     }
     this.newPolyAdminButton = new V.Button({sign: '▶', titleElement: 'Add Polygon',
                             parentElement: editBox,
@@ -1567,12 +1579,18 @@ function View(){
    
     this.baseMapsBox =  new V.Div({titleDiv: "Base Maps", parentElement: this.managementDiv,
                             titleDivClass: 'underChampComposant title text-border firstComposant'});
+    this.dataDisplayBox =  new V.Div({titleDiv: "Data Display", parentElement: this.managementDiv,
+                            titleDivClass: 'underChampComposant title text-border firstComposant'});
     this.userlayersBox = new V.Div({titleDiv: "User Layer", parentElement: this.managementDiv,
                             titleDivClass: 'underChampComposant title text-border firstComposant'});
 	
     //----------------------Fill basemapsBox----------------------------------------/
-	this.maplayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox, class: 'normal-text',
-							rowSource: Object.keys(myModel.mapLayers.dict)});
+	this.mapLayersSelector = new V.MaplayersSelector({parentElement: this.baseMapsBox, class: 'normal-text',
+                            rowSource: Object.keys(myModel.mapLayers.dict)});
+
+    //----------------------Fill dataDisplayBox----------------------------------------/
+	this.dataDisplaySelector = new V.DataDisplaySelector({parentElement: this.dataDisplayBox, class: 'normal-text',
+                            rowSource: ['Heatmap', 'Cluster']});
 	
     //----------------------Fill userlayersBox-------------------------------------/
     this.nameBox = new V.TextBox({tbid : 'ResearchBox', textdefault: 'Name'});
@@ -1582,10 +1600,25 @@ function View(){
                             class: 'researches-panel'});
     
     this.searchBar = new V.SearchBar({});    
-    this.searchBar.stopEventOfLeaflet();                
+    this.searchBar.stopEventOfLeaflet();   
+    
+    //-----------------------Data info box----------------------------------------
+    this.infobox = L.control();
+    
+    this.infobox.onAdd = function (map) {
+        this._div = V.create('div', 'infobox'); // create a div with a class "infobox"
+        return this._div;
+    };
+    
+    // method that we will use to update the control based on feature properties passed
+    this.infobox.update = function (props) {
+        this._div.innerHTML = props.text + ' ' +
+                    '<i class="fa fa-' + props.icon + '"></i>';
+    };
+
+    this.infobox.addTo(map);
+    
 }
-
-
 
 //---------------------------------------View Singleton-----------------------------------------------/
 var myView = new View();

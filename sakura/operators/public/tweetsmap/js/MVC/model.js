@@ -53,6 +53,13 @@ function MapLayers(){
     var layer;
 
     // Add new map layer here
+    // // -- Simple baseMap --
+    layer = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>'
+      });
+    this.dict["Simple"] = layer;
+
     // -- Plan baseMap --
     layer = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
         detectRetina: true, 
@@ -76,13 +83,6 @@ function MapLayers(){
     });
     this.dict["Rivers"] = layer;
 
-    // // -- Simple baseMap --
-    layer = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-        maxZoom: 18,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>'
-      });
-    this.dict["Simple"] = layer;
-
     this.getDefault = function() {
         return 0;
     };
@@ -90,7 +90,8 @@ function MapLayers(){
 }
 
 var WEIGHT_ROI = 2; 
-
+var FILLOPACITY_DISABLED = 0;
+var FILLOPACITY_ENABLED = 0;
 
 //---------------------------------------------Model Singleton------------------------------------//
 var myModel = new Model;

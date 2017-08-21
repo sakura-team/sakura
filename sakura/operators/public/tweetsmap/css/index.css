@@ -59,18 +59,18 @@ div#size {
 
 #management {
     position: absolute;
-    top: 5%;
+    top: 10%;
     right: 0%; 
     z-index: 701;
     width: 33%;
     height: auto;
-    max-height: 90%;
+    max-height: 85%;
     padding-top: 24px;
     visibility: hidden;
 }
 .hideManagement{
     position: absolute;
-    top: 5%;
+    top: 10%;
     right: 33%;
     z-index: 800;
 }
@@ -157,3 +157,13 @@ div#size {
     width: 392px;
 }
 
+.infobox {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    text-align: right;
+    color: #777;
+}
