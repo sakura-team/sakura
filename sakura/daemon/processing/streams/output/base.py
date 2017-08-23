@@ -66,6 +66,5 @@ class OutputStreamBase(Registry):
             col_index = col
         else:
             col_index = col.index
-        cache_identifier = (col_index, comp_op.__name__, other)
         # compute a substream
         return self.__filter__(col_index, comp_op, other)
