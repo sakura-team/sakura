@@ -7,4 +7,5 @@ Python3 modules:
 * bottle
 * numpy
 * websocket-client (optional, only for running web API tests)
+* psycopg2
 
