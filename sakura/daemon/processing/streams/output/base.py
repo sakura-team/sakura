@@ -4,8 +4,6 @@ from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.cache import Cache
 from sakura.daemon.processing.column import Column
 
-DEFAULT_STRING_LENGTH = 16
-
 class OutputStreamBase(Registry):
     def __init__(self, label):
         self.columns = []
@@ -45,17 +43,8 @@ class OutputStreamBase(Registry):
         if in_cache:
             self.range_iter_cache.forget(it)
         return NumpyChunk(0, self.get_dtype())
-    def get_column_dtype(self, col):
-        if col.type == str:
-            # string with unknown length
-            print('WARNING: unknown string length for column %s. Default to %d.' % (
-                    col.label, DEFAULT_STRING_LENGTH
-            ))
-            return col.label, (str, DEFAULT_STRING_LENGTH)
-        else:
-            return col.label, col.type
     def get_dtype(self):
-        return np.dtype(list(self.get_column_dtype(col) for col in self.columns))
+        return np.dtype(list(col.get_dtype() for col in self.columns))
     def select_columns(self, *columns):
         # verify that at least 1 column is specified
         if len(columns) == 0:

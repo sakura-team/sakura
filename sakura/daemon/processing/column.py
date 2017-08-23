@@ -1,5 +1,7 @@
 import numpy as np, operator
 
+DEFAULT_STRING_LENGTH = 16
+
 class Column(object):
     def __init__(self, col_label, col_type, col_tags,
                 output_stream, col_index):
@@ -10,6 +12,15 @@ class Column(object):
         self.index = col_index
     def get_info_serializable(self):
         return (self.label, str(np.dtype(self.type)), self.tags)
+    def get_dtype(self):
+        if self.type == str:
+            # string with unknown length
+            print('WARNING: unknown string length for column %s. Default to %d.' % (
+                    self.label, DEFAULT_STRING_LENGTH
+            ))
+            return self.label, (str, DEFAULT_STRING_LENGTH)
+        else:
+            return self.label, self.type
     def __iter__(self):
         for record in self.filtered_stream():
             yield record[0]
