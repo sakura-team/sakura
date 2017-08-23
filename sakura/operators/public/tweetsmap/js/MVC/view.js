@@ -684,7 +684,8 @@ function View(){
                                 parentElement: iconsBarre, 
                                 idDiv: "editi" + research.nameResearch});
             row.exportationIcon = new V.ExportationIcon({checked: true, 
-                                enabled: true, parentElement: iconsBarre});
+                                enabled: true, idDiv: 'expt ' + research.nameResearch,
+                                parentElement: iconsBarre});
             row.roiSelector = new V.RoiSelector({rowSource: research.roi,
                                 parentElement: row});
             row.trashIcon.eventHandle = this._deleteResearch.bind(this);
@@ -692,6 +693,7 @@ function View(){
             row.eyeIcon.eventHandle = this._hideResearch.bind(this);
             row.plusIcon.eventHandle = this._hideRoiSelector.bind(this);
             researchIcon.eventHandle = this._setView.bind(this);
+            row.exportationIcon.eventHandle = this._exportation.bind(this);
             //row.trashIcon.getContainer().addEventListener('click',
             //                    this._deleteResearch.bind(this), false);
             row.id = research.nameResearch;
@@ -801,6 +803,98 @@ function View(){
             var i = this._getIndexById(button.id.slice(5));
             var research = this.rowSource[i];
             map.setView(research.locationMarker.getLatLng(),7);        
+        },
+
+        _exportation: function(button){
+            var i = this._getIndexById(button.id.slice(5));
+            var research = this.rowSource[i];
+            myController.exportation(research)
+        },
+
+        _convertArrayOfObjectsToCSV: function(args){
+            var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+            console.log(args.data);
+            
+                data = args.data || null;
+                if (data == null || data.list == null ) {
+                    return null;
+                }
+                columnDelimiter = args.columnDelimiter || ',';
+                lineDelimiter = args.lineDelimiter || '\n';
+            
+                keys = data.key;
+            
+                result = '';
+                result += keys.join(columnDelimiter);
+                result += lineDelimiter;
+                var nbCol = keys.length;
+
+                data.list.forEach(function(item) {
+                    ctr = 0;
+                    for(var i=0; i < nbCol; i++){
+                        if (ctr > 0) result += columnDelimiter;
+            
+                        result += item[i];
+                        ctr++;
+                    };
+                    result += lineDelimiter;
+                });
+                console.log(result);
+                return result;
+        },
+
+        _downloadCSV: function(button) {
+            var i = this._getIndexById(button.id.slice(5));
+            // var stockData = [  
+            //     {
+            //         Symbol: "AAPL",
+            //         Company: "Apple Inc.",
+            //         Price: 132.54
+            //     },
+            //     {
+            //         Symbol: "INTC",
+            //         Company: "Intel Corporation",
+            //         Price: 33.45
+            //     },
+            //     {
+            //         Symbol: "GOOG",
+            //         Company: "Google Inc",
+            //         Price: 554.52
+            //     },
+            // ];
+            var stockData = {key: ['Symbol', 'Company', 'Price'],
+            list: [
+                [ "AAPL","Apple Inc.",132.54],
+                [ "INTC","Intel Corporation",33.45],
+                [ "AAPL","Apple Inc.",132.54]]
+            };
+            var data, filename, link;
+            var csv = this._convertArrayOfObjectsToCSV({
+                data: stockData
+            });
+            if (csv == null)
+                return;
+            
+            filename = button.id.slice(5)+'.csv';
+            
+            var blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            
+            if (navigator.msSaveBlob){ // IE 10+
+                navigator.msSaveBlob(blob, filename)
+            }
+            else{
+                var link = document.createElement("a");
+                if (link.download !== undefined){
+                // feature detection, Browsers that support HTML5 download attribute
+                var url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style = "visibility:hidden";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                }
+            }
         }
     });
     

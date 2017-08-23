@@ -12,7 +12,7 @@ import shapely
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from .heatmap import HeatMap
-
+from .exportation import Exportation
 
 class TweetsOperator(Operator):
     NAME = 'Tweets'
@@ -27,10 +27,10 @@ class TweetsOperator(Operator):
         self.lat_column_param = self.register_parameter('input latitude',
                 TagBasedColumnSelection(self.input_stream, 'latitude'))
         
-        self.output = self.register_output(
-                    SimpleStream('Filtred by polygon', self.compute))
-        self.output.add_column('lat', float)
-        self.output.add_column('lng', float)
+        # self.output = self.register_output(
+        #             SimpleStream('Filtred by polygon', self.compute))
+        # self.output.add_column('lat', float)
+        # self.output.add_column('lng', float)
 
         # additional tabs
         self.register_tab('Map', 'index.html')
@@ -46,7 +46,9 @@ class TweetsOperator(Operator):
         # - select useful columns only
         # - restrict to visible area
         stream = self.input_stream
-        stream = stream.select_columns(lng_column, lat_column)
+        # stream = stream.select_columns(lng_column, lat_column)
+        # import pdb
+        # pdb.set_trace()
         stream = stream.filter(lng_column >= westlng)
         stream = stream.filter(lng_column <= eastlng)
         stream = stream.filter(lat_column >= southlat)
@@ -54,73 +56,20 @@ class TweetsOperator(Operator):
         if disable :
             stream = stream.filter(lat_column > northlat)
         return stream
-
-    def distance(self, lat1, lng1, lat2, lng2):
-        radius = 6371 * 1000
-
-        lat1 = radians(lat1)
-        lat2 = radians(lat2)
-        lng1 = radians(lng1)
-        lng2 = radians(lng2)
-
-        dlng = lng2 - lng1
-        dlat = lat2 - lat1
-
-        a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlng/2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1-a))
-
-        return radius*c
-
-    def check_point_inside(self, x, y, polygonInfo):
-        typePoly = polygonInfo['type']
-        res = False
-        if typePoly == 'polygon':
-            polygon = polygonInfo['data']
-            # start_time = time()
-            for ii in range(0, len(polygon)):
-                polyPoints = polygon[ii]
-                i = 0
-                j = len(polyPoints) - 1
-                while(True):
-                    if i >= len(polyPoints):
-                        break
-                    xi = polyPoints[i][0]
-                    yi = polyPoints[i][1]
-                    xj = polyPoints[j][0]
-                    yj = polyPoints[j][1]
-                
-                    intersect = ((yi>y) != (yj >y)) and (x < ((xj - xi)*(y -yi)/(yj -yi)+xi))
-                    if intersect:
-                        res = not res
-                    j = i
-                    i += 1
-            # print(" ALG : %0.9f" % (time() - start_time))
-            # start_time = time()
-            # path = Polygon(polygon[0])
-            # res = path.contains(Point(x,y))
-            # print(" MPLT : %0.9f" % (time() - start_time))
-        elif typePoly == 'circle':
-            circle = polygonInfo['data']
-            x_center = circle['center']['lat']
-            y_center = circle['center']['lng']
-            radius = circle['radius']
-            # check if a point is inside a circle
-            res = self.distance(x, y, x_center, y_center) < radius
-        return res
-    def compute(self):
-        stream = self.filtered_stream(**self.info)
-        for chunk in stream.chunks():
-            list = chunk.tolist()
-            # for i in range(0, len(chunk.tolist())
-            for i in range(len(list)):
-                col = list[i]
-                if len(self.polygon) == 0:
-                    yield col
-                else:
-                    for j in range(0,len(self.polygon)):
-                        if self.check_point_inside(col[1], col[0], self.polygon[j]):
-                            yield col
-                            break
+    # def compute(self):
+    #     stream = self.filtered_stream(**self.info)
+    #     for chunk in stream.chunks():
+    #         list = chunk.tolist()
+    #         # for i in range(0, len(chunk.tolist())
+    #         for i in range(len(list)):
+    #             col = list[i]
+    #             if len(self.polygon) == 0:
+    #                 yield col
+    #             else:
+    #                 for j in range(0,len(self.polygon)):
+    #                     if self.check_point_inside(col[1], col[0], self.polygon[j]):
+    #                         yield col
+    #                         break
     def handle_event(self, event):
         if not self.input_stream.connected():
             return {'issue': 'NO DATA: Input is not connected.'}
@@ -154,19 +103,27 @@ class TweetsOperator(Operator):
             # stream.length = 100;
             # create heatmap
             self.curr_heatmap = HeatMap(stream, polygon, **info)
+            self.curr_exportation = Exportation(stream, polygon)            
         # from now on, map_move or map_continue is the same thing
         # compute heatmap
-        self.curr_heatmap.compute(time_credit)
-        # return compressed form
-        compressed_hm = self.curr_heatmap.compressed_form()
-        return { 'heatmap': compressed_hm }
-
-   
+        if ev_type == 'map_move' or ev_type == 'map_continue':
+            self.curr_heatmap.compute(time_credit)
+            # return compressed form
+            compressed_hm = self.curr_heatmap.compressed_form()
+            return { 'heatmap': compressed_hm }
+        if ev_type == 'exportation':
+            polygon = event[2]
+            polyInfo = event[3]
+            stream = self.filtered_stream(**polyInfo)
+            self.curr_exportation = Exportation(stream, polygon)
+        if ev_type == 'exportation' or 'exportation_continue':
+            self.curr_exportation.compute(time_credit)
+            compressed_ex = self.curr_exportation.compressed_form()
+            print(len(compressed_ex['data']['list']))
+            # import pdb
+            # pdb.set_trace()
+            return { 'exportation': compressed_ex}            
         
-        
-        
-
-
 # class TweetsOperator(Operator):
 #     NAME = "Tweetsmap"
 #     SHORT_DESC = "Tweets display and selection operator."
