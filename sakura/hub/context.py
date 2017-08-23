@@ -44,9 +44,11 @@ class HubContext(object):
         self.op_instances.restore_daemon_op_params(daemon_info)
         return daemon_id
     def list_daemons_serializable(self):
+        # remove or transform objects into something serializable
         for daemon in self.daemons.values():
             d = daemon._asdict()
             del d['api']
+            d['op_classes'] = list(cls._asdict() for cls in d['op_classes'])
             yield d
     def list_op_classes_serializable(self):
         return [ dict(
