@@ -14,7 +14,7 @@ from time import time
 class Exportation:
     def __init__(self, stream, polygon):
         self.stream = stream
-        self.iterator = stream.chunks()
+        self.iterator = stream.chunks(chunk_size=1000)
         self.exportation = None
         self.polygon = polygon
         # prepare compression parameters
@@ -25,6 +25,7 @@ class Exportation:
         # - given a tuple (lng, lat) increment the corresponding pixel
         deadline = time() + time_credit
         deadline_reached = False
+        self.exportation = None
         for chunk in self.iterator:
             list = chunk.tolist()
             deletedIndex = []
@@ -41,10 +42,10 @@ class Exportation:
                     if deleted :
                         deletedIndex.append(i)
             chunk_exportation = np.delete(chunk, deletedIndex, None);
-            if self.exportation == None:
+            if self.exportation is None:
                 self.exportation = chunk_exportation
             else :
-                self.exportation = np.append(self.exportation,chunk_exportation);
+                self.exportation = np.append(self.exportation,chunk_exportation)
             if time() > deadline:
                 deadline_reached = True
                 break
@@ -58,14 +59,14 @@ class Exportation:
     def compressed_form(self):
         # count number of points
         # count = int(self.exportation.size)
-        print(len(self.exportation.tolist()));
+        # print(len(self.exportation.tolist()));
         # import pdb
         # pdb.set_trace()
         data = {}
         data['key'] = []
         for column in self.stream.columns:
             data['key'].append(column.label)
-        data['list'] = self.exportation.tolist();
+        data['list'] = self.exportation;
         return dict(
             data = data,
             # count = count,

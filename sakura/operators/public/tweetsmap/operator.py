@@ -119,7 +119,7 @@ class TweetsOperator(Operator):
         if ev_type == 'exportation' or 'exportation_continue':
             self.curr_exportation.compute(time_credit)
             compressed_ex = self.curr_exportation.compressed_form()
-            print(len(compressed_ex['data']['list']))
+            # print(len(compressed_ex['data']['list']))
             # import pdb
             # pdb.set_trace()
             return { 'exportation': compressed_ex}            

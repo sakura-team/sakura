@@ -62,5 +62,5 @@ def check_point_inside(x, y, polygonInfo):
         y_center = circle['center']['lng']
         radius = circle['radius']
         # check if a point is inside a circle
-        res = self.distance(x, y, x_center, y_center) < radius
+        res = distance(x, y, x_center, y_center) < radius
     return res

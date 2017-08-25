@@ -92,6 +92,10 @@ function MapLayers(){
 var WEIGHT_ROI = 2; 
 var FILLOPACITY_DISABLED = 0;
 var FILLOPACITY_ENABLED = 0;
+var HEATMAP_RADIUS = 15;
+var HEATMAP_REFRESH_DELAY = 0.3;
+var EXPORTATION_REFRESH_DELAY = 0.003;
+var heatmap_layer = null;
 
 //---------------------------------------------Model Singleton------------------------------------//
 var myModel = new Model;

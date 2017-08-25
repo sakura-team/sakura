@@ -47,9 +47,7 @@ function Controller() {
 
     //-----------------------------GUI<->BD----------------------------
 
-    var HEATMAP_RADIUS = 15;
-    var HEATMAP_REFRESH_DELAY = 0.3;
-    var heatmap_layer = null;
+    
     /* In order to lower network usage, heatmap data is transfered in
     * a compressed form. lat / lng values are transmitted as integers
     * and we must now recompute the actual values by applying a given
@@ -122,6 +120,7 @@ function Controller() {
         }
         if (result.heatmap.done) {   // input data is complete for this map
             icon = 'check';
+            thisControl.loadedPoint = result.heatmap.count;
         }
         else {
             icon = 'hourglass-half';
@@ -233,10 +232,10 @@ function Controller() {
 
     function exportation_callback(result) {
         var icon;
-        console.log(result.exportation.data.list.length);
-        console.log(result.exportation.done);
+        if(result.exportation.data.list)
         if ('issue' in result) {
-            myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
+            // myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
+            $('#layout').hide();  
             return;
         }
         if (result.exportation.done) {   // input data is complete for this map
@@ -247,19 +246,20 @@ function Controller() {
             // request server for more complete data,
             // while we refresh the screen
             sakura.operator.fire_event(
-                ["exportation_continue", HEATMAP_REFRESH_DELAY],
+                ["exportation_continue", EXPORTATION_REFRESH_DELAY],
                 exportation_callback);
         }
         thisControl.exportationUtil.convertArrayOfObjectsToCSV({
             data: result.exportation.data
         });
         // update infobox
-        myView.infobox.update({ "icon": icon, 'text': thisControl.exportationUtil.count + ' points' });
-
+        // myView.infobox.update({ "icon": icon, 'text': thisControl.exportationUtil.count + ' points' });
+        myView.loader.update();
+        myView.dataLoadingBar.update();
         // display download window
         if(result.exportation.done){
             thisControl.exportationUtil.downloadCSV();
-           
+            $('#layout').hide();            
         }
     }
 
@@ -312,7 +312,7 @@ function Controller() {
         if (csv == null)
             return;
         
-        filename = thisControl.exportationUtil.research.nameResearch + '.csv';
+        filename = thisControl.exportationUtil.researchName + '.csv';
         
         var blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
         
@@ -334,10 +334,11 @@ function Controller() {
         }
     }
 
-    this.exportation = function (research) {
+    this.exportation = function (roi, name, forAResearch) {
         this.exportationUtil.result = '';
         this.exportationUtil.count = 0;
-        this.exportationUtil.research = research;
+        this.exportationUtil.researchName = name; 
+        this.exportationUtil.forAResearch = forAResearch;
         var listPoly = [];
 
         var westlng_poly = 180.0;
@@ -345,7 +346,36 @@ function Controller() {
         var southlat_poly = 85.0;
         var northlat_poly = -85.0;
 
-        research.roi.eachLayer(function (layer) {
+        var geo_bounds = map.getBounds();
+        var geo_sw = geo_bounds.getSouthWest();
+        var geo_ne = geo_bounds.getNorthEast();
+
+        // get pixel width / height
+        // Note: map.getSize() gives us the whole map zone,
+        // including top and bottom margins if the user zooms out
+        // at maximum. Thus the height obtained this way may not
+        // be correct.
+        // We compute the size by projecting the lat / lng bounds
+        // instead.
+        var px_bottomleft = map.project(geo_sw);
+        var px_topright = map.project(geo_ne);
+        var width = Math.round(px_topright.x - px_bottomleft.x);
+        var height = Math.round(px_bottomleft.y - px_topright.y);
+
+        if (width == 0 || height == 0) {
+            // the map is propably not displayed yet
+            return;
+        }
+
+        // geo_bounds latitude values seem wrong when the users zooms
+        // out at maximum: they are outside the bounds given by the
+        // web mercator projection, i.e. [-85.051129, 85.051129].
+        // we unproject the pixel values to fix this.
+        geo_ne = map.unproject(px_topright);
+        geo_sw = map.unproject(px_bottomleft);
+        geo_bounds = L.latLngBounds(geo_sw, geo_ne);
+
+        roi.eachLayer(function (layer) {
             // check if polygon is currently in geo_bounds
             var bound_poly = layer.getBounds();
             listPoly.push(thisControl.convertPolygonToArray(layer));
@@ -355,18 +385,33 @@ function Controller() {
             if (bound_poly.getNorth() > northlat_poly) northlat_poly = bound_poly.getNorth();
         });
 
+        var forAResearch = myController.exportationUtil.forAResearch;
         var info_poly = {
-            'westlng': westlng_poly,
-            'eastlng': eastlng_poly,
-            'southlat': southlat_poly,
-            'northlat': northlat_poly,
-            'disable': listPoly.length == 0
+            'westlng': forAResearch?westlng_poly:geo_sw.lng,
+            'eastlng': forAResearch?eastlng_poly:geo_ne.lng,
+            'southlat': forAResearch?southlat_poly:geo_sw.lat,
+            'northlat': forAResearch?northlat_poly:geo_ne.lat,
+            'disable':  forAResearch && listPoly.length == 0
         }
-        console.log(info_poly);
+        // update infobox
+        // myView.infobox.update({ "icon": 'hourglass-half', 'text': thisControl.exportationUtil.count + ' points' });
+        //console.log('ok');
+        
+        $('#layout').show();
+        if(forAResearch){
+            myView.dataLoadingBar.noneDisplay();
+            myView.loader.display()
+            myView.loader.update();
+        } else {
+            myView.loader.noneDisplay();
+            myView.dataLoadingBar.update();            
+            myView.dataLoadingBar.display();
+        }
         // send event, then update map
         sakura.operator.fire_event(
-            ["exportation", HEATMAP_REFRESH_DELAY, listPoly, info_poly],
+            ["exportation", EXPORTATION_REFRESH_DELAY, listPoly, info_poly],
             exportation_callback);
+        
     }
 
     
@@ -927,11 +972,20 @@ function Controller() {
             myView.editionDiv.show();
             myView.editionHide.show();
             myView.editionTitle.show();
-            myView.newPolyAdminButton.noneDisplay();
-            myView.locationResearchButton.noneDisplay();
+            if (myView.searchBar.currentMarker)
+                myView.locationResearchButton.display();
+            else 
+                myView.locationResearchButton.noneDisplay();
+            
+            if (!myView.searchBar.currentPoly.isEmpty())
+                myView.newPolyAdminButton.display();
+            else
+                myView.newPolyAdminButton.noneDisplay();
             myView.editionHide.setSign("◄");
             myView.editionHide.getContainer().style.left = '25%';
             myView.editionDiv.hideState = true;
+            if(this.editableResearch)
+                $('#'+myView.hideManagementButton.getId()).trigger("click");  
         }
 
 
@@ -966,6 +1020,7 @@ function Controller() {
         this.setColorPointToGUI(this.editableResearch.colorPoint);
         this.setColorBorderToGUI(this.editableResearch.colorBorder);
         this.showPolygonsToGUI(this.editableResearch.roi);
+      
         // update interface
         this.actualize();
     };

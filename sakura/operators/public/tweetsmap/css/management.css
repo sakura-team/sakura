@@ -150,6 +150,8 @@
     /* height: auto; */
 }
 
+
+
 .researchIcon {
     position: relative;
     float: left;
@@ -167,6 +169,13 @@
     float: right;
 }
 
+.user-layers-buttons {
+    position: relative;
+    float: right;
+    width: 40%;
+    left: 30px;
+} 
+
 input[type="text"]{
     font-size: 15px;
     font-family: 'Time New Roman';
@@ -174,7 +183,7 @@ input[type="text"]{
 
 .text-box {
     margin-top: 15px;
-    width: 80%;
+    width: 90%;
     left: 5%;
     float: left;
     margin-bottom: 15px;
