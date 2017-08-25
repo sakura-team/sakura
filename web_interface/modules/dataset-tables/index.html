@@ -15,7 +15,7 @@
     <body onload="recover_tables();">
     
         <div class="container">
-            <table class="table table-condensed table-hover table-striped">
+            <table class="table table-condensed table-hover table-striped" id="table_of_dataset_tables">
                 <thead>
                     <tr>
                         <th>Dataset Tables<th>Short Description<th>
@@ -31,7 +31,7 @@
                             <span title="Look at the table" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="not_yet();"></span>
                             <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="not_yet();"></span>
                             <span>&nbsp</span>
-                            <span title="Analytics" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
+                            <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
                     <tr>
                         <td>Table 2
                         <td>The second best table in the world
@@ -42,7 +42,7 @@
                             <span title="Look at the table" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="not_yet();"></span>
                             <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="not_yet();"></span>
                             <span>&nbsp</span>
-                            <span title="Analytics" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
+                            <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
                     <tr>
                         <td>Table 3
                         <td>Arf! this table is not good ...
@@ -53,15 +53,10 @@
                             <span title="Look at the table" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="not_yet();"></span>
                             <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="not_yet();"></span>
                             <span>&nbsp</span>
-                            <span title="Analytics" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
-                    <tr>
-                        <td>
-                            <button title="Add a new table" type="button" class="btn btn-primary btn-xs" onclick="not_yet();"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
-                        <td>
-                        <td>
-                    
+                            <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
                 </tbody>
             </table>
+            &nbsp&nbsp<button title="Add a new table" type="button" class="btn btn-primary btn-xs" onclick="not_yet();"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
             <br>
             <br>
             <br>
