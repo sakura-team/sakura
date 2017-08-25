@@ -253,20 +253,27 @@ function signOutSubmitControl(event) {
 
 
 function searchSubmitControl(event,elt) {
-  listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
-  listeInit = listeInit.split("<tr");
-  searchString = document.getElementById("idInputSearch"+elt).value;
-  s="";
-  for(i=1;i<listeInit.length;i++) {
-	  if (listeInit[i].match(searchString)) {
-		s =  s + "<tr"+listeInit[i];}
-	  else {
-		s = s + "<tr style='display:none;'"+listeInit[i];}}
-  document.getElementById("idTBodyList"+elt).innerHTML = s;}
+    listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
+    listeInit = listeInit.split("<tr");
+    searchString = document.getElementById("idInputSearch"+elt).value;
+    s="";
+    for(i=1;i<listeInit.length;i++) {
+        if (listeInit[i].match(searchString)) {
+            s =  s + "<tr"+listeInit[i];
+        }
+        else {
+            s = s + "<tr style='display:none;'"+listeInit[i];
+        }
+    }
+    document.getElementById("idTBodyList"+elt).innerHTML = s;
+}
+
 
 function showDivCGU(event) {
-  $("#signInModal").modal("hide");
-  showDiv(event,"CGU");}
+    $("#signInModal").modal("hide");
+    showDiv(event,"CGU");
+}
+
 
 /*    Génération aléatoire     */
 var firstProcNamesAlea=["Avg","Count","Diff","Hist","Viz","Reg","Lin","Stand","Sort","Best","Approx","Plot"];
@@ -281,123 +288,152 @@ var propsAlea = ["Date","Kind","Domain","Level","Duration","Status","Property","
 var valsAlea = ["porro","quia","xyz34","####",'n.a.','inf','nspp','','_','see below'];
 
 function aleaAlea(alea) {
-return alea[Math.floor(Math.random() * alea.length)]}
+    return alea[Math.floor(Math.random() * alea.length)]
+}
+
 
 function numAlea(base,over) {
-return base+(Math.floor(Math.random() * over));}
+    return base+(Math.floor(Math.random() * over));
+}
+
 
 function dateAlea() {
-return ''+Math.floor(1+Math.random() * 10.5)+'/'+Math.floor(2000+Math.random() * 17);}
+    return ''+Math.floor(1+Math.random() * 10.5)+'/'+Math.floor(2000+Math.random() * 17);
+}
+
 
 function fullNameAlea() {
-  return firstNamesAlea[Math.floor(Math.random() * firstNamesAlea.length)]+"_"
-    + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+"_"
-    + propsAlea[Math.floor(Math.random() * propsAlea.length)]+"_"
-    + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];}
-	
+    return firstNamesAlea[Math.floor(Math.random() * firstNamesAlea.length)]+"_"
+        + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+"_"
+        + propsAlea[Math.floor(Math.random() * propsAlea.length)]+"_"
+        + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];
+}
+
+
 function fullProcNameAlea() {
-  return firstProcNamesAlea[Math.floor(Math.random() * firstProcNamesAlea.length)]
-    + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+
-    + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];}
+    return firstProcNamesAlea[Math.floor(Math.random() * firstProcNamesAlea.length)]
+        + lastNamesAlea[Math.floor(Math.random() * lastNamesAlea.length)]+
+        + lastDigitsAlea[Math.floor(Math.random() * lastDigitsAlea.length)];
+}
+
 
 function shortTextAlea() {
-  return firstWordsAlea[Math.floor(Math.random() * firstWordsAlea.length)]+" "
-    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
-    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
-    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+", "
-    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
-    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
-    + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+".";}
-	
+    return firstWordsAlea[Math.floor(Math.random() * firstWordsAlea.length)]+" "
+        + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+        + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+        + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+", "
+        + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+        + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+" "
+        + otherWordsAlea[Math.floor(Math.random() * otherWordsAlea.length)]+".";
+}
+
+
 function boolAlea(trueProportion) {
-if (Math.random()<trueProportion) {
-  return "true";}
-else {
-  return "false";}}  
+    if (Math.random()<trueProportion) {
+        return "true";
+    }
+    else {
+        return "false";
+    }
+}
 
 
 /*       FillStub        */  
 function buildListStub(idDiv,result,elt) {
-var eltAncetre=elt.split("/")[0];	
-s="";
-s = s +'<thead><tr>'
-      + '<th class="col-text">Name</th>';
-if (document.getElementById("cbColSelectTags").checked) {
-  s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
-if (document.getElementById("cbColSelectId").checked) {
-  s = s +  '<th class="col-text">id</th>';}
-if (document.getElementById("cbColSelectShortDesc").checked) {
-  s = s +  '<th class="col-text">Short Desc.</th>';}
-if (document.getElementById("cbColSelectDate").checked) {
-  s = s +  '<th class="col-text">Date</th>';}
-if (document.getElementById("cbColSelectModification").checked) {
-  s = s +  '<th class="col-text">Modif.</th>';}
-if (document.getElementById("cbColSelectAuthor").checked) {
-  s = s +  '<th class="col-text">Author</th>';}
-s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>'
-      + '<th class="col-text" style="max-width:3px; overflow:hidden">'
-      + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
-	  + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
-      + '</tr></thead>'
-	  + '<tbody id="idTBodyList'+eltAncetre+'">';						
-for(i=0;i<result.length;i++) {
-  //if (document.getElementById("idInputSearch".eltAncetre).value!="") {}
-  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
-  if (document.getElementById("cbColSelectTags").checked) {
-    s = s + "<td>"+result[i].tags+"</td>";}
-  if (document.getElementById("cbColSelectId").checked) {
-    s = s + "<td>"+result[i].id+"</td>";} 
-  if (document.getElementById("cbColSelectShortDesc").checked) {
-    s = s + "<td>"+result[i].shortDesc+"</td>";}  
-  if (document.getElementById("cbColSelectDate").checked) {
-    s = s + "<td>"+result[i].date+"</td>";}
-  if (document.getElementById("cbColSelectModification").checked) {
-    s = s + "<td>"+result[i].modif+"</td>";} 
-  if (document.getElementById("cbColSelectAuthor").checked) {
-    s = s + "<td>"+result[i].author+"</td>";} 	
-  s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
-  if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
-	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-	      + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-		  + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";}
-  else if (result[i].isViewable=="true") {
-	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-		  + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";}
-  else {
-	s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";}  
-  s = s + "</td></tr>";}
-s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
-      + '</tbody>';
-document.getElementById(idDiv).innerHTML = s;
-//maj de la pagination
-document.pageElt;
-s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-0)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-0)+"'>"+(document.pageElt-0)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+1)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+1)+"'>"+(document.pageElt+1)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+2)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+2)+"'>"+(document.pageElt+2)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+3)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+3)+"'>"+(document.pageElt+3)+"</a></li>"
-     + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+4)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+4)+"'>"+(document.pageElt+4)+"</a></li>"
-     + "<li><a aria-label='Next' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+5)+"'><span aria-hidden='true'>»</span></a></li>";
-document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;}
+    var eltAncetre=elt.split("/")[0];
+    s="";
+    s = s +'<thead><tr>'
+        + '<th class="col-text">Name</th>';
+    if (document.getElementById("cbColSelectTags").checked) {
+        s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
+    if (document.getElementById("cbColSelectId").checked) {
+        s = s +  '<th class="col-text">id</th>';}
+    if (document.getElementById("cbColSelectShortDesc").checked) {
+        s = s +  '<th class="col-text">Short Desc.</th>';}
+    if (document.getElementById("cbColSelectDate").checked) {
+        s = s +  '<th class="col-text">Date</th>';}
+    if (document.getElementById("cbColSelectModification").checked) {
+        s = s +  '<th class="col-text">Modif.</th>';}
+    if (document.getElementById("cbColSelectAuthor").checked) {
+        s = s +  '<th class="col-text">Author</th>';}
+    s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>'
+        + '<th class="col-text" style="max-width:3px; overflow:hidden">'
+        + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
+        + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
+        + '</tr></thead>'
+        + '<tbody id="idTBodyList'+eltAncetre+'">';
+    for(i=0;i<result.length;i++) {
+        //if (document.getElementById("idInputSearch".eltAncetre).value!="") {}
+        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
+        if (document.getElementById("cbColSelectTags").checked) {
+            s = s + "<td>"+result[i].tags+"</td>";}
+        if (document.getElementById("cbColSelectId").checked) {
+            s = s + "<td>"+result[i].id+"</td>";} 
+        if (document.getElementById("cbColSelectShortDesc").checked) {
+            s = s + "<td>"+result[i].shortDesc+"</td>";}  
+        if (document.getElementById("cbColSelectDate").checked) {
+            s = s + "<td>"+result[i].date+"</td>";}
+        if (document.getElementById("cbColSelectModification").checked) {
+            s = s + "<td>"+result[i].modif+"</td>";} 
+        if (document.getElementById("cbColSelectAuthor").checked) {
+            s = s + "<td>"+result[i].author+"</td>";}
+        s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
+        if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
+            s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+                + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+                + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";
+        }
+        else if (result[i].isViewable=="true") {
+            s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+                + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";
+        }
+        else {
+            s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";
+            }
+        s = s + "</td></tr>";
+    }
+    s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
+        + '</tbody>';
+    document.getElementById(idDiv).innerHTML = s;
+
+    //maj de la pagination
+    document.pageElt;
+    s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
+        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-0)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-0)+"'>"+(document.pageElt-0)+"</a></li>"
+        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+1)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+1)+"'>"+(document.pageElt+1)+"</a></li>"
+        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+2)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+2)+"'>"+(document.pageElt+2)+"</a></li>"
+        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+3)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+3)+"'>"+(document.pageElt+3)+"</a></li>"
+        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+4)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+4)+"'>"+(document.pageElt+4)+"</a></li>"
+        + "<li><a aria-label='Next' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+5)+"'><span aria-hidden='true'>»</span></a></li>";
+    document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;
+}
+
 
 function listRequestStub(idDiv,n,elt,bd) {
-if (!bd) {  // version local
-  result=new Array();
-  for(i=0;i<n;i++) {
-    result.push({"name":fullNameAlea(),
-	  "id":numAlea(100,100),
-	  "tags":aleaAlea(firstNamesAlea),
-	  "shortDesc":shortTextAlea(),
-	  "date":dateAlea(),
-	  "modif":dateAlea(),	  
-	  "author":aleaAlea(usersAlea),	  
-	  "isViewable":boolAlea(0.7),
-	  "isEditable":boolAlea(0.3)});}
-  buildListStub(idDiv,result,elt);}
-else {     // version réseau à faire
-  ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);});}
-return ;}
- 
+    if (!bd) {  // version local
+        result=new Array();
+        for(i=0;i<n;i++) {
+            result.push({   "name":fullNameAlea(),
+                            "id":numAlea(100,100),
+                            "tags":aleaAlea(firstNamesAlea),
+                            "shortDesc":shortTextAlea(),
+                            "date":dateAlea(),
+                            "modif":dateAlea(),	  
+                            "author":aleaAlea(usersAlea),	  
+                            "isViewable":boolAlea(0.7),
+                            "isEditable":boolAlea(0.3)
+            });
+        }
+        buildListStub(idDiv,result,elt);
+    }
+    else {     // version réseau à faire
+        ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);
+        });
+    }
+    return ;
+}
+
+
 function listRequestStubForRestart(idDiv) {
 result=new Array();
 s="";
