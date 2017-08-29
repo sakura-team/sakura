@@ -90,11 +90,15 @@ SQL_GET_TABLE_COLUMNS = '''
     ORDER  BY attnum;
 '''
 
+DEFAULT_CONNECT_TIMEOUT = 4     # seconds
+
 class PostgreSQLDBDriver:
     NAME = 'postgresql'
     @staticmethod
-    def connect(**db_info):
-        return psycopg2.connect(**db_info)
+    def connect(**kwargs):
+        if 'connect_timeout' not in kwargs:
+            kwargs['connect_timeout'] = DEFAULT_CONNECT_TIMEOUT
+        return psycopg2.connect(**kwargs)
     @staticmethod
     def open_server_cursor(db_conn):
         cursor_name = str(uuid.uuid4()) # unique name
