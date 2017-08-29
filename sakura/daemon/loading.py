@@ -1,5 +1,6 @@
 import sys, os, importlib, inspect
 from sakura.daemon.processing.operator import Operator
+from sakura.daemon.processing.db.datastore import DataStore
 import sakura.daemon.conf as conf
 
 def load_operator_classes():
@@ -25,3 +26,20 @@ def load_operator_classes():
             op_classes[op_cls.NAME] = op_cls
     sys.path = sys.path[1:]
     return op_classes
+
+def load_data_stores():
+    datastores = []
+    for ds_conf in conf.data_stores:
+        ds = DataStore(
+            host = ds_conf['host'],
+            admin_user = ds_conf['admin-user'],
+            admin_password = ds_conf['admin-password'],
+            driver_label = ds_conf['driver']
+        )
+        try:
+            ds.refresh_datasets()
+            datastores.append(ds)
+        except BaseException as exc:
+            print('WARNING: Could not load %s Data Store at %s: %s. IGNORED.' % \
+                    (ds_conf['driver'], ds.host, str(exc).strip()))
+    return datastores

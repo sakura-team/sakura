@@ -96,6 +96,9 @@ class PostgreSQLDBDriver:
     NAME = 'postgresql'
     @staticmethod
     def connect(**kwargs):
+        # if database is not specified, connect to 'postgres' db
+        if 'dbname' not in kwargs:
+            kwargs['dbname'] = 'postgres'
         if 'connect_timeout' not in kwargs:
             kwargs['connect_timeout'] = DEFAULT_CONNECT_TIMEOUT
         return psycopg2.connect(**kwargs)

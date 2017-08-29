@@ -4,8 +4,9 @@ from sakura.operators.internal.fragmentsource.operator import FragmentSourceOper
 from sakura.daemon.processing.parameter import ParameterException
 
 class DaemonEngine(object):
-    def __init__(self, op_classes):
+    def __init__(self, op_classes, data_stores):
         self.op_classes = op_classes
+        self.data_stores = data_stores
         self.op_instances = {}
         self.hub = None
         self.fragment_sources = {}
@@ -16,7 +17,7 @@ class DaemonEngine(object):
             Operator.descriptor(op_cls) for op_cls in self.op_classes.values()
         )
         return dict(name=conf.daemon_desc,
-                    ext_datasets=conf.external_datasets,
+                    data_stores=conf.data_stores,
                     op_classes=op_classes_desc)
     def create_operator_instance(self, cls_name, op_id):
         op_cls = self.op_classes[cls_name]

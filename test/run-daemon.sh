@@ -27,9 +27,20 @@ cat > $TMPDIR/daemon.conf << EOF
     "hub-port": 10432,
     "daemon-desc": "daemon $daemon_index",
     "operators-dir": "$TMPDIR/operators",
-    "external-datasets": [ ]
+    "data-stores": [ ]
 }
 EOF
+# Sample data-store configuration:
+#   [...]
+#   "data-stores": [
+#       {
+#           "host": "<dbms-ip-or-hostname>",
+#           "admin-user": "<dbms-admin-user>",
+#           "admin-password": "<dbms-admin-password>",
+#           "driver": "postgresql"
+#       }
+#   ]
+#   [...]
 
 ./daemon.py -f $TMPDIR/daemon.conf
 
