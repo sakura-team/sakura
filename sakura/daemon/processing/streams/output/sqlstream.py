@@ -2,6 +2,7 @@ import numpy as np
 from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.streams.output.base import OutputStreamBase
 from sakura.daemon.processing.db.query import SQLQuery
+from sakura.daemon.processing.db.probe import DBProber
 
 class SQLStream(OutputStreamBase):
     def __init__(self, label, query, db_conn, db_driver):
@@ -45,8 +46,12 @@ class SQLStream(OutputStreamBase):
             cursor.close()
 
 class SQLTableStream(SQLStream):
-    def __init__(self, label, table_name, db_conn, db_driver):
-        table_desc = db_driver.describe_table(db_conn, table_name)
-        query = SQLQuery(table_desc['columns'], ())
+    def __init__(self, label, db_driver, table_name, db_conn):
+        prober = DBProber(db_driver, db_conn)
+        tables = prober.probe()
+        table = tables.get(table_name, None)
+        if table is None:
+            raise RuntimeException('%s table not found!' % table_name)
+        query = SQLQuery(table.columns, ())
         SQLStream.__init__(self, label, query, db_conn, db_driver)
 
