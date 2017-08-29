@@ -25,7 +25,10 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         metadata_collector.register_column(table_name, col_name, np.int32)
     elif col_pgtype == 'bigint':
         metadata_collector.register_column(table_name, col_name, np.int64)
-    elif col_pgtype == 'text':
+    elif col_pgtype.startswith('character varying('):
+        max_length = int(col_pgtype[18:-1])
+        metadata_collector.register_column(table_name, col_name, (np.str, max_length))
+    elif col_pgtype in ('text', 'character varying'):
         max_length = col_meta.get('max_text_chars', None)
         if max_length is None:
             raise RuntimeError('Max length of text column %s was not specified!' % col_name)
