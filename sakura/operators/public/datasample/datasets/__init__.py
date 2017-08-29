@@ -1,19 +1,15 @@
-from pkg_resources import resource_filename
-from pathlib import Path
-from importlib import import_module
+from sakura.daemon.tools import load_all_in_dir
 
-def iter_load():
-    this_file = Path(resource_filename(__name__, '__init__.py'))
-    datasets_dir = this_file.parent
-    for dataset_modfile in datasets_dir.glob('*.py'):
-        if dataset_modfile.name == '__init__.py':
-            continue
-        modname = dataset_modfile.stem
-        yield import_module(__name__ + '.' + modname)
+def failed_dataset_load(modname, exc):
+    print('WARNING: could not load dataset %s: %s. IGNORED.' % \
+                            (modname, str(exc).strip()))
+    return True     # continue with next datasets
 
 def load():
     # load all datasets (= modules of this datasets directory)
     # and return them.
     # preserve the same order if possible.
-    return sorted(iter_load(), key = lambda ds: ds.STREAM.label)
+    return load_all_in_dir( __name__,
+                            sort = lambda ds: ds.STREAM.label,
+                            exc_handler = failed_dataset_load)
 
