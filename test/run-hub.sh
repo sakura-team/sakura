@@ -22,7 +22,6 @@ cat > $TMPDIR/hub.conf << EOF
 {
     "web-port": 8081,
     "hub-port": 10432,
-    "external-datasets": [ ],
     "work-dir": "$HOME/.sakura"
 }
 EOF
