@@ -9,8 +9,8 @@ function not_yet() {
 
 function recover_tables() {
     var dataset_id = window.location.search.substr(1).split("=")[1];
-    
-    dataset_id = 0;
+    console.log("WLOC", window.location);
+    console.log("DDDDDDDD", dataset_id);
     sakura.common.ws_request('get_dataset_info', [parseInt(dataset_id)], {}, function (result) {
         var body = $('#table_of_dataset_tables').find('tbody');
         body.empty();
