@@ -1,5 +1,6 @@
 import psycopg2, uuid, numpy as np
 from collections import defaultdict
+from sakura.daemon.processing.db import drivers
 
 def analyse_col_meta(col_comment):
     col_meta = {}
@@ -90,6 +91,7 @@ SQL_GET_TABLE_COLUMNS = '''
 '''
 
 class PostgreSQLDBDriver:
+    NAME = 'postgresql'
     @staticmethod
     def connect(**db_info):
         return psycopg2.connect(**db_info)
@@ -141,3 +143,5 @@ class PostgreSQLDBDriver:
                 col_meta = analyse_col_meta(col_comment)
                 register_column(metadata_collector,
                     table_name, col_name, col_pgtype, col_meta)
+
+drivers.register(PostgreSQLDBDriver)
