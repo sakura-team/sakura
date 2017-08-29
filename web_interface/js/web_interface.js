@@ -10,9 +10,10 @@ function not_yet(s = '') {
 }
 
 
-function showDiv(event,dir) {
+function showDiv(event, dir, id) {
     //todo : déplacer les event.preventDefault() ici ?
     //save mode ?
+    
     if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
         res=confirm("Leave edit mode?");
         if (res) {
@@ -68,6 +69,7 @@ function showDiv(event,dir) {
             dir = dir + "/Main";
         }
     }
+    
     var dirs = dir.split("/");
     //show div
     mainDivs=document.getElementsByClassName('classMainDiv');
@@ -83,6 +85,7 @@ function showDiv(event,dir) {
     }
     
     document.getElementById(idDir).style.display='inline';
+    
     //activate navbar   
     var d = document.getElementById("navbar_ul");
     for (var i=0; i< d.children.length; i++) {
@@ -104,9 +107,18 @@ function showDiv(event,dir) {
     bct = bct + "<li class='active'>"+dirs[i]+"</li>";
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
-    var actionsOnShow=document.getElementById(idDir).getElementsByClassName("executeOnShow");
+    var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
+    
+    console.log(idDir);
     for(i=0;i<actionsOnShow.length;i++) {
-        eval(actionsOnShow[i].href);
+        if (actionsOnShow[i].nodeName == "IFRAME") {
+            if (typeof(id) != "undefined") {
+                actionsOnShow[i].src = "/modules/dataset-tables/index.html?dataset_id="+id;
+            }
+        }
+        else {
+            eval(actionsOnShow[i].href);
+        }
     }
     event.preventDefault();
 }
@@ -348,7 +360,7 @@ function buildListStub(idDiv,result,elt) {
     if (document.getElementById("cbColSelectTags").checked) {
         s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
     if (document.getElementById("cbColSelectId").checked) {
-        s = s +  '<th class="col-text">id</th>';}
+        s = s +  '<th class="col-text">dataset_id</th>';}
     if (document.getElementById("cbColSelectShortDesc").checked) {
         s = s +  '<th class="col-text">Short Desc.</th>';}
     if (document.getElementById("cbColSelectDate").checked) {
@@ -364,12 +376,11 @@ function buildListStub(idDiv,result,elt) {
         + '</tr></thead>'
         + '<tbody id="idTBodyList'+eltAncetre+'">';
     for(i=0;i<result.length;i++) {
-        //if (document.getElementById("idInputSearch".eltAncetre).value!="") {}
-        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name+"</a></td>\n";
+        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].dataset_id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].dataset_id+"\">"+result[i].name+"</a></td>\n";
         if (document.getElementById("cbColSelectTags").checked) {
             s = s + "<td>"+result[i].tags+"</td>";}
         if (document.getElementById("cbColSelectId").checked) {
-            s = s + "<td>"+result[i].id+"</td>";} 
+            s = s + "<td>"+result[i].dataset_id+"</td>";} 
         if (document.getElementById("cbColSelectShortDesc").checked) {
             s = s + "<td>"+result[i].shortDesc+"</td>";}  
         if (document.getElementById("cbColSelectDate").checked) {
@@ -396,7 +407,7 @@ function buildListStub(idDiv,result,elt) {
     s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
         + '</tbody>';
     document.getElementById(idDiv).innerHTML = s;
-
+    
     //maj de la pagination
     document.pageElt;
     s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
@@ -410,8 +421,13 @@ function buildListStub(idDiv,result,elt) {
 }
 
 
-function listRequestStub(idDiv,n,elt,bd) {
-    if (!bd) {  // version local
+function listRequestStub(idDiv, n, elt, bd) {
+    // version réseau à faire
+    if (elt == 'DataSets/tmpDataSet')
+        ws_request('list_datasets', [], {}, function (result) {
+        buildListStub(idDiv,result,elt);
+    });
+    else {
         result=new Array();
         for(i=0;i<n;i++) {
             result.push({   "name":fullNameAlea(),
@@ -419,17 +435,13 @@ function listRequestStub(idDiv,n,elt,bd) {
                             "tags":aleaAlea(firstNamesAlea),
                             "shortDesc":shortTextAlea(),
                             "date":dateAlea(),
-                            "modif":dateAlea(),	  
-                            "author":aleaAlea(usersAlea),	  
+                            "modif":dateAlea(),
+                            "author":aleaAlea(usersAlea),
                             "isViewable":boolAlea(0.7),
                             "isEditable":boolAlea(0.3)
             });
         }
         buildListStub(idDiv,result,elt);
-    }
-    else {     // version réseau à faire
-        ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildListStub(idDiv,result,elt);
-        });
     }
     return ;
 }
