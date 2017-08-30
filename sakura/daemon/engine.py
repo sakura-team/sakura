@@ -16,8 +16,11 @@ class DaemonEngine(object):
         op_classes_desc = list(
             Operator.descriptor(op_cls) for op_cls in self.op_classes.values()
         )
+        datastores_desc = list(
+            datastore.get_info_serializable() for datastore in self.datastores
+        )
         return dict(name=conf.daemon_desc,
-                    datastores=conf.data_stores,
+                    datastores=datastores_desc,
                     op_classes=op_classes_desc)
     def create_operator_instance(self, cls_name, op_id):
         op_cls = self.op_classes[cls_name]

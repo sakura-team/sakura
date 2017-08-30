@@ -43,6 +43,19 @@ CREATE TABLE IF NOT EXISTS OpParam (
     json_value TEXT,
     UNIQUE(op_id, param_id)
 );
+
+CREATE TABLE IF NOT EXISTS DataStore (
+    datastore_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    daemon_id INTEGER REFERENCES Daemon(daemon_id),
+    host TEXT,
+    driver TEXT
+);
+
+CREATE TABLE IF NOT EXISTS Dataset (
+    dataset_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    datastore_id INTEGER REFERENCES DataStore(datastore_id) ON DELETE CASCADE,
+    label TEXT
+);
 """
 
 class CentralStorage(SQLiteDB):

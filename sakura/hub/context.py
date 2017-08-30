@@ -1,5 +1,7 @@
 import bottle
 from collections import namedtuple
+from sakura.hub.datastores import DataStoreRegistry
+from sakura.hub.datasets import DatasetRegistry
 from sakura.hub.opclasses import OpClassRegistry
 from sakura.hub.opinstances import OpInstanceRegistry
 from sakura.hub.links import LinkRegistry
@@ -14,6 +16,8 @@ class HubContext(object):
         self.op_classes = OpClassRegistry(self.db)
         self.op_instances = OpInstanceRegistry(self.db)
         self.links = LinkRegistry(self.db)
+        self.datastores = DataStoreRegistry(self.db)
+        self.datasets = DatasetRegistry(self.db)
     def get_daemon_id(self, daemon_info):
         # check if we already know this daemon description
         db_row = self.db.select_unique('Daemon',
@@ -32,6 +36,8 @@ class HubContext(object):
         # note: a SimpleAttrContainer will be more handy
         daemon_info = SimpleAttrContainer(**daemon_info)
         self.daemons[daemon_id] = daemon_info
+        datasets_info = self.datastores.restore_daemon_state(daemon_info)
+        self.datasets.restore_daemon_state(daemon_id, datasets_info)
         self.op_classes.restore_daemon_state(daemon_info)
         self.op_instances.restore_daemon_state(daemon_info, self.op_classes)
         self.links.restore_daemon_state(daemon_info, self.op_instances)
