@@ -1,6 +1,7 @@
 import collections, itertools, io, sys, json, numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
+from sakura.common.tools import SimpleAttrContainer
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 # DEBUG_LEVEL = 1   # print requests and type of results
@@ -12,6 +13,8 @@ ParsedRequest = collections.namedtuple('ParsedRequest',
 def json_fallback_handler(obj):
     if isinstance(obj, np.ndarray):
         return obj.tolist()
+    elif isinstance(obj, SimpleAttrContainer):
+        return obj._asdict()
     raise TypeError(repr(obj) + ' is not JSON serializable')
 
 class CompactJsonProtocol:
