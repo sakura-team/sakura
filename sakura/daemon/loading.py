@@ -27,7 +27,7 @@ def load_operator_classes():
     sys.path = sys.path[1:]
     return op_classes
 
-def load_data_stores():
+def load_datastores():
     datastores = []
     for ds_conf in conf.data_stores:
         ds = DataStore(
