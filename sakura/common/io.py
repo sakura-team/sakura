@@ -13,17 +13,22 @@ def serialize(**kwargs):
     return serialize_obj(kwargs)
 
 def serialize_obj(obj):
+    # str & bytes can be serialized directly
+    if isinstance(obj, str) or isinstance(obj, bytes):
+        return obj
+    # with other objects, try to be smart
     if isinstance(obj, dict):
         return { k: serialize_obj(v) for k, v in obj.items() }
     elif hasattr(obj, 'summarize'):
         return serialize_obj(obj.summarize())
     elif hasattr(obj, '_asdict'):
         return serialize_obj(obj._asdict())
-    elif isinstance(obj, list) or isinstance(obj, tuple) or \
-        (hasattr(obj, '__iter__') and not isinstance(obj, str)):
-        return tuple(serialize_obj(o) for o in obj)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
+    elif isinstance(obj, list) or isinstance(obj, tuple) or \
+                hasattr(obj, '__iter__'):
+        return tuple(serialize_obj(o) for o in obj)
+    # object is probably serializable
     return obj
 
 def json_fallback_handler(obj):
