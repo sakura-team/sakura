@@ -115,18 +115,42 @@
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <label>Columns</label>
-                                <table class="table table-condensed table-hover table-striped" id="datasets_table_creation_columns">
+                                <table class="table table-condensed table-hover" id="datasets_table_creation_columns">
                                     <thead>
-                                    <tr>
-                                        <th>Name
-                                        <th>Type
-                                        <th>Description
-                                        <th>Tags
+                                        <tr>
+                                            <th class="col-md-2">Name
+                                            <th class="col-md-1">Type
+                                            <th class="col-md-6">Description
+                                            <th class="col-md-3">Tags
+                                            <th class="col-md-1">&nbsp;
                                     </thead>
                                     <tbody>
+                                        <tr>
+                                            <td style="vertical-align: middle;">
+                                                <input class="form-control input-sm" type="text" value="Column 1" autocomplete='off'>
+                                            <td style="vertical-align: middle;">
+                                                <select>
+                                                <option>text</option>
+                                                <option>int</option>
+                                                <option>bool</option>
+                                                <option>float</option>
+                                                </select>
+                                            <td style="vertical-align: middle;">
+                                                <div class="col-xs-12">
+                                                    <input class="form-control input-sm" type="text" autocomplete='off'>
+                                                </div>
+                                            <td style="vertical-align: middle;">                                                
+                                                <div class="col-xs-12">
+                                                    <input class="form-control input-sm" type="text" autocomplete='off'>
+                                                </div>
+
+                                            <td style="vertical-align: middle;">
+                                                <button title="Add a new column" type="button" class="btn btn-primary btn-xs" onclick="not_yet();">
+                                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                                </button>
                                     </tbody>
                                 </table>
-                                <button title="Add a new column" type="button" class="btn btn-primary btn-xs" onclick="not_yet();">
+                                &nbsp;&nbsp;<button title="Add a new column" type="button" class="btn btn-primary btn-xs" onclick="not_yet();">
                                     <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                                 </button>
                             </div>
