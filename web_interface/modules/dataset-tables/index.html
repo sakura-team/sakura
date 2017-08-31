@@ -14,6 +14,7 @@
     
     <body onload="recover_tables();">
     
+        <!-- MAIN TABLE-->
         <div class="container">
             <table class="table table-condensed table-hover table-striped" id="table_of_dataset_tables">
                 <thead>
@@ -21,42 +22,12 @@
                         <th>Dataset Tables<th>Short Description<th>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Table 1
-                        <td>The best table in the world
-                        <td align="right"> 
-                            <span title="Upload data in this table" class="glyphicon glyphicon-upload" style="cursor: pointer;" onclick="not_yet();"> </span>
-                            <span title="Download the table" class="glyphicon glyphicon-download" style="cursor: pointer;" onclick="not_yet();"> </span>
-                            <span>&nbsp</span>
-                            <span title="Look at the table" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="not_yet();"></span>
-                            <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="not_yet();"></span>
-                            <span>&nbsp</span>
-                            <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
-                    <tr>
-                        <td>Table 2
-                        <td>The second best table in the world
-                        <td align="right"> 
-                            <span title="Upload data in this table" class="glyphicon glyphicon-upload" style="cursor: pointer;" onclick="not_yet();"> </span>
-                            <span title="Download the table" class="glyphicon glyphicon-download" style="cursor: pointer;" onclick="not_yet();"> </span>
-                            <span>&nbsp</span>
-                            <span title="Look at the table" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="not_yet();"></span>
-                            <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="not_yet();"></span>
-                            <span>&nbsp</span>
-                            <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
-                    <tr>
-                        <td>Table 3
-                        <td>Arf! this table is not good ...
-                        <td align="right"> 
-                            <span title="Upload data in this table" class="glyphicon glyphicon-upload" style="cursor: pointer;" onclick="not_yet();"> </span>
-                            <span title="Download the table" class="glyphicon glyphicon-download" style="cursor: pointer;" onclick="not_yet();"> </span>
-                            <span>&nbsp</span>
-                            <span title="Look at the table" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="not_yet();"></span>
-                            <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="not_yet();"></span>
-                            <span>&nbsp</span>
-                            <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="not_yet();"></span>
                 </tbody>
             </table>
-            &nbsp&nbsp<button title="Add a new table" type="button" class="btn btn-primary btn-xs" onclick="not_yet();"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+            &nbsp&nbsp
+            <button title="Add a new table" type="button" class="btn btn-primary btn-xs" onclick="$('#datasets_table_creation_mode_modal').modal();">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            </button>
             <br>
             <br>
             <br>
@@ -72,6 +43,49 @@
             <li>column tags</li>
             </ul>
         </div>
+        
+        <!--CREATION MODAL-->
+        <div class="modal fade" id="datasets_table_creation_mode_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <table align="center" width=100%>
+                        <tr>
+                        <td align="center">
+                            <button type="button" class="btn btn-primary" onclick="not_yet();">FROM SCRATCH</button>
+                        <td align="center">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="$('#datasets_table_creation_fromfile_modal').modal();">FROM A FILE</button>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="datasets_table_creation_fromfile_modal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Select a File</h3>
+                    </div>
+                    <br>
+                    <table width='550px' >
+                        <tr>
+                           <td align="right">
+                                <label class="btn btn-primary btn-file">
+                                    Browse... <input id="datasets_table_file_from_HD" type="file" style="display: none;">
+                                </label>
+                            <td align="left">
+                                <input type="text" id="datasets_table_file_from_HD_label" class="form-control" readonly>
+                    </table>
+                    <br>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" id="datasets_table_creation_button" class="btn btn-primary" onclick="new_dataset_table()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <script src="js/general.js"></script>
     </body>
 

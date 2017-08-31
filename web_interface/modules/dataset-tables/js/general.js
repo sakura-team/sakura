@@ -8,10 +8,13 @@ function not_yet() {
 
 
 function recover_tables() {
+    
     var dataset_id = window.location.search.substr(1).split("=")[1];
     console.log("WLOC", window.location);
     console.log("DDDDDDDD", dataset_id);
     sakura.common.ws_request('get_dataset_info', [parseInt(dataset_id)], {}, function (result) {
+    
+        //Filling table
         var body = $('#table_of_dataset_tables').find('tbody');
         body.empty();
         result['tables'].forEach( function(table) {
@@ -27,11 +30,25 @@ function recover_tables() {
                                 </td>\
                         </tr>');
         });
+        
+        //Updating html elements
+        $('#datasets_table_creation_button').attr('onclick', 'new_dataset_table('+dataset_id+')');
+        
+        $('#datasets_table_file_from_HD_label').val("No file selected...");
+        $('#datasets_table_file_from_HD').val("");
+        
+        $('#datasets_table_file_from_HD').change (  function( event) {
+            $('#datasets_table_file_from_HD_label').val($('#datasets_table_file_from_HD').val());
+        }); 
+
     });
 }
 
 
-function new_dataset_table() {
+function new_dataset_table(dataset_id) {
+    console.log("dataset_id", dataset_id);
+    console.log("file", $('#datasets_table_file_from_HD').val() );
+    $("#datasets_table_creation_fromfile_modal").modal('hide');
 }
 
 
