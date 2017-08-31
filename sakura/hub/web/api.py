@@ -115,3 +115,6 @@ class GuiToHubAPI(object):
 
     def list_datasets(self):
         return self.context.datasets.list()
+
+    def get_dataset_info(self, dataset_id):
+        return self.context.get_dataset_info(dataset_id)

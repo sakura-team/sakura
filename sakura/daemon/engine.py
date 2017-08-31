@@ -6,7 +6,7 @@ from sakura.daemon.processing.parameter import ParameterException
 class DaemonEngine(object):
     def __init__(self, op_classes, datastores):
         self.op_classes = op_classes
-        self.datastores = datastores
+        self.datastores = { (d.host, d.driver_label): d for d in datastores }
         self.op_instances = {}
         self.hub = None
         self.fragment_sources = {}
@@ -17,7 +17,7 @@ class DaemonEngine(object):
             Operator.descriptor(op_cls) for op_cls in self.op_classes.values()
         )
         datastores_desc = list(
-            datastore.get_info_serializable() for datastore in self.datastores
+            datastore.get_info_serializable() for datastore in self.datastores.values()
         )
         return dict(name=conf.daemon_desc,
                     datastores=datastores_desc,
@@ -93,3 +93,6 @@ class DaemonEngine(object):
                     pass
                 self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
         return links
+    def get_dataset_info(self, datastore_host, datastore_driver_label, dataset_label):
+        datastore = self.datastores[(datastore_host, datastore_driver_label)]
+        return datastore[dataset_label].summarize()

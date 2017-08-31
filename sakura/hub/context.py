@@ -106,3 +106,13 @@ class HubContext(object):
                 project_id = project_id,
                 gui_data = gui_data)
         self.db.commit()
+    def get_dataset_info(self, dataset_id):
+        dataset_info = self.datasets[dataset_id]
+        datastore_id = dataset_info.datastore_id
+        datastore_info = self.datastores[datastore_id]
+        daemon_id = datastore_info.daemon_id
+        return self.daemons[daemon_id].api.get_dataset_info(
+            datastore_host = datastore_info.host,
+            datastore_driver_label = datastore_info.driver_label,
+            dataset_label = dataset_info.label
+        )
