@@ -73,7 +73,7 @@ class LocalAPIHandler(object):
                 print_short("sent", req_id, res.__class__)
             self.f.flush()
         except BaseException as e:
-            print_short('could not send response:', e)
+            print('could not send response:', e)
     def handle_request_pool(self, *args):
         self.pool.spawn(self.handle_request_base, *args)
 
