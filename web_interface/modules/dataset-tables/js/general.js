@@ -32,23 +32,32 @@ function recover_tables() {
         });
         
         //Updating html elements
-        $('#datasets_table_creation_button').attr('onclick', 'new_dataset_table('+dataset_id+')');
         
-        $('#datasets_table_file_from_HD_label').val("No file selected...");
-        $('#datasets_table_file_from_HD').val("");
+        //Creation from file
+        $('#datasets_table_creation_from_file_button').attr('onclick', 'new_dataset_table_from_file('+dataset_id+')');
+        $('#datasets_table_creation_name_from_file').val("");
+        $('#datasets_table_creation_description_from_file').val("");
+        $("#datasets_table_file_from_HD").val("");
         
-        $('#datasets_table_file_from_HD').change (  function( event) {
-            $('#datasets_table_file_from_HD_label').val($('#datasets_table_file_from_HD').val());
-        }); 
-
+        //Creation from Scratch
+        $('#datasets_table_creation_from_scratch_button').attr('onclick', 'new_dataset_table_from_scratch('+dataset_id+')');
+        $('#datasets_table_creation_name_from_scratch').val("");
+        $('#datasets_table_creation_description_from_scratch').val("");
+        
     });
 }
 
 
-function new_dataset_table(dataset_id) {
+function new_dataset_table_from_file(dataset_id) {
     console.log("dataset_id", dataset_id);
     console.log("file", $('#datasets_table_file_from_HD').val() );
     $("#datasets_table_creation_fromfile_modal").modal('hide');
+}
+
+
+function new_dataset_table_from_scratch(dataset_id) {
+    console.log("dataset_id", dataset_id);
+    $("#datasets_table_creation_fromscratch_modal").modal('hide');
 }
 
 
