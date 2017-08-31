@@ -35,14 +35,3 @@ function new_dataset() {
         }
     });
 }
-
-
-function list_datasets() {
-    sakura.common.ws_request('list_datasets', [], {}, function(result) {
-        $("#idTableDataSetsToFullfill tr").remove();
-        $("#idTableDataSetsToFullfill").find('thead').append('<tr><th>Name</th></tr>');
-        result.forEach( function(dataset) {
-            $("#idTableDataSetsToFullfill").find('tbody').append('<tr><td><a href=\"/#Datasets/'+dataset['dataset_id']+'\">'+dataset['name']+'</a></td></tr>');
-        });
-    });
-}
