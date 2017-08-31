@@ -1,7 +1,6 @@
 import collections, itertools, io, sys, json, numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
-from sakura.common.tools import SimpleAttrContainer
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 # DEBUG_LEVEL = 1   # print requests and type of results
@@ -10,12 +9,28 @@ DEBUG_LEVEL = 0   # do not print messages exchanged
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
 
-def json_fallback_handler(obj):
-    if isinstance(obj, np.ndarray):
+def serialize(**kwargs):
+    return serialize_obj(kwargs)
+
+def serialize_obj(obj):
+    if isinstance(obj, dict):
+        return { k: serialize_obj(v) for k, v in obj.items() }
+    elif hasattr(obj, 'summarize'):
+        return serialize_obj(obj.summarize())
+    elif hasattr(obj, '_asdict'):
+        return serialize_obj(obj._asdict())
+    elif isinstance(obj, list) or isinstance(obj, tuple) or \
+        (hasattr(obj, '__iter__') and not isinstance(obj, str)):
+        return tuple(serialize_obj(o) for o in obj)
+    elif isinstance(obj, np.ndarray):
         return obj.tolist()
-    elif isinstance(obj, SimpleAttrContainer):
-        return obj._asdict()
-    raise TypeError(repr(obj) + ' is not JSON serializable')
+    return obj
+
+def json_fallback_handler(obj):
+    obj2 = serialize_obj(obj)
+    if obj2 is obj:
+        raise TypeError(repr(obj) + ' is not JSON serializable')
+    return obj2
 
 class CompactJsonProtocol:
     def load(self, f):
