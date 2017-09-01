@@ -19,8 +19,8 @@ class DatasetRegistry(object):
         new_dataset_dict = {}
         for datastore_id, datasets in datasets_info:
             for dataset in datasets:
-                key = (datastore_id, dataset['label'])
-                new_dataset_dict[key] = SimpleAttrContainer(**dataset)
+                key = (datastore_id, dataset.label)
+                new_dataset_dict[key] = dataset
         new_dataset_keys = set(new_dataset_dict)
         old_dataset_dict = {
             (row['datastore_id'], row['label']) : row \

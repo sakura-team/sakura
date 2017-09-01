@@ -11,7 +11,7 @@ class DataStoreRegistry(object):
     def restore_daemon_state(self, daemon_info):
         daemon_id = daemon_info.daemon_id
         new_datastore_dict = {
-            (info['host'], info['driver_label']): SimpleAttrContainer(**info) \
+            (info.host, info.driver_label): info \
             for info in daemon_info.datastores }
         new_datastore_keys = set(new_datastore_dict)
         old_datastore_dict = {

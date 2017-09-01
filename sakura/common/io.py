@@ -9,30 +9,32 @@ DEBUG_LEVEL = 0   # do not print messages exchanged
 ParsedRequest = collections.namedtuple('ParsedRequest',
                     ('req_id', 'path', 'args', 'kwargs'))
 
-def serialize(**kwargs):
-    return serialize_obj(kwargs)
+def make_json_serializable(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return make_serializable(obj)
 
-def serialize_obj(obj):
-    # str & bytes can be serialized directly
-    if isinstance(obj, str) or isinstance(obj, bytes):
+def make_serializable(obj):
+    # some classes should be serialized directly
+    if isinstance(obj, str) or isinstance(obj, bytes) or \
+            isinstance(obj, np.ndarray):
         return obj
     # with other objects, try to be smart
     if isinstance(obj, dict):
-        return { k: serialize_obj(v) for k, v in obj.items() }
+        return { k: make_serializable(v) for k, v in obj.items() }
     elif hasattr(obj, 'summarize'):
-        return serialize_obj(obj.summarize())
+        return make_serializable(obj.summarize())
     elif hasattr(obj, '_asdict'):
-        return serialize_obj(obj._asdict())
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
+        return make_serializable(obj._asdict())
     elif isinstance(obj, list) or isinstance(obj, tuple) or \
                 hasattr(obj, '__iter__'):
-        return tuple(serialize_obj(o) for o in obj)
+        return tuple(make_serializable(o) for o in obj)
     # object is probably serializable
     return obj
 
 def json_fallback_handler(obj):
-    obj2 = serialize_obj(obj)
+    obj2 = make_json_serializable(obj)
     if obj2 is obj:
         raise TypeError(repr(obj) + ' is not JSON serializable')
     return obj2
@@ -86,7 +88,7 @@ class LocalAPIHandler(object):
     def handle_request_base(self, req_id, path, args, kwargs):
         res = self.api_runner.do(path, args, kwargs)
         try:
-            self.protocol.dump((req_id, res), self.f)
+            self.protocol.dump((req_id, make_serializable(res)), self.f)
             if DEBUG_LEVEL == 2:
                 print_short("sent", req_id, res)
             elif DEBUG_LEVEL == 1:

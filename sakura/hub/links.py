@@ -73,8 +73,8 @@ class LinkRegistry(object):
         # add existing links
         for l in self.info_per_link_id.values():
             if l.src_op.op_id == src_op.op_id and l.dst_op.op_id == dst_op.op_id:
-                possible_links.append((l.src_out_id, l.dst_in_id)) 
-        return tuple(possible_links)
+                possible_links += ((l.src_out_id, l.dst_in_id),)
+        return possible_links
     def __getitem__(self, link_id):
         return self.info_per_link_id[link_id]
     def __iter__(self):

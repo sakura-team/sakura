@@ -1,6 +1,5 @@
 from collections import defaultdict
 from sakura.daemon.processing.db.table import DBTable
-from sakura.common.io import serialize
 
 class DBProber:
     def __init__(self, db_driver, db_conn):
@@ -58,14 +57,14 @@ class Dataset:
         self._tables = prober.probe()
         db_conn.close()
     def summarize(self):
-        return serialize(
+        return dict(
             label = self.label,
             owner = self.owner,
             tables = self.tables.values(),
             users = self.users
         )
     def overview(self):
-        return serialize(
+        return dict(
             label = self.label,
             owner = self.owner,
             users = self.users
