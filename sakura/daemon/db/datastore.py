@@ -1,5 +1,5 @@
-from sakura.daemon.processing.db import drivers
-from sakura.daemon.processing.db.dataset import Dataset
+from sakura.daemon.db import drivers
+from sakura.daemon.db.dataset import Dataset
 
 class DataStoreProber:
     def __init__(self, datastore):

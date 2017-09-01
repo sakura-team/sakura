@@ -1,8 +1,8 @@
 import numpy as np
 from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.streams.output.base import OutputStreamBase
-from sakura.daemon.processing.db.query import SQLQuery
-from sakura.daemon.processing.db.dataset import DBProber
+from sakura.daemon.db.query import SQLQuery
+from sakura.daemon.db.dataset import DBProber
 
 class SQLStream(OutputStreamBase):
     def __init__(self, label, query, db_conn, db_driver):

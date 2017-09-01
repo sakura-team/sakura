@@ -1,5 +1,5 @@
 from collections import defaultdict
-from sakura.daemon.processing.db.table import DBTable
+from sakura.daemon.db.table import DBTable
 
 class DBProber:
     def __init__(self, db_driver, db_conn):

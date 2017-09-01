@@ -1,6 +1,6 @@
 import sys, os, importlib, inspect
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.db.datastore import DataStore
+from sakura.daemon.db.datastore import DataStore
 import sakura.daemon.conf as conf
 
 def load_operator_classes():

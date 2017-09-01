@@ -1,6 +1,6 @@
 import psycopg2, uuid, numpy as np
 from collections import defaultdict
-from sakura.daemon.processing.db import drivers
+from sakura.daemon.db import drivers
 
 def analyse_col_meta(col_comment):
     col_meta = {}

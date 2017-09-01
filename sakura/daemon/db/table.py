@@ -1,4 +1,4 @@
-from sakura.daemon.processing.db.column import DBColumn
+from sakura.daemon.db.column import DBColumn
 
 class DBTable:
     def __init__(self, dbname, table_name):
