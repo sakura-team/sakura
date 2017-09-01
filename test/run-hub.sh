@@ -2,6 +2,7 @@
 
 cd $(dirname $0)/..
 TMPDIR=$(mktemp -d /tmp/hub.XXXXXXXX)
+export PYTHONUNBUFFERED=1
 
 WEBAPP="web_interface"
 if [ "$1" != "" ]

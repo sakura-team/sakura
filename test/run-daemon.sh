@@ -6,6 +6,7 @@ operators=$*
 
 cd $(dirname $0)/..
 TMPDIR=$(mktemp -d /tmp/daemon$daemon_index.XXXXXXXX)
+export PYTHONUNBUFFERED=1
 
 on_exit()
 {
