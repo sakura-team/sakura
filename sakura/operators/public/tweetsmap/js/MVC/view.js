@@ -924,23 +924,6 @@ function View() {
 
         _downloadCSV: function (button) {
             var i = this._getIndexById(button.id.slice(5));
-            // var stockData = [  
-            //     {
-            //         Symbol: "AAPL",
-            //         Company: "Apple Inc.",
-            //         Price: 132.54
-            //     },
-            //     {
-            //         Symbol: "INTC",
-            //         Company: "Intel Corporation",
-            //         Price: 33.45
-            //     },
-            //     {
-            //         Symbol: "GOOG",
-            //         Company: "Google Inc",
-            //         Price: 554.52
-            //     },
-            // ];
             var stockData = {
                 key: ['Symbol', 'Company', 'Price'],
                 list: [
@@ -1010,8 +993,16 @@ function View() {
                 parentElement: iconsBarre,
                 idDiv: "trash" + layer.namePoly
             });
+            row.infoIcon = new V.Icon({
+                iconChecked: 'fa fa-file-text ',
+                iconUnchecked: 'fa fa-file-text', 
+                checked: true,class: 'small-icon',
+                enabled: true, idDiv: 'info ' + layer.namePoly,
+                parentElement: iconsBarre
+            });
             row.eyeIcon.eventHandle = this._hidePolygon.bind(this);
             row.trashIcon.eventHandle = this._removePolygon.bind(this);
+            row.infoIcon.eventHandle = this._getInfoPolygon.bind(this);
             polyIcon.eventHandle = this._fitBounds.bind(this);
             row.id = layer.namePoly;
             return row;
@@ -1041,6 +1032,8 @@ function View() {
             }
         },
 
+       
+
         enableEyeIcons: function () {
             var layer, i, len = this.rowSource.getLayers().length;
             for (i = 0; i < len; i++) {
@@ -1063,15 +1056,16 @@ function View() {
             myController.actualize();
         },
 
+        _getInfoPolygon: function (button) {
+            var i = this._getIndexById(button.id.slice(5));
+            var layer = this.rowSource.getLayers()[i];
+            myController.getInfoPolygon(layer);
+            button.setChecked();
+        },
+
         _removePolygon: function (button) {
             var i = this._getIndexById(button.id.slice(5));
             var layer = this.rowSource.getLayers()[i];
-            // var poly;
-            // if (layer.editor) {
-            //     poly = layer.editor.deleteShape(layer.getLatLngs());
-            // } else {
-            //     poly = layer;
-            // }
             myController.deletePolygon(layer);
             myController.actualize();
         },
@@ -1490,7 +1484,12 @@ function View() {
 
     this.dataLoadingBar = new V.DataLoadingBar({parentElement: document.getElementById('layout')});
     this.loader = new V.Loader({parentElement: document.getElementById('layout')});
-
+    // this.infoPolygonDiv = V.create('div', 'infopolygon', document.getElementById('info'));
+    // this.infoPolygonDiv.img = V.create('img','', this.infoPolygonDiv);
+    // this.infoPolygonDiv.img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
+    document.getElementById('my_canvas').addEventListener('click', function(){
+        $('#info').hide();
+    }, false);
     //--------------------------------------Instances----------------------------------------------
 
     var deleteShape = function (e) {
@@ -1740,9 +1739,9 @@ function View() {
             this._container = container;
             this._textDiv = V.create('div', '', container);
             this._textDiv.innerHTML = text;
-            this._dateDiv = L.DomUtil.create('select', '', container);
-            for (var i = 1; i < 31; i++) {
-                var option = L.DomUtil.create('option', 'timeOption', this._dateDiv);
+            this._dateDiv = V.create('select', '', container);
+            for (var i = 1; i <= 31; i++) {
+                var option = V.create('option', 'timeOption', this._dateDiv);
                 option.text = i;
 
             }
@@ -1750,40 +1749,56 @@ function View() {
             this._dateDiv.defaultValue = date;
             this._dateDiv.text = date;
             this._dateDiv.value = date;
+            this._dateDiv.addEventListener('change',function(){
+                this.setTime(this.getTime());
+                myController.actualize();
+            }.bind(this));
 
-            this._monthDiv = L.DomUtil.create('select', '', container);
+            this._monthDiv = V.create('select', '', container);
             for (var i = 0; i < this.monthsShort.length; i++) {
-                var option = L.DomUtil.create('option', 'timeOption', this._monthDiv);
+                var option = V.create('option', 'timeOption', this._monthDiv);
                 option.text = this.monthsShort[i];
             }
             this._monthDiv.defaultValue = month;
             this._monthDiv.value = month;
+            this._monthDiv.addEventListener('change', function(){
+                this.setTime(this.getTime());
+                myController.actualize();
+            }.bind(this));
 
-            this._yearDiv = L.DomUtil.create('select', '', container);
+            this._yearDiv = V.create('select', '', container);
             for (var i = 2007; i <= 2017; i++) {
-                var option = L.DomUtil.create('option', 'timeOption', this._yearDiv);
+                var option = V.create('option', 'timeOption', this._yearDiv);
                 option.text = i;
             }
             this._yearDiv.defaultValue = year;
             this._yearDiv.value = year;
-
-
+            this._yearDiv.addEventListener('change', function(){
+                this.setTime(this.getTime());
+                myController.actualize();
+            }.bind(this));
 
             return this;
         },
 
         monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
-        getDate: function () {
-            return this._dateDiv.value;
-        }
+        getTime: function () {
+            return this._yearDiv.value+','+ this._monthDiv.value+','+this._dateDiv.value;
+        },
 
+        setTime: function(t) {
+            var time = new Date((new Date(t)).getTime());
+            this._dateDiv.value = time.getDate();
+            this._monthDiv.value = this.monthsShort[time.getMonth()];
+            this._yearDiv.value = time.getFullYear();
+        }
     });
 
-    this.startTimetDiv = new V.timeSelector("Start", 23, 'Dec', 2017);
-    this.endTimetDiv = new V.timeSelector("End", 23, 'Dec', 2017);
+    this.timeStartDiv = new V.timeSelector("Start", 23, 'Dec', 2017);
+    this.timeEndDiv = new V.timeSelector("End", 23, 'Dec', 2017);
 
-    timeBox.addChild(this.startTimetDiv).addChild(this.endTimetDiv);
+    timeBox.addChild(this.timeStartDiv).addChild(this.timeEndDiv);
 
     //-------------------Fill Color Selector--------------------------------//
     /**

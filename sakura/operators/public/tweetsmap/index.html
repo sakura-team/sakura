@@ -31,6 +31,7 @@
         <!-- <script src="http://watson.lennardvoogdt.nl/Leaflet.awesome-markers/dist/leaflet.awesome-markers.js"></script> -->
         <script src="libs/awesomemarkers/leaflet.awesome-markers.js"></script>
         <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+        <script defer src="libs/wordcloud2.js"></script>
         <script src="/js/sakura-common.js"></script>
         <script src="/js/sakura-operator.js"></script>
         <script src="https://npmcdn.com/leaflet.path.drag/src/Path.Drag.js"></script>
@@ -43,6 +44,9 @@
 
     <body style="height:100%;">
         <div class="layer" id="layout"></div> 
+        <div class="layer" id="info">
+            <canvas id = "my_canvas" height="1520" width="2340"></canvas>
+        </div>
         <div id="map"></div> 
         <script type="text/javascript">
 		

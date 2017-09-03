@@ -68,39 +68,10 @@ function Controller() {
 
     function createMarkersLayer(info, maxPopulation) {
         var data = info.data, scales = info.scales, offsets = info.offsets;
-        // function createIcon(cluster) {
-        //     var c = 'prunecluster prunecluster-';
-        //     var iconSize = 38;
-        //     if (cluster.population < Math.max(10, maxPopulation * 0.01)) {
-        //         c += 'small';
-        //     }
-        //     else if (cluster.population < Math.max(100, maxPopulation * 0.05)) {
-        //         c += 'medium';
-        //         iconSize = 40;
-        //     }
-        //     else {
-        //         c += 'large';
-        //         iconSize = 44;
-        //     }
-
-        //     return new L.DivIcon({
-        //         html: "<div><span>" + cluster.population + "</span></div>",
-        //         className: c,
-        //         iconSize: L.point(iconSize, iconSize)
-        //     });
-        // }   
-        // var layer = new L.LayerGroup();
         var layer = new PruneClusterForLeaflet();
+        if(!maxPopulation)
+            return layer;
         for (var i = 0; i < data.lat.length; i++) {
-            // if(heatmap_values[i][2] < maxPopulation*0.005)
-            //     continue;
-            // var cluster = new Object;
-            // cluster.population = heatmap_values[i][2];
-            // var icon = createIcon(cluster);
-            // var m = new L.Marker(L.latLng(heatmap_values[i][0],heatmap_values[i][1]), {
-            //     icon: icon 
-            // });
-            // layer.addLayer(m);
             var marker = new PruneCluster.Marker(data.lat[i] * scales.lat + offsets.lat,
                 data.lng[i] * scales.lng + offsets.lng);
             for (var j = 0; j < data.val[i]; j++) {
@@ -109,8 +80,6 @@ function Controller() {
         }
         return layer;
     }
-
-
 
     function update_heatmap_callback(result) {
         var icon;
@@ -190,26 +159,34 @@ function Controller() {
             'northlat': geo_ne.lat
         }
         // console.log(info);
-        var listPoly = [];
+        var listPoly = [], listtimeStart = [], listtimeEnd = [];
 
         var westlng_poly = 180.0;
         var eastlng_poly = -180.0;
         var southlat_poly = 85.0;
         var northlat_poly = -85.0;
+        var timeStart_poly = Date.now();
+        var timeEnd_poly = 0;
 
         thisControl.rois.eachLayer(function (layer) {
             // check if polygon is currently in geo_bounds
             var bound_poly = layer.getBounds();
-
+            var timeRange = layer.research.timeRange;
             if (bound_poly.intersects(geo_bounds)) {
                 listPoly.push(thisControl.convertPolygonToArray(layer));
+                listtimeStart.push(timeRange.timeStart/1000.0);
+                listtimeEnd.push(timeRange.timeEnd/1000.0);
+
                 if (bound_poly.getWest() < westlng_poly) westlng_poly = bound_poly.getWest();
                 if (bound_poly.getSouth() < southlat_poly) southlat_poly = bound_poly.getSouth();
                 if (bound_poly.getEast() > eastlng_poly) eastlng_poly = bound_poly.getEast();
                 if (bound_poly.getNorth() > northlat_poly) northlat_poly = bound_poly.getNorth();
+                if (timeRange.timeStart < timeStart_poly) timeStart_poly = timeRange.timeStart;
+                if (timeRange.timeEnd > timeEnd_poly) timeEnd_poly = timeRange.timeEnd;
             }
 
         });
+
         var len = listPoly.length;
         if (len == 0 || westlng_poly < geo_sw.lng) westlng_poly = geo_sw.lng;
         if (len == 0 || eastlng_poly > geo_ne.lng) eastlng_poly = geo_ne.lng;
@@ -226,13 +203,13 @@ function Controller() {
 
         // send event, then update map
         sakura.operator.fire_event(
-            ["map_move", HEATMAP_REFRESH_DELAY, info, listPoly, info_poly],
+            ["map_move", HEATMAP_REFRESH_DELAY, info, listPoly, info_poly, listtimeStart, listtimeEnd],
             update_heatmap_callback);
     }
 
     function exportation_callback(result) {
         var icon;
-        if(result.exportation.data.list)
+        // if(result.exportation.data.list)
         if ('issue' in result) {
             // myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
             $('#layout').hide();  
@@ -260,6 +237,48 @@ function Controller() {
         if(result.exportation.done){
             thisControl.exportationUtil.downloadCSV();
             $('#layout').hide();            
+        }
+    }
+
+    function wordcloud_callback(result) {
+        var icon;
+        if ('issue' in result) {
+            // myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
+            $('#info').hide();  
+            return;
+        }
+        if (result.wordcloud.done) {   // input data is complete for this map
+            icon = 'check';
+            
+            // myView.infoPolygonDiv.img.src = 'data:image/png;base64,'+result.wordcloud.data;
+        }
+        else {
+            icon = 'hourglass-half';
+            // request server for more complete data,
+            // while we refresh the screen
+            sakura.operator.fire_event(
+                ["wordcloud_continue", HEATMAP_REFRESH_DELAY],
+                wordcloud_callback);
+        }
+        // update infobox
+        myView.infobox.update({ "icon": icon, 'text': result.wordcloud.count + ' points' });
+        var data = result.wordcloud.data;
+        for(var item in data){
+            data[item][1] *= 100;
+            data[item][1] += 4;
+        }
+        if(data){
+            var options = {
+                list: data,
+                gridSize: 40,
+                weightFactor: 4,
+                fontFamily: 'Average, Times, serif',
+                color: function() {
+                  return (['#d0d0d0', '#e11', '#44f'])[Math.floor(Math.random() * 3)]
+                },
+                backgroundColor: '#333'
+            };
+            WordCloud(document.getElementById('my_canvas'), options );
         }
     }
 
@@ -333,6 +352,28 @@ function Controller() {
             }
         }
     }
+
+    this.getInfoPolygon = function(layer){
+        var westlng_poly, eastlng_poly, southlat_poly, northlat_poly;
+        var bound_poly = layer.getBounds();
+        var polygon = thisControl.convertPolygonToArray(layer);
+        westlng_poly = bound_poly.getWest();
+        southlat_poly = bound_poly.getSouth();
+        eastlng_poly = bound_poly.getEast();
+        northlat_poly = bound_poly.getNorth();
+        var info = {
+            'westlng': westlng_poly,
+            'eastlng': eastlng_poly,
+            'southlat': southlat_poly,
+            'northlat': northlat_poly,
+        };
+        var timeRange = layer.research.timeRange;
+        // send event, then update map
+        sakura.operator.fire_event(
+            ["wordcloud", HEATMAP_REFRESH_DELAY, polygon, info, timeRange.timeStart/1000.0, timeRange.timeEnd/1000.0],
+            wordcloud_callback);
+        $('#info').show();
+    };
 
     this.exportation = function (roi, name, forAResearch) {
         this.exportationUtil.result = '';
@@ -673,7 +714,9 @@ function Controller() {
 
     // Event when finish drawing a poly
     this.registerPoly = function (layer) {
+
         this.editableResearch.roi.addLayer(layer);
+        layer.research = this.editableResearch;
         layer.research = this.editableResearch;
         if (!this.editableResearch.roi.currentIndex)
             this.editableResearch.roi.currentIndex = 0;
@@ -748,6 +791,11 @@ function Controller() {
             this.editableResearch.colorBackground;
     };
 
+    this.setTimeGUI = function(){
+        myView.timeStartDiv.setTime(this.editableResearch.timeRange.timeStart);
+        myView.timeEndDiv.setTime(this.editableResearch.timeRange.timeEnd);
+    };
+
     /**
      * @function addOverlays() called by event 'finished drawing' of newPolygonButton
      * layer: ROI 
@@ -820,13 +868,19 @@ function Controller() {
     };
 
     this.getTimeRange = function () {
-        var res = null;
-
-        var resDefault = {};
-        resDefault.startDate = new Date();
-        resDefault.endDate = new Date();
-
-        return res || resDefault;
+        var res = new Object;
+        res.timeStart = (new Date(myView.timeStartDiv.getTime())).getTime();
+        res.timeEnd = (new Date(myView.timeEndDiv.getTime())).getTime();
+        // myView.timeStartDiv.setTime(res.timeStart);
+        if(res.timeStart > res.timeEnd){
+             myView.timeEndDiv.setTime(res.timeStart);
+            res.timeEnd = (new Date(myView.timeEndDiv.getTime())).getTime();
+        }
+        // myView.timeEndDiv.setTime(res.timeEnd);
+        myView.timeStartDiv.setMessage(res.timeStart/1000);
+        myView.timeEndDiv.setMessage(res.timeEnd/1000);
+        
+        return res;
     };
 
     //------------------------------Model -> View ------------------------------------
@@ -1020,7 +1074,8 @@ function Controller() {
         this.setColorPointToGUI(this.editableResearch.colorPoint);
         this.setColorBorderToGUI(this.editableResearch.colorBorder);
         this.showPolygonsToGUI(this.editableResearch.roi);
-      
+        this.setTimeGUI(); 
+        
         // update interface
         this.actualize();
     };

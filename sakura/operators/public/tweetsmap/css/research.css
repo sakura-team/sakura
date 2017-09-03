@@ -121,6 +121,7 @@
 .timeSelector :nth-child(n+1){
     position: relative;
     float: left;
+    max-width: 25%;
     margin-left: 10px;
     /* width: auto; */
 }
@@ -131,7 +132,7 @@
 
 .timeOption{
     left:0;
-    width: auto;
+    width: 20%; 
 }
 
 /* .colorList{

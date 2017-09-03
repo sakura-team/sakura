@@ -27,7 +27,10 @@ function Research() {
     this.roi = new L.LayerGroup;
     this.expandRoi = new L.LayerGroup;
     this.expandRoi.addLayer(this.roi);
-    this.timeRange = null;  
+    this.timeRange = new Object;
+    // 1 Jan 20007 00:00:00
+    this.timeRange.timeStart = 1167606000000;
+    this.timeRange.timeEnd   = Date.now();  
     this.loacationMarker = null;
 
     this.actualize = function() {

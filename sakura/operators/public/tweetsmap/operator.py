@@ -13,6 +13,7 @@ from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from .heatmap import HeatMap
 from .exportation import Exportation
+from .wordcloud import WordCloudInfo
 
 class TweetsOperator(Operator):
     NAME = 'Tweets'
@@ -26,7 +27,10 @@ class TweetsOperator(Operator):
                 TagBasedColumnSelection(self.input_stream, 'longitude'))
         self.lat_column_param = self.register_parameter('input latitude',
                 TagBasedColumnSelection(self.input_stream, 'latitude'))
-        
+        self.time_column_param = self.register_parameter('input timestamp',
+                TagBasedColumnSelection(self.input_stream, 'timestamp'))
+        self.text_column_param = self.register_parameter('input text',
+                TagBasedColumnSelection(self.input_stream, 'text'))
         # self.output = self.register_output(
         #             SimpleStream('Filtred by polygon', self.compute))
         # self.output.add_column('lat', float)
@@ -40,13 +44,13 @@ class TweetsOperator(Operator):
              
     def filtered_stream(self, westlng, eastlng, southlat, northlat, disable, **args):
         # get columns selected in combo parameters
-        lng_column, lat_column = \
-            self.lng_column_param.value, self.lat_column_param.value
+        lng_column, lat_column, time_column = \
+            self.lng_column_param.value, self.lat_column_param.value, self.time_column_param.value
         # filter input stream as much as possible:
         # - select useful columns only
         # - restrict to visible area
         stream = self.input_stream
-        # stream = stream.select_columns(lng_column, lat_column)
+        stream = stream.select_columns(lng_column, lat_column, time_column)
         # import pdb
         # pdb.set_trace()
         stream = stream.filter(lng_column >= westlng)
@@ -55,6 +59,20 @@ class TweetsOperator(Operator):
         stream = stream.filter(lat_column <= northlat)
         if disable :
             stream = stream.filter(lat_column > northlat)
+        return stream
+    def filtered2_stream(self, westlng, eastlng, southlat, northlat, **args):
+        # get columns selected in combo parameters
+        lng_column, lat_column, text_column, time_column = \
+            self.lng_column_param.value, self.lat_column_param.value, self.text_column_param.value, self.time_column_param.value
+        # filter input stream as much as possible:
+        # - select useful columns only
+        # - restrict to visible area
+        stream = self.input_stream
+        stream = stream.select_columns(lng_column, lat_column, text_column, time_column)
+        stream = stream.filter(lng_column >= westlng)
+        stream = stream.filter(lng_column <= eastlng)
+        stream = stream.filter(lat_column >= southlat)
+        stream = stream.filter(lat_column <= northlat)
         return stream
     # def compute(self):
     #     stream = self.filtered_stream(**self.info)
@@ -73,28 +91,14 @@ class TweetsOperator(Operator):
     def handle_event(self, event):
         if not self.input_stream.connected():
             return {'issue': 'NO DATA: Input is not connected.'}
-        # lng_column, lat_column, date_column, text_column = \
-        #     self.lng_column_param.value, self.lat_column_param.value,\
-        #      self.date_column_param.value, self.text_column_param.value
-        # #print("%s %s %s %s " % (lng_column, lat_column, date_column, text_column))
-        # stream = self.input_stream
-        # stream = stream.select_columns(lng_column, lat_column)
-        # markers = []
-        # markers.append([])
-        # print(stream)
-        # for chunk in stream.chunks():
-        #     print("ok1")
-        #     lng, lat = chunk.columns
-        # for i in range(0, len(lng.tolist())):
-        #     print("ok3")
-        #     markers[0].append((lat.tolist()[i], lng.tolist()[i]))
-        # return {'tweetsmap': markers, 'done': True}
         ev_type = event[0]
         time_credit = event[1]
         if ev_type == 'map_move':
             info = event[2]
             polygon = event[3]
             polyInfo = event[4]
+            timeStart = event[5]
+            timeEnd = event[6]
             # stream = SimpleStream('Mean result', self.compute)
             # stream.add_column('lat', float)
             # stream.add_column('lng', float)
@@ -102,8 +106,7 @@ class TweetsOperator(Operator):
             # self.register_output(stream)
             # stream.length = 100;
             # create heatmap
-            self.curr_heatmap = HeatMap(stream, polygon, **info)
-            self.curr_exportation = Exportation(stream, polygon)            
+            self.curr_heatmap = HeatMap(stream, polygon, timeStart, timeEnd, **info)
         # from now on, map_move or map_continue is the same thing
         # compute heatmap
         if ev_type == 'map_move' or ev_type == 'map_continue':
@@ -114,130 +117,24 @@ class TweetsOperator(Operator):
         if ev_type == 'exportation':
             polygon = event[2]
             polyInfo = event[3]
-            stream = self.filtered_stream(**polyInfo)
+            stream = self.filtered2_stream(**polyInfo)
             self.curr_exportation = Exportation(stream, polygon)
-        if ev_type == 'exportation' or 'exportation_continue':
+        if ev_type == 'exportation' or ev_type == 'exportation_continue':
             self.curr_exportation.compute(time_credit)
             compressed_ex = self.curr_exportation.compressed_form()
             # print(len(compressed_ex['data']['list']))
             # import pdb
             # pdb.set_trace()
-            return { 'exportation': compressed_ex}            
-        
-# class TweetsOperator(Operator):
-#     NAME = "Tweetsmap"
-#     SHORT_DESC = "Tweets display and selection operator."
-#     TAGS = [ "geo", "map", "selection" ]
-#     def construct(self):
-#         # inputs
-#         self.input_stream = self.register_input('GPS data')
-#         # parameters
-#         self.lng_column_param = self.register_parameter('input longitude',
-#                 TagBasedColumnSelection(self.input_stream, 'longitude'))
-#         self.lat_column_param = self.register_parameter('input latitude',
-#                 TagBasedColumnSelection(self.input_stream, 'latitude'))
-#         # additional tabs
-#         self.register_tab('Tweetsmap', 'index.html')
-#         self.latList = None
-#         self.lngList = None
-#         self.length = 0
-#         self.done = False
-    
-#     def distance(self, lat1, lng1, lat2, lng2):
-#         radius = 6371 * 1000
-
-#         lat1 = radians(lat1)
-#         lat2 = radians(lat2)
-#         lng1 = radians(lng1)
-#         lng2 = radians(lng2)
-
-#         dlng = lng2 - lng1
-#         dlat = lat2 - lat1
-
-#         a = sin(dlat/2)**2 + cos(lat1)*cos(lat2)*sin(dlng/2)**2
-#         c = 2 * atan2(sqrt(a), sqrt(1-a))
-
-#         return radius*c
-
-#     def check_point_inside(self, x, y, polygonInfo):
-#         typePoly = polygonInfo['type']
-#         res = False
-#         if typePoly == 'polygon':
-#             polygon = polygonInfo['data']
-#             start_time = time()
-#             for ii in range(0, len(polygon)):
-#                 polyPoints = polygon[ii]
-#                 i = 0
-#                 j = len(polyPoints) - 1
-#                 while(True):
-#                     if i >= len(polyPoints):
-#                         break
-#                     xi = polyPoints[i][0]
-#                     yi = polyPoints[i][1]
-#                     xj = polyPoints[j][0]
-#                     yj = polyPoints[j][1]
-                
-#                     intersect = ((yi>y) != (yj >y)) and (x < ((xj - xi)*(y -yi)/(yj -yi)+xi))
-#                     if intersect:
-#                         res = not res
-#                     j = i
-#                     i += 1
-#             # print(" ALG : %0.9f" % (time() - start_time))
-#             # start_time = time()
-#             # path = Polygon(polygon[0])
-#             # res = path.contains(Point(x,y))
-#             # print(" MPLT : %0.9f" % (time() - start_time))
-#         elif typePoly == 'circle':
-#             circle = polygonInfo['data']
-#             x_center = circle['center']['lat']
-#             y_center = circle['center']['lng']
-#             radius = circle['radius']
-#             # check if a point is inside a circle
-#             res = self.distance(x, y, x_center, y_center) < radius
-
-#         return res
-
-#     def filtered_stream(self, polygon):
-#         # get columns selected in combo parameters
-#         lng_column, lat_column = \
-#                 self.lng_column_param.value, self.lat_column_param.value
-#         # filter input stream as much as possible:
-#         # - select useful columns only
-#         stream = self.input_stream
-#         stream = stream.select_columns(lng_column, lat_column)
-#         return stream
-            
-#     def handle_event(self, event):
-#         # ev_type = event[0]
-#         # time_credit = event[1]
-        
-#         # if ev_type == 'new_zone':
-#         #     stream = self.filtered_stream()
-#         #     self.curr_markers = Markers(stream)
-        
-#         # self.curr_markers.compute(time_credit)
-
-#         # return { 'tweetsmap': dict(lat = self.curr_markers.latList, lng = self.curr_markers.lngList , done = self.curr_markers.done) }
-#         ev_type = event[0]
-#         time_credit = event[1]
-#         polygon = event[2]
-
-#         if ev_type == "polygons_update":
-#             stream = self.filtered_stream(polygon)
-#             self.curr_markers = Markers(stream)
-
-#         self.curr_markers.compute(time_credit)
-            
-#         list_lat = self.curr_markers.latList
-#         list_lng = self.curr_markers.lngList
-#         markers = []
-#         for j in range(0,len(polygon)):
-#             markers.append([])
-#         for i in range(0,len(list_lat)):
-#             for j in range(0, len(polygon)):
-#                 if self.check_point_inside(list_lat[i], list_lng[i], polygon[j]):
-#                     markers[j].append([list_lat[i], list_lng[i]])
-
-#         return {'tweetsmap': markers, 'done': self.curr_markers.done}
-
+            return { 'exportation': compressed_ex}   
+        if ev_type == 'wordcloud':
+            polygon = event[2]
+            polyInfo = event[3]
+            timeStart = event[4]
+            timeEnd = event[5]
+            stream = self.filtered2_stream(**polyInfo)
+            self.curr_wordcloud = WordCloudInfo(stream, polygon, timeStart, timeEnd)
+        if ev_type == 'wordcloud' or ev_type == 'wordcloud_continue':
+            self.curr_wordcloud.compute(time_credit)
+            compressed_wd = self.curr_wordcloud.compressed_form()
+            return{'wordcloud': compressed_wd}
             
