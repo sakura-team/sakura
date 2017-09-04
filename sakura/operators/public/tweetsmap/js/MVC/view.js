@@ -1484,12 +1484,29 @@ function View() {
 
     this.dataLoadingBar = new V.DataLoadingBar({parentElement: document.getElementById('layout')});
     this.loader = new V.Loader({parentElement: document.getElementById('layout')});
-    // this.infoPolygonDiv = V.create('div', 'infopolygon', document.getElementById('info'));
-    // this.infoPolygonDiv.img = V.create('img','', this.infoPolygonDiv);
-    // this.infoPolygonDiv.img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==';
-    document.getElementById('my_canvas').addEventListener('click', function(){
+    var canvas = document.getElementById('my_canvas');
+    canvas.addEventListener('click', function(){
         $('#info').hide();
     }, false);
+    
+    this.downloadWordCloud = new V.ExportationIcon({
+        idDiv: "download",
+        parentElement: document.getElementById('download'), 
+        checked: true, enabled: true
+    });
+    this.downloadWordCloud.eventHandle = function(){
+        canvas.toBlob(function(blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = "world-cloud.png";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            thisView.downloadWordCloud.setChecked();
+            // document.body.appendChild(newImg);
+          });
+    };
     //--------------------------------------Instances----------------------------------------------
 
     var deleteShape = function (e) {
@@ -1926,7 +1943,7 @@ function View() {
 
     //-----------------------Data info box----------------------------------------
     this.infobox = L.control();
-
+    this.infobox2 = document.getElementById('counter_info_poly');
     this.infobox.onAdd = function (map) {
         this._div = V.create('div', 'infobox'); // create a div with a class "infobox"
         this._div.id = 'infobox'
@@ -1937,6 +1954,11 @@ function View() {
     // method that we will use to update the control based on feature properties passed
     this.infobox.update = function (props) {
         this._div.innerHTML = props.text + ' ' +
+            '<i class="fa fa-' + props.icon + '"></i>';
+    };
+
+    this.infobox2.update = function (props) {
+        thisView.infobox2.innerHTML = props.text + ' ' +
             '<i class="fa fa-' + props.icon + '"></i>';
     };
 

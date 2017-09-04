@@ -243,13 +243,16 @@ function Controller() {
     function wordcloud_callback(result) {
         var icon;
         if ('issue' in result) {
-            // myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
+            myView.infobox2.update({ 'icon': 'alert', 'text': result.issue });
             $('#info').hide();  
             return;
         }
         if (result.wordcloud.done) {   // input data is complete for this map
             icon = 'check';
-            
+            myView.downloadWordCloud.enable();
+            data.sort(function(a, b){
+                return b[1] - a[1];
+            });
             // myView.infoPolygonDiv.img.src = 'data:image/png;base64,'+result.wordcloud.data;
         }
         else {
@@ -261,9 +264,12 @@ function Controller() {
                 wordcloud_callback);
         }
         // update infobox
-        myView.infobox.update({ "icon": icon, 'text': result.wordcloud.count + ' points' });
+        myView.infobox2.update({ "icon": icon, 'text': result.wordcloud.count + ' points' });
         var data = result.wordcloud.data;
+        var keywords = $('#list_keywords');
         for(var item in data){
+            if(result.wordcloud.done)
+                keywords.append('<tr><th>'+data[item][0]+'</th><th>'+data[item][1]+'</th></tr>');
             data[item][1] *= 100;
             data[item][1] += 4;
         }
@@ -368,7 +374,12 @@ function Controller() {
             'northlat': northlat_poly,
         };
         var timeRange = layer.research.timeRange;
-        // send event, then update map
+        myView.infobox2.update({ "icon": 'hourglass-half', 'text': 0 + ' points' });
+        myView.downloadWordCloud.disable();
+        var keywords = $('#list_keywords');
+        keywords.empty();
+        keywords.append('<tr><th>KeyWords</th><th>Frequency</th></tr>');
+            // send event, then update map
         sakura.operator.fire_event(
             ["wordcloud", HEATMAP_REFRESH_DELAY, polygon, info, timeRange.timeStart/1000.0, timeRange.timeEnd/1000.0],
             wordcloud_callback);
