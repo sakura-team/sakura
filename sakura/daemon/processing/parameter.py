@@ -19,7 +19,7 @@ class Parameter(object):
     def selected(self):
         return self.value != None
 
-    def get_info_serializable_base(self):
+    def pack_base(self):
         info = dict(
             gui_type = self.gui_type,
             label = self.label
@@ -30,8 +30,8 @@ class Parameter(object):
             info.update(value = None)
         return info
 
-    def get_info_serializable(self):
-        print('get_info_serializable() must be implemented in Parameter subclasses.')
+    def pack(self):
+        print('pack() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
     def auto_fill(self):
@@ -57,8 +57,8 @@ class Parameter(object):
 class ComboParameter(Parameter):
     def __init__(self, label):
         super().__init__('COMBO', label)
-    def get_info_serializable(self):
-        info = self.get_info_serializable_base()
+    def pack(self):
+        info = self.pack_base()
         try:
             possible_values = self.get_possible_values()
             info.update(possible_values = possible_values)

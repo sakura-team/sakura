@@ -1,7 +1,7 @@
 from sakura.common.tools import SimpleAttrContainer
 
 class Link(SimpleAttrContainer):
-    def get_info_serializable(self):
+    def pack(self):
         return dict(
             link_id = self.link_id,
             src_id = self.src_op.op_id,

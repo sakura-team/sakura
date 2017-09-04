@@ -8,5 +8,5 @@ class DBTable:
     def add_column(self, *col_info):
         col = DBColumn(self.name, *col_info)
         self.columns.append(col)
-    def summarize(self):
+    def pack(self):
         return dict(name = self.name, columns = self.columns)

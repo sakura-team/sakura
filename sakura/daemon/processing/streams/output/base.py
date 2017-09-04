@@ -14,9 +14,9 @@ class OutputStreamBase(Registry):
         return self.register(self.columns, Column,
                     col_label, col_type, tuple(col_tags),
                     self, len(self.columns))
-    def get_info_serializable(self):
+    def pack(self):
         return dict(label = self.label,
-                    columns = [ col.get_info_serializable() for col in self.columns ],
+                    columns = self.columns,
                     length = self.length)
     def get_range(self, row_start, row_end, columns=None, filters=()):
         chunk_len = row_end-row_start

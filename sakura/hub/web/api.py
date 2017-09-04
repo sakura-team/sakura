@@ -28,7 +28,7 @@ class GuiToHubAPI(object):
     
     # returns info about operator instance: cls_name, inputs, outputs, parameters
     def get_operator_instance_info(self, op_id):
-        return self.context.op_instances.get_info_serializable(op_id)
+        return self.context.op_instances.pack(op_id)
     
     def set_parameter_value(self, op_id, param_id, value):
         return self.context.op_instances.set_parameter_value(op_id, param_id, value)
@@ -77,7 +77,7 @@ class GuiToHubAPI(object):
         return list(self.context.links)
     
     def get_link_info(self, link_id):
-        return self.context.links[link_id].get_info_serializable()
+        return self.context.links[link_id]
     
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         return self.context.create_link(src_op_id, src_out_id, dst_op_id, dst_in_id)

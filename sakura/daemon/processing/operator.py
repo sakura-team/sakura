@@ -45,15 +45,15 @@ class Operator(Registry):
                 icon = op_cls.ICON)
     def get_num_parameters(self):
         return len(self.parameters)
-    def get_info_serializable(self):
+    def pack(self):
         return dict(
             op_id = self.op_id,
             cls_name = self.NAME,
-            parameters = [ param.get_info_serializable() for param in self.parameters ],
-            inputs = [ stream.get_info_serializable() for stream in self.input_streams ],
-            outputs = [ stream.get_info_serializable() for stream in self.output_streams ],
-            internal_streams = [ stream.get_info_serializable() for stream in self.internal_streams ],
-            tabs = [ tab.get_info_serializable() for tab in self.tabs ]
+            parameters = self.parameters,
+            inputs = self.input_streams,
+            outputs = self.output_streams,
+            internal_streams = self.internal_streams,
+            tabs = self.tabs
         )
     def auto_fill_parameters(self, permissive = False, stream = None):
         if permissive:

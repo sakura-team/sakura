@@ -56,7 +56,7 @@ class Dataset:
         prober = DBProber(self.dbms.driver, db_conn)
         self._tables = prober.probe()
         db_conn.close()
-    def summarize(self):
+    def pack(self):
         return dict(
             label = self.label,
             owner = self.owner,

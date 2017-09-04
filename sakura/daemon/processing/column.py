@@ -10,7 +10,7 @@ class Column(object):
         self.tags = col_tags
         self.output_stream = output_stream
         self.index = col_index
-    def get_info_serializable(self):
+    def pack(self):
         return (self.label, str(np.dtype(self.type)), self.tags)
     def get_dtype(self):
         if self.type == str:

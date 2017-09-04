@@ -35,7 +35,7 @@ class DataStore:
     def refresh_datasets(self):
         prober = DataStoreProber(self)
         self.datasets = { d.label: d for d in prober.probe() }
-    def get_info_serializable(self):
+    def pack(self):
         datasets_overview = tuple(
             dataset.overview() for dataset in self.datasets.values()
         )

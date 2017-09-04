@@ -14,6 +14,6 @@ class DBColumn:
         self.value_wrapper = value_wrapper
         self.tags = list(tags)
         self.qualified_name = table_name + "." + col_name
-    def summarize(self):
+    def pack(self):
         return (self.col_name, str(self.np_dtype), self.tags)
 

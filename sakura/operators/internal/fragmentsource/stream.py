@@ -6,7 +6,7 @@ DEFAULT_CHUNK_SIZE = 1000   # network is involved, do not increase too much
 class FragmentSourceStream(OutputStreamBase):
     def __init__(self, remote_out_stream, src_col_indexes=None, filters=()):
         self.remote_out_stream = remote_out_stream
-        out_stream_info = remote_out_stream.get_info_serializable()
+        out_stream_info = remote_out_stream.pack()
         OutputStreamBase.__init__(self, out_stream_info['label'])
         self.length = out_stream_info['length']
         self.src_col_indexes = src_col_indexes

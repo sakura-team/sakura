@@ -13,12 +13,12 @@ class InputStream(object):
         return self.source_stream != None
     def columns(self):
         return self.columns
-    def get_info_serializable(self):
+    def pack(self):
         info = dict(label = self.label)
         if self.connected():
             info.update(
                 connected = True,
-                columns = [ col.get_info_serializable() for col in self.columns ],
+                columns = self.columns,
                 length = self.source_stream.length
             )
         else:

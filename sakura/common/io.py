@@ -23,8 +23,8 @@ def make_serializable(obj):
     # with other objects, try to be smart
     if isinstance(obj, dict):
         return { k: make_serializable(v) for k, v in obj.items() }
-    elif hasattr(obj, 'summarize'):
-        return make_serializable(obj.summarize())
+    elif hasattr(obj, 'pack'):
+        return make_serializable(obj.pack())
     elif hasattr(obj, '_asdict'):
         return make_serializable(obj._asdict())
     elif isinstance(obj, list) or isinstance(obj, tuple) or \

@@ -4,7 +4,7 @@ class Tab(object):
         self.label = label
         self.html_path = html_path
 
-    def get_info_serializable(self):
+    def pack(self):
         info = dict(
             label = self.label,
             html_path = self.html_path
