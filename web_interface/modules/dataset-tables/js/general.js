@@ -89,8 +89,19 @@ function on_file_selected(f) {
     var fr = new FileReader();
     
     fr.onload = function(e) {
+        //check the name: should have .csv extension
+        
+        var s_name = f.value.split('.');
+        if (s_name[s_name.length - 1] != 'csv' && s_name[s_name.length - 1] != 'CSV') {
+            console.log(s_name[s_name.length - 1]);
+            alert("The extension of this file is not .csv !! Please be sure it is a csv file, and rename it with extension.");
+            return;
+        }
+        
+        //check the columns
         var lines = e.target.result.split(/[\r\n]+/g);
         var cols = lines[0].split(',');
+        
         cols.forEach( function(col) {
             console.log(col);
         });
