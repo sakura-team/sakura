@@ -83,3 +83,18 @@ function dataset_table_analytics(dataset_id, table_id) {
 function dataset_table_delete(dataset_id, table_id) {
     not_yet();
 }
+
+
+function on_file_selected(f) {
+    var fr = new FileReader();
+    
+    fr.onload = function(e) {
+        var lines = e.target.result.split(/[\r\n]+/g);
+        var cols = lines[0].split(',');
+        cols.forEach( function(col) {
+            console.log(col);
+        });
+    };
+    
+    fr.readAsText(f.files[0]);
+}
