@@ -10,8 +10,6 @@ function not_yet() {
 function recover_tables() {
     
     var dataset_id = window.location.search.substr(1).split("=")[1];
-    console.log("WLOC", window.location);
-    console.log("DDDDDDDD", dataset_id);
     sakura.common.ws_request('get_dataset_info', [parseInt(dataset_id)], {}, function (result) {
     
         //Filling table
@@ -108,4 +106,15 @@ function on_file_selected(f) {
     };
     
     fr.readAsText(f.files[0]);
+}
+
+
+function dataset_tables_add_a_row() {
+    var body = $('#datasets_table_creation_from_scratch_columns').find('tbody');
+    var nb_rows = body[0].childElementCount - 1;
+    var new_row = $(body[0].insertRow(nb_rows));
+    
+    new_row.load('creation_table_row.html', function () {
+        $(new_row[0].childNodes[0]).find('input')[0].value = "Column "+ (nb_rows + 1);
+    });
 }
