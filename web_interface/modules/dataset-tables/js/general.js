@@ -2,6 +2,8 @@
 //August, 22nd, 2017
 
 
+var global_ids = 0;
+
 function not_yet() {
     alert("not yet implemented");
 }
@@ -41,6 +43,8 @@ function recover_tables() {
         $('#datasets_table_creation_from_scratch_button').attr('onclick', 'new_dataset_table_from_scratch('+dataset_id+')');
         $('#datasets_table_creation_name_from_scratch').val("");
         $('#datasets_table_creation_description_from_scratch').val("");
+        
+        dataset_tables_add_a_row();
         
     });
 }
@@ -113,8 +117,16 @@ function dataset_tables_add_a_row() {
     var body = $('#datasets_table_creation_from_scratch_columns').find('tbody');
     var nb_rows = body[0].childElementCount - 1;
     var new_row = $(body[0].insertRow(nb_rows));
+    new_row.attr('id', 'dataset_tables_row_' + global_ids);
     
     new_row.load('creation_table_row.html', function () {
-        $(new_row[0].childNodes[0]).find('input')[0].value = "Column "+ (nb_rows + 1);
+        var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
+        $(last_cel.find('button')[0]).attr('onclick', 'dataset_tables_delete_row('+global_ids+');');
+        global_ids ++;
     });
+}
+
+
+function dataset_tables_delete_row(row_id) {
+    $('#dataset_tables_row_'+row_id).remove();
 }
