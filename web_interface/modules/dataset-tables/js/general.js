@@ -44,7 +44,7 @@ function recover_tables() {
         $('#datasets_table_creation_name_from_scratch').val("");
         $('#datasets_table_creation_description_from_scratch').val("");
         
-        dataset_tables_add_a_row();
+        dataset_tables_add_a_row('datasets_table_creation_from_scratch_columns');
         
     });
 }
@@ -104,8 +104,17 @@ function on_file_selected(f) {
         var lines = e.target.result.split(/[\r\n]+/g);
         var cols = lines[0].split(',');
         
+        var body = $('#datasets_table_creation_from_file_columns').find('tbody');
+        body.empty();
         cols.forEach( function(col) {
-            console.log(col);
+            var new_row = $(body[0].insertRow(-1));
+            new_row.load('creation_table_row.html', function () {
+                var inputs = new_row.find('input');
+                var buttons = new_row.find('button');
+                inputs[0].value = col;
+                
+                buttons[buttons.length - 1].remove();
+            });
         });
     };
     
@@ -113,8 +122,8 @@ function on_file_selected(f) {
 }
 
 
-function dataset_tables_add_a_row() {
-    var body = $('#datasets_table_creation_from_scratch_columns').find('tbody');
+function dataset_tables_add_a_row(table_id) {
+    var body = $('#'+table_id).find('tbody');
     var nb_rows = body[0].childElementCount - 1;
     var new_row = $(body[0].insertRow(nb_rows));
     new_row.attr('id', 'dataset_tables_row_' + global_ids);
@@ -123,7 +132,9 @@ function dataset_tables_add_a_row() {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
         $(last_cel.find('button')[0]).attr('onclick', 'dataset_tables_delete_row('+global_ids+');');
         global_ids ++;
-    });
+    });    
+    
+    return new_row;
 }
 
 

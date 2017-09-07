@@ -67,14 +67,14 @@
                         </div>
                         
                         <ul class="nav nav-pills">
-                            <li class="active"><a data-toggle="pill" href="#dataset_tables_creation_from_scratch_pan">From Scratch</a></li>
-                            <li><a data-toggle="pill" href="#dataset_tables_creation_from_file_pan">From File</a></li>
+                            <li class="active"><a data-toggle="pill" href="#dataset_tables_creation_from_scratch_pan" onclick="$('#datasets_table_creation_from_scratch_button')[0].childNodes[0].data = 'Send New Table From Scratch';">From Scratch</a></li>
+                            <li><a data-toggle="pill" href="#dataset_tables_creation_from_file_pan" onclick="$('#datasets_table_creation_from_scratch_button')[0].childNodes[0].data = 'Send New Table From File';">From File</a></li>
                         </ul>
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="tab-content">
                                     <div id="dataset_tables_creation_from_scratch_pan" class="tab-pane fade in active">
-                                        <table class="table table-condensed table-hover" id="datasets_table_creation_from_scratch_columns">
+                                        <table class="table table-condensed" id="datasets_table_creation_from_scratch_columns">
                                             <thead>
                                                 <tr>
                                                     <th class="col-md-2">Name
@@ -86,7 +86,7 @@
                                             <tbody>
                                                 <tr>
                                                     <td colspan=5>
-                                                        <button id="dataset_tables_creation_add_row_button" title="Add a new column" type="button" class="btn btn-primary btn-xs" onclick="dataset_tables_add_a_row();">
+                                                        <button id="dataset_tables_creation_add_row_button" title="Add a new column" type="button" class="btn btn-primary btn-xs" onclick="dataset_tables_add_a_row('datasets_table_creation_from_scratch_columns');">
                                                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                                                         </button>
                                             </tbody>
@@ -95,19 +95,23 @@
                                     
                                     <div id="dataset_tables_creation_from_file_pan" class="tab-pane fade in">
                                         <div id="dataset_tables_file_input" class="form-group">
-                                            <label> File</label>
                                             <input id="datasets_table_file_from_HD" type="file" onchange="on_file_selected(this);">
                                         </div>
-                                        <table class="table table-condensed table-hover" id="datasets_table_creation_from_file_columns">
+                                        <hr>
+                                        <table class="table table-condensed" id="datasets_table_creation_from_file_columns">
                                             <thead>
                                                 <tr>
                                                     <th class="col-md-2">Name
                                                     <th class="col-md-1">Type
                                                     <th class="col-md-6">Description
                                                     <th class="col-md-3">Tags
-                                                    <th class="col-md-1">&nbsp;
                                             </thead>
                                             <tbody>
+                                            <tr>
+                                                <td>Empty table for now
+                                                <td>
+                                                <td>
+                                                <td>
                                             </tbody>
                                         </table>
                                         
@@ -124,7 +128,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                        <button type="button" id="datasets_table_creation_from_scratch_button" class="btn btn-primary" onclick="">Send</button>
+                        <button type="button" id="datasets_table_creation_from_scratch_button" class="btn btn-primary" onclick="">Send New Table From Scratch</button>
                     </div>
                 </div>
             </div>
