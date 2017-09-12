@@ -22,13 +22,22 @@ for operator in $operators
 do
     ln -s $PWD/sakura/operators/public/$operator $TMPDIR/operators/$operator
 done
+
+CUSTOM_DATASTORES_CONF="$PWD/test/daemon${daemon_index}-datastores.conf"
+if [ -f "$CUSTOM_DATASTORES_CONF" ]
+then
+    DATASTORES_CONF="$(cat "$CUSTOM_DATASTORES_CONF")"
+else
+    DATASTORES_CONF="[ ]"
+fi
+
 cat > $TMPDIR/daemon.conf << EOF
 {
     "hub-host": "localhost",
     "hub-port": 10432,
     "daemon-desc": "daemon $daemon_index",
     "operators-dir": "$TMPDIR/operators",
-    "data-stores": [ ]
+    "data-stores": $DATASTORES_CONF
 }
 EOF
 # Sample data-store configuration:
