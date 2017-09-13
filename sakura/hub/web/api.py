@@ -109,12 +109,12 @@ class GuiToHubAPI(object):
         return self.context.links.get_gui_data(link_id)
 
     ########################################
-    # Datasets
+    # Databases
     def list_datastores(self):
         return self.context.datastores.list()
 
-    def list_datasets(self):
-        return self.context.datasets.list()
+    def list_databases(self):
+        return self.context.databases.list()
 
-    def get_dataset_info(self, dataset_id):
-        return self.context.get_dataset_info(dataset_id)
+    def get_database_info(self, database_id):
+        return self.context.get_database_info(database_id)

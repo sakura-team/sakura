@@ -19,7 +19,7 @@ class DBProber:
         print("----------- found column " + str(col_info))
         self.tables[table_name].add_column(*col_info)
 
-class Dataset:
+class Database:
     def __init__(self, dbms, label):
         self.dbms = dbms
         self.label = label

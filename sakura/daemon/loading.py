@@ -37,7 +37,7 @@ def load_datastores():
             driver_label = ds_conf['driver']
         )
         try:
-            ds.refresh_datasets()
+            ds.refresh_databases()
             datastores.append(ds)
         except BaseException as exc:
             print('WARNING: Could not load %s Data Store at %s: %s. IGNORED.' % \

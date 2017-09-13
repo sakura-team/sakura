@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS DataStore (
     driver TEXT
 );
 
-CREATE TABLE IF NOT EXISTS Dataset (
-    dataset_id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS Database (
+    database_id INTEGER PRIMARY KEY AUTOINCREMENT,
     datastore_id INTEGER REFERENCES DataStore(datastore_id) ON DELETE CASCADE,
     label TEXT
 );

@@ -1,7 +1,7 @@
 import bottle
 from collections import namedtuple
 from sakura.hub.datastores import DataStoreRegistry
-from sakura.hub.datasets import DatasetRegistry
+from sakura.hub.databases import DatabaseRegistry
 from sakura.hub.opclasses import OpClassRegistry
 from sakura.hub.opinstances import OpInstanceRegistry
 from sakura.hub.links import LinkRegistry
@@ -17,7 +17,7 @@ class HubContext(object):
         self.op_instances = OpInstanceRegistry(self.db)
         self.links = LinkRegistry(self.db)
         self.datastores = DataStoreRegistry(self.db)
-        self.datasets = DatasetRegistry(self.db)
+        self.databases = DatabaseRegistry(self.db)
     def get_daemon_id(self, daemon_info):
         # check if we already know this daemon description
         db_row = self.db.select_unique('Daemon',
@@ -36,8 +36,8 @@ class HubContext(object):
         # note: a SimpleAttrContainer will be more handy
         daemon_info = SimpleAttrContainer(**daemon_info)
         self.daemons[daemon_id] = daemon_info
-        datasets_info = self.datastores.restore_daemon_state(daemon_info)
-        self.datasets.restore_daemon_state(daemon_id, datasets_info)
+        databases_info = self.datastores.restore_daemon_state(daemon_info)
+        self.databases.restore_daemon_state(daemon_id, databases_info)
         self.op_classes.restore_daemon_state(daemon_info)
         self.op_instances.restore_daemon_state(daemon_info, self.op_classes)
         self.links.restore_daemon_state(daemon_info, self.op_instances)
@@ -108,13 +108,13 @@ class HubContext(object):
                 project_id = project_id,
                 gui_data = gui_data)
         self.db.commit()
-    def get_dataset_info(self, dataset_id):
-        dataset_info = self.datasets[dataset_id]
-        datastore_id = dataset_info.datastore_id
+    def get_database_info(self, database_id):
+        database_info = self.databases[database_id]
+        datastore_id = database_info.datastore_id
         datastore_info = self.datastores[datastore_id]
         daemon_id = datastore_info.daemon_id
-        return self.daemons[daemon_id].api.get_dataset_info(
+        return self.daemons[daemon_id].api.get_database_info(
             datastore_host = datastore_info.host,
             datastore_driver_label = datastore_info.driver_label,
-            dataset_label = dataset_info.label
+            database_label = database_info.label
         )
