@@ -113,7 +113,7 @@ function showDiv(event, dir, id) {
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             if (typeof(id) != "undefined") {
-                actionsOnShow[i].src = "/modules/dataset-tables/index.html?dataset_id="+id;
+                actionsOnShow[i].src = "/modules/dataset-tables/index.html?database_id="+id;
             }
         }
         else {
@@ -360,7 +360,7 @@ function buildListStub(idDiv,result,elt) {
     if (document.getElementById("cbColSelectTags").checked) {
         s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
     if (document.getElementById("cbColSelectId").checked) {
-        s = s +  '<th class="col-text">dataset_id</th>';}
+        s = s +  '<th class="col-text">database_id</th>';}
     if (document.getElementById("cbColSelectShortDesc").checked) {
         s = s +  '<th class="col-text">Short Desc.</th>';}
     if (document.getElementById("cbColSelectDate").checked) {
@@ -376,11 +376,11 @@ function buildListStub(idDiv,result,elt) {
         + '</tr></thead>'
         + '<tbody id="idTBodyList'+eltAncetre+'">';
     for(i=0;i<result.length;i++) {
-        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].dataset_id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].dataset_id+"\">"+result[i].name+"</a></td>\n";
+        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].database_id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].database_id+"\">"+result[i].name+"</a></td>\n";
         if (document.getElementById("cbColSelectTags").checked) {
             s = s + "<td>"+result[i].tags+"</td>";}
         if (document.getElementById("cbColSelectId").checked) {
-            s = s + "<td>"+result[i].dataset_id+"</td>";} 
+            s = s + "<td>"+result[i].database_id+"</td>";} 
         if (document.getElementById("cbColSelectShortDesc").checked) {
             s = s + "<td>"+result[i].shortDesc+"</td>";}  
         if (document.getElementById("cbColSelectDate").checked) {
@@ -423,10 +423,24 @@ function buildListStub(idDiv,result,elt) {
 
 function listRequestStub(idDiv, n, elt, bd) {
     // version réseau à faire
-    if (elt == 'DataSets/tmpDataSet')
-        ws_request('list_datasets', [], {}, function (result) {
-        buildListStub(idDiv,result,elt);
-    });
+    if (elt == 'DataSets/tmpDataSet') {
+        ws_request('list_databases', [], {}, function (databases) {
+            var result = new Array();;
+            databases.forEach( function(db, index) {
+                if (index != databases.length-1) {
+                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
+                        result.push({'name': db_info.label});
+                    });
+                }
+                else {
+                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
+                        result.push({'name': db_info.label});
+                        buildListStub(idDiv,result,elt);
+                    });
+                }
+            });
+        });
+    }
     else {
         result=new Array();
         for(i=0;i<n;i++) {
