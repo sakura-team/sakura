@@ -109,11 +109,10 @@ function showDiv(event, dir, id) {
     d.innerHTML = bct;
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
     
-    console.log(idDir);
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             if (typeof(id) != "undefined") {
-                actionsOnShow[i].src = "/modules/dataset-tables/index.html?database_id="+id;
+                actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+id;
             }
         }
         else {
