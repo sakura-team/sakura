@@ -3,6 +3,7 @@
 
 
 var global_ids = 0;
+var file_lines = null;
 
 function not_yet() {
     alert("not yet implemented");
@@ -103,26 +104,36 @@ function on_file_selected(f) {
             alert("The extension of this file is not .csv !! Please be sure it is a csv file, and rename it with extension.");
             return;
         }
+        file_lines = e.target.result.split(/[\r\n]+/g);
         
-        //check the columns
-        var lines = e.target.result.split(/[\r\n]+/g);
-        var cols = lines[0].split(',');
-        
-        var body = $('#datasets_creation_from_file_columns').find('tbody');
-        body.empty();
-        cols.forEach( function(col) {
-            var new_row = $(body[0].insertRow(-1));
-            new_row.load('creation_dataset_row.html', function () {
-                var inputs = new_row.find('input');
-                var buttons = new_row.find('button');
-                inputs[0].value = col;
-                
-                buttons[buttons.length - 1].remove();
-            });
-        });
+        //ask for the separator
+        $('#datasets_csv_separator_modal').modal();
     };
     
     fr.readAsText(f.files[0]);
+}
+
+
+function datasets_parse_file() {
+    
+    //read separator
+    var sep = $('#datasets_csv_separator')[0].value;
+    
+    //check the columns
+    var cols = file_lines[0].split(sep);
+    
+    var body = $('#datasets_creation_from_file_columns').find('tbody');
+    body.empty();
+    cols.forEach( function(col) {
+        var new_row = $(body[0].insertRow(-1));
+        new_row.load('creation_dataset_row.html', function () {
+            var inputs = new_row.find('input');
+            var buttons = new_row.find('button');
+            inputs[0].value = col;
+            
+            buttons[buttons.length - 1].remove();
+        });
+    });
 }
 
 
