@@ -119,20 +119,38 @@ function datasets_parse_file() {
     //read separator
     var sep = $('#datasets_csv_separator')[0].value;
     
-    //check the columns
-    var cols = file_lines[0].split(sep);
+    //check the columns and the first line (dealing with comments)
+    var index  = 0
+    var cols =['#'];    
+    while (cols[0].indexOf('#') >= 0) {
+        cols = file_lines[index].split(sep);
+        index ++;
+    }
+    var first_line = ['#'];
+    while (first_line[0].indexOf('#') >= 0) {
+        first_line = file_lines[index].split(sep);
+        index ++;
+    }
     
     var body = $('#datasets_creation_from_file_columns').find('tbody');
     body.empty();
-    cols.forEach( function(col) {
+    cols.forEach( function(col, index) {
         var new_row = $(body[0].insertRow(-1));
         new_row.load('creation_dataset_row.html', function () {
             var inputs = new_row.find('input');
             var buttons = new_row.find('button');
+            var select = new_row.find('select');
             inputs[0].value = col;
             
             buttons[buttons.length - 1].remove();
+            
+            select.val(getType(first_line[index]));
         });
+    });
+    
+    //Now we try to guess the column informatics types
+    first_line.forEach( function(col) {
+        console.log(getType(col));
     });
 }
 
@@ -155,4 +173,27 @@ function datasets_add_a_row(dataset_id) {
 
 function datasets_delete_row(row_id) {
     $('#datasets_row_'+row_id).remove();
+}
+
+
+function getType(str){
+    if (typeof str !== 'string') str = str.toString();
+    var nan = isNaN(Number(str));
+    var isfloat = /^\d*(\.|,)\d*$/;
+    var commaFloat = /^(\d{0,3}(,)?)+\.\d*$/;
+    var dotFloat = /^(\d{0,3}(\.)?)+,\d*$/;
+    var date = /^\d{0,4}(\.|\/)\d{0,4}(\.|\/)\d{0,4}$/;
+    var email = /^[A-za-z0-9._-]*@[A-za-z0-9_-]*\.[A-Za-z0-9.]*$/;
+    var phone = /^\+\d{2}\/\d{4}\/\d{6}$/g;
+    if (!nan){
+        if (parseFloat(str) === parseInt(str)) return "integer";
+        else return "float";
+    }
+    else if (isfloat.test(str) || commaFloat.test(str) || dotFloat.test(str)) return "float";
+    else if (date.test(str)) return "date";
+    else {
+        if (email.test(str)) return "e-mail";
+        else if (phone.test(str)) return "phone";
+        else return "string";
+    }
 }
