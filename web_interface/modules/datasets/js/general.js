@@ -14,10 +14,9 @@ function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
     //console.log(parseInt(database_id));
-    database_id = 2;
+    database_id = 3;
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
         
-        console.log(result);
         //Filling dataset
         var body = $('#table_of_datasets').find('tbody');
         body.empty();
@@ -36,18 +35,12 @@ function recover_datasets() {
                         </tr>');
         });
         
-        //Updating html elements
+        //Updating/emptying html elements
         
-        //Creation from file
-        $('#datasets_creation_from_file_button').attr('onclick', 'new_dataset_from_file('+database_id+')');
-        $('#datasets_creation_name_from_file').val("");
-        $('#datasets_creation_description_from_file').val("");
+        $('#datasets_creation_name').val("");
+        $('#datasets_creation_description').val("");
         $("#datasets_file_from_HD").val("");
-        
-        //Creation from Scratch
-        $('#datasets_creation_from_scratch_button').attr('onclick', 'new_dataset_from_scratch('+database_id+')');
-        $('#datasets_creation_name_from_scratch').val("");
-        $('#datasets_creation_description_from_scratch').val("");
+        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+', "file")');
         
         datasets_add_a_row('datasets_creation_from_scratch_columns');
         
@@ -55,16 +48,16 @@ function recover_datasets() {
 }
 
 
-function new_dataset_from_file(database_id) {
-    console.log("database_id", database_id);
-    console.log("file", $('#datasets_file_from_HD').val() );
-    $("#datasets_creation_fromfile_modal").modal('hide');
-}
-
-
-function new_dataset_from_scratch(database_id) {
-    console.log("database_id", database_id);
-    $("#datasets_creation_fromscratch_modal").modal('hide');
+function datasets_send_new(database_id, from) {
+    $("#datasets_creation_modal").modal('hide');
+    console.log(database_id);
+    //var dataset_def = []
+    var body = $('#datasets_creation_from_file_columns').find('tbody');
+    if (from == "scratch")
+        body = $('#datasets_creation_from_scratch_columns').find('tbody');
+    
+    console.log(body);
+    //console.log("Params", dataset_def);
 }
 
 
@@ -146,11 +139,6 @@ function datasets_parse_file() {
             
             select.val(getType(first_line[index]));
         });
-    });
-    
-    //Now we try to guess the column informatics types
-    first_line.forEach( function(col) {
-        console.log(getType(col));
     });
 }
 
