@@ -64,3 +64,10 @@ def check_point_inside(x, y, polygonInfo):
         # check if a point is inside a circle
         res = distance(x, y, x_center, y_center) < radius
     return res
+
+def check_contained_words(text, words):
+    for word in words:
+        if not (word in text):
+            return False
+    return True
+

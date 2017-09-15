@@ -2,7 +2,7 @@
 import numpy as np
 import numpy.random
 from math import sin, cos, sqrt, atan2, radians
-from .polygonfilter import check_point_inside
+from .polygonfilter import check_point_inside, check_contained_words
 from wordcloud import WordCloud, STOPWORDS
 import base64
 from stop_words import get_stop_words
@@ -15,7 +15,7 @@ from time import time
 # ---------------------------------
 
 class WordCloudInfo:
-    def __init__(self, stream, polygon, timeStart, timeEnd):
+    def __init__(self, stream, polygon, timeStart, timeEnd, words):
         self.stream = stream
         self.iterator = stream.chunks(chunk_size=1000)
         self.polygon = polygon
@@ -25,6 +25,7 @@ class WordCloudInfo:
         self.count = 0
         # prepare compression parameters
         self.done = False
+        self.words = words
     def compute(self, time_credit):
         # make histogram:
         # - create a pixel grid
@@ -38,10 +39,10 @@ class WordCloudInfo:
                 if len(self.polygon) == 0:
                     pass
                 else:
-                    if (col[3] > self.timeEnd) or (col[3] < self.timeStart):
+                    if (col[2] > self.timeEnd) or (col[2] < self.timeStart):
                         pass
-                    elif check_point_inside(col[1], col[0], self.polygon):
-                        self.text += col[2]
+                    elif check_contained_words(col[3], self.words) and check_point_inside(col[1], col[0], self.polygon):
+                        self.text += col[3]
                         self.count += 1
             if time() > deadline:
                 deadline_reached = True
@@ -56,14 +57,6 @@ class WordCloudInfo:
     def compressed_form(self):
         # count number of points
         data = []
-        # if self.done and (self.text != ''):
-        #     stopwords = set(STOPWORDS)
-        #     stopwords.update(['https', 'co'])
-        #     stopwords.update(get_stop_words('french'))
-        #     w = WordCloud(max_words=200, stopwords = stopwords)
-        #     words = w.generate(self.text).words_
-        #     for word in words:
-        #         data.append([word, words[word]])
         if self.text !='' :
             stopwords = set(STOPWORDS)
             stopwords.update(['https', 'co'])

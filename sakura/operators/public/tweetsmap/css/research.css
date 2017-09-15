@@ -6,7 +6,7 @@
 }
 
 .scrollable {
-    overflow-x: auto;
+    overflow-y: scroll;
     /* overflow: auto;    */
 }
 
@@ -54,7 +54,6 @@
     position: absolute;
     left: 4px;
     top: -14px;
-
 }
 
 .champComposant {
@@ -74,6 +73,9 @@
     width: 92%;
 }
 
+.word-box {
+    height: auto;
+}
 .title {
     width: auto;
     font-family: 'Times New Roman', Times, serif;
@@ -124,10 +126,6 @@
     max-width: 25%;
     margin-left: 10px;
     /* width: auto; */
-}
-
-.timeSelector :first-child{
-    width: 12%;
 }
 
 .timeOption{

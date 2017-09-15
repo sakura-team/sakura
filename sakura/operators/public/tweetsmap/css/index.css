@@ -1,4 +1,5 @@
- body {
+html,body {
+    height: 100%;   
     overflow: hidden;
 }      
 
@@ -8,6 +9,7 @@
     right: 0;
     height: 100%;   
     width: 100%;
+    overflow: hidden;
 }
 
 div#size {
@@ -26,22 +28,22 @@ div#size {
 
 #research {
     position: absolute;
-    top: 80px;
+    top: 90px;
     left: 0%;
-    width: 25%;
-    height: auto;
-    max-height: 80%;
-    /* z-index of the leaflet pannes <= 700
-    */
+    width: 26%;
+    /* height: auto; */
+    max-height: 70%;
+    /* overflow-y: scroll; */
     z-index: 701;
     padding-top: 24px;
     visibility: hidden;
-     background-color:#e6f7ff; 
+    background-color:#e6f7ff; 
+    overflow-y: auto;
 }
 
 .hideResearch {
     position: fixed;
-    top: 80px;
+    top: 90px;
     left: 25%;
     z-index: 701;
 }
@@ -49,28 +51,71 @@ div#size {
 .edition-title {
     color: red;
     position: fixed;
-    top: 60px;
+    top: 75px;
     left: 10px;
     z-index: 702;
     visibility: hidden;
     font-size: 24px;
-    /* color: #0066ff; */
 }
+
+.keyword-box{
+    position: relative;
+    margin-right: 18px;
+    margin-top: 8px;
+    background-color: green;
+    height: 25px;
+    width: auto;
+    float: left;
+    padding-right: 8px;
+    /* min-width: 60px; */
+}
+
+.keyword-box p{
+    position: relative;
+    float: left;
+    font-size: 16px;
+    width: auto;
+    left: 10px;
+    top: -10px;
+}
+
+.keyword-box-button{
+    position: relative;
+    float: left;
+    top: -10px;
+    left: 20px;
+}
+/* 
+.keyword-texbox{
+    position: relative;
+} */
+
+.words-panel{
+    position: relative;
+    background-color: red;
+    left: 20px;
+    height: auto;
+    width: 85%;
+}
+
 
 #management {
     position: absolute;
-    top: 10%;
+    top: 12%;
     right: 0%; 
     z-index: 701;
     width: 33%;
     height: auto;
-    max-height: 85%;
     padding-top: 24px;
-    visibility: hidden;
+    max-height: 82%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow: auto;
 }
+
 .hideManagement{
     position: absolute;
-    top: 10%;
+    top: 12%;
     right: 33%;
     z-index: 800;
 }
@@ -215,14 +260,14 @@ div#size {
     float: left;
     /* width: 60%;
     height: 90%; */
-    width: 980px;
+    width: 950px;
     margin-left: 10px;
     top: 5px;
     height: 95%;
     display: block;
 }
 
-#counter_info_poly {
+.counter {
     position: fixed;
     top: 10px;
     right: 12px;
@@ -236,16 +281,17 @@ div#size {
 
 .loadingbar
 {
-    position: fixed;
-    top: 46%;
-    height: 8%;
-    left: 15%;
-    width: 70%;
+    position: relative;
+    top: 150px;
+    height: 10px;
+    width: 70%;    
+    margin-left: auto;
+    margin-right: auto;
 	background: #555;
 	-moz-border-radius: 25px;
 	-webkit-border-radius: 25px;
 	border-radius: 25px;
-	padding: 10px;
+	padding: 4px;
 	box-shadow: inset 0 -1px 1px rgba(255,255,255,0.3);
 }
 
@@ -273,77 +319,104 @@ div#size {
     overflow: hidden;
 }
 
-.loadingbox
-{
-    position: fixed;
-    top: 44%;
-    height: 12%;
-    left: 14%;
-    width: 72%;
-} 
-
-.loader,
-.loader:before,
-.loader:after {
-  background: #ffffff;
-  -webkit-animation: load1 1s infinite ease-in-out;
-  animation: load1 1s infinite ease-in-out;
-  width: 1em;
-  height: 4em;
-}
 .loader {
-  color: #ffffff;
-  text-indent: -9999em;
-  margin: 88px auto;
-  position: relative;
-  font-size: 11px;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-animation-delay: -0.16s;
-  animation-delay: -0.16s;
-}
-.loader:before,
-.loader:after {
-  position: absolute;
-  top: 0;
-  content: '';
-}
-.loader:before {
-  left: -1.5em;
-  -webkit-animation-delay: -0.32s;
-  animation-delay: -0.32s;
-}
-.loader:after {
-  left: 1.5em;
-}
-@-webkit-keyframes load1 {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 0;
-    height: 4em;
+    color: #000000;
+    font-size: 20px;
+    margin: 100px auto;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    position: relative;
+    text-indent: -9999em;
+    -webkit-animation: load4 1.3s infinite linear;
+    animation: load4 1.3s infinite linear;
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
   }
-  40% {
-    box-shadow: 0 -2em;
-    height: 5em;
+  @-webkit-keyframes load4 {
+    0%,
+    100% {
+      box-shadow: 0 -3em 0 0.2em, 2em -2em 0 0em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 0;
+    }
+    12.5% {
+      box-shadow: 0 -3em 0 0, 2em -2em 0 0.2em, 3em 0 0 0, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    25% {
+      box-shadow: 0 -3em 0 -0.5em, 2em -2em 0 0, 3em 0 0 0.2em, 2em 2em 0 0, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    37.5% {
+      box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 0, 2em 2em 0 0.2em, 0 3em 0 0em, -2em 2em 0 -1em, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    50% {
+      box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 0em, 0 3em 0 0.2em, -2em 2em 0 0, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    62.5% {
+      box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 0, -2em 2em 0 0.2em, -3em 0 0 0, -2em -2em 0 -1em;
+    }
+    75% {
+      box-shadow: 0em -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0.2em, -2em -2em 0 0;
+    }
+    87.5% {
+      box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
+    }
   }
-}
-@keyframes load1 {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 0;
-    height: 4em;
+  @keyframes load4 {
+    0%,
+    100% {
+      box-shadow: 0 -3em 0 0.2em, 2em -2em 0 0em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 0;
+    }
+    12.5% {
+      box-shadow: 0 -3em 0 0, 2em -2em 0 0.2em, 3em 0 0 0, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    25% {
+      box-shadow: 0 -3em 0 -0.5em, 2em -2em 0 0, 3em 0 0 0.2em, 2em 2em 0 0, 0 3em 0 -1em, -2em 2em 0 -1em, -3em 0 0 -1em, -2em -2em 0 -1em;
+    }
+    37.5% {
+      box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 0, 2em 2em 0 0.2em, 0 3em 0 0em, -2em 2em 0 -1em, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    50% {
+      box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 0em, 0 3em 0 0.2em, -2em 2em 0 0, -3em 0em 0 -1em, -2em -2em 0 -1em;
+    }
+    62.5% {
+      box-shadow: 0 -3em 0 -1em, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 0, -2em 2em 0 0.2em, -3em 0 0 0, -2em -2em 0 -1em;
+    }
+    75% {
+      box-shadow: 0em -3em 0 -1em, 2em -2em 0 -1em, 3em 0em 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0.2em, -2em -2em 0 0;
+    }
+    87.5% {
+      box-shadow: 0em -3em 0 0, 2em -2em 0 -1em, 3em 0 0 -1em, 2em 2em 0 -1em, 0 3em 0 -1em, -2em 2em 0 0, -3em 0em 0 0, -2em -2em 0 0.2em;
+    }
   }
-  40% {
-    box-shadow: 0 -2em;
-    height: 5em;
-  }
+  
+.loaderbox {
+    position: relative;
+    width: auto;
+    clear: left;
+    margin-left: auto;
+    margin-right: auto; 
 }
 
-.loaderbox p {
-    position: fixed;
-    top: 32%;
-    left: 46%;
+.load-text {
+    position: relative;
+    font-size: 20px;
+    top: 80%;
+    font-weight: bold;
+    clear: left;    
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif
+}
+
+.cancel-text {
+    position: relative;
+    font-size: 18px;
+    top: 80%;    
+    font-weight: bold;
+    color: black;
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif 
+}
+.cancel-text:hover {
+    color: red;
+    cursor: pointer;
 }

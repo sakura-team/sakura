@@ -2,7 +2,7 @@
 import numpy as np
 import numpy.random
 from math import sin, cos, sqrt, atan2, radians
-from .polygonfilter import check_point_inside
+from .polygonfilter import check_point_inside, check_contained_words
 # import matplotlib.path as mpltPath
 # from shapely.geometry import Point
 # from shapely.geometry.polygon import Polygon
@@ -12,11 +12,14 @@ from time import time
 # ---------------------------------
 
 class Exportation:
-    def __init__(self, stream, polygon):
+    def __init__(self, stream, polygon, timeStart, timeEnd, listWords):
         self.stream = stream
         self.iterator = stream.chunks(chunk_size=1000)
         self.exportation = None
         self.polygon = polygon
+        self.timeStart = timeStart
+        self.timeEnd = timeEnd
+        self.listWords = listWords
         # prepare compression parameters
         self.done = False
     def compute(self, time_credit):
@@ -36,7 +39,9 @@ class Exportation:
                 else:
                     deleted = True
                     for j in range(0,len(self.polygon)):
-                        if check_point_inside(col[1], col[0], self.polygon[j]):
+                        if (col[2] > self.timeEnd[j]) or (col[2] < self.timeStart[j]):
+                            pass
+                        elif check_contained_words(col[3], self.listWords[j]) and check_point_inside(col[1], col[0], self.polygon[j]):
                             deleted = False
                             break
                     if deleted :

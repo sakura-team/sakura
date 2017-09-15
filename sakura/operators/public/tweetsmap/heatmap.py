@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import numpy.random
-from .polygonfilter import check_point_inside
+from .polygonfilter import check_point_inside, check_contained_words
 from math import sin, cos, sqrt, atan2, radians
 # import matplotlib.path as mpltPath
 # from shapely.geometry import Point
@@ -31,7 +31,7 @@ def y_to_lat(h, lat_min, lat_max, y):
 # heatmap data generation
 # -----------------------
 class HeatMap:
-    def __init__(self, lnglat, polygon, timeStart, timeEnd, width, height, westlng, eastlng, southlat, northlat):
+    def __init__(self, lnglat, polygon, timeStart, timeEnd, listWords, width, height, westlng, eastlng, southlat, northlat):
         # compute pixel bounds of the map
         x = np.append(np.arange(0, width, 5), width)
         y = np.append(np.arange(0, height, 5), height)
@@ -48,6 +48,7 @@ class HeatMap:
         self.polygon = polygon
         self.timeStart = timeStart
         self.timeEnd = timeEnd
+        self.listWords = listWords
         # prepare compression parameters
         scalelat = (edgelat[1:] - edgelat[:-1]).min() / 2
         self.approx_centerlat = numpy.rint((centerlat - centerlat[0]) / scalelat)
@@ -65,24 +66,25 @@ class HeatMap:
         deadline = time() + time_credit
         deadline_reached = False
         for chunk in self.iterator:
-            lng, lat, timestamp = chunk.columns
-            list = chunk.tolist()
-            deletedIndex = []
-            for i in range(len(list)):
-                col = list[i]
-                if len(self.polygon) == 0:
-                    pass
-                else:
+            if len(self.polygon) == 0:
+                    lng, lat = chunk.columns
+                    chunk_heatmap = np.histogram2d(lng, lat, bins=self.bins, range=self.range)[0]
+            else: 
+                lng, lat, timestamp, text = chunk.columns
+                list = chunk.tolist()
+                deletedIndex = []
+                for i in range(len(list)):
+                    col = list[i]
                     deleted = True
                     for j in range(0,len(self.polygon)):
                         if (col[2] > self.timeEnd[j]) or (col[2] < self.timeStart[j]):
                             pass
-                        elif check_point_inside(col[1], col[0], self.polygon[j]):
+                        elif check_contained_words(col[3], self.listWords[j]) and check_point_inside(col[1], col[0], self.polygon[j]):
                             deleted = False
                             break
                     if deleted :
                         deletedIndex.append(i)
-            chunk_heatmap = np.histogram2d(np.delete(lng, deletedIndex, None), np.delete( lat, deletedIndex, None), bins=self.bins, range=self.range)[0]
+                chunk_heatmap = np.histogram2d(np.delete(lng, deletedIndex, None), np.delete( lat, deletedIndex, None), bins=self.bins, range=self.range)[0]
 
             # chunk_heatmap = np.histogram2d(np.delete(lng, deletedIndex, None), np.delete(lat, deletedIndex, None), bins=self.bins, range=self.range)[0]
             if self.heatmap is None:

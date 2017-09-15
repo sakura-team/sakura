@@ -5,9 +5,7 @@
 function Model(){
     this.researches = [];
     this.currentResearch = null;
-    this.rid = 0;
     this.mapLayers = new MapLayers;
-    this.allMarkers = new PruneClusterForLeaflet(160);
 }
 
 // Research class that contains:
@@ -19,23 +17,20 @@ function Research() {
 
     var thisResearch = this;
 
-    this.rid = null;
+    // this.rid = null;
     this.nameResearch = '';
     this.colorBorder = 'rgba(107, 142, 35, 1.0)';
     this.colorPoint = 'rgba(107, 142, 35, 1.0)';
     this.colorBackground = 'rgba(107, 142, 35, 1.0)';
     this.roi = new L.LayerGroup;
-    this.expandRoi = new L.LayerGroup;
-    this.expandRoi.addLayer(this.roi);
+    // this.expandRoi = new L.LayerGroup;
+    // this.expandRoi.addLayer(this.roi);
     this.timeRange = new Object;
     // 1 Jan 20007 00:00:00
     this.timeRange.timeStart = 1167606000000;
     this.timeRange.timeEnd   = Date.now();  
     this.loacationMarker = null;
-
-    this.actualize = function() {
-        
-    };
+    this.words = [];
 
     this.removeAllRoi = function() {
         thisResearch.roi.clearLayers();
@@ -44,7 +39,7 @@ function Research() {
 
 // Override toString() for degging
 Research.prototype.toString = function() {
-    return "    [Research Infor]rid = " + this.rid + " | name = " + this.nameResearch + " | Border color = " + this.colorBorder
+    return "    [Research Infor]"+ " | name = " + this.nameResearch + " | Border color = " + this.colorBorder
             + " | Point color " + this.colorPoint + " | Background color " + this.colorBackground
             + " | Time Range " + this.timeRange ;
 };

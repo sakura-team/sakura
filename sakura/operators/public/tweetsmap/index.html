@@ -43,17 +43,22 @@
     
 
     <body style="height:100%;">
-        <div class="layer" id="layout"></div> 
+        <div class="layer" id="layout">
+            <div class='load-text'>Please wait while Tweetsmap prepares Data</div>
+            <div id='cancel' class='cancel-text'>Cancel</div>
+            <div id='counter_exportation' class='counter nice-box infobox'></div>                
+        </div> 
         <div class="layer" id="info">
             <div id='tab_container'>
                 <table id='list_keywords' class = 'nice-box'></table>
             </div>
             <canvas id = "my_canvas" class= 'nice-box' height="1520" width="2340">
             </canvas>
-            <div id='counter_info_poly' class='nice-box infobox'></div>
+            <div id='counter_info_poly' class='counter nice-box infobox'></div>
             <div id='download'></div>
         </div>
-        <div id="map"></div> 
+        <div id="map">
+        </div> 
         <script type="text/javascript">
 		
 		    map = L.map("map", {

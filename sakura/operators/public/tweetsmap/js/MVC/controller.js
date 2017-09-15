@@ -17,22 +17,6 @@ function Controller() {
     this.initModel = function () {
         // L.LayerGroup contains all polygons displayed actually
         this.rois = new L.LayerGroup();
-        // increment id 
-        /////myModel.rid ++;
-        // create new Research
-        ////this.editableResearch = new Research;
-        // update id in new Research
-        ////this.editableResearch.rid = myModel.rid;
-        // add new Research in list research of thisControl
-        ////myModel.researches[0] = 
-        ////{rid: this.editableResearch.rid, research: this.editableResearch};
-        // add roi of current research to myView.rois
-        ////myView.rois.addLayer(this.editableResearch.roi);
-        // update research list in research box
-        //myView.researchSelector.addOption(this.editableResearch.nameResearch);        
-        //myView.researchCheckBoxList.addCheckBox(this.editableResearch.nameResearch);
-        //myView.rois.addTo(map);
-        //this.updateTweetsmap();
         myView.mapLayersSelector.check(myModel.mapLayers.getDefault());
         this.setBasemap('Simple');
         myView.dataDisplaySelector.check(0);
@@ -45,7 +29,7 @@ function Controller() {
         this.actualize();
     };
 
-    //-----------------------------GUI<->BD----------------------------
+    //-----------------------------Controller<->BD----------------------------
 
     
     /* In order to lower network usage, heatmap data is transfered in
@@ -82,6 +66,11 @@ function Controller() {
     }
 
     function update_heatmap_callback(result) {
+        if(thisControl.stopTransferting) {
+            thisControl.stopTransferting = false;
+            thisControl.actualize();
+            return;
+        }
         var icon;
         if ('issue' in result) {
             myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
@@ -119,7 +108,7 @@ function Controller() {
     }
 
     this.request_data = function () {
-
+        
         // get lat / lng map bounds
         var geo_bounds = map.getBounds();
         var geo_sw = geo_bounds.getSouthWest();
@@ -158,8 +147,7 @@ function Controller() {
             'southlat': geo_sw.lat,
             'northlat': geo_ne.lat
         }
-        // console.log(info);
-        var listPoly = [], listtimeStart = [], listtimeEnd = [];
+        var listPoly = [], listtimeStart = [], listtimeEnd = [], listWords = [];
 
         var westlng_poly = 180.0;
         var eastlng_poly = -180.0;
@@ -172,10 +160,13 @@ function Controller() {
             // check if polygon is currently in geo_bounds
             var bound_poly = layer.getBounds();
             var timeRange = layer.research.timeRange;
+            var words = layer.research.words;
             if (bound_poly.intersects(geo_bounds)) {
                 listPoly.push(thisControl.convertPolygonToArray(layer));
                 listtimeStart.push(timeRange.timeStart/1000.0);
                 listtimeEnd.push(timeRange.timeEnd/1000.0);
+                listWords.push(words);
+                
 
                 if (bound_poly.getWest() < westlng_poly) westlng_poly = bound_poly.getWest();
                 if (bound_poly.getSouth() < southlat_poly) southlat_poly = bound_poly.getSouth();
@@ -201,17 +192,23 @@ function Controller() {
             'disable': thisControl.rois.getLayers().length != 0 && listPoly.length == 0
         }
 
+        this.stopTransferting = false;
         // send event, then update map
         sakura.operator.fire_event(
-            ["map_move", HEATMAP_REFRESH_DELAY, info, listPoly, info_poly, listtimeStart, listtimeEnd],
+            ["map_move", HEATMAP_REFRESH_DELAY, info, listPoly, info_poly, listtimeStart, listtimeEnd, listWords],
             update_heatmap_callback);
     }
 
     function exportation_callback(result) {
+        if(thisControl.stopTransferting){
+            thisControl.stopTransferting = false;
+            // thisControl.actualize();                        
+            return;
+        }
         var icon;
         // if(result.exportation.data.list)
         if ('issue' in result) {
-            // myView.infobox.update({ 'icon': 'alert', 'text': result.issue });
+            myView.infoboxExportation.update({ 'icon': 'alert', 'text': result.issue });
             $('#layout').hide();  
             return;
         }
@@ -230,20 +227,31 @@ function Controller() {
             data: result.exportation.data
         });
         // update infobox
-        // myView.infobox.update({ "icon": icon, 'text': thisControl.exportationUtil.count + ' points' });
-        myView.loader.update();
+        if(thisControl.exportationUtil.forAResearch)
+            myView.infoboxExportation.update({ "icon": icon, 'text': thisControl.exportationUtil.count + " points"});
+        else
+            myView.infoboxExportation.update({ "icon": icon, 'text': thisControl.exportationUtil.count +'/' +myController.loadedPoint });
+        // myView.loader.update();
         myView.dataLoadingBar.update();
         // display download window
         if(result.exportation.done){
             thisControl.exportationUtil.downloadCSV();
-            $('#layout').hide();            
+            $('#layout').hide();
+            thisControl.request_data();
         }
     }
 
     function wordcloud_callback(result) {
+        if(thisControl.stopTransferting){
+            thisControl.stopTransferting = false;
+            // thisControl.actualize();            
+            return;
+        }
+        var data = result.wordcloud.data;
+        var keywords = $('#list_keywords');
         var icon;
         if ('issue' in result) {
-            myView.infobox2.update({ 'icon': 'alert', 'text': result.issue });
+            myView.infoboxInfoPoly.update({ 'icon': 'alert', 'text': result.issue });
             $('#info').hide();  
             return;
         }
@@ -264,9 +272,7 @@ function Controller() {
                 wordcloud_callback);
         }
         // update infobox
-        myView.infobox2.update({ "icon": icon, 'text': result.wordcloud.count + ' points' });
-        var data = result.wordcloud.data;
-        var keywords = $('#list_keywords');
+        myView.infoboxInfoPoly.update({ "icon": icon, 'text': result.wordcloud.count + ' points' });
         for(var item in data){
             if(result.wordcloud.done)
                 keywords.append('<tr><th>'+data[item][0]+'</th><th>'+data[item][1]+'</th></tr>');
@@ -286,6 +292,8 @@ function Controller() {
             };
             WordCloud(document.getElementById('my_canvas'), options );
         }
+        if(result.wordcloud.done)
+            thisControl.request_data();
     }
 
     this.exportationUtil = new Object;
@@ -372,26 +380,29 @@ function Controller() {
             'eastlng': eastlng_poly,
             'southlat': southlat_poly,
             'northlat': northlat_poly,
+            'disable': false
         };
         var timeRange = layer.research.timeRange;
-        myView.infobox2.update({ "icon": 'hourglass-half', 'text': 0 + ' points' });
+        myView.infoboxInfoPoly.update({ "icon": 'hourglass-half', 'text': 0 + ' points' });
         myView.downloadWordCloud.disable();
         var keywords = $('#list_keywords');
         keywords.empty();
         keywords.append('<tr><th>KeyWords</th><th>Frequency</th></tr>');
             // send event, then update map
+        this.stopTransferting = false;
         sakura.operator.fire_event(
-            ["wordcloud", HEATMAP_REFRESH_DELAY, polygon, info, timeRange.timeStart/1000.0, timeRange.timeEnd/1000.0],
+            ["wordcloud", HEATMAP_REFRESH_DELAY, info, polygon, timeRange.timeStart/1000.0, timeRange.timeEnd/1000.0, layer.research.words],
             wordcloud_callback);
         $('#info').show();
     };
 
+    this.stopTransferting = false;
     this.exportation = function (roi, name, forAResearch) {
         this.exportationUtil.result = '';
         this.exportationUtil.count = 0;
         this.exportationUtil.researchName = name; 
         this.exportationUtil.forAResearch = forAResearch;
-        var listPoly = [];
+        var listPoly = [], listtimeStart = [], listtimeEnd = [], listWords = [];
 
         var westlng_poly = 180.0;
         var eastlng_poly = -180.0;
@@ -426,11 +437,16 @@ function Controller() {
         geo_ne = map.unproject(px_topright);
         geo_sw = map.unproject(px_bottomleft);
         geo_bounds = L.latLngBounds(geo_sw, geo_ne);
-
         roi.eachLayer(function (layer) {
+            var bound_poly = layer.getBounds();
+            var timeRange = layer.research.timeRange;
+            var words = layer.research.words;
             // check if polygon is currently in geo_bounds
             var bound_poly = layer.getBounds();
             listPoly.push(thisControl.convertPolygonToArray(layer));
+            listtimeStart.push(timeRange.timeStart/1000.0);
+            listtimeEnd.push(timeRange.timeEnd/1000.0);
+            listWords.push(words);
             if (bound_poly.getWest() < westlng_poly) westlng_poly = bound_poly.getWest();
             if (bound_poly.getSouth() < southlat_poly) southlat_poly = bound_poly.getSouth();
             if (bound_poly.getEast() > eastlng_poly) eastlng_poly = bound_poly.getEast();
@@ -446,141 +462,28 @@ function Controller() {
             'disable':  forAResearch && listPoly.length == 0
         }
         // update infobox
-        // myView.infobox.update({ "icon": 'hourglass-half', 'text': thisControl.exportationUtil.count + ' points' });
-        //console.log('ok');
+        myView.infoboxExportation.update({ "icon": 'hourglass-half', 'text': 0 + ' points' });
         
         $('#layout').show();
         if(forAResearch){
             myView.dataLoadingBar.noneDisplay();
             myView.loader.display()
-            myView.loader.update();
         } else {
             myView.loader.noneDisplay();
             myView.dataLoadingBar.update();            
             myView.dataLoadingBar.display();
         }
+        this.stopTransferting = false;
         // send event, then update map
         sakura.operator.fire_event(
-            ["exportation", EXPORTATION_REFRESH_DELAY, listPoly, info_poly],
+            ["exportation", EXPORTATION_REFRESH_DELAY, info_poly, listPoly, listtimeStart, listtimeEnd, listWords],
             exportation_callback);
         
     }
 
     
     map.setView([48.86, 2.34], 9);
-
     map.on('moveend', this.request_data);
-
-    function updateTweetsmapCallback(result) {
-        if (result.done) {
-            myView.pointNumber.hide();
-        }
-        else {
-            sakura.operator.fire_event(["abc", HEATMAP_REFRESH_DELAY], updateTweetsmapCallback);
-            myView.pointNumber.update(myModel.allMarkers.GetMarkers().length + " points loaded ..");
-        }
-
-        // data = {lat: x, lng: y}
-        var data = result.tweetsmap;
-        // markers layer creation
-        for (var i = 0; i < data.lat.length; i++) {
-            // Corresponding marker
-            var marker = new PruneCluster.Marker(data.lat[i], data.lng[i]);
-            // filtre by ROIS
-            myModel.allMarkers.RegisterMarker(marker);
-        }
-    };
-
-
-
-
-    this.updateTweetsmap = function () {
-
-        // get data by operators
-        sakura.operator.fire_event(['new_zone', HEATMAP_REFRESH_DELAY],
-            updateTweetsmapCallback);
-
-        myModel.allMarkers.addTo(map);
-        myView.overlaysPanel.addOverlay(myModel.allMarkers, "All");
-
-
-    };
-
-
-    // @function updateMarkersUnit 
-    //              send a polygon to server and receive the point inside of the poly
-    // @param markers The markers container
-    // @param poly The shape of polygon
-    this.updateMarkersUnit = function (markers, poly) {
-        sakura.operator.fire_event(["polyons_update", poly.typeROI, poly]
-            , function (result) {
-                // data = {lat: x, lng: y}
-                var data = result.tweetsmap;
-                // markers layer creation
-                for (var i = 0; i < data.lat.length; i++) {
-                    // Corresponding marker
-                    var marker = new PruneCluster.Marker(data.lat[i], data.lng[i]);
-                    // filtre by ROIS
-                    markers.RegisterMarker(marker);
-                }
-                myView.displayedMarkers.addLayer(markers);
-            });
-    }
-
-    this.updateMarkers = function () {
-        // remove all layers in displaed Markers for reupdating
-        myView.displayedMarkers.clearLayers();
-        var i = 0;
-        var listPoly = [];
-        // var listPoly = myView.rois;
-
-        var listMarkers = [];
-        thisControl.rois.eachLayer(function (layer) {
-            // layer.eachLayer(function(l){
-            // if(map.hasLayer(l)){
-            //listPoly[i] = l;
-            listPoly.push(thisControl.convertPolygonToArray(layer));
-            // List markers corresponding to listPoly[i]
-            listMarkers[i] = new PruneClusterForLeaflet(160);
-            myView.displayedMarkers.addLayer(listMarkers[i]);
-            // i++;
-            // }
-            // });
-        });
-        var nbPoint = 0;
-
-        function updateMarkersCallback(result) {
-            if (result.done) {
-                // myView.pointNumber.hide();
-                null
-            }
-            else {
-                sakura.operator.fire_event(["abc", HEATMAP_REFRESH_DELAY, listPoly], updateMarkersCallback);
-                // myView.pointNumber.update(nbPoint + " points loaded ..");
-            }
-
-            for (var i = 0; i < result.tweetsmap.length; i++) {
-                var marker = null;
-                for (var j = 0; j < result.tweetsmap[i].length; j++) {
-                    marker = new PruneCluster.Marker(
-                        result.tweetsmap[i][j][0], result.tweetsmap[i][j][1]);
-                    listMarkers[i].RegisterMarker(marker);
-                    nbPoint++;
-                }
-                listMarkers[i].ProcessView();
-            }
-        }
-
-        if (listPoly.length != 0) {
-            // console.log('ok');
-            // sakura.operator.fire_event(["polygons_update", HEATMAP_REFRESH_DELAY, listPoly ]
-            //         , updateMarkersCallback);
-        }
-
-    };
-
-    //---------------------------------- Exportation -----------------------------------
-
     //---------------------------------- Data Filtering --------------------------------
 
     /** @function insideOfAPoly void
@@ -671,14 +574,6 @@ function Controller() {
     };
 
     this.addResearch = function () {
-
-        /*var check = this.getResearchByName("Current Research");
-        if(check){
-            this.changeCurrentResearch(this.getIndexByResearch(check));
-            return;
-        }*/
-        // increment id 
-        ////myModel.rid ++;
         // create new Research
         var research = new Research;
         research.nameResearch = myView.nameBox.getValue();
@@ -697,7 +592,6 @@ function Controller() {
         this.changeEditableResearch(this.getIndexByResearch(research));
         ////this.updateMarkers();
         myView.nameBox.setValue('');
-
         this.actualize();
     };
 
@@ -712,16 +606,6 @@ function Controller() {
         this.addPolygonsToGUI(myModel.researches[index].roi);
 
     }
-
-    // this.hideResearch = function (index) {
-    //     this.removePolygonsFGUI(myModel.researches[index].roi);
-    //     this.updateMarkers();
-    // }
-    // // Event when select an item on research selector
-    // this.selectResearch = function(){
-    //     this.changeEditableResearch(myView.researchSelector.getSelect().selectedIndex);
-    //     this.updateMarkers();
-    // };
 
     // Event when finish drawing a poly
     this.registerPoly = function (layer) {
@@ -739,14 +623,6 @@ function Controller() {
         myView.researchesPanel.addUnderRow(this.editableResearch, layer);
     };
 
-    // this.resetResearch = function(){
-    //     this.removeAllOverlays();
-    //     myView.nameBox.setValue('');
-    //     this.editableResearch.removeAllRoi();
-    //     thisControl.actualize();
-    //     this.updateMarkers();
-    // };
-
     // remove current research
     this.removeResearch = function (index) {
         var research = myModel.researches[index];
@@ -754,21 +630,9 @@ function Controller() {
             this.changeEditableResearch(-1);
         if (research.locationMarker)
             research.locationMarker.removeFrom(map);
-        ////var indexResearchObsolete = 
-        /////this.getIndexByResearch(this.editableResearch);
-
-        // remove from research checkboxes
-        ////myView.researchCheckBoxList.removeCheckBox(indexResearchObsolete);
-        // remove from research selector
-        ////myView.researchSelector.removeOption(indexResearchObsolete);
-        // remove Rois
-        ////this.removePolygonsFGUI(this.editableResearch.roi);
         this.removePolygonsFGUI(research.roi);
 
         myModel.researches.splice(index, 1);
-
-        //this.addResearch();
-        // this.updateMarkers();
     };
 
     // remove current research
@@ -807,6 +671,13 @@ function Controller() {
         myView.timeEndDiv.setTime(this.editableResearch.timeRange.timeEnd);
     };
 
+    this.setKeyWordsToGUI = function(){
+        myView.wordsTextBox.removeAllWords();
+        for(var i = 0; i < this.editableResearch.words.length; i++){
+            myView.wordsTextBox.addWord(this.editableResearch.words[i]);
+        }
+    };
+
     /**
      * @function addOverlays() called by event 'finished drawing' of newPolygonButton
      * layer: ROI 
@@ -838,7 +709,7 @@ function Controller() {
         // this.updateMarkers();
     }
 
-    //---------------------------------View->Model-------------------------------------//
+    //---------------------------------View->Controller-------------------------------------//
     /**
      *  View -> Model : These functions is intended for getting informations from GUI (FGUI)
      */
@@ -854,6 +725,10 @@ function Controller() {
     this.getColorBorderFGUI = function () {
         var res = myView.borderColorSelector.getColor();
         return res || "red";
+    };
+
+    this.getKeyWords = function () {
+        return myView.wordsTextBox.words;
     };
 
     // @function getColorPointFGUI(): String
@@ -894,7 +769,7 @@ function Controller() {
         return res;
     };
 
-    //------------------------------Model -> View ------------------------------------
+    //------------------------------Controller -> View ------------------------------------
     //// It's intended to update data in GUI for example when we change the research
 
     this.setNameToGUI = function (name) {
@@ -992,14 +867,6 @@ function Controller() {
 
 
     //--------------------------------- Research Controller ---------------------------------- 
-    // Its intended to manipulate the research list and current research, 
-    this.getResearchByRid = function (rid) {
-        var res = myModel.researches.find(function (item) {
-            return item.rid === rid;
-        });
-
-        return (res) ? res.research : null;
-    };
 
     this.getResearchByName = function (name) {
         var res = myModel.researches.find(function (item) {
@@ -1053,25 +920,6 @@ function Controller() {
                 $('#'+myView.hideManagementButton.getId()).trigger("click");  
         }
 
-
-
-        ////
-        // Check if next-currentResearch is checked or not
-        /*var nextCurrentResearchChecked = myView.researchCheckBoxList.getChecked(index);
-        // If previos research is still in the research list
-        if(this.getIndexByResearch(researchObsolete) != null) 
-        {
-            // set research checkbox of above research to checkable and unchecked
-            myView.researchCheckBoxList.setCheckable(
-                this.getIndexByResearch(researchObsolete),
-                false);
-            myView.researchCheckBoxList.setChecked(
-                this.getIndexByResearch(researchObsolete),
-                false
-            ); */
-        // remove polygons of old research 
-
-
         // welcome new research
         this.editableResearch = myModel.researches[index];
         myView.editionTitle.getContainer().innerHTML = this.editableResearch.nameResearch;
@@ -1084,6 +932,8 @@ function Controller() {
         this.setColorBackgroundToGUI(this.editableResearch.colorBackground);
         this.setColorPointToGUI(this.editableResearch.colorPoint);
         this.setColorBorderToGUI(this.editableResearch.colorBorder);
+        this.setKeyWordsToGUI(this.editableResearch.words);
+        myView.wordsTextBox.setValue("");
         this.showPolygonsToGUI(this.editableResearch.roi);
         this.setTimeGUI(); 
         
@@ -1113,8 +963,23 @@ function Controller() {
             this.editableResearch.colorPoint = this.getColorPointFGUI();
             this.editableResearch.colorBackground = this.getColorBackgroundFGUI();
             this.editableResearch.timeRange = this.getTimeRange();
+            this.editableResearch.words = this.getKeyWords().clone()
             this.updateColor();
         }
+
+        this.checkName();
+        
+        this.request_data();
+  
+        // console.log(this.toString());
+
+    };
+
+    Array.prototype.clone = function() {
+        return this.slice(0);
+    }
+
+    this.checkName = function(){
         // check message box
         var message = "";
         var name = myView.nameBox.getValue();
@@ -1142,37 +1007,26 @@ function Controller() {
             message = "Je suis une fille ..."
         myView.nameBox.setMessage(message);
 
-        this.request_data();
-        //console.log(this.toString());
+        message = "";
+        var name = myView.wordsTextBox.getValue();
+        if (name != "") {
+            for (var i = 0; i < myView.wordsTextBox.words.length; i++) {
+                if (name == myView.wordsTextBox.words[i])
+                    message = 'KeyWord existed already';
+            }
+        }
+        if (message) {
+            myView.wordsTextBox.disable();
+        } else {
+            myView.wordsTextBox.enable();
+        }
 
-        /** update research selectable list box
-        ////myView.researchSelector.setSelectedOption(
-        ////    this.getIndexByResearch(this.editableResearch)
-        ////);
-        ////myView.researchSelector.setTextOfOption(
-        ////    this.getIndexByResearch(this.editableResearch), 
-            this.editableResearch.nameResearch);
-        // update research checkbox list
-        myView.researchCheckBoxList.setTextOfCheckBox(
-            this.getIndexByResearch(this.editableResearch),
-            this.editableResearch.nameResearch);
-        // set current research checkbox to be checked
-        myView.researchCheckBoxList.setChecked(
-            this.getIndexByResearch(this.editableResearch),
-            true
-        );
-        // set current reserach checkbox to uncheckable
-        myView.researchCheckBoxList.setCheckable(
-            this.getIndexByResearch(this.editableResearch),
-            true
-        );
-**/
-        // this.updateMarkers(); 
-        // console.log(this.toString());
+        myView.wordsTextBox.setMessage(message);
 
     };
 
     this.initModel();
+    this.checkName();
 }
 // Override toString methode using for debugging
 Controller.prototype.toString = function () {
@@ -1183,7 +1037,7 @@ Controller.prototype.toString = function () {
     string += "\n rois: "
     this.rois.eachLayer(function (layer) {
         string += layer.namePoly + " ,";
-    });
+    })
     return string;
 };
 

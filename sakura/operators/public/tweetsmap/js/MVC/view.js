@@ -130,51 +130,7 @@ function View() {
 
     }
 
-    // V.GeoSearch = {};
-    // V.GeoSearch.Provider = {};
-
-    // // jQuery.support.cors = true;
-
-    // V.GeoSearch.Result = function(x,y, label) {
-    //     this.X = x;
-    //     this.Y = y;
-    //     this.Label = label;
-    // };
-
-    // V.GeoSearch.Provider.OpenStreetMap = V.Class.extend({
-    // options: {
-
-    // },
-
-    // initialize: function(options) {
-    //     options = L.Util.setOptions(this, options);
-    // },
-
-    // GetServiceUrl: function (qry) {
-    //     var parameters = L.Util.extend({
-    //         q: qry,
-    //         format: 'json'
-    //     }, this.options);
-
-    //     return 'http://nominatim.openstreetmap.org/search'
-    //         + L.Util.getParamString(parameters);
-    // },
-
-    // ParseJSON: function (data) {
-    //     if (data.length == 0)
-    //         return [];
-
-    //     var results = [];
-    //     for (var i = 0; i < data.length; i++) 
-    //         results.push(new L.GeoSearch.Result(
-    //             data[i].lon, 
-    //             data[i].lat, 
-    //             data[i].display_name
-    //         ));
-
-    //     return results;
-    // }
-    // });
+    
     this.autoId = 0;
     // An element HTML
     V.Element = V.Class.extend({
@@ -266,34 +222,6 @@ function View() {
             return this.id;
         },
 
-        // @function _classOptions() 
-        // Check and add attributs for container 
-        _classOptions: function () {
-            var options = this.options;
-            if (this.options.titleElement)
-                this._container.title = this.options.titleElement;
-            if (options.class)
-                V.addClass(this._container, options.class);
-            this._container.id = options.idDiv || '';
-            this.id = options.idDiv;
-            this._container.style.overflow = options.scroll || 'visible';
-            if (options.titleDiv) {
-                var firtChild = V.create("div", options.titleDivClass, this._container);
-                firtChild.innerHTML = options.titleDiv;
-            }
-            if (options.parentElement) {
-                if (options.parentElement.addChild)
-                    options.parentElement.addChild(this._container);
-                else
-                    options.parentElement.appendChild(this._container);
-            }
-            if (options.eventClick) {
-                L.DomEvent.on(this.getContainer(), 'click', function () {
-                    options.eventClick.functionName.call(options.eventClick.className)
-                });
-            }
-        },
-
         stopEventOfLeaflet: function () {
             var div = this._container;
             if (!L.Browser.touch) {
@@ -334,6 +262,34 @@ function View() {
             if (child._container)
                 child = child._container;
             this._container.removeChild(child);
+        },
+
+        // @function _classOptions() 
+        // Check and add attributs for container 
+        _classOptions: function () {
+            var options = this.options;
+            if (this.options.titleElement)
+                this._container.title = this.options.titleElement;
+            if (options.class)
+                V.addClass(this._container, options.class);
+            this._container.id = options.idDiv || '';
+            this.id = options.idDiv;
+            this._container.style.overflowY = options.scroll || 'visible';
+            if (options.titleDiv) {
+                var firtChild = V.create("div", options.titleDivClass, this._container);
+                firtChild.innerHTML = options.titleDiv;
+            }
+            if (options.parentElement) {
+                if (options.parentElement.addChild)
+                    options.parentElement.addChild(this._container);
+                else
+                    options.parentElement.appendChild(this._container);
+            }
+            if (options.eventClick) {
+                L.DomEvent.on(this.getContainer(), 'click', function () {
+                    options.eventClick.functionName.call(options.eventClick.className)
+                });
+            }
         }
 
 
@@ -365,6 +321,23 @@ function View() {
             }
         },
 
+                // @function removeRows(index int)
+        // remove a Row by index in rows
+        removeRow: function (index) {
+            // get Element to remove
+            var element = this._rows.splice(index, 1)[0];
+            // remove from container
+            this.rmChild(element);
+        },
+
+        // empty the selector: 
+        removeAllRow: function () {
+            var len = this._rows.length;
+            for (var i = len - 1; i >= 0; i--) {
+                this.removeRow(i);
+            }
+        },
+
         _selectorOptions: function () {
             var options = this.options;
             // create shortcut for rowSource
@@ -391,24 +364,7 @@ function View() {
                     return i;
             }
         },
-
-        // @function removeRows(index int)
-        // remove a Row by index in rows
-        removeRow: function (index) {
-            // get Element to remove
-            var element = this._rows.splice(index, 1)[0];
-            // remove from container
-            this.rmChild(element);
-        },
-
-        // empty the selector: 
-        removeAllRow: function () {
-            var len = this._rows.length;
-            for (var i = len - 1; i >= 0; i--) {
-                this.removeRow(i);
-            }
-        },
-
+        
         _getIndexById: function (name) {
             var i, len = this._rows.length;
             for (i = 0; i < len; i++) {
@@ -422,7 +378,7 @@ function View() {
 
         initialize: function (options) {
             V.extend(this.options, options);
-            this.setContainer(V.create('div', 'searchBar', mapDiv));
+            this.setContainer(V.create('div', 'searchBar', document.getElementsByTagName("BODY")[0]));
             this._searchBarOptions();
 
             var searchBoxDiv = V.create('div', 'search-box', this._container);
@@ -594,9 +550,6 @@ function View() {
                     thisView.locationResearchButton.display();
                 if (val.polygonpoints) {
                     var latlngs = V.Util.reverseArray(val.polygonpoints);
-                    // console.log(latlngs.splice(0,400));
-                    // console.log(latlngs.splice(0,1));
-                    // console.log(simplify(latlngs));
                     
                     thisView.searchBar.currentPoly.setLatLngs(latlngs).addTo(map);
                     map.fitBounds(thisView.searchBar.currentPoly.getBounds());
@@ -613,8 +566,6 @@ function View() {
 
 
     });
-
-
 
     V.MaplayersSelector = V.Selector.extend({
         initialize: function (options) {
@@ -892,7 +843,6 @@ function View() {
 
         _convertArrayOfObjectsToCSV: function (args) {
             var result, ctr, keys, columnDelimiter, lineDelimiter, data;
-            console.log(args.data);
 
             data = args.data || null;
             if (data == null || data.list == null) {
@@ -918,7 +868,6 @@ function View() {
                 };
                 result += lineDelimiter;
             });
-            console.log(result);
             return result;
         },
 
@@ -1097,9 +1046,11 @@ function View() {
             V.extend(this.options, options);
 
             this.setContainer(V.create('div'));
-            this.textboxOptions();
+            this.initTextbox();
+        },
 
-
+        initTextbox: function() {
+            this.textboxOptions();            
             // create text box in container in HTML 
             var textBox =
                 V.create('input', '', this._container);
@@ -1135,6 +1086,10 @@ function View() {
             this._textBox.value = name;
         },
 
+        getSubmitButton: function(){
+            return this._submitButton;
+        },
+
         disable: function () {
             this._submitButton.getContainer().removeEventListener('click',
                 this._onClick, false);
@@ -1152,17 +1107,85 @@ function View() {
         },
 
         _onKeypressed: function () {
-            myController.actualize();
+            myController.checkName();
         }
 
 
     });
 
+    V.KeyWordBox = V.Element.extend({
+        initialize: function(options){
+            V.extend(this.options, options);
+            
+            this.setContainer(V.create('div','keyword-box nice-box'));
+            this._keyWordBoxOptions();
+            this._container.innerHTML = "<p>"+ this._text +"</p>";
+            // create text box in container in HTML 
+            var id = this.getId();
+            
+            this._submitButton = new V.PlusIcon({class: "keyword-box-button",
+                iconChecked: 'fa fa-close',
+                enabled: true, checked: true, parentElement: this._container
+            });
+            // this._submitButton.parentId = id;
+            this._submitButton.getContainer().addEventListener('click', this._onclick.bind(this), false);
+        },
+        _keyWordBoxOptions: function(){
+            this._text = this.options.text;
+        },
 
-    // this.nameBox = 
-    //     thisView.createTextBox(map,"ResearchBox", "Current Research");
+        _onclick: function(){
+            thisView.wordsTextBox.removeWord(this._text);
+            thisView.wordsPanel.rmChild(this._container);
+            myController.actualize();
+        }
 
-    // Notice: O
+    });
+
+    V.KeyWordTextBox = V.TextBox.extend({
+        initialize: function(options){
+            V.extend(this.options, options);
+            
+            this.setContainer(V.create('div'));
+            this.initTextbox();
+            this.disable();
+            this.enable();
+            this.words = [];
+        },
+
+        _onClick: function(){
+            var fakeThis = thisView.wordsTextBox;
+            fakeThis.words.push(fakeThis.getValue());
+            new V.KeyWordBox({parentElement: thisView.wordsPanel, text: fakeThis.getValue()});
+            fakeThis.getSubmitButton().setChecked();
+            fakeThis.setValue("");
+            myController.actualize();
+        },
+
+        removeWord: function(word){
+            for(var i=0; i<this.words.length;i++){
+                if(this.words[i]==word) {
+                    this.words.splice(i,1);
+                    return;
+                }
+            }
+        },
+        
+        addWord: function(word){
+            this.words.push(word);
+            console.log("oj");
+            new V.KeyWordBox({parentElement: thisView.wordsPanel, text: word}); 
+        },
+        
+        removeAllWords: function(){
+            this.words.splice(0,this.words.length);
+            $("#"+thisView.wordsPanel.getId()).empty();
+        }
+        
+        
+    });
+
+
     V.Button = V.Element.extend({
 
         initialize: function (options) {
@@ -1208,7 +1231,6 @@ function View() {
         },
 
         disable: function () {
-            //if(this.checked) this._onClick();
             this._container.style.backgroundColor = 'transparent';
             this.enabled = false;
             this._container.style.cursor = 'initial';
@@ -1452,9 +1474,8 @@ function View() {
 
         update: function(){
             var long = myController.loadedPoint;
-            var   loadedLong = myController.exportationUtil.count;
+            var loadedLong = myController.exportationUtil.count;
             this.loadedBar.style.width = (loadedLong/long)*100 + '%';
-            this.setMessage('Loading '+ loadedLong +'/'+long);    
         },
 
         _loadingBarOptions: function () {
@@ -1474,11 +1495,7 @@ function View() {
             // container div in HTML
             this.setContainer(V.create('div','loaderbox'));
             V.create("div", 'loader', this._container);
-            this.loadedPoint = V.create('p','text-basic',this._container);
-        },
-
-        update: function(){
-            this.loadedPoint.innerHTML = 'Loaded '+ myController.exportationUtil.count;
+            
         }
     });
 
@@ -1487,6 +1504,7 @@ function View() {
     var canvas = document.getElementById('my_canvas');
     canvas.addEventListener('click', function(){
         $('#info').hide();
+        myController.stopTransferting = true;
     }, false);
     
     this.downloadWordCloud = new V.ExportationIcon({
@@ -1507,6 +1525,10 @@ function View() {
             // document.body.appendChild(newImg);
           });
     };
+    document.getElementById('cancel').addEventListener('click', function(){
+        myController.stopTransferting = true;                
+        $('#layout').hide();
+    });
     //--------------------------------------Instances----------------------------------------------
 
     var deleteShape = function (e) {
@@ -1515,10 +1537,6 @@ function View() {
             myController.deletePolygon(poly);
         }
     };
-    // map.on('layeradd', function (e) {
-    //     if (e.layer instanceof L.Path) e.layer.on('click', L.DomEvent.stop).on('click', deleteShape, e.layer);
-    //     if (e.layer instanceof L.Path) e.layer.on('dblclick', L.DomEvent.stop).on('dblclick', e.layer.toggleEdit);
-    // });
 
     // when finish drawing
     map.on('editable:drawing:end', function (e) {
@@ -1550,29 +1568,12 @@ function View() {
      *  + Polygons of research
      *  + ROI admin (not implemented)
      */
-    // this.rois =
-    //     new L.LayerGroup;
-    // this.rois.addTo(map);
 
     this.displayedMarkers =
         new L.LayerGroup;
     this.displayedMarkers.addTo(map);
 
     //---------------------------------------------Button Organisation------------------------------------------//
-    /**
-     * @function stopEventOfLeaflet stop all map events
-     * @param div div on which we want to stop all map events
-     */
-    /**
-    this.stopEventOfLeaflet = function(div) {
-         if (!L.Browser.touch) {
-            L.DomEvent.disableClickPropagation(div);
-            L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
-        } else {
-            L.DomEvent.on(div, 'click', L.DomEvent.stopPropagation);
-        }
-    }*/
-
     /**
      * Edit box div 
      * Position: left
@@ -1581,8 +1582,8 @@ function View() {
      */
     var mapDiv = document.getElementById('map')
     this.editionDiv = new V.Div({
-        parentElement: mapDiv, class: "nice-box normal-text",
-        childClass: 'champComposant nice-box', idDiv: 'research'
+        parentElement: document.getElementsByTagName("BODY")[0], class: "nice-box normal-text",
+        childClass: 'champComposant nice-box', idDiv: 'research', scroll: 'scroll'
     });
     this.editionDiv.show = function () {
         thisView.editionDiv.getContainer().style.visibility = 'visible';
@@ -1592,7 +1593,7 @@ function View() {
     this.editionDiv.stopEventOfLeaflet();
 
     // research name
-    this.editionTitle = new V.Div({ class: ' text-basic text-border edition-title', parentElement: mapDiv });
+    this.editionTitle = new V.Div({ class: ' text-basic text-border edition-title', parentElement: document.getElementsByTagName("BODY")[0] });
     this.editionTitle.getContainer().innerHTML = 'Name research';
     // hide div
     function hideResearch() {
@@ -1614,7 +1615,7 @@ function View() {
 
     this.editionHide = new V.Button({
         sign: '◄', titleElement: 'Hide research',
-        class: 'hideResearch', parentElement: mapDiv
+        class: 'hideResearch', parentElement: document.getElementsByTagName("BODY")[0]
     });
     L.DomEvent.on(this.editionHide.getLink(), 'click', hideResearch);
 
@@ -1632,6 +1633,12 @@ function View() {
         titleDiv: "Time Interval", parentElement: this.editionDiv,
         titleDivClass: 'underChampComposant title text-border firstComposant'
     });
+
+    var wordsBox = new V.Div({
+        titleDiv: "Key Words", parentElement: this.editionDiv, class: "word-box",
+        titleDivClass: 'underChampComposant title text-border firstComposant'
+    });
+
     var colorBox = new V.Div({
         titleDiv: "Color Selections", parentElement: this.editionDiv,
         titleDivClass: 'underChampComposant title text-border firstComposant'
@@ -1664,7 +1671,6 @@ function View() {
                 thisView.setLocation
         }
     });
-    // this.locationResearchButton.noneDisplay();
 
     /**
     *  Add button for creating a zone
@@ -1738,7 +1744,6 @@ function View() {
                 thisView.addPolyAdmin
         }
     });
-    // this.newPolyAdminButton.noneDisplay();
 
 
 
@@ -1754,13 +1759,35 @@ function View() {
         initialize: function (text, date, month, year, parent) {
             var container = V.create('div', 'timeSelector', parent);
             this._container = container;
-            this._textDiv = V.create('div', '', container);
-            this._textDiv.innerHTML = text;
+            var hourLabel = V.create('div','', container);
+            hourLabel.innerHTML = 'Hour';
+            var dateLabel = V.create('div','', container);
+            dateLabel.innerHTML = 'Date';
+            var monthLabel = V.create('div','', container);
+            monthLabel.innerHTML = 'Month';
+            var yearLabel = V.create('div','', container);
+            yearLabel.innerHTML = 'Year';
+            this._hourDiv = V.create('select', '', container);
+            this._hourDiv.style.width = '47px';
+            hourLabel.style.width = '47px';
+            for (var i = 0; i <= 23; i++) {
+                var option = V.create('option', 'timeOption', this._hourDiv);
+                option.text = i;
+            }
+            this._hourDiv.defaultValue = 0;
+            this._hourDiv.text = 0;
+            this._hourDiv.value = 0;
+            this._hourDiv.addEventListener('change',function(){
+                this.setTime(this.getTime());
+                myController.actualize();
+            }.bind(this));
+
             this._dateDiv = V.create('select', '', container);
+            this._dateDiv.style.width = '47px';
+            dateLabel.style.width = '47px';
             for (var i = 1; i <= 31; i++) {
                 var option = V.create('option', 'timeOption', this._dateDiv);
                 option.text = i;
-
             }
 
             this._dateDiv.defaultValue = date;
@@ -1772,6 +1799,8 @@ function View() {
             }.bind(this));
 
             this._monthDiv = V.create('select', '', container);
+            this._monthDiv.style.width = '60px';
+            monthLabel.style.width = '60px';
             for (var i = 0; i < this.monthsShort.length; i++) {
                 var option = V.create('option', 'timeOption', this._monthDiv);
                 option.text = this.monthsShort[i];
@@ -1788,6 +1817,8 @@ function View() {
                 var option = V.create('option', 'timeOption', this._yearDiv);
                 option.text = i;
             }
+            this._yearDiv.style.width = '65px';
+            yearLabel.style.width = '65px';
             this._yearDiv.defaultValue = year;
             this._yearDiv.value = year;
             this._yearDiv.addEventListener('change', function(){
@@ -1801,7 +1832,7 @@ function View() {
         monthsShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
         getTime: function () {
-            return this._yearDiv.value+','+ this._monthDiv.value+','+this._dateDiv.value;
+            return this._yearDiv.value+','+ this._monthDiv.value+','+this._dateDiv.value+','+this._hourDiv.value+':0:0';
         },
 
         setTime: function(t) {
@@ -1809,6 +1840,7 @@ function View() {
             this._dateDiv.value = time.getDate();
             this._monthDiv.value = this.monthsShort[time.getMonth()];
             this._yearDiv.value = time.getFullYear();
+            this._hourDiv.value = time.getHours();
         }
     });
 
@@ -1817,6 +1849,10 @@ function View() {
 
     timeBox.addChild(this.timeStartDiv).addChild(this.timeEndDiv);
 
+    //-------------------Fill Key Words Box----------------------------------//
+    this.wordsTextBox = new V.KeyWordTextBox({ tbid: 'ResearchBox', textdefault: 'Enter a keyword' });
+    this.wordsPanel = new V.Div({class: "words-panel"})
+    wordsBox.addChild(this.wordsTextBox).addChild(this.wordsPanel);
     //-------------------Fill Color Selector--------------------------------//
     /**
      *  Add background color selector 
@@ -1857,8 +1893,9 @@ function View() {
 
     addColorSelector('Background', thisView.backgroundColorSelector.getContainer(), colorBox.getContainer());
     addColorSelector('Border', thisView.borderColorSelector.getContainer(), colorBox.getContainer());
-    addColorSelector('Tweets', thisView.tweetsColorSelector.getContainer(), colorBox.getContainer());
+    // addColorSelector('Tweets', thisView.tweetsColorSelector.getContainer(), colorBox.getContainer());
 
+    
     /**
      * Recherche Management box div 
      * Position: right
@@ -1867,8 +1904,8 @@ function View() {
      */
     this.managementDiv = new V.Div({
         class: "nice-box",
-        parentElement: mapDiv, childClass: ' champComposant nice-box',
-        idDiv: "management", scroll: 'auto'
+        parentElement: document.getElementsByTagName('BODY')[0], childClass: ' champComposant nice-box',
+        idDiv: "management", scroll: 'scroll'
     });
     thisView.managementDiv.show();
 
@@ -1898,7 +1935,7 @@ function View() {
     }
     this.hideManagementButton = new V.Button({
         sign: '►', titleElement: 'Hide management',
-        class: 'hideManagement', parentElement: mapDiv
+        class: 'hideManagement', parentElement: document.getElementsByTagName("BODY")[0]
     });
 
     // L.DomEvent.on(this.hideManagementButton.getContainer(), 'click', hideManangement);
@@ -1943,7 +1980,8 @@ function View() {
 
     //-----------------------Data info box----------------------------------------
     this.infobox = L.control();
-    this.infobox2 = document.getElementById('counter_info_poly');
+    this.infoboxInfoPoly = document.getElementById('counter_info_poly');
+    this.infoboxExportation = document.getElementById('counter_exportation');
     this.infobox.onAdd = function (map) {
         this._div = V.create('div', 'infobox'); // create a div with a class "infobox"
         this._div.id = 'infobox'
@@ -1957,11 +1995,14 @@ function View() {
             '<i class="fa fa-' + props.icon + '"></i>';
     };
 
-    this.infobox2.update = function (props) {
-        thisView.infobox2.innerHTML = props.text + ' ' +
+    this.infoboxInfoPoly.update = function (props) {
+        thisView.infoboxInfoPoly.innerHTML = props.text + ' ' +
             '<i class="fa fa-' + props.icon + '"></i>';
     };
-
+    this.infoboxExportation.update = function (props) {
+        thisView.infoboxExportation.innerHTML = props.text + ' ' +
+            '<i class="fa fa-' + props.icon + '"></i>';
+    };
     this.infobox.addTo(map);
 
 }
