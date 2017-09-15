@@ -17,6 +17,7 @@ function recover_datasets() {
     database_id = 3;
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
         
+        console.log(result);
         //Filling dataset
         var body = $('#table_of_datasets').find('tbody');
         body.empty();
@@ -40,7 +41,7 @@ function recover_datasets() {
         $('#datasets_creation_name').val("");
         $('#datasets_creation_description').val("");
         $("#datasets_file_from_HD").val("");
-        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+', "file")');
+        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+')');
         
         datasets_add_a_row('datasets_creation_from_scratch_columns');
         
@@ -48,15 +49,19 @@ function recover_datasets() {
 }
 
 
-function datasets_send_new(database_id, from) {
+function datasets_send_new(database_id) {
     $("#datasets_creation_modal").modal('hide');
-    console.log(database_id);
     //var dataset_def = []
-    var body = $('#datasets_creation_from_file_columns').find('tbody');
-    if (from == "scratch")
-        body = $('#datasets_creation_from_scratch_columns').find('tbody');
     
-    console.log(body);
+    var body = $('#datasets_creation_from_scratch_columns').find('tbody');
+    var nb_cols = body.find('tr').length - 1;
+    $('#datasets_creation_from_file_pan').attr("class").split(' ').forEach( function (elt) {
+        if (elt == 'active') {
+            body = $('#datasets_creation_from_file_columns').find('tbody');
+            nb_cols = body.find('tr').length
+        }
+    });
+    console.log(nb_cols);
     //console.log("Params", dataset_def);
 }
 
