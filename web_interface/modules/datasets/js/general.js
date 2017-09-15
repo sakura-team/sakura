@@ -157,12 +157,46 @@ function datasets_parse_file() {
         cols = file_lines[index].split(sep);
         index ++;
     }
+    
+    //separator tests
+    var b_lines = [];
+    for (var i = index; i<file_lines.length; i++) {
+        line = file_lines[i].split(sep);
+        if (cols.length != line.length && file_lines[i][0] != '#' && file_lines[i].length != 0) {
+            b_lines.push(parseInt(i));
+        }
+    }
+    
+    if (b_lines.length > 0 && b_lines.length < 20) {
+        var txt = "Considering the separator, ";
+        if (b_lines.length == 1) 
+            txt += "\nline: ";
+        else 
+            txt += "\nlines: ";
+        b_lines.forEach( function(item) {
+            txt += ""+item+",";
+        });
+        if (b_lines.length == 1) 
+            txt += "\ndoes ";
+        else
+            txt += "\ndo ";
+        txt += "not have the correct number of columns (line indices start from 0)";
+        alert(txt);
+        return;
+    }
+    else if (b_lines.length > 20) {
+        alert("Considering the separator, many lines (more than 20) \ndo not have the correct number of columns !");
+        return;
+    }
+    
+    //Dealing with first comments 
     var first_line = ['#'];
     while (first_line[0].indexOf('#') >= 0) {
         first_line = file_lines[index].split(sep);
         index ++;
     }
     
+    //Reading columns and first line
     var body = $('#datasets_creation_from_file_columns').find('tbody');
     body.empty();
     cols.forEach( function(col, index) {
