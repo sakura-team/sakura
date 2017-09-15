@@ -50,19 +50,52 @@ function recover_datasets() {
 
 
 function datasets_send_new(database_id) {
-    $("#datasets_creation_modal").modal('hide');
-    //var dataset_def = []
     
+    //Reading first main elements: name and description
+    var name = $('#datasets_creation_name').val();
+    var desc = $('#datasets_creation_description').val();
+    if ( name == "") {
+        alert("We cannot create a dataset with an empty name !");
+        return;
+    }
+    var dataset = { 'name': name, 'description': desc, 'columns': [] };
+    
+    
+    //Which table body ?
     var body = $('#datasets_creation_from_scratch_columns').find('tbody');
-    var nb_cols = body.find('tr').length - 1;
+    var cols = body.find('tr');
+    var nb_cols = cols.length - 1;
     $('#datasets_creation_from_file_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
             body = $('#datasets_creation_from_file_columns').find('tbody');
-            nb_cols = body.find('tr').length
+            cols = body.find('tr');
+            nb_cols = cols.length
         }
     });
-    console.log(nb_cols);
-    //console.log("Params", dataset_def);
+    
+    //Data from each row
+    for (var i=0; i< nb_cols; i++) {
+        var inputs = $(cols[i]).find('input');
+        var label = $(inputs[0]).val();
+        
+        if (label == 'Column Name') {
+            alert("Each column should have an explicit name");
+            return;
+        }
+        
+        var type = $($(cols[i]).find('select')[0]).val();
+        var desc = $(inputs[1]).val();
+        var tags = $(inputs[2]).val();
+        dataset.columns.push([label, type, desc, tags]);
+    };
+    console.log("Params", dataset);
+    
+    //Sending the new dataset description
+    sakura.common.ws_request('new_database', [database_id, dataset], {}, function(result) {
+        console.log(result);
+    });
+    
+    $("#datasets_creation_modal").modal('hide');
 }
 
 
