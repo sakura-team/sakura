@@ -53,18 +53,24 @@
                         <h3>New Dataset</h3>
                     </div>
                     <div class="modal-body">
-                        <div class="panel panel-default">
-                            <div class="panel-body">
+                            <div class="panel">
                                 <div class="form-group">
                                     <label>Name</label>
-                                    <input class="form-control input-sm" id="datasets_creation_name" type="text" placeholder="Give a name for your new table">
+                                    <input class="form-control input-sm" id="datasets_creation_name" type="text" placeholder="Give a name to this new dataset">
                                 </div>
                                 <div class="form-group">
                                     <label>Description</label>
-                                    <input class="form-control input-sm" id="datasets_creation_description" type="text" placeholder="Shortly describe your new table">
+                                    <input class="form-control input-sm" id="datasets_creation_description" type="text" placeholder="Shortly describe the new table">
+                                </div>
+                                <div class="form-group">
+                                    <label>Creation date</label>
+                                    <input class="form-control input-sm" id="datasets_creation_date" type="text" placeholder="IN PROGRESS - BootStrap DatePicker ??????">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact</label>
+                                    <input class="form-control input-sm" id="datasets_creation_contact" type="text" placeholder="IN PROGRESS - This will be the current user for now">
                                 </div>
                             </div>
-                        </div>
                         
                         <ul class="nav nav-pills">
                             <li class="active"><a data-toggle="pill" href="#datasets_creation_from_scratch_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Send New Dataset From Scratch';">From Scratch</a></li>
@@ -77,18 +83,15 @@
                                         <table class="table table-condensed" id="datasets_creation_from_scratch_columns">
                                             <thead>
                                                 <tr>
-                                                    <th class="col-md-2">Name
-                                                    <th class="col-md-1">Type
-                                                    <th class="col-md-6">Description
-                                                    <th class="col-md-3">Tags
+                                                    <th class="col-md-2" style="text-align:center">Name
+                                                    <th class="col-md-1" style="text-align:center">Type
+                                                    <th class="col-md-2" style="text-align:center">Tags
                                                     <th class="col-md-1">&nbsp;
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td colspan=5>
-                                                        <button id="datasets_creation_add_row_button" title="Add a new column" type="button" class="btn btn-primary btn-xs" onclick="datasets_add_a_row('datasets_creation_from_scratch_columns');">
-                                                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                                        </button>
+                                                    <td colspan=4>
+                                                        <span title="delete" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_add_a_row('datasets_creation_from_scratch_columns');"></span>
                                             </tbody>
                                         </table>
                                     </div>
@@ -101,10 +104,9 @@
                                         <table class="table table-condensed" id="datasets_creation_from_file_columns">
                                             <thead>
                                                 <tr>
-                                                    <th class="col-md-2">Name
-                                                    <th class="col-md-1">Type
-                                                    <th class="col-md-6">Description
-                                                    <th class="col-md-3">Tags
+                                                    <th class="col-md-2" style="text-align:center">Name
+                                                    <th class="col-md-1" style="text-align:center">Type
+                                                    <th class="col-md-3" style="text-align:center">Tags
                                             </thead>
                                             <tbody>
                                             </tbody>

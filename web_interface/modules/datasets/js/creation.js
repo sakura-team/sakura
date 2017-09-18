@@ -10,7 +10,6 @@ function datasets_send_new(database_id) {
         alert("We cannot create a dataset with an empty name !");
         return;
     }
-    var dataset = { 'name': name, 'description': desc, 'columns': [] };
     
     
     //Which table body ?
@@ -25,6 +24,7 @@ function datasets_send_new(database_id) {
         }
     });
     
+    var columns = []
     //Data from each row
     for (var i=0; i< nb_cols; i++) {
         var inputs = $(cols[i]).find('input');
@@ -36,14 +36,13 @@ function datasets_send_new(database_id) {
         }
         
         var type = $($(cols[i]).find('select')[0]).val();
-        var desc = $(inputs[1]).val();
-        var tags = $(inputs[2]).val();
-        dataset.columns.push([label, type, desc, tags]);
+        var tags = [];
+        columns.push([label, type, tags]);
     };
-    console.log("Params", dataset);
     
     //Sending the new dataset description
-    sakura.common.ws_request('new_database', [database_id, dataset], {}, function(result) {
+    //database_id, name, description, creation_date, contact, columns
+    sakura.common.ws_request('new_database', [database_id, name, desc, "", "", columns], {}, function(result) {
         console.log(result);
     });
     
@@ -131,7 +130,7 @@ function datasets_parse_file() {
         var new_row = $(body[0].insertRow(-1));
         new_row.load('creation_dataset_row.html', function () {
             var inputs = new_row.find('input');
-            var buttons = new_row.find('button');
+            var buttons = new_row.find('span');
             var select = new_row.find('select');
             inputs[0].value = col;
             
@@ -151,7 +150,7 @@ function datasets_add_a_row(dataset_id) {
     
     new_row.load('creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
-        $(last_cel.find('button')[0]).attr('onclick', 'datasets_delete_row('+global_ids+');');
+        $(last_cel.find('span')[0]).attr('onclick', 'datasets_delete_row('+global_ids+');');
         global_ids ++;
     });    
     
@@ -171,17 +170,12 @@ function getType(str){
     var commaFloat = /^(\d{0,3}(,)?)+\.\d*$/;
     var dotFloat = /^(\d{0,3}(\.)?)+,\d*$/;
     var date = /^\d{0,4}(\.|\/)\d{0,4}(\.|\/)\d{0,4}$/;
-    var email = /^[A-za-z0-9._-]*@[A-za-z0-9_-]*\.[A-Za-z0-9.]*$/;
-    var phone = /^\+\d{2}\/\d{4}\/\d{6}$/g;
+    
     if (!nan){
-        if (parseFloat(str) === parseInt(str)) return "integer";
-        else return "float";
+        if (parseFloat(str) === parseInt(str)) return "int32";
+        else return "float32";
     }
-    else if (isfloat.test(str) || commaFloat.test(str) || dotFloat.test(str)) return "float";
+    else if (isfloat.test(str) || commaFloat.test(str) || dotFloat.test(str)) return "float32";
     else if (date.test(str)) return "date";
-    else {
-        if (email.test(str)) return "e-mail";
-        else if (phone.test(str)) return "phone";
-        else return "string";
-    }
+    else return "string";
 }
