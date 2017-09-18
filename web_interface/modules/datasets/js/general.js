@@ -15,39 +15,46 @@ function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
     //console.log(parseInt(database_id));
-    database_id = 3;
-    sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
+    ////////////TEMP////////////////////////
+    sakura.common.ws_request('list_databases', [], {}, function (result) {
+        database_id = result[0].database_id;
+    
+    ////////////END TEMP////////////////////////
+        sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
         
-        console.log(result);
-        //Filling dataset
-        var body = $('#table_of_datasets').find('tbody');
-        body.empty();
-        result.tables.forEach( function(dataset, index) {
-            console.log(dataset);
-            var dataset_id = index;
-            body.append('<tr>   <td>'+dataset.name+'</td><td>'+dataset.description+'</td> \
-                                <td align="right"> \
-                                    <span title="Upload data in this dataset" class="glyphicon glyphicon-upload" style="cursor: pointer;" onclick="dataset_upload('+database_id+','+dataset_id+');"> </span> \
-                                    <span title="Download the dataset" class="glyphicon glyphicon-download" style="cursor: pointer;" onclick="dataset_download('+database_id+','+dataset_id+');"> </span> \
-                                    <span>&nbsp</span> \
-                                    <span title="Look at the dataset" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="dataset_look_at('+database_id+','+dataset_id+');"></span> \
-                                    <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="dataset_analytics('+database_id+','+dataset_id+');"></span> \
-                                    <span>&nbsp</span> \
-                                    <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="dataset_delete('+database_id+','+dataset_id+');"></span> \
-                                </td>\
-                        </tr>');
+            console.log(result);
+            //Filling dataset
+            var body = $('#table_of_datasets').find('tbody');
+            body.empty();
+            result.tables.forEach( function(dataset, index) {
+                console.log(dataset);
+                var dataset_id = index;
+                body.append('<tr>   <td>'+dataset.name+'</td><td>'+dataset.description+'</td> \
+                                    <td align="right"> \
+                                        <span title="Upload data in this dataset" class="glyphicon glyphicon-upload" style="cursor: pointer;" onclick="dataset_upload('+database_id+','+dataset_id+');"> </span> \
+                                        <span title="Download the dataset" class="glyphicon glyphicon-download" style="cursor: pointer;" onclick="dataset_download('+database_id+','+dataset_id+');"> </span> \
+                                        <span>&nbsp</span> \
+                                        <span title="Look at the dataset" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="dataset_look_at('+database_id+','+dataset_id+');"></span> \
+                                        <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="dataset_analytics('+database_id+','+dataset_id+');"></span> \
+                                        <span>&nbsp</span> \
+                                        <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="dataset_delete('+database_id+','+dataset_id+');"></span> \
+                                    </td>\
+                            </tr>');
+            });
+        
+            //Updating/emptying html elements
+            $('#datasets_creation_name').val("");
+            $('#datasets_creation_description').val("");
+            $("#datasets_file_from_HD").val("");
+            $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+')');
+        
+            datasets_add_a_row('datasets_creation_from_scratch_columns');
+            database_infos = result;
+        
         });
-        
-        //Updating/emptying html elements
-        $('#datasets_creation_name').val("");
-        $('#datasets_creation_description').val("");
-        $("#datasets_file_from_HD").val("");
-        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+')');
-        
-        datasets_add_a_row('datasets_creation_from_scratch_columns');
-        database_infos = result;
-        
+    
     });
+
 }
 
 

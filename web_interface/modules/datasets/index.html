@@ -192,6 +192,27 @@
             </div>
         </div>
         
+        <!-- ALERT MODAL -->
+        <div id="datasets_date_format_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-md" role="dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Date Format</h3>
+                    </div>
+                    <div class="modal-body">
+                        <p> 
+                            Please Describe your date format<br>
+                            <font color="grey" size=2>Y: year ; M: month ; D: day ; h: hour ; m: minute ; s: second</font>
+                        </p>
+                        <input class="form-control input-sm" id="datasets_date_format_input" type="text" placeholder="ex: YYYY/MM/DD hh:mm:ss">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="datasets_date_format_button" class="btn btn-primary btn-sm" data-dismiss="modal" onclick="datasets_date_format();">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <script src="js/general.js"></script>
         <script src="js/creation.js"></script>
     </body>

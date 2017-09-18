@@ -150,6 +150,10 @@ function datasets_add_a_row(dataset_id) {
     new_row.load('creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
         $(last_cel.find('span')[0]).attr('onclick', 'datasets_delete_row('+global_ids+');');
+        
+        var select = new_row.find('select');
+        select.attr('onchange', "datasets_type_change("+global_ids+");");
+        
         global_ids ++;
     });    
     
@@ -159,6 +163,19 @@ function datasets_add_a_row(dataset_id) {
 
 function datasets_delete_row(row_id) {
     $('#datasets_row_'+row_id).remove();
+}
+
+
+function datasets_type_change(row_id) {
+    if ($('#datasets_type_select').val() == 'date') {
+        $('#datasets_date_format_button').attr("onclick", "datasets_date_format("+row_id+");");
+        $('#datasets_date_format_modal').modal();
+    };
+}
+
+
+function datasets_date_format(row) {
+    console.log(row, $('#datasets_date_format_input').val());
 }
 
 
