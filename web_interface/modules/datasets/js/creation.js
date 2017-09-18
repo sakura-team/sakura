@@ -1,6 +1,10 @@
 //Code started by Michael Ortega for the LIG
 //August, 22nd, 2017
 
+
+var fs_date_formats = [];
+var ff_date_formats = [];
+
 function datasets_send_new(database_id) {
     
     //Reading first main elements: name and description
@@ -131,6 +135,9 @@ function datasets_parse_file() {
             var inputs = new_row.find('input');
             var buttons = new_row.find('span');
             var select = new_row.find('select');
+            select.attr('id', 'datasets_ff_type_select_'+index);
+            select.attr('onchange', "datasets_ff_type_change("+index+");");
+            
             inputs[0].value = col;
             
             buttons[buttons.length - 1].remove();
@@ -149,10 +156,11 @@ function datasets_add_a_row(dataset_id) {
     
     new_row.load('creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
-        $(last_cel.find('span')[0]).attr('onclick', 'datasets_delete_row('+global_ids+');');
+        $(last_cel.find('span')[0]).attr('onclick', 'datasets_fs_delete_row('+global_ids+');');
         
         var select = new_row.find('select');
-        select.attr('onchange', "datasets_type_change("+global_ids+");");
+        select.attr('id', 'datasets_fs_type_select_'+global_ids);
+        select.attr('onchange', "datasets_fs_type_change("+global_ids+");");
         
         global_ids ++;
     });    
@@ -161,21 +169,62 @@ function datasets_add_a_row(dataset_id) {
 }
 
 
-function datasets_delete_row(row_id) {
+function datasets_fs_delete_row(row_id) {
     $('#datasets_row_'+row_id).remove();
 }
 
 
-function datasets_type_change(row_id) {
-    if ($('#datasets_type_select').val() == 'date') {
-        $('#datasets_date_format_button').attr("onclick", "datasets_date_format("+row_id+");");
+function datasets_fs_type_change(row_id) {
+    if ($('#datasets_fs_type_select_'+row_id).val() == 'date') {
+        
+        //Is the format existing ?
+        var exist_id = -1;
+        fs_date_formats.forEach( function(row, index) {
+            if (row[0] == row_id)
+                exist_id = index;
+        });
+        
+        if (exist_id >= 0)
+            $('#datasets_date_format_input').val(fs_date_formats[exist_id][1]);
+        $('#datasets_date_format_button').attr("onclick", "datasets_fs_date_format("+row_id+","+exist_id+");");
+        
         $('#datasets_date_format_modal').modal();
     };
 }
 
 
-function datasets_date_format(row) {
-    console.log(row, $('#datasets_date_format_input').val());
+function datasets_ff_type_change(row_id) {
+    if ($('#datasets_ff_type_select_'+row_id).val() == 'date') {
+        
+        //Is the format existing ?
+        var exist_id = -1;
+        ff_date_formats.forEach( function(row, index) {
+            if (row[0] == row_id)
+                exist_id = index;
+        });
+        
+        if (exist_id >= 0)
+            $('#datasets_date_format_input').val(ff_date_formats[exist_id][1]);
+        $('#datasets_date_format_button').attr("onclick", "datasets_ff_date_format("+row_id+","+exist_id+");");
+        
+        $('#datasets_date_format_modal').modal();
+    };
+}
+
+
+function datasets_fs_date_format(row, exist_id) {
+    if (exist_id < 0)
+        fs_date_formats.push([row, $('#datasets_date_format_input').val()]);
+    else
+        fs_date_formats[exist_id][1] = $('#datasets_date_format_input').val();
+}
+
+
+function datasets_ff_date_format(row, exist_id) {
+    if (exist_id < 0)
+        ff_date_formats.push([row, $('#datasets_date_format_input').val()]);
+    else
+        ff_date_formats[exist_id][1] = $('#datasets_date_format_input').val();
 }
 
 
