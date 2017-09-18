@@ -7,7 +7,7 @@ function datasets_send_new(database_id) {
     var name = $('#datasets_creation_name').val();
     var desc = $('#datasets_creation_description').val();
     if ( name == "") {
-        alert("We cannot create a dataset with an empty name !");
+        datasets_alert("Dataset Name", "We cannot create a dataset with an empty name !");
         return;
     }
     
@@ -31,7 +31,7 @@ function datasets_send_new(database_id) {
         var label = $(inputs[0]).val();
         
         if (label == 'Column Name') {
-            alert("Each column should have an explicit name");
+            datasets_alert("Columns Name", "Each column should have an explicit name");
             return;
         }
         
@@ -58,8 +58,7 @@ function on_file_selected(f) {
         
         var s_name = f.value.split('.');
         if (s_name[s_name.length - 1] != 'csv' && s_name[s_name.length - 1] != 'CSV') {
-            console.log(s_name[s_name.length - 1]);
-            alert("The extension of this file is not .csv !! Please be sure it is a csv file, and rename it with extension.");
+            datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
             return;
         }
         file_lines = e.target.result.split(/[\r\n]+/g);
@@ -108,11 +107,11 @@ function datasets_parse_file() {
         else
             txt += "\ndo ";
         txt += "not have the correct number of columns (line indices start from 0)";
-        alert(txt);
+        datasets_alert("Columns Issue",txt);
         return;
     }
     else if (b_lines.length > 20) {
-        alert("Considering the separator, many lines (more than 20) \ndo not have the correct number of columns !");
+        datasets_alert("Columns Issue","Considering the separator, many lines (more than 20) \ndo not have the correct number of columns !");
         return;
     }
     

@@ -7,6 +7,7 @@
     <script src="/js/jquery-2.2.4.min.js"></script>
     <script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="/bootstrap-3.3.7/js/bootstrap-select.min.js"></script>
+    <script src="/moment-2.18.1/moment.js"></script>     <!--Managing dates-->
     <script src="/js/sakura-common.js"></script>
     <link rel="stylesheet" type="text/css" href="/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/bootstrap-3.3.7/css/bootstrap-select.min.css">
@@ -168,6 +169,24 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- ALERT MODAL -->
+        <div id="datasets_alert_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-md" role="dialog">
+                <div class="modal-content">
+                    <div id="datasets_alert_header" class="modal-header" style="background-color : rgba(255,0,0,0.5);">
+                        <h3>Alert Title</h3>
+                    </div>
+                    <div id="datasets_alert_body" class="modal-body">
+                        <p> Alert Text</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
                     </div>
                 </div>
             </div>

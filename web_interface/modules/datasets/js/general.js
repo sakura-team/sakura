@@ -46,6 +46,7 @@ function recover_datasets() {
         
         datasets_add_a_row('datasets_creation_from_scratch_columns');
         database_infos = result;
+        
     });
 }
 
@@ -92,4 +93,13 @@ function dataset_analytics(database_id, dataset_id) {
 
 function dataset_delete(database_id, dataset_id) {
     not_yet();
+}
+
+
+function datasets_alert(header_str, body_str) {
+    var h = $('#datasets_alert_header');
+    var b = $('#datasets_alert_body');
+    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#datasets_alert_modal').modal();
 }
