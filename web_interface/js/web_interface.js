@@ -549,7 +549,7 @@ function historyRequestStub(idDiv,n,elt,bd) {
 
 function buildEltStub(idDiv,result,elt) {
     s = "";
-    if (elt=="Protocol") {
+    if (elt=="Project") {
         imageElt = "Simpleicons_Business_notebook.svg.png";
         imageEltInverse = "Simpleicons_Business_notebook_inverse.svg.png";
     }
@@ -577,7 +577,7 @@ function buildEltStub(idDiv,result,elt) {
     //Informations
     for(i=0;i<result.info.length;i++) { 
         s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value;
-        if ((result.info[i].name!="Name") && (result.info[i].name!="Protocol-id") && (result.info[i].name!="DataSet-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Analysis-id")&& (result.info[i].name!="Result-id")) {
+        if ((result.info[i].name!="Name") && (result.info[i].name!="Project-id") && (result.info[i].name!="DataSet-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Analysis-id")&& (result.info[i].name!="Result-id")) {
             s = s +'<span class="editZoneContextualMenu"></span>';
         }
         s = s +'</dd>';
