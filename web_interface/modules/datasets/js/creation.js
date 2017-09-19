@@ -7,6 +7,7 @@ var ff_date_formats = [];
 
 function datasets_send_new(database_id) {
     
+    
     //Reading first main elements: name and description
     var name = $('#datasets_creation_name').val();
     var desc = $('#datasets_creation_description').val();
@@ -46,7 +47,7 @@ function datasets_send_new(database_id) {
     
     //Sending the new dataset description
     //database_id, name, description, creation_date, contact, columns
-    sakura.common.ws_request('new_database', [database_id, name, desc, "", "", columns], {}, function(result) {
+    sakura.common.ws_request('new_database', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), "", columns], {}, function(result) {
         console.log(result);
     });
     

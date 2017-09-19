@@ -8,6 +8,7 @@
     <script src="/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="/bootstrap-3.3.7/js/bootstrap-select.min.js"></script>
     <script src="/moment-2.18.1/moment.js"></script>     <!--Managing dates-->
+    <script src="/bootstrap-datetimepicker/bootstrap-datetimepicker.js"></script>
     <script src="/js/sakura-common.js"></script>
     <link rel="stylesheet" type="text/css" href="/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/bootstrap-3.3.7/css/bootstrap-select.min.css">
@@ -64,12 +65,28 @@
                                     <input class="form-control input-sm" id="datasets_creation_description" type="text" placeholder="Shortly describe the new table">
                                 </div>
                                 <div class="form-group">
-                                    <label>Creation date</label>
-                                    <input class="form-control input-sm" id="datasets_creation_date" type="text" placeholder="IN PROGRESS - BootStrap DatePicker ??????">
-                                </div>
-                                <div class="form-group">
                                     <label>Contact</label>
                                     <input class="form-control input-sm" id="datasets_creation_contact" type="text" placeholder="IN PROGRESS - This will be the current user for now">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <label>Creation date</label>
+                                    <div class="row">
+                                        <div class='col-sm-4'>
+                                            <div class="form-group">
+                                                <div class='input-group date' id='datasets_creation_datetimepicker'>
+                                                    <input type='text' class="form-control input-sm" />
+                                                    <span class="input-group-addon">
+                                                        <span class="glyphicon glyphicon-calendar"></span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <script type="text/javascript">
+                                            $(function () {
+                                                $('#datasets_creation_datetimepicker').datetimepicker();
+                                            });
+                                        </script>
+                                    </div>
                                 </div>
                             </div>
                         
