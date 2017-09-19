@@ -466,7 +466,7 @@ function listRequestStubForRestart(idDiv) {
     s="";
     i=0;
     result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Projects/tmpProtocol';
+    elt='Projects/tmpProject';
     s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
         + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Simpleicons_Business_notebook.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
