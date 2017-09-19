@@ -5,6 +5,7 @@
 var global_ids = 0;
 var file_lines = null;
 var database_infos = null;
+var dataset_tags_list = [];
 
 function not_yet() {
     alert("not yet implemented");
@@ -17,7 +18,12 @@ function recover_datasets() {
     //console.log(parseInt(database_id));
     ////////////TEMP////////////////////////
     sakura.common.ws_request('list_databases', [], {}, function (result) {
-        database_id = result[0].database_id;
+        if (result.length)
+            database_id = result[0].database_id;
+        else {
+            alert("No database found !!!");
+            return;
+        }
     
     ////////////END TEMP////////////////////////
         sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
@@ -41,7 +47,7 @@ function recover_datasets() {
                                     </td>\
                             </tr>');
             });
-        
+            
             //Updating/emptying html elements
             $('#datasets_creation_name').val("");
             $('#datasets_creation_description').val("");
@@ -50,7 +56,6 @@ function recover_datasets() {
         
             datasets_add_a_row('datasets_creation_from_scratch_columns');
             database_infos = result;
-        
         });
     
     });

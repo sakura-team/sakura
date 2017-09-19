@@ -136,14 +136,20 @@ function datasets_parse_file() {
             var inputs = new_row.find('input');
             var buttons = new_row.find('span');
             var select = new_row.find('select');
-            select.attr('id', 'datasets_ff_type_select_'+index);
-            select.attr('onchange', "datasets_ff_type_change("+index+");");
+            
+            new_row.find("td:last").remove();
+            
+            $(select[0]).attr('id', 'datasets_ff_type_select_'+index);
+            $(select[0]).attr('onchange', "datasets_ff_type_change("+index+");");
+            $(select[0]).val(getType(first_line[index]));
+            
+            $(select[1]).attr('id', 'datasets_ff_tags_select_'+index);
+            $(select[1]).attr('onchange', "datasets_ff_tags_change("+index+");");
             
             inputs[0].value = col;
             
-            buttons[buttons.length - 1].remove();
-            
-            select.val(getType(first_line[index]));
+            $('#datasets_ff_type_select_'+index).selectpicker('refresh');
+            $('#datasets_ff_tags_select_'+index).selectpicker('refresh');
         });
     });
 }
@@ -160,8 +166,14 @@ function datasets_add_a_row(dataset_id) {
         $(last_cel.find('span')[0]).attr('onclick', 'datasets_fs_delete_row('+global_ids+');');
         
         var select = new_row.find('select');
-        select.attr('id', 'datasets_fs_type_select_'+global_ids);
-        select.attr('onchange', "datasets_fs_type_change("+global_ids+");");
+        $(select[0]).attr('id', 'datasets_fs_type_select_'+global_ids);
+        $(select[0]).attr('onchange', "datasets_fs_type_change("+global_ids+");");
+        
+        $(select[1]).attr('id', 'datasets_fs_tags_select_'+global_ids);
+        $(select[1]).attr('onchange', "datasets_fs_tags_change("+global_ids+");");
+        
+        $('#datasets_fs_type_select_'+global_ids).selectpicker('refresh');
+        $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
         
         global_ids ++;
     });    
