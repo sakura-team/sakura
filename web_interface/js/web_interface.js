@@ -109,6 +109,7 @@ function showDiv(event, dir, id) {
     d.innerHTML = bct;
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
     
+    //console.log(idDir);
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             if (typeof(id) != "undefined") {
