@@ -47,7 +47,7 @@ function datasets_send_new(database_id) {
     
     //Sending the new dataset description
     //database_id, name, description, creation_date, contact, columns
-    sakura.common.ws_request('new_database', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), "", columns], {}, function(result) {
+    sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), "", columns], {}, function(result) {
         console.log(result);
     });
     
@@ -148,11 +148,16 @@ function datasets_parse_file() {
             tags_select.attr('id', 'datasets_ff_tags_select_'+index);
             tags_select.attr('onchange', "datasets_ff_tags_change("+index+");");
             
-            tags_select.append('<option value=""></option>')
-            datasets_tags_list.forEach( function (tag) {
-                tags_select.append('<option value="'+tag+'">'+tag+'</option>')
+            tags_select.append('<option data-hidden="true" value="Select..."></option>')
+            columns_tags_list.forEach(function (group) {
+                group_elem = '<optgroup label="' + group[0] + '">';
+                group[1].forEach(function (tag) {
+                    group_elem += '<option value="' + tag + '">' + tag + '</option>';
+                });
+                group_elem += '</optgroup>';
+                tags_select.append(group_elem);
             });
-            tags_select.append('<option data-icon="glyphicon glyphicon-plus" data-subtext="petrification"></option>')
+            tags_select.append('<option data-icon="glyphicon glyphicon-plus"></option>')
             
             inputs[0].value = col;
             
@@ -183,8 +188,13 @@ function datasets_add_a_row(dataset_id) {
         tags_select.attr('onchange', "datasets_fs_tags_change("+global_ids+");");
         
         tags_select.append('<option data-hidden="true" value="Select..."></option>')
-        datasets_tags_list.forEach( function (tag) {
-            tags_select.append('<option value="'+tag+'">'+tag+'</option>')
+        columns_tags_list.forEach(function (group) {
+            group_elem = '<optgroup label="' + group[0] + '">';
+            group[1].forEach(function (tag) {
+                group_elem += '<option value="' + tag + '">' + tag + '</option>';
+            });
+            group_elem += '</optgroup>';
+            tags_select.append(group_elem);
         });
         tags_select.append('<option data-icon="glyphicon glyphicon-plus"></option>')
         
