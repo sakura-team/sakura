@@ -59,9 +59,7 @@ function recover_datasets() {
             
             //Ask for the existing tags
             sakura.common.ws_request('list_existing_datasets_tags', [database_id], {}, function (tags_list) {
-                datasets_tags_list = [""];
-                $.merge(datasets_tags_list, tags_list);
-                console.log(datasets_tags_list);
+                datasets_tags_list = tags_list;
             });
         });
     });

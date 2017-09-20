@@ -148,9 +148,12 @@ function datasets_parse_file() {
             tags_select.attr('id', 'datasets_ff_tags_select_'+index);
             tags_select.attr('onchange', "datasets_ff_tags_change("+index+");");
             
+            tags_select.append('<option value=""></option>')
             datasets_tags_list.forEach( function (tag) {
                 tags_select.append('<option value="'+tag+'">'+tag+'</option>')
             });
+            tags_select.append('<option data-icon="glyphicon glyphicon-plus" data-subtext="petrification"></option>')
+            
             inputs[0].value = col;
             
             $('#datasets_ff_type_select_'+index).selectpicker('refresh');
@@ -179,9 +182,11 @@ function datasets_add_a_row(dataset_id) {
         tags_select.attr('id', 'datasets_fs_tags_select_'+global_ids);
         tags_select.attr('onchange', "datasets_fs_tags_change("+global_ids+");");
         
+        tags_select.append('<option data-hidden="true" value="Select..."></option>')
         datasets_tags_list.forEach( function (tag) {
             tags_select.append('<option value="'+tag+'">'+tag+'</option>')
         });
+        tags_select.append('<option data-icon="glyphicon glyphicon-plus"></option>')
         
         $('#datasets_fs_type_select_'+global_ids).selectpicker('refresh');
         $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
