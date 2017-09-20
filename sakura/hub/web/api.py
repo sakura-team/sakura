@@ -108,6 +108,10 @@ class GuiToHubAPI(object):
     def get_link_gui_data(self, link_id):
         return self.context.links.get_gui_data(link_id)
 
+    # added by rms-dev
+    # def set_userAccount_gui_data(self, userAccount_gui_data):
+    #    self.context.set_userAccount_gui_data(userAccount_gui_data)
+
     ########################################
     # Databases
     def list_datastores(self):
