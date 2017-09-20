@@ -241,6 +241,7 @@ div#size {
     width: 250px;
     max-height: 400px;
     overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .layer td, th {

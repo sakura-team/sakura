@@ -105,10 +105,13 @@ function Controller() {
         }
         // update infobox
         myView.infobox.update({ "icon": icon, 'text': result.heatmap.count + ' points' });
+        var t1 = new Date().getTime();
+        if(result.heatmap.done)
+            console.log('map update: ' + ((t1 - t0)/1000.0) + " seconds");
     }
-
+    var t0;
     this.request_data = function () {
-        
+        t0 = new Date().getTime();
         // get lat / lng map bounds
         var geo_bounds = map.getBounds();
         var geo_sw = geo_bounds.getSouthWest();
@@ -237,14 +240,15 @@ function Controller() {
         if(result.exportation.done){
             thisControl.exportationUtil.downloadCSV();
             $('#layout').hide();
+            var t1 = new Date().getTime();
+            console.log('exportation update: ' + ((t1 - t0)/1000.0) + " seconds");
             thisControl.request_data();
         }
     }
 
     function wordcloud_callback(result) {
         if(thisControl.stopTransferting){
-            thisControl.stopTransferting = false;
-            // thisControl.actualize();            
+            thisControl.stopTransferting = false;           
             return;
         }
         var data = result.wordcloud.data;
@@ -292,8 +296,11 @@ function Controller() {
             };
             WordCloud(document.getElementById('my_canvas'), options );
         }
-        if(result.wordcloud.done)
-            thisControl.request_data();
+        if(result.wordcloud.done){
+            var t1 = new Date().getTime();
+            console.log('wordcloud update: ' + ((t1 - t0)/1000.0) + " seconds");
+        }
+            
     }
 
     this.exportationUtil = new Object;
@@ -398,6 +405,7 @@ function Controller() {
 
     this.stopTransferting = false;
     this.exportation = function (roi, name, forAResearch) {
+        t0 = new Date().getTime();
         this.exportationUtil.result = '';
         this.exportationUtil.count = 0;
         this.exportationUtil.researchName = name; 
@@ -646,6 +654,16 @@ function Controller() {
 
         myModel.researches.splice(0, myModel.researches.length);
         this.addResearch();
+    };
+
+    this.updateColorForAllPolygons = function(){
+        for(var i=0;i<myModel.researches.length;i++){
+            myModel.researches[i].roi.eachLayer(function (layer){
+                layer.setStyle({
+                    fillOpacity: FILLOPACITY_DISABLED
+                });
+            });
+        }
     };
 
     //  @function updateColor() called by event 'change' of tweetColorSelector 

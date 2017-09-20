@@ -624,6 +624,7 @@ function View() {
             this.currentCheckedBox = target;
             FILLOPACITY_DISABLED = (target.id == 'Heatmap') ? 0 : 0.4;
             FILLOPACITY_ENABLED = (target.id == 'Heatmap') ? 0 : 0.2;
+            myController.setColorForAllPolygons();
             myController.setDisplayType(target.id);
         }
     });
@@ -1651,7 +1652,7 @@ function View() {
             myController.editableResearch.locationMarker =
                 L.marker([l.lat, l.lng], {
                     icon: L.AwesomeMarkers.icon({
-                        icon: 'coffee',
+                        icon: 'fa-location-arrow',
                         markerColor: V.Util.convertMarkerColor(myController.editableResearch.colorBackground),
                         prefix: 'fa', iconColor: 'black'
                     })

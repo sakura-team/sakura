@@ -66,8 +66,10 @@ def check_point_inside(x, y, polygonInfo):
     return res
 
 def check_contained_words(text, words):
+    if len(words) == 0:
+        return True
     for word in words:
-        if not (word in text):
-            return False
-    return True
+        if word in text:
+            return True
+    return False
 
