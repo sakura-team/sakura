@@ -138,14 +138,19 @@ function datasets_parse_file() {
             var select = new_row.find('select');
             
             new_row.find("td:last").remove();
+            var type_select = $(select[0]);
+            var tags_select = $(select[1]);
             
-            $(select[0]).attr('id', 'datasets_ff_type_select_'+index);
-            $(select[0]).attr('onchange', "datasets_ff_type_change("+index+");");
-            $(select[0]).val(getType(first_line[index]));
+            type_select.attr('id', 'datasets_ff_type_select_'+index);
+            type_select.attr('onchange', "datasets_ff_type_change("+index+");");
+            type_select.val(getType(first_line[index]));
             
-            $(select[1]).attr('id', 'datasets_ff_tags_select_'+index);
-            $(select[1]).attr('onchange', "datasets_ff_tags_change("+index+");");
+            tags_select.attr('id', 'datasets_ff_tags_select_'+index);
+            tags_select.attr('onchange', "datasets_ff_tags_change("+index+");");
             
+            datasets_tags_list.forEach( function (tag) {
+                tags_select.append('<option value="'+tag+'">'+tag+'</option>')
+            });
             inputs[0].value = col;
             
             $('#datasets_ff_type_select_'+index).selectpicker('refresh');
@@ -166,11 +171,17 @@ function datasets_add_a_row(dataset_id) {
         $(last_cel.find('span')[0]).attr('onclick', 'datasets_fs_delete_row('+global_ids+');');
         
         var select = new_row.find('select');
-        $(select[0]).attr('id', 'datasets_fs_type_select_'+global_ids);
-        $(select[0]).attr('onchange', "datasets_fs_type_change("+global_ids+");");
+        var type_select = $(select[0]);
+        var tags_select = $(select[1]);
+        type_select.attr('id', 'datasets_fs_type_select_'+global_ids);
+        type_select.attr('onchange', "datasets_fs_type_change("+global_ids+");");
         
-        $(select[1]).attr('id', 'datasets_fs_tags_select_'+global_ids);
-        $(select[1]).attr('onchange', "datasets_fs_tags_change("+global_ids+");");
+        tags_select.attr('id', 'datasets_fs_tags_select_'+global_ids);
+        tags_select.attr('onchange', "datasets_fs_tags_change("+global_ids+");");
+        
+        datasets_tags_list.forEach( function (tag) {
+            tags_select.append('<option value="'+tag+'">'+tag+'</option>')
+        });
         
         $('#datasets_fs_type_select_'+global_ids).selectpicker('refresh');
         $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
