@@ -592,6 +592,19 @@ function buildEltStub(idDiv,result,elt) {
         + '<h4 class="">'+elt+' information</h4>'
         + '<dl class="dl-horizontal col-md-6">';
     
+	// MAJ tabs
+	if (window.location.toString().match(/[A-Za-z]+-[0-9]+/)) {
+		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+		document.getElementById('idLiProjectMainMain').href=document.getElementById('idLiProjectMainMain').href.replace(/tmp([A-Za-z]+)/,"$1-"+idElt);
+		document.getElementById('idLiProjectMainMain').onclick=function (event) { showDiv(event,'Projects/Project-'+idElt);};
+		document.getElementById('idLiProjectMainWork').href=document.getElementById('idLiProjectMainWork').href.replace(/tmp([A-Za-z]+)/,"$1-"+idElt);
+		document.getElementById('idLiProjectMainWork').onclick=function (event) { showDiv(event,'Projects/Project-'+idElt+'/Work');}; 
+		document.getElementById('idLiProjectWorkMain').href=document.getElementById('idLiProjectWorkMain').href.replace(/tmp([A-Za-z]+)/,"$1-"+idElt);
+		document.getElementById('idLiProjectWorkMain').onclick=function (event) { showDiv(event,'Projects/Project-'+idElt);};
+		document.getElementById('idLiProjectWorkWork').href=document.getElementById('idLiProjectWorkWork').href.replace(/tmp([A-Za-z]+)/,"$1-"+idElt);
+		document.getElementById('idLiProjectWorkWork').onclick=function (event) { showDiv(event,'Projects/Project-'+idElt+'/Work');}; 
+	}
+	
     //Informations
     for(i=0;i<result.info.length;i++) { 
         s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value;
@@ -698,7 +711,10 @@ function eltRequestStub(idDiv,elt,bd) {
         infos = new Array();
         ninfo = Math.floor(Math.random() * 10);
         infos.push({"name":"Name","value":eltName});
-        infos.push({"name":elt+"-id","value":numAlea(100,100)});
+		if (window.location.toString().match(/[A-Za-z]+-[0-9]+/)) {
+		  infos.push({"name":elt+"-id","value":window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1")});}
+		else {
+          infos.push({"name":elt+"-id","value":numAlea(100,100)});}    
         infos.push({"name":"Description","value":shortTextAlea()});
         infos.push({"name":"Author","value":userName});
         
