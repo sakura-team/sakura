@@ -64,7 +64,7 @@ function showDiv(event, dir, id) {
     if (dir=="") {
         dir="Home";
     }
-    else if (dir.match("tmp")) {
+    else if (dir.match("tmp") || dir.match(/\/[A-Za-z]+-[0-9]+/)) {
         if (!(dir.match("Work") || dir.match("Historic") || dir.match("Main")))  {
             dir = dir + "/Main";
         }
@@ -74,9 +74,15 @@ function showDiv(event, dir, id) {
     //show div
     mainDivs=document.getElementsByClassName('classMainDiv');
     for(i=0;i<mainDivs.length;i++) {
-        mainDivs[i].style.display='none';
-    }
-    var idDir = "idDiv"+dirs.join("");
+        mainDivs[i].style.display='none';}
+		
+    var idDir = "idDiv";
+	dirs.forEach(function (tmpLocDir) {
+		if (tmpLocDir.match(/[A-Za-z]+-[0-9]+/)) {
+			idDir += tmpLocDir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");}
+		else {
+			idDir += tmpLocDir;}});
+			
     if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
     }
@@ -376,11 +382,22 @@ function buildListStub(idDiv,result,elt) {
         + '</tr></thead>'
         + '<tbody id="idTBodyList'+eltAncetre+'">';
     for(i=0;i<result.length;i++) {
+		var tmpInitElt = elt;
+		if (result[i].hasOwnProperty("database_id")) {
+		  elt=elt.replace(/tmp(.*)/,"$1-"+result[i].database_id);}
+		else {	// id seulement
+		  elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);}
+		if (result[i].hasOwnProperty("database_id")) {
         s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].database_id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].database_id+"\">"+result[i].name+"</a></td>\n";
+		} else {  // id seulement
+		  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\">"+result[i].name+"</a></td>\n";}
         if (document.getElementById("cbColSelectTags").checked) {
             s = s + "<td>"+result[i].tags+"</td>";}
         if (document.getElementById("cbColSelectId").checked) {
-            s = s + "<td>"+result[i].database_id+"</td>";} 
+		  if (result[i].hasOwnProperty("database_id")) {
+            s = s + "<td>"+result[i].database_id+"</td>";}
+		 else {  // id seulement
+            s = s + "<td>"+result[i].id+"</td>";}}			
         if (document.getElementById("cbColSelectShortDesc").checked) {
             s = s + "<td>"+result[i].shortDesc+"</td>";}  
         if (document.getElementById("cbColSelectDate").checked) {
@@ -403,6 +420,7 @@ function buildListStub(idDiv,result,elt) {
             s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";
             }
         s = s + "</td></tr>";
+		elt = tmpInitElt;
     }
     s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
         + '</tbody>';
