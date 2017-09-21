@@ -32,13 +32,13 @@ class ItemsComputedStream(OutputStreamBase):
             for record in self.compute_cb():
                 yield tuple(record[i] for i in col_indexes)
         columns = tuple(self.columns[i] for i in col_indexes)
-        return ComputedStream(self.label, filtered_compute_cb, columns)
+        return ItemsComputedStream(self.label, filtered_compute_cb, columns)
     def __filter__(self, col_index, comp_op, other):
         def filtered_compute_cb():
             for record in self.compute_cb():
                 if comp_op(record[col_index], other):
                     yield record
-        return ComputedStream(self.label, filtered_compute_cb, self.columns)
+        return ItemsComputedStream(self.label, filtered_compute_cb, self.columns)
 
 class ChunksComputedStream(OutputStreamBase):
     def __init__(self, label, compute_cb, columns=None):
