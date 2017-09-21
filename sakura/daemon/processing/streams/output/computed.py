@@ -23,10 +23,15 @@ class ItemsComputedStream(OutputStreamBase):
         dtype = self.get_dtype()
         it = islice(self.compute_cb(), offset, None)
         while True:
-            chunk = np.fromiter(islice(it, chunk_size), dtype).view(NumpyChunk)
-            if chunk.size == 0:
+            # we may have "object" columns (e.g. storing strings of unknown length),
+            # and np.fromiter() does not work in this case.
+            chunk = np.empty(chunk_size, dtype)
+            i = -1
+            for i, row in enumerate(islice(it, chunk_size)):
+                chunk[i] = row
+            if i == -1:
                 break
-            yield chunk
+            yield chunk[:i+1].view(NumpyChunk)
     def __select_columns__(self, *col_indexes):
         def filtered_compute_cb():
             for record in self.compute_cb():

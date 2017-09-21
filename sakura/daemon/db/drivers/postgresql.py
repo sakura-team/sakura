@@ -31,14 +31,18 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     elif col_pgtype in ('text', 'character varying'):
         max_length = col_meta.get('max_text_chars', None)
         if max_length is None:
-            raise RuntimeError('Max length of text column %s was not specified!' % col_name)
-        metadata_collector.register_column(table_name, col_name, (np.str, max_length))
+            np_type = str   # string of unknown length
+        else:
+            np_type = (np.str, max_length)
+        metadata_collector.register_column(table_name, col_name, np_type)
     elif col_pgtype.startswith('geometry'):
         max_length = col_meta.get('max_geojson_chars', None)
         if max_length is None:
-            raise RuntimeError('Max geojson length of postgis geometry column %s was not specified!' % col_name)
+            np_type = str   # string of unknown length
+        else:
+            np_type = (np.str, max_length)
         metadata_collector.register_column(
-                table_name, col_name, (np.str, max_length),
+                table_name, col_name, np_type,
                 'ST_AsGeoJSON(%s)', 'ST_GeomFromGeoJSON(%s)',
                 ('geometry', 'supports_in'))
     else:

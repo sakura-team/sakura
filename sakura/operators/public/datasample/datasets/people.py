@@ -13,7 +13,7 @@ def compute():
 
 # dataset description
 STREAM = ComputedStream('People', compute)
-STREAM.add_column("Name", (str, 16))
+STREAM.add_column("Name", str)
 STREAM.add_column("Age", int)
 STREAM.add_column("Gender", (str, 8))
 STREAM.add_column("Height", int)
