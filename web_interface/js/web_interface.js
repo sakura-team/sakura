@@ -665,28 +665,19 @@ function buildEltStub(idDiv,result,elt) {
         +   '<li class="list-group-item"><strong>Volumetric indicator:</strong> <span class="label label-primary pull-right">5</span></li>'
         +   '<li class="list-group-item"><strong>Contact:</strong> <span class="label label-primary pull-right">'+result.userName+'@mail.uni</span></li>'
         + '</ul></div>';
-
-    // Description
-    desc = shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /> '
-            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
-            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
-            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
-            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
-            + '<ul><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li></ul>'
-            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
-            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />';
-
+		
+    //Description
     s = s + '<div id="descriptionModalAbout'+elt+'" class="modal fade" role="dialog"><div class="modal-dialog">'
         + '<div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
         + '<h4 class="modal-title">Edit Explanation About</h4></div><div class="modal-body">';
-    s = s + '<form><textarea name="editor1'+elt+'" id="editor1'+elt+'" rows="10" cols="60">'+desc+'</textarea></form>';
+    s = s + '<form><textarea name="editor1'+elt+'" id="editor1'+elt+'" rows="10" cols="60">'+result.description+'</textarea></form>';
     s = s + '</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal" onClick="not_yet();">Save and close</button></div></div></div></div>'
     s = s + '<br /><br /><div class="panel panel-primary"><div class="panel-heading">'
         + '<table width="100%"><tbody><tr><td><h4 class="">'
         + '<font color="#ffffff">Explanation About '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px' src='media/"+imageEltInverse+"' alt='CC-BY-3.0 Wikipedia Gears'></img></h3>"+'</font></h4></td>'
         + '<td align="right"><button title="Modification of the Explanation About" class="btn btn-default btn-xs pull-right clPlusFieldButton" style="cursor: pointer; display:none;" data-toggle="modal" data-target="#descriptionModalAbout'+elt+'"><span class=" glyphicon glyphicon-pencil"></span></button></td>'
         + '</tr></tbody></table></div>'
-        + '<div id="processShownAboutArea'+elt+'" class="panel-body">'+desc+'</div></div>';
+        + '<div id="processShownAboutArea'+elt+'" class="panel-body">'+result.description+'</div></div>';
 
     //FileSystem
     if (result.fileSystem.length>0) {
@@ -770,9 +761,17 @@ function eltRequestStub(idDiv,elt,bd) {
         for(i=0;i<ncomments;i++) {
             comments.push({"name":aleaAlea(usersAlea), "date":"March, 2017", "comment":shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()});
         }
+	    desc = shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /> '
+            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />'
+            + '<ul><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li></ul>'
+            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
+            +shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />';
         var result = {  "name":eltName,"userName":userName,
                         "info":infos, "dataSets":dataSets, "process":procs, "results":results, 
-                        "comments":comments,"fileSystem":fs};
+                        "comments":comments,"fileSystem":fs,"description":desc};
         buildEltStub(idDiv,result,elt);
     }
     else {     // version réseau à faire
