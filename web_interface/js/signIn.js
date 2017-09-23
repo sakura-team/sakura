@@ -23,7 +23,7 @@ function registerUser(evt = '') {
 //    console.log('Current RPC: ' + ws_for_userRegn);
 //    console.log('Destination RPC to send data is required');
 
-    sakura.common.ws_request('set_userAccount_gui_data', [], {}, function (result) {
+    sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (result) {
       console.log(result);
       if (result == 1) {
         alert("Success");
