@@ -243,51 +243,7 @@ function saveModeSubmitControl(event) {
     }
 }
 
-// function validateAllValues(formName){}
-//    if True:validated
-//      returns valueDictionary  
-//    else
-//      error handling
-
-function registerUser(evt = '') {
-  if (evt.type === 'click') {
-    evt.preventDefault();
-//    //GOOD CODE BEGIN
-    var signUpForm = document.getElementById("signUpForm");
-    
-    var userAccountValues = {}; // dictionary of all values input by user
-    for (var i = 0; i < signUpForm.elements.length; i++) {
-      console.log(signUpForm.elements.length);
-      console.log("Name: "+signUpForm.elements[i].name);
-      console.log("Value: "+signUpForm.elements[i].value);
-      userAccountValues[signUpForm.elements[i].name] = signUpForm.elements[i].value;
-    }
-    
-    // For validation:
-    //    var allValuesValidated = validateAllValues(signUpForm);
-    
-    console.log('In progress');
-//    var ws_for_userRegn = sakura.common.ws_request();
-//    console.log('Current RPC: ' + ws_for_userRegn);
-//    console.log('Destination RPC to send data is required');
-
-    sakura.common.ws_request('set_userAccount_gui_data', [], {}, function (result) {
-      console.log(result);
-      if (result == 1) {
-        alert("Success");
-      } else {
-        alert("Failure");
-      }
-    });
-
-  }
-  else {
-    console.log('Not implemented yet: '+ evt.type);
-  }
-  return;
-}
-
-function signInSubmitControl(event) {
+function signInSubmitControl_old(event) {
     if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
         showDiv(event,'HelloYou');
         $("#signInModal").modal("hide");
@@ -300,7 +256,7 @@ function signInSubmitControl(event) {
     }
 }
 
-function signOutSubmitControl(event) {
+function signOutSubmitControl_old(event) {
     res=confirm("Sign Out?");
     if (res) {
         document.getElementById("idSignInWidget").innerHTML= '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
