@@ -250,7 +250,7 @@ function datasets_new_tag() {
         $(select).selectpicker("refresh");
     });
     
-    
+    //Global variable
     columns_tags_list.forEach( function (tags_group) {
         if (tags_group[0] == group) {
             tags_group[1].push(tag);
