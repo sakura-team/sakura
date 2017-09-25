@@ -16,12 +16,12 @@ class DataStoreRegistry(object):
             for info in daemon_info.datastores }
         new_datastore_keys = set(new_datastore_dict)
         old_datastore_dict = {
-            (row['host'], row['driver']) : row \
+            (row.host, row.driver) : row \
             for row in self.db.select('DataStore', daemon_id=daemon_id)}
         old_datastore_keys = set(old_datastore_dict)
         # forget obsolete data stores and corresponding databases from db
         for datastore_key in old_datastore_keys - new_datastore_keys:
-            datastore_id = old_datastore_dict[datastore_key]['datastore_id']
+            datastore_id = old_datastore_dict[datastore_key].datastore_id
             # note this will also delete related databases
             # (because of ON DELETE CASCADE clause on db schema)
             self.db.delete('DataStore', datastore_id=datastore_id)
@@ -34,9 +34,9 @@ class DataStoreRegistry(object):
             db_updated = True
         # update online flag if needed
         for key in new_datastore_keys & old_datastore_keys:
-            if new_datastore_dict[key].online != old_datastore_dict[key]['online']:
+            if new_datastore_dict[key].online != old_datastore_dict[key].online:
                 self.db.update('DataStore', 'datastore_id',
-                    datastore_id = old_datastore_dict[key]['datastore_id'],
+                    datastore_id = old_datastore_dict[key].datastore_id,
                     online = new_datastore_dict[key].online
                 )
                 db_updated = True
@@ -47,7 +47,7 @@ class DataStoreRegistry(object):
         datastore_ids = {}
         for row in self.db.select('DataStore', daemon_id=daemon_id):
             datastore_id, online, host, driver_label = \
-                row['datastore_id'], row['online'], row['host'], row['driver']
+                row.datastore_id, row.online, row.host, row.driver
             datastore_ids[(host, driver_label)] = datastore_id
             self.info_per_datastore_id[datastore_id] = \
                 SimpleAttrContainer(

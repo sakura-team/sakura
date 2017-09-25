@@ -23,9 +23,9 @@ class OpInstanceRegistry(object):
             yield (db_param_id, json.loads(db_json_value))
     def restore_daemon_state(self, daemon_info, op_classes):
         for row in self.db.execute(QUERY_OPINSTANCES_FROM_DAEMON % daemon_info.daemon_id):
-            cls_info = op_classes[row['cls_id']]
-            op_id = row['op_id']
-            gui_data = row['gui_data']
+            cls_info = op_classes[row.cls_id]
+            op_id = row.op_id
+            gui_data = row.gui_data
             self.instanciate(daemon_info, cls_info, op_id, gui_data)
     def restore_daemon_op_params(self, daemon_info):
         for op_id in self:

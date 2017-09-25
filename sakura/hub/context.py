@@ -23,7 +23,7 @@ class HubContext(object):
         db_row = self.db.select_unique('Daemon',
                         name = daemon_info['name'])
         if db_row != None:
-            return db_row['daemon_id']
+            return db_row.daemon_id
         else:
             # otherwise, insert in db and return the id
             self.db.insert('Daemon', **daemon_info)
@@ -101,7 +101,7 @@ class HubContext(object):
         if row == None:
             return None
         else:
-            return row['gui_data']
+            return row.gui_data
     def set_project_gui_data(self, project_id, gui_data):
         self.db.insert_or_update(
                 'Project', 'project_id',

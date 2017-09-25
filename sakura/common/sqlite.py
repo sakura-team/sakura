@@ -5,6 +5,10 @@ from pathlib import Path
 sqlite3.register_adapter(bool, int)
 sqlite3.register_converter("BOOLEAN", lambda v: bool(int(v)))
 
+class AttrRow(sqlite3.Row):
+    def __getattr__(self, attr):
+        return self[attr]
+
 class SQLiteDB():
 
     def __init__(self, path):
@@ -14,7 +18,7 @@ class SQLiteDB():
             parent_dir.mkdir(parents=True)
         self.c = sqlite3.connect(path, detect_types=sqlite3.PARSE_DECLTYPES)
         # allow name-based access to columns
-        self.c.row_factory = sqlite3.Row
+        self.c.row_factory = AttrRow
 
     def __del__(self):
         if self.c != None:

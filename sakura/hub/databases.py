@@ -34,12 +34,12 @@ class DatabaseRegistry(object):
                     new_online_database_dict[key] = database
         new_online_database_keys = set(new_online_database_dict)
         old_online_database_dict = {
-            (row['datastore_id'], row['label']) : row \
+            (row.datastore_id, row.label) : row \
             for row in self.db.execute(QUERY_ONLINE_DATABASES_OF_DAEMON % daemon_id)}
         old_online_database_keys = set(old_online_database_dict)
         # forget obsolete databases from db
         for database_key in old_online_database_keys - new_online_database_keys:
-            database_id = old_online_database_dict[database_key]['database_id']
+            database_id = old_online_database_dict[database_key].database_id
             self.db.delete('Database', database_id=database_id)
         # add new databases in db
         for key in new_online_database_keys - old_online_database_keys:
@@ -49,11 +49,5 @@ class DatabaseRegistry(object):
             self.db.commit()
         # retrieve updated info from db (because we need the ids)
         for row in self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON % daemon_id):
-            database_id, datastore_id, label, online = \
-                row['database_id'], row['datastore_id'], row['label'], row['online']
-            self.info_per_database_id[database_id] = SimpleAttrContainer(
-                datastore_id = datastore_id,
-                database_id = database_id,
-                online = online,
-                label = label
-            )
+            database_id = row.database_id
+            self.info_per_database_id[database_id] = SimpleAttrContainer(**row)
