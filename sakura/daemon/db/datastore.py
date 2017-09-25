@@ -32,17 +32,31 @@ class DataStore:
         self.driver_label = driver_label
         self.driver = drivers.get(driver_label)
         self.databases = None    # not probed yet
+        self.online = None       # not probed yet
     def refresh_databases(self):
-        prober = DataStoreProber(self)
-        self.databases = { d.label: d for d in prober.probe() }
+        self.online = True
+        try:
+            prober = DataStoreProber(self)
+            self.databases = { d.label: d for d in prober.probe() }
+        except BaseException as exc:
+            print('WARNING: %s Data Store at %s is down: %s' % \
+                    (self.driver_label, self.host, str(exc).strip()))
+            self.online = False
     def pack(self):
-        databases_overview = tuple(
-            database.overview() for database in self.databases.values()
-        )
-        return dict(
+        res = dict(
             host = self.host,
             driver_label = self.driver_label,
-            databases = databases_overview
+            online = self.online
         )
+        if self.online:
+            databases_overview = tuple(
+                database.overview() for database in self.databases.values()
+            )
+            res.update(
+                databases = databases_overview
+            )
+        return res
     def __getitem__(self, database_label):
+        if not self.online:
+            raise AttributeError('Sorry, datastore is down.')
         return self.databases[database_label]

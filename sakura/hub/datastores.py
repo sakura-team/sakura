@@ -9,6 +9,7 @@ class DataStoreRegistry(object):
     def __getitem__(self, datastore_id):
         return self.info_per_datastore_id[datastore_id]
     def restore_daemon_state(self, daemon_info):
+        db_updated = False
         daemon_id = daemon_info.daemon_id
         new_datastore_dict = {
             (info.host, info.driver_label): info \
@@ -24,25 +25,36 @@ class DataStoreRegistry(object):
             # note this will also delete related databases
             # (because of ON DELETE CASCADE clause on db schema)
             self.db.delete('DataStore', datastore_id=datastore_id)
+            db_updated = True
         # add new data stores in db
         for key in new_datastore_keys - old_datastore_keys:
-            self.db.insert('DataStore', daemon_id=daemon_id, host=key[0], driver=key[1])
+            self.db.insert('DataStore',
+                daemon_id=daemon_id, host=key[0], driver=key[1],
+                online=new_datastore_dict[key].online)
+            db_updated = True
+        # update online flag if needed
+        for key in new_datastore_keys & old_datastore_keys:
+            if new_datastore_dict[key].online != old_datastore_dict[key]['online']:
+                self.db.update('DataStore', 'datastore_id',
+                    datastore_id = old_datastore_dict[key]['datastore_id'],
+                    online = new_datastore_dict[key].online
+                )
+                db_updated = True
         # if any change was made, commit
-        if len(new_datastore_keys ^ old_datastore_keys) > 0:
+        if db_updated:
             self.db.commit()
         # retrieve updated info from db (because we need the ids)
-        # and prepare info that will be needed for databases registry
-        databases_info = []
+        datastore_ids = {}
         for row in self.db.select('DataStore', daemon_id=daemon_id):
-            datastore_id, host, driver_label = \
-                row['datastore_id'], row['host'], row['driver']
-            info = new_datastore_dict[(host, driver_label)]
-            databases_info.append((datastore_id, info.databases))
+            datastore_id, online, host, driver_label = \
+                row['datastore_id'], row['online'], row['host'], row['driver']
+            datastore_ids[(host, driver_label)] = datastore_id
             self.info_per_datastore_id[datastore_id] = \
                 SimpleAttrContainer(
                     daemon_id = daemon_id,
                     datastore_id = datastore_id,
+                    online = online,
                     host = host,
                     driver_label = driver_label
                 )
-        return databases_info
+        return datastore_ids

@@ -36,8 +36,8 @@ class HubContext(object):
         # note: a SimpleAttrContainer will be more handy
         daemon_info = SimpleAttrContainer(**daemon_info)
         self.daemons[daemon_id] = daemon_info
-        databases_info = self.datastores.restore_daemon_state(daemon_info)
-        self.databases.restore_daemon_state(daemon_id, databases_info)
+        datastore_ids = self.datastores.restore_daemon_state(daemon_info)
+        self.databases.restore_daemon_state(daemon_info, datastore_ids)
         self.op_classes.restore_daemon_state(daemon_info)
         self.op_instances.restore_daemon_state(daemon_info, self.op_classes)
         self.links.restore_daemon_state(daemon_info, self.op_instances)
@@ -110,6 +110,9 @@ class HubContext(object):
         self.db.commit()
     def get_database_info(self, database_id):
         database_info = self.databases[database_id]
+        if not database_info.online:
+            print('Sorry, this database is offline!')
+            return None
         datastore_id = database_info.datastore_id
         datastore_info = self.datastores[datastore_id]
         daemon_id = datastore_info.daemon_id

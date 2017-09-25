@@ -36,10 +36,6 @@ def load_datastores():
             admin_password = ds_conf['admin-password'],
             driver_label = ds_conf['driver']
         )
-        try:
-            ds.refresh_databases()
-            datastores.append(ds)
-        except BaseException as exc:
-            print('WARNING: Could not load %s Data Store at %s: %s. IGNORED.' % \
-                    (ds_conf['driver'], ds.host, str(exc).strip()))
+        ds.refresh_databases()
+        datastores.append(ds)
     return datastores

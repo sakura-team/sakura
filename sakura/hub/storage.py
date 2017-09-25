@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS OpParam (
 CREATE TABLE IF NOT EXISTS DataStore (
     datastore_id INTEGER PRIMARY KEY AUTOINCREMENT,
     daemon_id INTEGER REFERENCES Daemon(daemon_id),
+    online BOOLEAN,
     host TEXT,
     driver TEXT
 );
