@@ -101,24 +101,37 @@ class GuiToHubAPI(object):
     
     def get_project_gui_data(self):
         return self.context.get_project_gui_data(self.project_id)
-
+    
     def set_link_gui_data(self, link_id, gui_data):
         self.context.links.set_gui_data(link_id, gui_data)
-
+    
     def get_link_gui_data(self, link_id):
         return self.context.links.get_gui_data(link_id)
-
+    
     # added by rms-dev
     # def set_userAccount_gui_data(self, userAccount_gui_data):
     #    self.context.set_userAccount_gui_data(userAccount_gui_data)
-
+    
     ########################################
     # Databases
     def list_datastores(self):
         return self.context.datastores.list()
-
+    
     def list_databases(self):
         return self.context.databases.list()
-
+    
     def get_database_info(self, database_id):
         return self.context.get_database_info(database_id)
+        
+    def list_expected_columns_tags(self, datastore_id):
+        # il y a les tags standards auxquels on ajoute
+        # les tags deja rencontres sur ce datastore
+        return (
+            ("statistics", ("qualitative", "quantitative", "textual")),
+            ("processing", ("sorted_asc", "sorted_desc", "unique")),
+            ("others", ("longitude", "latitude"))
+        )
+    
+    def new_table(self, database_id, name, description, creation_date, columns):
+        print((database_id, name, description, creation_date, columns))
+        return True
