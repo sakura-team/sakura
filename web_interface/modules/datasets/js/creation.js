@@ -2,8 +2,7 @@
 //August, 22nd, 2017
 
 
-var fs_date_formats = [];
-var ff_date_formats = [];
+var current_select  = null;
 
 function datasets_send_new(database_id) {
     
@@ -156,7 +155,7 @@ function datasets_parse_file() {
                 group_elem += '</optgroup>';
                 tags_select.append(group_elem);
             });
-            tags_select.append('<option data-icon="glyphicon glyphicon-plus" onclick=\"datasets_add_a_tag()\"></option>')
+            tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag"></option>')
             
             inputs[0].value = col;
             
@@ -175,7 +174,7 @@ function datasets_add_a_row(dataset_id) {
     
     new_row.load('creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
-        $(last_cel.find('span')[0]).attr('onclick', 'datasets_delete_row('+global_ids+');');
+        $(last_cel.find('span')[0]).attr('onclick', "$('#datasets_row_"+global_ids+"').remove();");
         
         var select = new_row.find('select');
         var type_select = $(select[0]);
@@ -186,6 +185,8 @@ function datasets_add_a_row(dataset_id) {
         tags_select.attr('id', 'datasets_fs_tags_select_'+global_ids);
         
         tags_select.append('<option data-hidden="true" value="Select..."></option>')
+        var existing_groups = []
+        $('#datasets_new_tag_select_group').empty();
         columns_tags_list.forEach(function (group) {
             group_elem = '<optgroup label="' + group[0] + '">';
             group[1].forEach(function (tag) {
@@ -193,21 +194,70 @@ function datasets_add_a_row(dataset_id) {
             });
             group_elem += '</optgroup>';
             tags_select.append(group_elem);
+            $('#datasets_new_tag_select_group').append('<option value="'+group[0]+'">'+group[0]+'</option>');
         });
-        tags_select.append('<option data-icon="glyphicon glyphicon-plus"></option>')
+        tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag" data-subtext="add new tags"></option>')
         
         $('#datasets_fs_type_select_'+global_ids).selectpicker('refresh');
         $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
+        $('#datasets_fs_tags_select_'+global_ids).change(datasets_tags_select_change);
+        $('#datasets_new_tag_select_group').selectpicker('refresh');
+        $('#datasets_new_tag_name').val("");
         
         global_ids ++;
-    });    
+    });
     
     return new_row;
 }
 
 
-function datasets_delete_row(row_id) {
-    $('#datasets_row_'+row_id).remove();
+function datasets_tags_select_change(event) {
+    current_select  = $(event.target);
+    if (current_select.val() && current_select.val().indexOf("datasets_add_tag") >= 0) {
+        var last_option = current_select[0].options[current_select[0].options.length-1];
+        last_option.selected = false;
+        $(current_select).selectpicker('refresh');
+        $('#datasets_new_tag_modal').modal();
+    }
+}
+
+function datasets_new_tag() {
+    var group   = $('#datasets_new_tag_select_group').val()
+    var tag     = $('#datasets_new_tag_name').val();
+    
+    if (tag.replace(/ /g, '') == "") {
+        return;
+    }
+    
+    var selects = $('*').filter(function() {
+        return this.id.match(/.*_tags_select_.*/);
+    });
+    $.each(selects, function(i, select) {
+        var optGroups = $(select).find('optgroup');
+        
+        for (var i=0; i < optGroups.length; i++) {
+            if (optGroups[i].label == group) {
+                var option = $('<option/>');
+                option.attr({ 'value': tag }).text(tag);
+                
+                //selecting the tag
+                if (select.id == current_select[0].id) {
+                    $(option).prop('selected', true);
+                }
+                $(optGroups[i]).append(option);
+            }
+        }
+        $(select).selectpicker("refresh");
+    });
+    
+    
+    columns_tags_list.forEach( function (tags_group) {
+        if (tags_group[0] == group) {
+            tags_group[1].push(tag);
+        }
+    });
+    
+    $('#datasets_new_tag_name').val("");
 }
 
 
@@ -216,7 +266,11 @@ function datasets_type_change(row_id, from) {
     var select = $(from);
     if (select.val() == 'date') {
         if (td.childElementCount == 1) {
-           $(td).append('<input class="form-control input-xs" width="100%" style="font-size: 12px; height: 22px; padding: 1px 1px; color: grey;" type="text " value="YYYY/MM/DD hh:mm:ss" autocomplete="off" >');
+            var tmp = document.createElement('input');
+            $(tmp).load("date_format_input.html", function (input) {
+                $(td).append(input);
+                $(tmp).remove();
+           });
         }
     }
     else if (td.childElementCount > 1) {
