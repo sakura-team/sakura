@@ -41,7 +41,7 @@ function datasets_send_new(database_id) {
         }
         
         var type = $($(cols[i]).find('select')[0]).val();
-        var tags = [];
+        var tags = $($(cols[i]).find('select')[1]).val();
         columns.push([label, type, tags]);
     };
     
@@ -142,11 +142,10 @@ function datasets_parse_file() {
             var tags_select = $(select[1]);
             
             type_select.attr('id', 'datasets_ff_type_select_'+index);
-            type_select.attr('onchange', "datasets_ff_type_change("+index+");");
+            type_select.attr('onchange', "datasets_type_change("+index+", this);");
             type_select.val(getType(first_line[index]));
             
             tags_select.attr('id', 'datasets_ff_tags_select_'+index);
-            tags_select.attr('onchange', "datasets_ff_tags_change("+index+");");
             
             tags_select.append('<option data-hidden="true" value="Select..."></option>')
             columns_tags_list.forEach(function (group) {
@@ -157,7 +156,7 @@ function datasets_parse_file() {
                 group_elem += '</optgroup>';
                 tags_select.append(group_elem);
             });
-            tags_select.append('<option data-icon="glyphicon glyphicon-plus"></option>')
+            tags_select.append('<option data-icon="glyphicon glyphicon-plus" onclick=\"datasets_add_a_tag()\"></option>')
             
             inputs[0].value = col;
             
@@ -176,16 +175,15 @@ function datasets_add_a_row(dataset_id) {
     
     new_row.load('creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
-        $(last_cel.find('span')[0]).attr('onclick', 'datasets_fs_delete_row('+global_ids+');');
+        $(last_cel.find('span')[0]).attr('onclick', 'datasets_delete_row('+global_ids+');');
         
         var select = new_row.find('select');
         var type_select = $(select[0]);
         var tags_select = $(select[1]);
         type_select.attr('id', 'datasets_fs_type_select_'+global_ids);
-        type_select.attr('onchange', "datasets_fs_type_change("+global_ids+");");
+        type_select.attr('onchange', "datasets_type_change("+global_ids+",this);");
         
         tags_select.attr('id', 'datasets_fs_tags_select_'+global_ids);
-        tags_select.attr('onchange', "datasets_fs_tags_change("+global_ids+");");
         
         tags_select.append('<option data-hidden="true" value="Select..."></option>')
         columns_tags_list.forEach(function (group) {
@@ -208,62 +206,22 @@ function datasets_add_a_row(dataset_id) {
 }
 
 
-function datasets_fs_delete_row(row_id) {
+function datasets_delete_row(row_id) {
     $('#datasets_row_'+row_id).remove();
 }
 
 
-function datasets_fs_type_change(row_id) {
-    if ($('#datasets_fs_type_select_'+row_id).val() == 'date') {
-        
-        //Is the format existing ?
-        var exist_id = -1;
-        fs_date_formats.forEach( function(row, index) {
-            if (row[0] == row_id)
-                exist_id = index;
-        });
-        
-        if (exist_id >= 0)
-            $('#datasets_date_format_input').val(fs_date_formats[exist_id][1]);
-        $('#datasets_date_format_button').attr("onclick", "datasets_fs_date_format("+row_id+","+exist_id+");");
-        
-        $('#datasets_date_format_modal').modal();
-    };
-}
-
-
-function datasets_ff_type_change(row_id) {
-    if ($('#datasets_ff_type_select_'+row_id).val() == 'date') {
-        
-        //Is the format existing ?
-        var exist_id = -1;
-        ff_date_formats.forEach( function(row, index) {
-            if (row[0] == row_id)
-                exist_id = index;
-        });
-        
-        if (exist_id >= 0)
-            $('#datasets_date_format_input').val(ff_date_formats[exist_id][1]);
-        $('#datasets_date_format_button').attr("onclick", "datasets_ff_date_format("+row_id+","+exist_id+");");
-        
-        $('#datasets_date_format_modal').modal();
-    };
-}
-
-
-function datasets_fs_date_format(row, exist_id) {
-    if (exist_id < 0)
-        fs_date_formats.push([row, $('#datasets_date_format_input').val()]);
-    else
-        fs_date_formats[exist_id][1] = $('#datasets_date_format_input').val();
-}
-
-
-function datasets_ff_date_format(row, exist_id) {
-    if (exist_id < 0)
-        ff_date_formats.push([row, $('#datasets_date_format_input').val()]);
-    else
-        ff_date_formats[exist_id][1] = $('#datasets_date_format_input').val();
+function datasets_type_change(row_id, from) {
+    var td = from.parentNode.parentNode;
+    var select = $(from);
+    if (select.val() == 'date') {
+        if (td.childElementCount == 1) {
+           $(td).append('<input class="form-control input-xs" width="100%" style="font-size: 12px; height: 22px; padding: 1px 1px; color: grey;" type="text " value="YYYY/MM/DD hh:mm:ss" autocomplete="off" >');
+        }
+    }
+    else if (td.childElementCount > 1) {
+        td.children[1].remove();
+    }
 }
 
 
