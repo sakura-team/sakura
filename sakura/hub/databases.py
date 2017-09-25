@@ -30,11 +30,11 @@ class DatabaseRegistry(object):
             datastore_id = datastore_ids[(info.host, info.driver_label)]
             if info.online:
                 for database in info.databases:
-                    key = (datastore_id, database.label)
+                    key = (datastore_id, database.db_name)
                     new_online_database_dict[key] = database
         new_online_database_keys = set(new_online_database_dict)
         old_online_database_dict = {
-            (row.datastore_id, row.label) : row \
+            (row.datastore_id, row.db_name) : row \
             for row in self.db.execute(QUERY_ONLINE_DATABASES_OF_DAEMON % daemon_id)}
         old_online_database_keys = set(old_online_database_dict)
         # forget obsolete databases from db
@@ -43,7 +43,7 @@ class DatabaseRegistry(object):
             self.db.delete('Database', database_id=database_id)
         # add new databases in db
         for key in new_online_database_keys - old_online_database_keys:
-            self.db.insert('Database', datastore_id=key[0], label=key[1])
+            self.db.insert('Database', datastore_id=key[0], db_name=key[1], name=key[1])
         # if any change was made, commit
         if len(new_online_database_keys ^ old_online_database_keys) > 0:
             self.db.commit()

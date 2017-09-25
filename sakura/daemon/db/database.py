@@ -20,9 +20,9 @@ class DBProber:
         self.tables[table_name].add_column(*col_info)
 
 class Database:
-    def __init__(self, dbms, label):
+    def __init__(self, dbms, db_name):
         self.dbms = dbms
-        self.label = label
+        self.db_name = db_name
         self.owner = None
         self.users = defaultdict(lambda: dict(READ=False, WRITE=False))
         self._tables = None
@@ -43,11 +43,11 @@ class Database:
         dbuser = 'sakura_' + tuple(self.users.keys())[0]
         password = dbuser
         print(dict(
-            dbname=self.label, user=dbuser, password=password
+            dbname=self.db_name, user=dbuser, password=password
         ))
         return self.dbms.driver.connect(
             host     = self.dbms.host,
-            dbname   = self.label,
+            dbname   = self.db_name,
             user     = dbuser,
             password = password
         )
@@ -58,14 +58,14 @@ class Database:
         db_conn.close()
     def pack(self):
         return dict(
-            label = self.label,
+            db_name = self.db_name,
             owner = self.owner,
             tables = self.tables.values(),
             users = self.users
         )
     def overview(self):
         return dict(
-            label = self.label,
+            db_name = self.db_name,
             owner = self.owner,
             users = self.users
         )

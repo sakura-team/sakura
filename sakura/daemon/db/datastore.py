@@ -37,7 +37,7 @@ class DataStore:
         self.online = True
         try:
             prober = DataStoreProber(self)
-            self.databases = { d.label: d for d in prober.probe() }
+            self.databases = { d.db_name: d for d in prober.probe() }
         except BaseException as exc:
             print('WARNING: %s Data Store at %s is down: %s' % \
                     (self.driver_label, self.host, str(exc).strip()))

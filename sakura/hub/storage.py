@@ -55,7 +55,10 @@ CREATE TABLE IF NOT EXISTS DataStore (
 CREATE TABLE IF NOT EXISTS Database (
     database_id INTEGER PRIMARY KEY AUTOINCREMENT,
     datastore_id INTEGER REFERENCES DataStore(datastore_id) ON DELETE CASCADE,
-    label TEXT
+    name TEXT,
+    db_name TEXT,
+    short_desc TEXT,
+    created TIMESTAMP WITH TIME ZONE
 );
 """
 

@@ -90,6 +90,6 @@ class DaemonEngine(object):
                     pass
                 self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
         return links
-    def get_database_info(self, datastore_host, datastore_driver_label, database_label):
+    def get_database_info(self, datastore_host, datastore_driver_label, db_name):
         datastore = self.datastores[(datastore_host, datastore_driver_label)]
-        return datastore[database_label]
+        return datastore[db_name]

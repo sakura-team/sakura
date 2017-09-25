@@ -116,8 +116,17 @@ class HubContext(object):
         datastore_id = database_info.datastore_id
         datastore_info = self.datastores[datastore_id]
         daemon_id = datastore_info.daemon_id
-        return self.daemons[daemon_id].api.get_database_info(
+        # ask daemon
+        result = self.daemons[daemon_id].api.get_database_info(
             datastore_host = datastore_info.host,
             datastore_driver_label = datastore_info.driver_label,
-            database_label = database_info.label
+            db_name = database_info.db_name
         )
+        # add metadata stored in db
+        db_info = self.db.select_unique('Database', database_id = database_id)
+        result.update(
+            name = db_info.name,
+            short_desc = db_info.short_desc,
+            created = db_info.created
+        )
+        return result
