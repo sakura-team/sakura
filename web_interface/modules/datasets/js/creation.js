@@ -4,6 +4,9 @@
 
 var current_select  = null;
 
+/////////////////////////////////////////////////////////////////////////////////////
+// CREATION
+
 function datasets_send_new(database_id) {
     
     //Reading first main elements: name and description
@@ -16,11 +19,13 @@ function datasets_send_new(database_id) {
     
     
     //Which table body ?
+    var ff = false;
     var body = $('#datasets_creation_from_scratch_columns').find('tbody');
     var cols = body.find('tr');
     var nb_cols = cols.length - 1;
     $('#datasets_creation_from_file_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
+            ff = true;
             body = $('#datasets_creation_from_file_columns').find('tbody');
             cols = body.find('tr');
             nb_cols = cols.length
@@ -43,6 +48,7 @@ function datasets_send_new(database_id) {
         columns.push([label, type, tags]);
     };
     
+    
     //Sending the new dataset description
     //database_id, name, description, creation_date, columns
     sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), columns], {}, function(result) {
@@ -52,6 +58,9 @@ function datasets_send_new(database_id) {
     $("#datasets_creation_modal").modal('hide');
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+// FILE MANAGEMENT
 
 function on_file_selected(f) {
     var fr = new FileReader();
@@ -133,6 +142,7 @@ function datasets_parse_file() {
         new_row.load('creation_dataset_row.html', function () {
             var inputs = new_row.find('input');
             inputs[0].value = col;
+            
             var select = new_row.find('select');
             var type_select = $(select[0]);
             var tags_select = $(select[1]);
@@ -155,6 +165,8 @@ function datasets_parse_file() {
     });
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
+// ROWS FROM SCRATCH
 
 function datasets_add_a_row(dataset_id) {
     var body = $('#'+dataset_id).find('tbody');
@@ -188,6 +200,8 @@ function datasets_add_a_row(dataset_id) {
     return new_row;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
+// TAGS
 
 function datasets_fill_select_tags(tags_select) {
     tags_select.append('<option data-hidden="true" value="Select..."></option>')
@@ -201,7 +215,7 @@ function datasets_fill_select_tags(tags_select) {
         tags_select.append(group_elem);
         $('#datasets_new_tag_select_group').append('<option value="'+group[0]+'">'+group[0]+'</option>');
     });
-    tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag" data-subtext="add new tags"></option>')
+    tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag" data-subtext="add a new tag"></option>')
 }
 
 
@@ -254,21 +268,25 @@ function datasets_new_tag() {
     $('#datasets_new_tag_name').val("");
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
+// TYPES
 
 function datasets_type_change(row_id, from) {
-    var td = from.parentNode.parentNode;
-    var select = $(from);
-    if (select.val() == 'date') {
-        if (td.childElementCount == 1) {
-            var tmp = document.createElement('input');
-            $(tmp).load("date_format_input.html", function (input) {
-                $(td).append(input);
-                $(tmp).remove();
-           });
+    if (from.id.indexOf("ff") >= 0) {
+        var td = from.parentNode.parentNode;
+        var select = $(from);
+        if (select.val() == 'date') {
+            if (td.childElementCount == 1) {
+                var tmp = document.createElement('input');
+                $(tmp).load("date_format_input.html", function (input) {
+                    $(td).append(input);
+                    $(tmp).remove();
+               });
+            }
         }
-    }
-    else if (td.childElementCount > 1) {
-        td.children[1].remove();
+        else if (td.childElementCount > 1) {
+            td.children[1].remove();
+        }
     }
 }
 
