@@ -4,6 +4,12 @@ from sakura.common.sqlite import SQLiteDB
 DB_SCHEMA = """
 pragma foreign_keys = ON;
 
+CREATE TABLE IF NOT EXISTS User (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    login TEXT UNIQUE,
+    email CITEXT UNIQUE
+);
+
 CREATE TABLE IF NOT EXISTS Project (
     project_id INTEGER PRIMARY KEY AUTOINCREMENT,
     gui_data TEXT
@@ -59,6 +65,18 @@ CREATE TABLE IF NOT EXISTS Database (
     db_name TEXT,
     short_desc TEXT,
     created TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS DatabaseTags (
+    database_id INTEGER REFERENCES Database(database_id),
+    tag TEXT,
+    UNIQUE(database_id, tag)
+);
+
+CREATE TABLE IF NOT EXISTS DatabaseContacts (
+    database_id INTEGER REFERENCES Database(database_id),
+    user_id INTEGER REFERENCES User(user_id),
+    UNIQUE(database_id, user_id)
 );
 """
 

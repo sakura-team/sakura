@@ -15,6 +15,13 @@ WHERE DataStore.datastore_id = Database.datastore_id
   AND DataStore.daemon_id = :daemon_id;
 """
 
+QUERY_DB_CONTACTS = """
+SELECT User.*
+FROM User, DatabaseContacts
+WHERE User.user_id = DatabaseContacts.user_id
+  AND DatabaseContacts.database_id = :database_id
+"""
+
 class DatabaseRegistry(object):
     def __init__(self, db):
         self.db = db
@@ -50,4 +57,11 @@ class DatabaseRegistry(object):
         # retrieve updated info from db (because we need the ids)
         for row in self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON, daemon_id = daemon_id):
             database_id = row.database_id
-            self.info_per_database_id[database_id] = SimpleAttrContainer(**row)
+            tags = tuple(row.tag for row in \
+                        self.db.select('DatabaseTags', database_id = database_id))
+            contacts = tuple(dict(**row) for row in \
+                        self.db.execute(QUERY_DB_CONTACTS, database_id = database_id))
+            self.info_per_database_id[database_id] = SimpleAttrContainer(
+                tags = tags,
+                contacts = contacts,
+                **row)
