@@ -64,19 +64,32 @@ CREATE TABLE IF NOT EXISTS Database (
     name TEXT,
     db_name TEXT,
     short_desc TEXT,
-    created TIMESTAMP WITH TIME ZONE
+    created TIMESTAMP WITH TIME ZONE,
+    UNIQUE(datastore_id, db_name),
+    UNIQUE(datastore_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS DatabaseTags (
-    database_id INTEGER REFERENCES Database(database_id),
+    database_id INTEGER REFERENCES Database(database_id) ON DELETE CASCADE,
     tag TEXT,
     UNIQUE(database_id, tag)
 );
 
 CREATE TABLE IF NOT EXISTS DatabaseContacts (
-    database_id INTEGER REFERENCES Database(database_id),
+    database_id INTEGER REFERENCES Database(database_id) ON DELETE CASCADE,
     user_id INTEGER REFERENCES User(user_id),
     UNIQUE(database_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS DBTable (
+    table_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    database_id INTEGER REFERENCES Database(database_id) ON DELETE CASCADE,
+    name TEXT,
+    db_table_name TEXT,
+    short_desc TEXT,
+    created TIMESTAMP WITH TIME ZONE,
+    UNIQUE(database_id, db_table_name),
+    UNIQUE(database_id, name)
 );
 """
 

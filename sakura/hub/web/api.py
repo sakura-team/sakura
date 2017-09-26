@@ -121,7 +121,7 @@ class GuiToHubAPI(object):
         return self.context.databases.list()
     
     def get_database_info(self, database_id):
-        return self.context.get_database_info(database_id)
+        return self.context.databases[database_id].get_full_info()
         
     def list_expected_columns_tags(self, datastore_id):
         # il y a les tags standards auxquels on ajoute

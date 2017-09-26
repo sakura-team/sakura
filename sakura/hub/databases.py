@@ -9,10 +9,10 @@ WHERE DataStore.datastore_id = Database.datastore_id
 """
 
 QUERY_ALL_DATABASES_OF_DAEMON = """
-SELECT Database.*, DataStore.online
-FROM DataStore, Database
-WHERE DataStore.datastore_id = Database.datastore_id
-  AND DataStore.daemon_id = :daemon_id;
+SELECT db.*, ds.online, ds.host, ds.driver as driver_label
+FROM DataStore ds, Database db
+WHERE ds.datastore_id = ds.datastore_id
+  AND ds.daemon_id = :daemon_id;
 """
 
 QUERY_DB_CONTACTS = """
@@ -21,6 +21,59 @@ FROM User, DatabaseContacts
 WHERE User.user_id = DatabaseContacts.user_id
   AND DatabaseContacts.database_id = :database_id
 """
+
+class DatabaseInfo(SimpleAttrContainer):
+    def pack(self):
+        return dict(
+            tags = self.tags,
+            contacts = self.contacts,
+            database_id = self.database_id,
+            datastore_id = self.datastore_id,
+            name = self.name,
+            short_desc = self.short_desc,
+            created = self.created
+        )
+    def get_full_info(self):
+        if not self.online:
+            print('Sorry, this database is offline!')
+            return None
+        # ask daemon
+        result = self.daemon.api.get_database_info(
+            datastore_host = self.host,
+            datastore_driver_label = self.driver_label,
+            db_name = self.db_name
+        )
+        # add general metadata
+        result.update(**self.pack())
+        # add tables metadata stored in db
+        result['tables'] = tuple(
+            self.add_table_metadata(info) for info in result['tables'])
+        # drop obsolete table metadata from db
+        db_table_names = set(table['db_table_name'] for table in result['tables'])
+        self.drop_obsolete_table_metadata(db_table_names)
+        return result
+    def add_table_metadata(self, table_info):
+        db_table_name = table_info['db_table_name']
+        while True:
+            row = self.db.select_unique('DBTable',
+                    database_id = self.database_id,
+                    db_table_name = db_table_name)
+            if row is None:
+                self.db.insert('DBTable',
+                        database_id = self.database_id,
+                        name = db_table_name,
+                        db_table_name = db_table_name)
+                self.db.commit()
+            else:
+                table_info.update(**row)
+                return table_info
+    def drop_obsolete_table_metadata(self, new_db_table_names):
+        old_db_table_names = set(row.db_table_name for row in \
+            self.db.select('DBTable', database_id = self.database_id))
+        for db_table_name in (old_db_table_names - new_db_table_names):
+            self.db.delete('DBTable', database_id = self.database_id,
+                                      db_table_name = db_table_name)
+            self.db.commit()
 
 class DatabaseRegistry(object):
     def __init__(self, db):
@@ -61,7 +114,9 @@ class DatabaseRegistry(object):
                         self.db.select('DatabaseTags', database_id = database_id))
             contacts = tuple(dict(**row) for row in \
                         self.db.execute(QUERY_DB_CONTACTS, database_id = database_id))
-            self.info_per_database_id[database_id] = SimpleAttrContainer(
+            self.info_per_database_id[database_id] = DatabaseInfo(
+                daemon = daemon_info,
+                db = self.db,
                 tags = tags,
                 contacts = contacts,
                 **row)

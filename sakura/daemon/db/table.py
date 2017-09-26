@@ -9,4 +9,4 @@ class DBTable:
         col = DBColumn(self.name, *col_info)
         self.columns.append(col)
     def pack(self):
-        return dict(name = self.name, columns = self.columns)
+        return dict(db_table_name = self.name, columns = self.columns)

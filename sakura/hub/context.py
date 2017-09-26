@@ -108,25 +108,3 @@ class HubContext(object):
                 project_id = project_id,
                 gui_data = gui_data)
         self.db.commit()
-    def get_database_info(self, database_id):
-        database_info = self.databases[database_id]
-        if not database_info.online:
-            print('Sorry, this database is offline!')
-            return None
-        datastore_id = database_info.datastore_id
-        datastore_info = self.datastores[datastore_id]
-        daemon_id = datastore_info.daemon_id
-        # ask daemon
-        result = self.daemons[daemon_id].api.get_database_info(
-            datastore_host = datastore_info.host,
-            datastore_driver_label = datastore_info.driver_label,
-            db_name = database_info.db_name
-        )
-        # add metadata stored in db
-        db_info = self.db.select_unique('Database', database_id = database_id)
-        result.update(
-            name = db_info.name,
-            short_desc = db_info.short_desc,
-            created = db_info.created
-        )
-        return result
