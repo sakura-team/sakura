@@ -1,16 +1,14 @@
 //date: September 2017
 //author: rms-dev
 
+
 function registerUser(evt = '') {
   if (evt.type === 'click') {
 //    evt.preventDefault();
 
-//    var signUpForm = document.getElementById("signUpForm");
-
     // For validation:
-    //    var allValuesValidated = validateAllValues(signUpForm);
-//    $('#signUpForm').parsley();
-    $('#signUpForm').parsley().on('field:validated', function () {
+    var signUpForm = $('#demo-form').parsley();
+    signUpForm.on('field:validated', function () {
       console.log("In parsley function");
       var ok = $('.parsley-error').length === 0;
       $('.bs-callout-info').toggleClass('hidden', !ok);
@@ -50,16 +48,15 @@ function registerUser(evt = '') {
 }
 
 function signInSubmitControl(event) {
-    if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
-        showDiv(event,'HelloYou');
-        $("#signInModal").modal("hide");
-        document.getElementById("idSignInWidget").innerHTML= '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
-        return;
-    }
-    else {
-        alert('not yet, try email=password=guest');
-        return;
-    }
+  if ((document.getElementById("signInEmail").value.length > 2) && (document.getElementById("signInEmail").value == document.getElementById("signInPassword").value)) {
+    showDiv(event, 'HelloYou');
+    $("#signInModal").modal("hide");
+    document.getElementById("idSignInWidget").innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
+    return;
+  } else {
+    alert('not yet, try email=password=guest');
+    return;
+  }
 }
 
 // function validateAllValues(formName){}
@@ -70,24 +67,22 @@ function signInSubmitControl(event) {
 
 
 function signOutSubmitControl(event) {
-    res=confirm("Sign Out?");
-    if (res) {
-        document.getElementById("idSignInWidget").innerHTML= '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-        showDiv(event,"");
-        return;
-    }
-    else {
-        showDiv(event,'HelloYou');
-    }
+  res = confirm("Sign Out?");
+  if (res) {
+    document.getElementById("idSignInWidget").innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
+    showDiv(event, "");
+    return;
+  } else {
+    showDiv(event, 'HelloYou');
+  }
 }
 
 function not_implemented(s = '') {
-    if (s == '') {
-        alert('Not implemented yet');
-    }
-    else {
-        alert('Not implemented yet: '+ s);
-    }
+  if (s == '') {
+    alert('Not implemented yet');
+  } else {
+    alert('Not implemented yet: ' + s);
+}
 }
 
 
