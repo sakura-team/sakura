@@ -27,8 +27,8 @@ class SQLiteDB():
     def commit(self):
         self.c.commit()
 
-    def execute(self, query):
-        return self.c.execute(query)
+    def execute(self, query, **kwargs):
+        return self.c.execute(query, kwargs)
 
     def executescript(self, script):
         return self.c.executescript(script)

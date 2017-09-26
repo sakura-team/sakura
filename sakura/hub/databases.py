@@ -4,7 +4,7 @@ QUERY_ONLINE_DATABASES_OF_DAEMON = """
 SELECT Database.*
 FROM DataStore, Database
 WHERE DataStore.datastore_id = Database.datastore_id
-  AND DataStore.daemon_id = %d
+  AND DataStore.daemon_id = :daemon_id
   AND DataStore.online = 1;
 """
 
@@ -12,7 +12,7 @@ QUERY_ALL_DATABASES_OF_DAEMON = """
 SELECT Database.*, DataStore.online
 FROM DataStore, Database
 WHERE DataStore.datastore_id = Database.datastore_id
-  AND DataStore.daemon_id = %d;
+  AND DataStore.daemon_id = :daemon_id;
 """
 
 class DatabaseRegistry(object):
@@ -35,7 +35,7 @@ class DatabaseRegistry(object):
         new_online_database_keys = set(new_online_database_dict)
         old_online_database_dict = {
             (row.datastore_id, row.db_name) : row \
-            for row in self.db.execute(QUERY_ONLINE_DATABASES_OF_DAEMON % daemon_id)}
+            for row in self.db.execute(QUERY_ONLINE_DATABASES_OF_DAEMON, daemon_id = daemon_id)}
         old_online_database_keys = set(old_online_database_dict)
         # forget obsolete databases from db
         for database_key in old_online_database_keys - new_online_database_keys:
@@ -48,6 +48,6 @@ class DatabaseRegistry(object):
         if len(new_online_database_keys ^ old_online_database_keys) > 0:
             self.db.commit()
         # retrieve updated info from db (because we need the ids)
-        for row in self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON % daemon_id):
+        for row in self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON, daemon_id = daemon_id):
             database_id = row.database_id
             self.info_per_database_id[database_id] = SimpleAttrContainer(**row)
