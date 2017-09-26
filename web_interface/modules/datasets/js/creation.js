@@ -6,7 +6,6 @@ var current_select  = null;
 
 function datasets_send_new(database_id) {
     
-    
     //Reading first main elements: name and description
     var name = $('#datasets_creation_name').val();
     var desc = $('#datasets_creation_description').val();
@@ -133,34 +132,25 @@ function datasets_parse_file() {
         var new_row = $(body[0].insertRow(-1));
         new_row.load('creation_dataset_row.html', function () {
             var inputs = new_row.find('input');
-            var buttons = new_row.find('span');
+            inputs[0].value = col;
             var select = new_row.find('select');
-            
-            new_row.find("td:last").remove();
             var type_select = $(select[0]);
             var tags_select = $(select[1]);
+
+            new_row.find("td:last").remove();
             
             type_select.attr('id', 'datasets_ff_type_select_'+index);
             type_select.attr('onchange', "datasets_type_change("+index+", this);");
             type_select.val(getType(first_line[index]));
             
             tags_select.attr('id', 'datasets_ff_tags_select_'+index);
-            
-            tags_select.append('<option data-hidden="true" value="Select..."></option>')
-            columns_tags_list.forEach(function (group) {
-                group_elem = '<optgroup label="' + group[0] + '">';
-                group[1].forEach(function (tag) {
-                    group_elem += '<option value="' + tag + '">' + tag + '</option>';
-                });
-                group_elem += '</optgroup>';
-                tags_select.append(group_elem);
-            });
-            tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag"></option>')
-            
-            inputs[0].value = col;
+            datasets_fill_select_tags(tags_select);
             
             $('#datasets_ff_type_select_'+index).selectpicker('refresh');
             $('#datasets_ff_tags_select_'+index).selectpicker('refresh');
+            $('#datasets_ff_tags_select_'+index).change(datasets_tags_select_change);
+            $('#datasets_new_tag_select_group').selectpicker('refresh');
+            $('#datasets_new_tag_name').val("");
         });
     });
 }
@@ -179,24 +169,12 @@ function datasets_add_a_row(dataset_id) {
         var select = new_row.find('select');
         var type_select = $(select[0]);
         var tags_select = $(select[1]);
+        
         type_select.attr('id', 'datasets_fs_type_select_'+global_ids);
         type_select.attr('onchange', "datasets_type_change("+global_ids+",this);");
         
         tags_select.attr('id', 'datasets_fs_tags_select_'+global_ids);
-        
-        tags_select.append('<option data-hidden="true" value="Select..."></option>')
-        var existing_groups = []
-        $('#datasets_new_tag_select_group').empty();
-        columns_tags_list.forEach(function (group) {
-            group_elem = '<optgroup label="' + group[0] + '">';
-            group[1].forEach(function (tag) {
-                group_elem += '<option value="' + tag + '">' + tag + '</option>';
-            });
-            group_elem += '</optgroup>';
-            tags_select.append(group_elem);
-            $('#datasets_new_tag_select_group').append('<option value="'+group[0]+'">'+group[0]+'</option>');
-        });
-        tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag" data-subtext="add new tags"></option>')
+        datasets_fill_select_tags(tags_select);
         
         $('#datasets_fs_type_select_'+global_ids).selectpicker('refresh');
         $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
@@ -208,6 +186,22 @@ function datasets_add_a_row(dataset_id) {
     });
     
     return new_row;
+}
+
+
+function datasets_fill_select_tags(tags_select) {
+    tags_select.append('<option data-hidden="true" value="Select..."></option>')
+    $('#datasets_new_tag_select_group').empty();
+    columns_tags_list.forEach(function (group) {
+        group_elem = '<optgroup label="' + group[0] + '">';
+        group[1].forEach(function (tag) {
+            group_elem += '<option value="' + tag + '">' + tag + '</option>';
+        });
+        group_elem += '</optgroup>';
+        tags_select.append(group_elem);
+        $('#datasets_new_tag_select_group').append('<option value="'+group[0]+'">'+group[0]+'</option>');
+    });
+    tags_select.append('<option data-icon="glyphicon glyphicon-plus" value="datasets_add_tag" data-subtext="add new tags"></option>')
 }
 
 
