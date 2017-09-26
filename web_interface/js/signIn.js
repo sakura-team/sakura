@@ -1,23 +1,34 @@
-//date: March 2017
+//date: September 2017
 //author: rms-dev
 
 function registerUser(evt = '') {
   if (evt.type === 'click') {
-    evt.preventDefault();
-//    //GOOD CODE BEGIN
-    var signUpForm = document.getElementById("signUpForm");
-    
-    var userAccountValues = {}; // dictionary of all values input by user
-    for (var i = 0; i < signUpForm.elements.length; i++) {
-      console.log(signUpForm.elements.length);
-      console.log("Name: "+signUpForm.elements[i].name);
-      console.log("Value: "+signUpForm.elements[i].value);
-      userAccountValues[signUpForm.elements[i].name] = signUpForm.elements[i].value;
-    }
-    
+//    evt.preventDefault();
+
+//    var signUpForm = document.getElementById("signUpForm");
+
     // For validation:
     //    var allValuesValidated = validateAllValues(signUpForm);
-    
+//    $('#signUpForm').parsley();
+    $('#signUpForm').parsley().on('field:validated', function () {
+      console.log("In parsley function");
+      var ok = $('.parsley-error').length === 0;
+      $('.bs-callout-info').toggleClass('hidden', !ok);
+      $('.bs-callout-warning').toggleClass('hidden', ok);
+    })
+            .on('form:submit', function () {
+              return false; // Don't submit form for this demo
+            });
+
+    var userAccountValues = {}; // dictionary of all values input by user
+
+    for (var i = 0; i < signUpForm.elements.length; i++) {
+      console.log(signUpForm.elements.length);
+      console.log("Name: " + signUpForm.elements[i].name);
+      console.log("Value: " + signUpForm.elements[i].value);
+      userAccountValues[signUpForm.elements[i].name] = signUpForm.elements[i].value;
+    }
+
     console.log('In progress');
 //    var ws_for_userRegn = sakura.common.ws_request();
 //    console.log('Current RPC: ' + ws_for_userRegn);
@@ -32,9 +43,8 @@ function registerUser(evt = '') {
       }
     });
 
-  }
-  else {
-    console.log('Not implemented yet: '+ evt.type);
+  } else {
+    console.log('Not implemented yet: ' + evt.type);
   }
   return;
 }
