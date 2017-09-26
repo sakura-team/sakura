@@ -1,15 +1,18 @@
 //date: September 2017
 //author: rms-dev
 
-
 function registerUser(evt = '') {
   if (evt.type === 'click') {
 //    evt.preventDefault();
 
     // For validation:
     var signUpForm = $('#demo-form').parsley();
-    signUpForm.on('field:validated', function () {
-      console.log("In parsley function");
+    signUpForm
+            .on('form:init', function () {
+      console.log("Form inited");
+    })
+            .on('field:validated', function () {
+      console.log("In parsley function0");
       var ok = $('.parsley-error').length === 0;
       $('.bs-callout-info').toggleClass('hidden', !ok);
       $('.bs-callout-warning').toggleClass('hidden', ok);
@@ -20,12 +23,12 @@ function registerUser(evt = '') {
 
     var userAccountValues = {}; // dictionary of all values input by user
 
-    for (var i = 0; i < signUpForm.elements.length; i++) {
-      console.log(signUpForm.elements.length);
-      console.log("Name: " + signUpForm.elements[i].name);
-      console.log("Value: " + signUpForm.elements[i].value);
-      userAccountValues[signUpForm.elements[i].name] = signUpForm.elements[i].value;
-    }
+//    for (var i = 0; i < signUpForm.elements.length; i++) {
+//      console.log(signUpForm.elements.length);
+//      console.log("Name: " + signUpForm.elements[i].name);
+//      console.log("Value: " + signUpForm.elements[i].value);
+//      userAccountValues[signUpForm.elements[i].name] = signUpForm.elements[i].value;
+//    }
 
     console.log('In progress');
 //    var ws_for_userRegn = sakura.common.ws_request();
