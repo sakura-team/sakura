@@ -38,9 +38,9 @@ function registerUser(evt = '') {
     sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (result) {
       console.log(result);
       if (result == 1) {
-        alert("Success");
+        console.log("Handshake with api.py: Success");
       } else {
-        alert("Failure");
+        console.log("Handshake with api.py: Failure");
       }
     });
 
