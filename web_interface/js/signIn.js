@@ -68,7 +68,6 @@ function signInSubmitControl(event) {
 //    else
 //      error handling
 
-
 function signOutSubmitControl(event) {
   res = confirm("Sign Out?");
   if (res) {
@@ -87,7 +86,6 @@ function not_implemented(s = '') {
     alert('Not implemented yet: ' + s);
 }
 }
-
 
 //function showDiv(event, dir, id) {
 //    //todo : déplacer les event.preventDefault() ici ?
