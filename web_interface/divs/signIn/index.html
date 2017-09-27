@@ -51,17 +51,17 @@
 			  </div>
 			  <!-- Password Recovery[END] -->
 			</div>
-		
-<!--			<div class="bs-callout bs-callout-warning hidden">
-			  <h4>Oh snap!</h4>
-			  <p>This form seems to be invalid :(</p>
-			</div>
 
-			<div class="bs-callout bs-callout-info hidden">
-			  <h4>Yay!</h4>
-			  <p>Everything seems to be ok :)</p>
-			</div>-->
-<!-- ----------------------- NEW ACCOUNT ------------------------ -->
+			<!--			<div class="bs-callout bs-callout-warning hidden">
+						  <h4>Oh snap!</h4>
+						  <p>This form seems to be invalid :(</p>
+						</div>
+			
+						<div class="bs-callout bs-callout-info hidden">
+						  <h4>Yay!</h4>
+						  <p>Everything seems to be ok :)</p>
+						</div>-->
+			<!-- ----------------------- NEW ACCOUNT ------------------------ -->
 			<div class="col-md-7">
 			  <h6>New account:</h6>
 			  <div class="panel panel-default">
@@ -106,6 +106,7 @@
 					  <div class="form-group">
 						<label for="signUpCountry">Country *</label>
 						<input type="text" class="form-control" id="signUpCountry" name="signUpCountry" placeholder="Your Country" required=""/>
+						<!--						  <select class="form-control"><option value="af">afghanistan</option> </select>-->
 					  </div>
 					  <div class="form-group">
 						<label for="signUpInstitution">Institution *</label>
@@ -125,7 +126,7 @@
 						  <input id="signInCGU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a onclick="showDivCGU(event);" href="http://sakura.imag.fr/CGU">terms</a>
 						</label>
 					  </div>
-					  
+
 					  <!--
 						<label for="hobbies">Hobbies (Optional, but 2 minimum):</label>
 						<p>
@@ -153,19 +154,19 @@
 						  <textarea id="message" class="form-control" name="message" data-parsley-trigger="keyup" data-parsley-minlength="20" data-parsley-maxlength="100" data-parsley-minlength-message="Come on! You need to enter at least a 20 character comment.." data-parsley-validation-threshold="10"></textarea>
 						</p>-->
 
-						<br/>
+					  <br/>
 
-<!--						<input name="authentification" value="newAccount" type="hidden" />-->
-						
-						<input type="submit" class="col-md-5 pull-left btn btn-default" id="signUpSubmit" value="Create account" onclick="registerUser(event);">
+					  <!--						<input name="authentification" value="newAccount" type="hidden" />-->
 
-					  </div>
+					  <input type="submit" class="col-md-5 pull-left btn btn-default" id="signUpSubmit" value="Create account" onclick="registerUser(event);">
+
+					</div>
 				  </form>
 				</div>
 			  </div>
-			  </div>			
+			</div>			
 		  </div>
-<!-- New Account[END] -->
+		  <!-- New Account[END] -->
 		</div>
 	  </div>
 	</div>
