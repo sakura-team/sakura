@@ -2,8 +2,6 @@
 //August, 22nd, 2017
 
 
-var global_ids = 0;
-var file_lines = null;
 var database_infos = null;
 var columns_tags_list = null;
 

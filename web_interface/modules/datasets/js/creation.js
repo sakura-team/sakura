@@ -3,6 +3,9 @@
 
 
 var current_select  = null;
+var global_ids      = 0;
+var file_lines      = null;
+var first_data_line = null;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
@@ -90,6 +93,7 @@ function datasets_parse_file() {
     
     //check the columns and the first line (dealing with comments)
     var index  = 0
+    first_data_line = null;
     var cols =['#'];    
     while (cols[0].indexOf('#') >= 0) {
         cols = file_lines[index].split(sep);
@@ -100,8 +104,14 @@ function datasets_parse_file() {
     var b_lines = [];
     for (var i = index; i<file_lines.length; i++) {
         line = file_lines[i].split(sep);
+        if (first_data_line == null && cols.length == line.length && file_lines[i][0] != '#' && file_lines[i].length != 0) {
+            first_data_line = line;
+        }
         if (cols.length != line.length && file_lines[i][0] != '#' && file_lines[i].length != 0) {
             b_lines.push(parseInt(i));
+        }
+        else if (file_lines[i][0] == '#' || file_lines[i].length == 0) {
+            console.log("TODO: remove comments and empty lines");
         }
     }
     
@@ -230,7 +240,6 @@ function datasets_tags_select_change(event) {
 }
 
 function datasets_new_tag() {
-    var group   = $('#datasets_new_tag_select_group').val()
     var tag     = $('#datasets_new_tag_name').val();
     
     if (tag.replace(/ /g, '') == "") {
@@ -242,7 +251,7 @@ function datasets_new_tag() {
     });
     $.each(selects, function(i, select) {
         var optGroups = $(select).find('optgroup');
-        
+        var group = "others";
         for (var i=0; i < optGroups.length; i++) {
             if (optGroups[i].label == group) {
                 var option = $('<option/>');
@@ -269,7 +278,7 @@ function datasets_new_tag() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-// TYPES
+// DATES AND TYPES
 
 function datasets_type_change(row_id, from) {
     if (from.id.indexOf("ff") >= 0) {
@@ -279,8 +288,15 @@ function datasets_type_change(row_id, from) {
             if (td.childElementCount == 1) {
                 var tmp = document.createElement('input');
                 $(tmp).load("date_format_input.html", function (input) {
-                    $(td).append(input);
+                    var div = $(document.createElement('div'));
+                    div.attr("id", "datasets_date_format_div_"+row_id);
+                    div.append($(input));
+                    $(td).append(div);
                     $(tmp).remove();
+                    datasets_check_date_format(row_id, div);
+                    console.log($(div[0].children[1].children[0]));
+                    $(div[0].children[3].children[0]).val(first_data_line[row_id]);
+                    $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, datasets_update_date_format);
                });
             }
         }
@@ -288,6 +304,29 @@ function datasets_type_change(row_id, from) {
             td.children[1].remove();
         }
     }
+}
+
+
+function datasets_check_date_format(row_id, div) {
+    
+    var format = $(div[0].children[1].children[0]).val();
+    var date = first_data_line[row_id];
+    var m2 = moment(date, format);
+    if (! m2._isValid) {
+        $(div[0].children[1]).attr("class", "has-error");
+        $(div[0].children[5]).attr("class", "has-error");
+        $(div[0].children[5].children[0]).val("Invalid format");
+    }
+    else {
+        $(div[0].children[1]).attr("class", "");
+        $(div[0].children[5]).attr("class", "has-success");
+        $(div[0].children[5].children[0]).val(m2._d);
+    }
+}
+
+
+function datasets_update_date_format(event) {
+    datasets_check_date_format(event.data.row_id, event.data.div);
 }
 
 
