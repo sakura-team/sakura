@@ -134,4 +134,4 @@ class GuiToHubAPI(object):
     
     def new_table(self, database_id, name, description, creation_date, columns):
         print((database_id, name, description, creation_date, columns))
-        return True
+        return 5690 #New table ID

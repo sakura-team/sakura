@@ -249,9 +249,9 @@ function datasets_new_tag() {
     var selects = $('*').filter(function() {
         return this.id.match(/.*_tags_select_.*/);
     });
+    var group = "others";
     $.each(selects, function(i, select) {
         var optGroups = $(select).find('optgroup');
-        var group = "others";
         for (var i=0; i < optGroups.length; i++) {
             if (optGroups[i].label == group) {
                 var option = $('<option/>');
