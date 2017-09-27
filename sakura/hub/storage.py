@@ -91,6 +91,13 @@ CREATE TABLE IF NOT EXISTS DBTable (
     UNIQUE(database_id, db_table_name),
     UNIQUE(database_id, name)
 );
+
+CREATE TABLE IF NOT EXISTS DBColumnTags (
+    table_id INTEGER REFERENCES DBTable(table_id) ON DELETE CASCADE,
+    name TEXT,
+    tag TEXT,
+    UNIQUE(table_id, name, tag)
+);
 """
 
 class CentralStorage(SQLiteDB):

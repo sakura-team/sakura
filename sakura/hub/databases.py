@@ -66,6 +66,10 @@ class DatabaseInfo(SimpleAttrContainer):
                 self.db.commit()
             else:
                 table_info.update(**row)
+                # add columns metadata stored in db
+                table_info['columns'] = tuple(
+                    self.add_column_metadata(row['table_id'], info) \
+                        for info in table_info['columns'])
                 return table_info
     def drop_obsolete_table_metadata(self, new_db_table_names):
         old_db_table_names = set(row.db_table_name for row in \
@@ -74,6 +78,12 @@ class DatabaseInfo(SimpleAttrContainer):
             self.db.delete('DBTable', database_id = self.database_id,
                                       db_table_name = db_table_name)
             self.db.commit()
+    def add_column_metadata(self, table_id, column_info):
+        col_name, col_type, col_tags = column_info
+        db_col_tags = set(row.tag for row in \
+            self.db.select('DBColumnTags', table_id=table_id, name=col_name))
+        col_tags = tuple(db_col_tags | set(col_tags))   # union
+        return col_name, col_type, col_tags
 
 class DatabaseRegistry(object):
     def __init__(self, db):
