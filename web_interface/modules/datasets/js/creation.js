@@ -55,7 +55,15 @@ function datasets_send_new(database_id) {
     //Sending the new dataset description
     //database_id, name, description, creation_date, columns
     sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), columns], {}, function(result) {
-        console.log(result);
+        var new_dataset_id = result;
+        if (result >= 0) {
+            if (ff) {
+                console.log("TODO: table created from file, so now we should fill the table");
+            }
+            else {
+                console.log("TODO: table created from scratch, so back to the main view, refreshed");
+            }
+        }
     });
     
     $("#datasets_creation_modal").modal('hide');
