@@ -89,13 +89,13 @@ function listRequestStub(idDiv, n, elt, bd) {
             var result = new Array();;
             databases.forEach( function(db, index) {
                 if (index != databases.length-1) {
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result.push({'name': db_info.label});
+                    ws_request('get_database_info', [db.database_id], {}, function(db_info) { 
+                        result.push({'name': db_info.label,'id':db.database_id,"author":db_info.owner});
                     });
                 }
-                else {
+                else { 
                     ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result.push({'name': db_info.label});
+                        result.push({'name': db_info.label,'id':db.database_id,"author":db_info.owner});
                         buildListStub(idDiv,result,elt);
                     });
                 }
@@ -103,7 +103,7 @@ function listRequestStub(idDiv, n, elt, bd) {
         });
     }
     else {
-        result=listStubAlea(n); 
+        result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"author":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"author":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
         buildListStub(idDiv,result,elt);}
     return ;}
 
