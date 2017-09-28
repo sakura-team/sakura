@@ -76,7 +76,7 @@ function listStubAlea(n) {
                             "shortDesc":shortTextAlea(),
                             "date":dateAlea(),
                             "modif":dateAlea(),
-                            "author":aleaAlea(usersAlea),
+                            "owner":aleaAlea(usersAlea),
                             "isViewable":boolAlea(0.7),
                             "isEditable":boolAlea(0.3)});}       
     return result;}
@@ -102,7 +102,7 @@ function eltStubAlea(elt) {
 		else {
           infos.push({"name":elt+"-id","value":numAlea(100,100)});}    
         infos.push({"name":"Description","value":shortTextAlea()});
-        infos.push({"name":"Author","value":userName});        
+        infos.push({"name":"Owner","value":userName});        
         for(i=0;i<ninfo;i++) {
             infos.push({"name":aleaAlea(propsAlea),"value":aleaAlea(valsAlea)});}        
         dataSets = new Array();

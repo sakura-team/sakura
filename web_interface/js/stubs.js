@@ -16,8 +16,8 @@ function buildListStub(idDiv,result,elt) {
         s = s +  '<th class="col-text">Date</th>';}
     if (document.getElementById("cbColSelectModification").checked) {
         s = s +  '<th class="col-text">Modif.</th>';}
-    if (document.getElementById("cbColSelectAuthor").checked) {
-        s = s +  '<th class="col-text">Author</th>';}
+    if (document.getElementById("cbColSelectOwner").checked) {
+        s = s +  '<th class="col-text">Owner</th>';}
     s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>'
         + '<th class="col-text" style="max-width:3px; overflow:hidden">'
         + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
@@ -47,8 +47,8 @@ function buildListStub(idDiv,result,elt) {
             s = s + "<td>"+result[i].date+"</td>";}
         if (document.getElementById("cbColSelectModification").checked) {
             s = s + "<td>"+result[i].modif+"</td>";} 
-        if (document.getElementById("cbColSelectAuthor").checked) {
-            s = s + "<td>"+result[i].author+"</td>";}
+        if (document.getElementById("cbColSelectOwner").checked) {
+            s = s + "<td>"+result[i].owner+"</td>";}
         s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
         if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
             s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
@@ -89,13 +89,13 @@ function listRequestStub(idDiv, n, elt, bd) {
             var result = new Array();;
             databases.forEach( function(db, index) {
                 if (index != databases.length-1) {
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) { 
-                        result.push({'name': db_info.label,'id':db.database_id,"author":db_info.owner});
+                    ws_request('get_database_info', [db.database_id], {}, function(db_info) { //dbinfo : { owner: null, users: Object, label: "xxx", tables: Array }
+                        result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner});
                     });
                 }
                 else { 
                     ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result.push({'name': db_info.label,'id':db.database_id,"author":db_info.owner});
+                        result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner});
                         buildListStub(idDiv,result,elt);
                     });
                 }
@@ -103,7 +103,7 @@ function listRequestStub(idDiv, n, elt, bd) {
         });
     }
     else {
-        result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"author":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"author":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
+        result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"owner":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"owner":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
         buildListStub(idDiv,result,elt);}
     return ;}
 
