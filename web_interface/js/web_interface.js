@@ -115,12 +115,10 @@ function showDiv(event, dir, id) {
     d.innerHTML = bct;
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
     
-    //console.log(idDir);
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
-            if (typeof(id) != "undefined") {
-                actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+id;
-            }
+			idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+			actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+idElt;
         }
         else {
             eval(actionsOnShow[i].href);

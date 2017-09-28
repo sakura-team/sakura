@@ -88,7 +88,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             var result = new Array();;
             databases.forEach( function(db, index) {
                 if (index != databases.length-1) {
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) { //dbinfo : { owner: null, users: Object, label: "xxx", tables: Array }
+                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
                         result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner});
                     });
                 }
@@ -334,32 +334,15 @@ function buildEltStub(idDiv,result,elt) {
     });
 }
 
-/*  function listRequestStub(idDiv, n, elt, bd) {
-    if (elt == 'DataSets/tmpDataSet') {
-        ws_request('list_databases', [], {}, function (databases) {
-            var result = new Array();;
-            databases.forEach( function(db, index) {
-                if (index != databases.length-1) {
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) { //dbinfo : { owner: null, users: Object, label: "xxx", tables: Array }
-                        result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner}); }); }
-                else { 
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner});
-                        buildListStub(idDiv,result,elt); }); } }); });    }
-    else {
-        result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"owner":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"owner":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
-        buildListStub(idDiv,result,elt);}
-    return ;}   */
-
 function eltRequestStub(idDiv,elt,bd) {
 	if (elt == 'DataSet') {		
 		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
-        ws_request('get_database_info', [+idElt], {}, function(db_info) { //dbinfo : { owner: null, users: Object, label: "xxx", tables: Array }
+        ws_request('get_database_info', [+idElt], {}, function(db_info) {
 	      var result = {'name': db_info.label, "userName":db_info.owner,
 		    "info":[{"name":'DataSet-id',"value":idElt},{"name":"Name","value":db_info.label},{"name":"Owner","value":db_info.owner}],
 			"dataSets":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
 	      buildEltStub(idDiv,result,elt);} ); }
     else { 
-        result = eltStubAlea(elt); // {  "name":_,"userName":_,"description":_, "info":[...],"dataSets":[...], "process":[...], "results":[...], "comments":[...],"fileSystem":[...]} détail : {  "name":eltName,"userName":userName,"info":infos, "dataSets":dataSets, "process":procs, "results":results, "comments":comments,"fileSystem":fs,"description":desc}
+        result = eltStubAlea(elt); // objet {"name":_,"userName":_,"description":_, "info":[...],"dataSets":[...], "process":[...], "results":[...], "comments":[...],"fileSystem":[...]} détail : {  "name":eltName,"userName":userName,"info":infos, "dataSets":dataSets, "process":procs, "results":results, "comments":comments,"fileSystem":fs,"description":desc}
         buildEltStub(idDiv,result,elt);}
     return ;}
