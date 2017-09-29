@@ -192,7 +192,7 @@ function buildEltStub(idDiv,result,elt) {
         imageElt = "Simpleicons_Business_notebook.svg.png";
         imageEltInverse = "Simpleicons_Business_notebook_inverse.svg.png";
     }
-    else if (elt=="DataSet") {
+    else if (elt=="Data") {
         imageElt = "Linecons_database.svg.png";
         imageEltInverse = "Linecons_database_inverse.svg.png";
     }
@@ -248,7 +248,7 @@ function buildEltStub(idDiv,result,elt) {
     //Informations
     for(i=0;i<result.info.length;i++) { 
         s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value;
-        if ((result.info[i].name!="Name") && (result.info[i].name!="Project-id") && (result.info[i].name!="DataSet-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Analysis-id")&& (result.info[i].name!="Result-id")) {
+        if ((result.info[i].name!="Name") && (result.info[i].name!="Project-id") && (result.info[i].name!="Data-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Analysis-id")&& (result.info[i].name!="Result-id")) {
             s = s +'<span class="editZoneContextualMenu"></span>';
         }
         s = s +'</dd>';
@@ -335,11 +335,11 @@ function buildEltStub(idDiv,result,elt) {
 }
 
 function eltRequestStub(idDiv,elt,bd) {
-	if (elt == 'DataSet') {		
+	if (elt == 'Data') {		
 		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
         ws_request('get_database_info', [+idElt], {}, function(db_info) {
 	      var result = {'name': db_info.label, "userName":db_info.owner,
-		    "info":[{"name":'DataSet-id',"value":idElt},{"name":"Name","value":db_info.label},{"name":"Owner","value":db_info.owner}],
+		    "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.label},{"name":"Owner","value":db_info.owner}],
 			"datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
 	      buildEltStub(idDiv,result,elt);} ); }
     else { 

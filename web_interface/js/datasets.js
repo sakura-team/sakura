@@ -18,7 +18,7 @@ function new_dataset() {
     var name = $('#dataset_name_input').val();
     
     if ((name.replace(/ /g,"")).length == 0) {
-        alert("Empty name!! We cannot create a dataset without a name.");
+        alert("Empty name!! We cannot create data without a name.");
         return ;
     }
     
