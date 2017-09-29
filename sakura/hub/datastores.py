@@ -48,6 +48,8 @@ class DataStoreRegistry(object):
         for row in self.db.select('DataStore', daemon_id=daemon_id):
             datastore_id, online, host, driver_label = \
                 row.datastore_id, row.online, row.host, row.driver
+            admin_username = new_datastore_dict[(host, driver_label)].admin
+            admin_info = self.db.get_user_info(admin_username)
             datastore_ids[(host, driver_label)] = datastore_id
             self.info_per_datastore_id[datastore_id] = \
                 SimpleAttrContainer(
@@ -55,6 +57,7 @@ class DataStoreRegistry(object):
                     datastore_id = datastore_id,
                     online = online,
                     host = host,
-                    driver_label = driver_label
+                    driver_label = driver_label,
+                    admin = admin_info
                 )
         return datastore_ids

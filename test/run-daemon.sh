@@ -45,8 +45,11 @@ EOF
 #   "data-stores": [
 #       {
 #           "host": "<dbms-ip-or-hostname>",
-#           "admin-user": "<dbms-admin-user>",
-#           "admin-password": "<dbms-admin-password>",
+#           "datastore-admin": {
+#               "user":     "<dbms-admin-user>",
+#               "password": "<dbms-admin-password>"
+#           },
+#           "sakura-admin": "<sakura-username>",
 #           "driver": "postgresql"
 #       }
 #   ]

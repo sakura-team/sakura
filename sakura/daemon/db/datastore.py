@@ -8,7 +8,7 @@ class DataStoreProber:
     def probe(self):
         admin_conn = self.driver.connect(
             host = self.datastore.host,
-            **self.datastore.admin)
+            **self.datastore.datastore_admin)
         self.databases = {}
         self.driver.collect_dbs(admin_conn, self)
         self.driver.collect_db_grants(admin_conn, self)
@@ -26,9 +26,10 @@ class DataStoreProber:
             self.databases[db_name].grant(user, privtype)
 
 class DataStore:
-    def __init__(self, host, admin_user, admin_password, driver_label):
+    def __init__(self, host, datastore_admin, sakura_admin, driver_label):
         self.host = host
-        self.admin = dict(user = admin_user, password = admin_password)
+        self.datastore_admin = datastore_admin
+        self.sakura_admin = sakura_admin
         self.driver_label = driver_label
         self.driver = drivers.get(driver_label)
         self.databases = None    # not probed yet
@@ -46,6 +47,7 @@ class DataStore:
         res = dict(
             host = self.host,
             driver_label = self.driver_label,
+            admin = self.sakura_admin,
             online = self.online
         )
         if self.online:

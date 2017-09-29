@@ -32,8 +32,8 @@ def load_datastores():
     for ds_conf in conf.data_stores:
         ds = DataStore(
             host = ds_conf['host'],
-            admin_user = ds_conf['admin-user'],
-            admin_password = ds_conf['admin-password'],
+            datastore_admin = ds_conf['datastore-admin'],
+            sakura_admin = ds_conf['sakura-admin'],
             driver_label = ds_conf['driver']
         )
         ds.refresh_databases()

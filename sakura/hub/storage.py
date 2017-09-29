@@ -107,3 +107,8 @@ class CentralStorage(SQLiteDB):
         # create the db schema
         self.executescript(DB_SCHEMA)
         self.commit()
+    def get_user_info(self, username):
+        user_info = self.select_unique("User", login=username)
+        if user_info is None:
+            raise RuntimeError("No such user: " + username)
+        return dict(**user_info)
