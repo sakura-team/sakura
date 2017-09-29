@@ -83,7 +83,7 @@ function buildListStub(idDiv,result,elt) {
 
 
 function listRequestStub(idDiv, n, elt, bd) {
-    if (elt == 'DataSets/tmpDataSet') {
+    if (elt == 'Datas/tmpDataSet') {
         ws_request('list_databases', [], {}, function (databases) {
             var result = new Array();;
             databases.forEach( function(db, index) {
@@ -123,7 +123,7 @@ function listRequestStubForRestart(idDiv) {
         + "</td></tr>";
     i=i+1;
     result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='DataSets/tmpDataSet';
+    elt='Datas/tmpDataSet';
     s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
         + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Linecons_database.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
@@ -255,10 +255,10 @@ function buildEltStub(idDiv,result,elt) {
     }
     s = s + '<dt></dt><dd></dd>';
 
-    if (result.dataSets.length>0) {
-        s = s + '<dt class="description-terms-align-left">DataSets</dt><dd>';
-        for(i=0;i<result.dataSets.length;i++) {
-            s = s + "<a onclick=\"showDiv(event,'DataSets/tmpDataSet');\" href=\"http://sakura.imag.fr/DataSets/tmpDataSet\">"+result.dataSets[i].name+"</a>, ";
+    if (result.datas.length>0) {
+        s = s + '<dt class="description-terms-align-left">Datas</dt><dd>';
+        for(i=0;i<result.datas.length;i++) {
+            s = s + "<a onclick=\"showDiv(event,'Datas/tmpDataSet');\" href=\"http://sakura.imag.fr/Datas/tmpDataSet\">"+result.datas[i].name+"</a>, ";
         }
         s = s + '</dd>';
     }
@@ -340,9 +340,9 @@ function eltRequestStub(idDiv,elt,bd) {
         ws_request('get_database_info', [+idElt], {}, function(db_info) {
 	      var result = {'name': db_info.label, "userName":db_info.owner,
 		    "info":[{"name":'DataSet-id',"value":idElt},{"name":"Name","value":db_info.label},{"name":"Owner","value":db_info.owner}],
-			"dataSets":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
+			"datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
 	      buildEltStub(idDiv,result,elt);} ); }
     else { 
-        result = eltStubAlea(elt); // objet {"name":_,"userName":_,"description":_, "info":[...],"dataSets":[...], "process":[...], "results":[...], "comments":[...],"fileSystem":[...]} détail : {  "name":eltName,"userName":userName,"info":infos, "dataSets":dataSets, "process":procs, "results":results, "comments":comments,"fileSystem":fs,"description":desc}
+        result = eltStubAlea(elt); // objet {"name":_,"userName":_,"description":_, "info":[...],"datas":[...], "process":[...], "results":[...], "comments":[...],"fileSystem":[...]} détail : {  "name":eltName,"userName":userName,"info":infos, "datas":datas, "process":procs, "results":results, "comments":comments,"fileSystem":fs,"description":desc}
         buildEltStub(idDiv,result,elt);}
     return ;}

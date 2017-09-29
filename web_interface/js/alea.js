@@ -105,10 +105,10 @@ function eltStubAlea(elt) {
         infos.push({"name":"Owner","value":userName});        
         for(i=0;i<ninfo;i++) {
             infos.push({"name":aleaAlea(propsAlea),"value":aleaAlea(valsAlea)});}        
-        dataSets = new Array();
-        ndataSets = Math.floor((Math.random() * 4 + Math.random() + 2)/3);
-        for(i=0;i<ndataSets;i++) {
-            dataSets.push({"name":fullNameAlea()});}        
+        datas = new Array();
+        ndatas = Math.floor((Math.random() * 4 + Math.random() + 2)/3);
+        for(i=0;i<ndatas;i++) {
+            datas.push({"name":fullNameAlea()});}        
         procs = new Array();
         nprocs = Math.floor(Math.random() * 6);
         for(i=0;i<nprocs;i++) {
@@ -131,6 +131,6 @@ function eltStubAlea(elt) {
 			+shortTextAlea()+'</li><li>'+shortTextAlea()+'</li></ul>'+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br />'
 			+shortTextAlea()+' '+shortTextAlea()+' '+shortTextAlea()+'<br /><br />';
         var result = {  "name":eltName,"userName":userName,
-                        "info":infos, "dataSets":dataSets, "process":procs, "results":results, 
+                        "info":infos, "datas":datas, "process":procs, "results":results, 
                         "comments":comments,"fileSystem":fs,"description":desc};
   return result;}
