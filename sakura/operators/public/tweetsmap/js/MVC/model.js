@@ -50,6 +50,10 @@ function MapLayers(){
     this.dict = {};
     var layer;
 
+    this.getDefault = function() {
+        return 0;
+    };
+
     // Add new map layer here
     // // -- Simple baseMap --
     layer = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
@@ -80,19 +84,16 @@ function MapLayers(){
         maxZoom: 13
     });
     this.dict["Rivers"] = layer;
+    
 
-    this.getDefault = function() {
-        return 0;
-    };
+    /**
+     *  Add more Layer
+     */
+
+    
 
 }
 
-var WEIGHT_ROI = 2; 
-var FILLOPACITY_DISABLED = 0;
-var FILLOPACITY_ENABLED = 0;
-var HEATMAP_RADIUS = 15;
-var HEATMAP_REFRESH_DELAY = 0.3;
-var EXPORTATION_REFRESH_DELAY = 0.003;
 var heatmap_layer = null;
 
 //---------------------------------------------Model Singleton------------------------------------//

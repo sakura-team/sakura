@@ -106,8 +106,8 @@ function Controller() {
         // update infobox
         myView.infobox.update({ "icon": icon, 'text': result.heatmap.count + ' points' });
         var t1 = new Date().getTime();
-        if(result.heatmap.done)
-            console.log('map update: ' + ((t1 - t0)/1000.0) + " seconds");
+        // if(result.heatmap.done)
+            // console.log('map update: ' + ((t1 - t0)/1000.0) + " seconds");
     }
     var t0;
     this.request_data = function () {
@@ -241,7 +241,7 @@ function Controller() {
             thisControl.exportationUtil.downloadCSV();
             $('#layout').hide();
             var t1 = new Date().getTime();
-            console.log('exportation update: ' + ((t1 - t0)/1000.0) + " seconds");
+            // console.log('exportation update: ' + ((t1 - t0)/1000.0) + " seconds");
             thisControl.request_data();
         }
     }
@@ -284,21 +284,9 @@ function Controller() {
             data[item][1] += 4;
         }
         if(data){
-            var options = {
-                list: data,
-                gridSize: 40,
-                weightFactor: 4,
-                fontFamily: 'Average, Times, serif',
-                color: function() {
-                  return (['#d0d0d0', '#e11', '#44f'])[Math.floor(Math.random() * 3)]
-                },
-                backgroundColor: '#333'
-            };
+            var options = WORDCLOUD_OPTION_CONF;
+            options.list = data;
             WordCloud(document.getElementById('my_canvas'), options );
-        }
-        if(result.wordcloud.done){
-            var t1 = new Date().getTime();
-            console.log('wordcloud update: ' + ((t1 - t0)/1000.0) + " seconds");
         }
             
     }
@@ -318,8 +306,9 @@ function Controller() {
             lineDelimiter = args.lineDelimiter || '\n';
         
             keys = data.key;
-        
+            
             if(thisControl.exportationUtil.result == ''){
+                thisControl.exportationUtil.result += "sep=,\n";
                 thisControl.exportationUtil.result += keys.join(columnDelimiter);
                 thisControl.exportationUtil.result += lineDelimiter;
             }
@@ -332,7 +321,7 @@ function Controller() {
                 thisControl.exportationUtil.count ++;
                 for(var i=0; i < nbCol; i++){
                     if (ctr > 0) result += columnDelimiter;
-                    result += item[i];
+                    result += '"'+item[i]+'"';
                     ctr++;
                 };
                 result += lineDelimiter;
@@ -341,12 +330,6 @@ function Controller() {
     }
 
     this.exportationUtil.downloadCSV = function() {
-        // var stockData = dataExportation || {key: ['Symbol', 'Company', 'Price'],
-        // list: [
-        //     [ "AAPL","Apple Inc.",132.54],
-        //     [ "INTC","Intel Corporation",33.45],
-        //     [ "AAPL","Apple Inc.",132.54]]
-        // };
         var filename, link;
         var csv = thisControl.exportationUtil.result;
         if (csv == null)
@@ -781,8 +764,8 @@ function Controller() {
             res.timeEnd = (new Date(myView.timeEndDiv.getTime())).getTime();
         }
         // myView.timeEndDiv.setTime(res.timeEnd);
-        myView.timeStartDiv.setMessage(res.timeStart/1000);
-        myView.timeEndDiv.setMessage(res.timeEnd/1000);
+        // myView.timeStartDiv.setMessage(res.timeStart/1000);
+        // myView.timeEndDiv.setMessage(res.timeEnd/1000);
         
         return res;
     };

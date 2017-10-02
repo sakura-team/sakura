@@ -624,7 +624,7 @@ function View() {
             this.currentCheckedBox = target;
             FILLOPACITY_DISABLED = (target.id == 'Heatmap') ? 0 : 0.4;
             FILLOPACITY_ENABLED = (target.id == 'Heatmap') ? 0 : 0.2;
-            myController.setColorForAllPolygons();
+            myController.updateColorForAllPolygons();
             myController.setDisplayType(target.id);
         }
     });
@@ -840,74 +840,6 @@ function View() {
             var research = this.rowSource[i];
             myController.exportation(research.roi, research.nameResearch, true);
             button.setChecked();
-        },
-
-        _convertArrayOfObjectsToCSV: function (args) {
-            var result, ctr, keys, columnDelimiter, lineDelimiter, data;
-
-            data = args.data || null;
-            if (data == null || data.list == null) {
-                return null;
-            }
-            columnDelimiter = args.columnDelimiter || ',';
-            lineDelimiter = args.lineDelimiter || '\n';
-
-            keys = data.key;
-
-            result = '';
-            result += keys.join(columnDelimiter);
-            result += lineDelimiter;
-            var nbCol = keys.length;
-
-            data.list.forEach(function (item) {
-                ctr = 0;
-                for (var i = 0; i < nbCol; i++) {
-                    if (ctr > 0) result += columnDelimiter;
-
-                    result += item[i];
-                    ctr++;
-                };
-                result += lineDelimiter;
-            });
-            return result;
-        },
-
-        _downloadCSV: function (button) {
-            var i = this._getIndexById(button.id.slice(5));
-            var stockData = {
-                key: ['Symbol', 'Company', 'Price'],
-                list: [
-                    ["AAPL", "Apple Inc.", 132.54],
-                    ["INTC", "Intel Corporation", 33.45],
-                    ["AAPL", "Apple Inc.", 132.54]]
-            };
-            var data, filename, link;
-            var csv = this._convertArrayOfObjectsToCSV({
-                data: stockData
-            });
-            if (csv == null)
-                return;
-
-            filename = button.id.slice(5) + '.csv';
-
-            var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-
-            if (navigator.msSaveBlob) { // IE 10+
-                navigator.msSaveBlob(blob, filename)
-            }
-            else {
-                var link = document.createElement("a");
-                if (link.download !== undefined) {
-                    // feature detection, Browsers that support HTML5 download attribute
-                    var url = URL.createObjectURL(blob);
-                    link.setAttribute("href", url);
-                    link.setAttribute("download", filename);
-                    link.style = "visibility:hidden";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
-            }
         }
     });
 
@@ -1149,6 +1081,7 @@ function View() {
             
             this.setContainer(V.create('div'));
             this.initTextbox();
+            this._textBox.style.width = "180px";            
             this.disable();
             this.enable();
             this.words = [];
@@ -1174,7 +1107,6 @@ function View() {
         
         addWord: function(word){
             this.words.push(word);
-            console.log("oj");
             new V.KeyWordBox({parentElement: thisView.wordsPanel, text: word}); 
         },
         
@@ -1769,8 +1701,8 @@ function View() {
             var yearLabel = V.create('div','', container);
             yearLabel.innerHTML = 'Year';
             this._hourDiv = V.create('select', '', container);
-            this._hourDiv.style.width = '47px';
-            hourLabel.style.width = '47px';
+            this._hourDiv.style.width = '20%';
+            hourLabel.style.width = '20%';
             for (var i = 0; i <= 23; i++) {
                 var option = V.create('option', 'timeOption', this._hourDiv);
                 option.text = i;
@@ -1784,8 +1716,8 @@ function View() {
             }.bind(this));
 
             this._dateDiv = V.create('select', '', container);
-            this._dateDiv.style.width = '47px';
-            dateLabel.style.width = '47px';
+            this._dateDiv.style.width = '20%';
+            dateLabel.style.width = '20%';
             for (var i = 1; i <= 31; i++) {
                 var option = V.create('option', 'timeOption', this._dateDiv);
                 option.text = i;
@@ -1800,8 +1732,8 @@ function View() {
             }.bind(this));
 
             this._monthDiv = V.create('select', '', container);
-            this._monthDiv.style.width = '60px';
-            monthLabel.style.width = '60px';
+            this._monthDiv.style.width = '20%';
+            monthLabel.style.width = '20%';
             for (var i = 0; i < this.monthsShort.length; i++) {
                 var option = V.create('option', 'timeOption', this._monthDiv);
                 option.text = this.monthsShort[i];
@@ -1818,8 +1750,8 @@ function View() {
                 var option = V.create('option', 'timeOption', this._yearDiv);
                 option.text = i;
             }
-            this._yearDiv.style.width = '65px';
-            yearLabel.style.width = '65px';
+            this._yearDiv.style.width = '20%';
+            yearLabel.style.width = '20%';
             this._yearDiv.defaultValue = year;
             this._yearDiv.value = year;
             this._yearDiv.addEventListener('change', function(){
