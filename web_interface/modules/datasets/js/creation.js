@@ -4,8 +4,10 @@
 
 var current_select  = null;
 var global_ids      = 0;
-var file_lines      = null;
-var first_data_line = null;
+//var file_lines      = null;
+//var first_data_line = null;
+
+var csv_file = {'headers': [], 'lines': []};
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
@@ -74,114 +76,70 @@ function datasets_send_new(database_id) {
 // FILE MANAGEMENT
 
 function on_file_selected(f) {
-    var fr = new FileReader();
     
-    fr.onload = function(e) {
-        //check the name: should have .csv extension
-        
-        var s_name = f.value.split('.');
-        if (s_name[s_name.length - 1] != 'csv' && s_name[s_name.length - 1] != 'CSV') {
-            datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
-            return;
-        }
-        file_lines = e.target.result.split(/[\r\n]+/g);
-        
-        //ask for the separator
-        $('#datasets_csv_separator_modal').modal();
-    };
-    
-    fr.readAsText(f.files[0]);
-}
-
-
-function datasets_parse_file() {
-    
-    //read separator
-    var sep = $('#datasets_csv_separator')[0].value;
-    
-    //check the columns and the first line (dealing with comments)
-    var index  = 0
-    first_data_line = null;
-    var cols =['#'];    
-    while (cols[0].indexOf('#') >= 0) {
-        cols = file_lines[index].split(sep);
-        index ++;
-    }
-    
-    //separator tests
-    var b_lines = [];
-    for (var i = index; i<file_lines.length; i++) {
-        line = file_lines[i].split(sep);
-        if (first_data_line == null && cols.length == line.length && file_lines[i][0] != '#' && file_lines[i].length != 0) {
-            first_data_line = line;
-        }
-        if (cols.length != line.length && file_lines[i][0] != '#' && file_lines[i].length != 0) {
-            b_lines.push(parseInt(i));
-        }
-        else if (file_lines[i][0] == '#' || file_lines[i].length == 0) {
-            console.log("TODO: remove comments and empty lines");
-        }
-    }
-    
-    if (b_lines.length > 0 && b_lines.length < 20) {
-        var txt = "Considering the separator, ";
-        if (b_lines.length == 1) 
-            txt += "\nline: ";
-        else 
-            txt += "\nlines: ";
-        b_lines.forEach( function(item) {
-            txt += ""+item+",";
-        });
-        if (b_lines.length == 1) 
-            txt += "\ndoes ";
-        else
-            txt += "\ndo ";
-        txt += "not have the correct number of columns (line indices start from 0)";
-        datasets_alert("Columns Issue",txt);
-        return;
-    }
-    else if (b_lines.length > 20) {
-        datasets_alert("Columns Issue","Considering the separator, many lines (more than 20) \ndo not have the correct number of columns !");
+    //check the name: should have .csv extension
+    var s_name = f.value.split('.');
+    if (s_name[s_name.length - 1] != 'csv' && s_name[s_name.length - 1] != 'CSV') {
+        datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
         return;
     }
     
-    //Dealing with first comments 
-    var first_line = ['#'];
-    while (first_line[0].indexOf('#') >= 0) {
-        first_line = file_lines[index].split(sep);
-        index ++;
-    }
+    // emptying variable
+    csv_file.lines = [];
+    csv_file.headers = [];
     
-    //Reading columns and first line
-    var body = $('#datasets_creation_from_file_columns').find('tbody');
-    body.empty();
-    cols.forEach( function(col, index) {
-        var new_row = $(body[0].insertRow(-1));
-        new_row.load('templates/creation_dataset_row.html', function () {
-            var inputs = new_row.find('input');
-            inputs[0].value = col;
+    //We parse the 10 first lines only
+    Papa.parse(f.files[0], {
+            comments: true,
+            header: true,
+            skipEmptyLines: true,
+            preview: 10,
+            worker: true,
+            step: function(results) {
+                csv_file.lines.push(results.data);
+                if (csv_file.headers.length == 0)
+                    csv_file.headers = results.meta.fields;
+            },
+            complete: function() {
+                //Reading columns and first line
+                var body = $('#datasets_creation_from_file_columns').find('tbody');
+                body.empty();
+                
+                console.log(csv_file.lines[0]);
+                csv_file.headers.forEach( function(col, index) {
+                    var new_row = $(body[0].insertRow(-1));
+                    new_row.load('templates/creation_dataset_row.html', function () {
+                        var inputs = new_row.find('input');
+                        inputs[0].value = col;
+                        
+                        var select = new_row.find('select');
+                        var type_select = $(select[0]);
+                        var tags_select = $(select[1]);
+                        
+                        new_row.find("td:last").remove();
+                        
+                        type_select.attr('id', 'datasets_ff_type_select_'+index);
+                        type_select.attr('onchange', "datasets_type_change("+index+", this);");
+                        type_select.val(getType(csv_file.lines[0][0][col]));
+                        
+                        tags_select.attr('id', 'datasets_ff_tags_select_'+index);
+                        datasets_fill_select_tags(tags_select);
+                        
+                        $('#datasets_ff_type_select_'+index).selectpicker('refresh');
+                        $('#datasets_ff_tags_select_'+index).selectpicker('refresh');
+                        $('#datasets_ff_tags_select_'+index).change(datasets_tags_select_change);
+                        $('#datasets_new_tag_select_group').selectpicker('refresh');
+                        $('#datasets_new_tag_name').val("");
+                    });
+                });
+            },
+            error: function(error) {
+                console.log(error);
+            }
             
-            var select = new_row.find('select');
-            var type_select = $(select[0]);
-            var tags_select = $(select[1]);
-
-            new_row.find("td:last").remove();
-            
-            type_select.attr('id', 'datasets_ff_type_select_'+index);
-            type_select.attr('onchange', "datasets_type_change("+index+", this);");
-            type_select.val(getType(first_line[index]));
-            
-            tags_select.attr('id', 'datasets_ff_tags_select_'+index);
-            datasets_fill_select_tags(tags_select);
-            
-            $('#datasets_ff_type_select_'+index).selectpicker('refresh');
-            $('#datasets_ff_tags_select_'+index).selectpicker('refresh');
-            $('#datasets_ff_tags_select_'+index).change(datasets_tags_select_change);
-            $('#datasets_new_tag_select_group').selectpicker('refresh');
-            $('#datasets_new_tag_name').val("");
-        });
     });
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 // ROWS FROM SCRATCH
@@ -302,7 +260,8 @@ function datasets_type_change(row_id, from) {
                     $(td).append(div);
                     $(tmp).remove();
                     datasets_check_date_format(row_id, div);
-                    $(div[0].children[3].children[0]).val(first_data_line[row_id]);
+                    var data = csv_file.lines[0][0][csv_file.headers[row_id]];
+                    $(div[0].children[3].children[0]).val(data);
                     $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, datasets_update_date_format);
                });
             }
@@ -317,7 +276,7 @@ function datasets_type_change(row_id, from) {
 function datasets_check_date_format(row_id, div) {
     
     var format = $(div[0].children[1].children[0]).val();
-    var date = first_data_line[row_id];
+    var date = csv_file.lines[0][0][csv_file.headers[row_id]];
     var m2 = moment(date, format);
     if (! m2._isValid) {
         $(div[0].children[1]).attr("class", "has-error");
