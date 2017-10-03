@@ -157,7 +157,7 @@ function datasets_parse_file() {
     body.empty();
     cols.forEach( function(col, index) {
         var new_row = $(body[0].insertRow(-1));
-        new_row.load('creation_dataset_row.html', function () {
+        new_row.load('templates/creation_dataset_row.html', function () {
             var inputs = new_row.find('input');
             inputs[0].value = col;
             
@@ -192,7 +192,7 @@ function datasets_add_a_row(dataset_id) {
     var new_row = $(body[0].insertRow(nb_rows));
     new_row.attr('id', 'datasets_row_' + global_ids);
     
-    new_row.load('creation_dataset_row.html', function () {
+    new_row.load('templates/creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
         $(last_cel.find('span')[0]).attr('onclick', "$('#datasets_row_"+global_ids+"').remove();");
         
@@ -295,14 +295,13 @@ function datasets_type_change(row_id, from) {
         if (select.val() == 'date') {
             if (td.childElementCount == 1) {
                 var tmp = document.createElement('input');
-                $(tmp).load("date_format_input.html", function (input) {
+                $(tmp).load("templates/date_format_input.html", function (input) {
                     var div = $(document.createElement('div'));
                     div.attr("id", "datasets_date_format_div_"+row_id);
                     div.append($(input));
                     $(td).append(div);
                     $(tmp).remove();
                     datasets_check_date_format(row_id, div);
-                    console.log($(div[0].children[1].children[0]));
                     $(div[0].children[3].children[0]).val(first_data_line[row_id]);
                     $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, datasets_update_date_format);
                });

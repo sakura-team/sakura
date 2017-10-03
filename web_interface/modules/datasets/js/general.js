@@ -33,17 +33,23 @@ function recover_datasets() {
             result.tables.forEach( function(dataset, index) {
                 console.log(dataset);
                 var dataset_id = index;
-                body.append('<tr>   <td>'+dataset.name+'</td><td>'+dataset.description+'</td> \
-                                    <td align="right"> \
-                                        <span title="Upload data in this dataset" class="glyphicon glyphicon-upload" style="cursor: pointer;" onclick="dataset_upload('+database_id+','+dataset_id+');"> </span> \
-                                        <span title="Download the dataset" class="glyphicon glyphicon-download" style="cursor: pointer;" onclick="dataset_download('+database_id+','+dataset_id+');"> </span> \
-                                        <span>&nbsp</span> \
-                                        <span title="Look at the dataset" class="glyphicon glyphicon-eye-open" style="cursor: pointer;" onclick="dataset_look_at('+database_id+','+dataset_id+');"></span> \
-                                        <span title="Analytics" class="glyphicon glyphicon-info-sign" style="cursor: pointer;" onclick="dataset_analytics('+database_id+','+dataset_id+');"></span> \
-                                        <span>&nbsp</span> \
-                                        <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="dataset_delete('+database_id+','+dataset_id+');"></span> \
-                                    </td>\
-                            </tr>');
+                var new_row = $(document.createElement('tr'));
+                new_row.load('templates/dataset.html', function () {
+                    var tds = new_row.find('td');
+                    var spans = $(tds[2]).find('span');
+                    
+                    $(tds[0]).empty();
+                    $(tds[1]).empty();
+                    $(tds[0]).append(dataset.name);
+                    $(tds[1]).append(dataset.description);
+                    spans.toArray().forEach( function(span) {
+                        if ($(span).attr('onclick')) {
+                            var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
+                             $(span).attr('onclick', new_oc);
+                        }
+                    });
+                });
+                body.append(new_row);
             });
             
             //Updating/emptying html elements
@@ -65,16 +71,16 @@ function recover_datasets() {
 }
 
 
-function dataset_upload(database_id, dataset_id) {
+function dataset_upload(dataset_id) {
     not_yet();
 }
 
 
-function dataset_download(database_id, dataset_id) {
+function dataset_download(dataset_id) {
     not_yet();
 }
 
-function dataset_look_at(database_id, dataset_id) {
+function dataset_look_at(dataset_id) {
     var dataset     = database_infos.tables[dataset_id]
     
     //HEADER
@@ -100,12 +106,12 @@ function dataset_look_at(database_id, dataset_id) {
 }
 
 
-function dataset_analytics(database_id, dataset_id) {
+function dataset_analytics(dataset_id) {
     not_yet();
 }
 
 
-function dataset_delete(database_id, dataset_id) {
+function dataset_delete(dataset_id) {
     not_yet();
 }
 
