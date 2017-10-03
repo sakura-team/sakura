@@ -136,5 +136,6 @@ class GuiToHubAPI(object):
         print((database_id, name, description, creation_date, columns))
         return 5690 #New table ID
     
-    def fill_table(self, table_id, data):
+    def add_rows_to_table(self, table_id, data):
+        print(data)
         return True

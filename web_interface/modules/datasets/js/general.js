@@ -123,3 +123,12 @@ function datasets_alert(header_str, body_str) {
     b.html("<p>"+body_str+"</p>");
     $('#datasets_alert_modal').modal();
 }
+
+
+function datasets_info(header_str, body_str) {
+    var h = $('#datasets_info_header');
+    var b = $('#datasets_info_body');
+    h.html("<h3><font color=\"black\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#datasets_info_modal').modal();
+}

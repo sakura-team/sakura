@@ -56,14 +56,49 @@ function datasets_send_new(database_id) {
     
     //Sending the new dataset description
     //database_id, name, description, creation_date, columns
-    sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), columns], {}, function(result) {
-        var new_dataset_id = result;
-        if (result >= 0) {
+    sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), columns], {}, function(dataset_id) {
+        if (dataset_id >= 0) {
             if (ff) {
-                console.log("TODO: table created from file, so now we should fill the table");
+                var f = $('#datasets_file_from_HD')[0].files[0];
+                
+                var date_divs = $('*').filter(function() {
+                    return this.id.match(/.*datasets_date_format_div_.*/);
+                });
+                
+                dates = []
+                date_divs.toArray().forEach( function(div) {
+                    var tab = div.id.split('_');
+                    var i = tab[tab.length-1];
+                    dates.push([csv_file.headers[i], div.children[1].children[0].value]);
+                });
+                
+                Papa.parse(f, {
+                    comments: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    worker: true,
+                    chunk: function(chunk) {
+                        chunk.data.forEach( function(line) {
+                            dates.forEach( function (date) {
+                                line[date[0]] = moment(line[date[0]], date[1]).unix(); 
+                            });
+                        });
+                        sakura.common.ws_request('add_rows_to_table', [dataset_id, chunk.data], {}, function(result) {
+                            if (!result) {
+                                console.log("Issue in send file");
+                            }
+                        });
+                    },
+                    complete: function() {
+                        datasets_info('Sending File', 'Done !!');
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
             }
             else {
-                console.log("TODO: table created from scratch, so back to the main view, refreshed");
+                recover_datasets();
             }
         }
     });
@@ -95,17 +130,16 @@ function on_file_selected(f) {
             skipEmptyLines: true,
             preview: 10,
             worker: true,
-            step: function(results) {
-                csv_file.lines.push(results.data);
+            step: function(line) {
+                csv_file.lines.push(line.data);
                 if (csv_file.headers.length == 0)
-                    csv_file.headers = results.meta.fields;
+                    csv_file.headers = line.meta.fields;
             },
             complete: function() {
                 //Reading columns and first line
                 var body = $('#datasets_creation_from_file_columns').find('tbody');
                 body.empty();
                 
-                console.log(csv_file.lines[0]);
                 csv_file.headers.forEach( function(col, index) {
                     var new_row = $(body[0].insertRow(-1));
                     new_row.load('templates/creation_dataset_row.html', function () {
@@ -136,7 +170,6 @@ function on_file_selected(f) {
             error: function(error) {
                 console.log(error);
             }
-            
     });
 }
 
@@ -262,7 +295,9 @@ function datasets_type_change(row_id, from) {
                     datasets_check_date_format(row_id, div);
                     var data = csv_file.lines[0][0][csv_file.headers[row_id]];
                     $(div[0].children[3].children[0]).val(data);
-                    $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, datasets_update_date_format);
+                    $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, function(event) {
+                        datasets_check_date_format(event.data.row_id, event.data.div);
+                    });
                });
             }
         }
@@ -288,11 +323,6 @@ function datasets_check_date_format(row_id, div) {
         $(div[0].children[5]).attr("class", "has-success");
         $(div[0].children[5].children[0]).val(m2._d);
     }
-}
-
-
-function datasets_update_date_format(event) {
-    datasets_check_date_format(event.data.row_id, event.data.div);
 }
 
 
