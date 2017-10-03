@@ -64,7 +64,8 @@ function showDiv(event, dir, id) {
     if (dir=="") {
         dir="Home";
     }
-    else if (dir.match("tmp") || dir.match(/\/[A-Za-z]+-[0-9]+/)) {
+//    else if (dir.match("tmp") || dir.match(/\/[A-Za-z]+-[0-9]+/)) {
+    else if (dir.match("tmp") || isUrlWithId(dir)) {
         if (!(dir.match("Work") || dir.match("Historic") || dir.match("Main")))  {
             dir = dir + "/Main";
         }
@@ -78,7 +79,7 @@ function showDiv(event, dir, id) {
 		
     var idDir = "idDiv";
 	dirs.forEach(function (tmpLocDir) {
-		if (tmpLocDir.match(/[A-Za-z]+-[0-9]+/)) {
+		if (isUrlWithId(tmpLocDir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
 			idDir += tmpLocDir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");}
 		else {
 			idDir += tmpLocDir;}});
@@ -117,7 +118,8 @@ function showDiv(event, dir, id) {
     
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
-			idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+//			idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+			idElt = getIdFromUrl(window.location.toString());
 			actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+idElt;
         }
         else {
@@ -129,6 +131,24 @@ function showDiv(event, dir, id) {
 
 
 /* Divers */
+//	if (window.location.toString().match(/[A-Za-z]+-[0-9]+/)) {
+//		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+
+//		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+//		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+
+//dir.match(/\/[A-Za-z]+-[0-9]+/)
+
+//		if (tmpLocDir.match(/[A-Za-z]+-[0-9]+/)) {
+//			idDir += tmpLocDir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");}
+
+function isUrlWithId(url) {
+return url.match(/[A-Za-z]+-[0-9]+/);}
+
+function getIdFromUrl(url) {
+  return	url.match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");}
+
+
 function chgShowColumns(event) {
     showDiv(event,window.location.href.split("#")[1]);
     return;

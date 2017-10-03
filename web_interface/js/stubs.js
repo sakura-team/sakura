@@ -214,8 +214,10 @@ function buildEltStub(idDiv,result,elt) {
         + '<dl class="dl-horizontal col-md-6">';
 		
 	// MAJ tabs
-	if (window.location.toString().match(/[A-Za-z]+-[0-9]+/)) {
-		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+//	if (window.location.toString().match(/[A-Za-z]+-[0-9]+/)) {
+	if (isUrlWithId(window.location.toString())) {
+//		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+		idElt = getIdFromUrl(window.location.toString());
 		var ongletsMain = document.getElementById(idDiv).parentElement.querySelectorAll('ul>li>a');
 		var ongletWork = document.getElementById(document.getElementById(idDiv).parentElement.id.replace("Main","Work")).querySelectorAll('ul>li>a');;
 		var ongletHistoric = document.getElementById(document.getElementById(idDiv).parentElement.id.replace("Main","Historic")).querySelectorAll('ul>li>a');;
@@ -336,7 +338,8 @@ function buildEltStub(idDiv,result,elt) {
 
 function eltRequestStub(idDiv,elt,bd) {
 	if (elt == 'Data') {		
-		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+//		idElt = window.location.toString().match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+		idElt = getIdFromUrl(window.location.toString());
         ws_request('get_database_info', [+idElt], {}, function(db_info) {
 	      var result = {'name': db_info.label, "userName":db_info.owner,
 		    "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.label},{"name":"Owner","value":db_info.owner}],
