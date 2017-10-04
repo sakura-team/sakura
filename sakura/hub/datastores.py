@@ -49,7 +49,6 @@ class DataStoreRegistry(object):
             datastore_id, online, host, driver_label = \
                 row.datastore_id, row.online, row.host, row.driver
             admin_username = new_datastore_dict[(host, driver_label)].admin
-            admin_info = self.db.get_user_info(admin_username)
             datastore_ids[(host, driver_label)] = datastore_id
             datastore_info = dict(
                     daemon_id = daemon_id,
@@ -57,13 +56,13 @@ class DataStoreRegistry(object):
                     online = online,
                     host = host,
                     driver_label = driver_label,
-                    admin = admin_info
+                    admin = admin_username
             )
             if online:
                 users = new_datastore_dict[(host, driver_label)].users
-                users_info = tuple( (self.db.get_user_info(user), createdb_grant) \
-                                    for user, createdb_grant in users)
-                datastore_info.update(users = users_info)
+                users_rw = tuple(user for user, createdb_grant in users if createdb_grant)
+                users_ro = tuple(user for user, createdb_grant in users if not createdb_grant)
+                datastore_info.update(users_rw = users_rw, users_ro = users_ro)
             self.info_per_datastore_id[datastore_id] = \
                         SimpleAttrContainer(**datastore_info)
         return datastore_ids

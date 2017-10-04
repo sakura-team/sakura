@@ -122,7 +122,7 @@ class DatabaseRegistry(object):
             database_id = row.database_id
             tags = tuple(row.tag for row in \
                         self.db.select('DatabaseTags', database_id = database_id))
-            contacts = tuple(dict(**row) for row in \
+            contacts = tuple(row.login for row in \
                         self.db.execute(QUERY_DB_CONTACTS, database_id = database_id))
             self.info_per_database_id[database_id] = DatabaseInfo(
                 daemon = daemon_info,
