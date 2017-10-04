@@ -9,7 +9,7 @@ function buildListStub(idDiv,result,elt) {
     if (document.getElementById("cbColSelectTags").checked) {
         s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
     if (document.getElementById("cbColSelectId").checked) {
-        s = s +  '<th class="col-text">database_id</th>';}
+        s = s +  '<th class="col-text">Id</th>';}
     if (document.getElementById("cbColSelectShortDesc").checked) {
         s = s +  '<th class="col-text">Short Desc.</th>';}
     if (document.getElementById("cbColSelectDate").checked) {
@@ -26,21 +26,12 @@ function buildListStub(idDiv,result,elt) {
         + '<tbody id="idTBodyList'+eltAncetre+'">';
     for(i=0;i<result.length;i++) {
 		var tmpInitElt = elt;
-		if (result[i].hasOwnProperty("database_id")) {
-		  elt=elt.replace(/tmp(.*)/,"$1-"+result[i].database_id);}
-		else {	// id seulement
-		  elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);}
-		if (result[i].hasOwnProperty("database_id")) {
-        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].database_id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].database_id+"\">"+result[i].name+"</a></td>\n";
-		} else {  // id seulement
-		  s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\">"+result[i].name+"</a></td>\n";}
+		elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);
+		s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\">"+result[i].name+"</a></td>\n";
         if (document.getElementById("cbColSelectTags").checked) {
             s = s + "<td>"+result[i].tags+"</td>";}
-        if (document.getElementById("cbColSelectId").checked) {
-		  if (result[i].hasOwnProperty("database_id")) {
-            s = s + "<td>"+result[i].database_id+"</td>";}
-		 else {  // id seulement
-            s = s + "<td>"+result[i].id+"</td>";}}			
+        if (document.getElementById("cbColSelectId").checked) {		  
+            s = s + "<td>"+result[i].id+"</td>";}
         if (document.getElementById("cbColSelectShortDesc").checked) {
             s = s + "<td>"+result[i].shortDesc+"</td>";}  
         if (document.getElementById("cbColSelectDate").checked) {
