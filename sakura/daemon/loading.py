@@ -36,6 +36,6 @@ def load_datastores():
             sakura_admin = ds_conf['sakura-admin'],
             driver_label = ds_conf['driver']
         )
-        ds.refresh_databases()
+        ds.refresh()
         datastores.append(ds)
     return datastores

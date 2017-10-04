@@ -1,5 +1,6 @@
 import psycopg2, uuid, numpy as np
 from collections import defaultdict
+from psycopg2.extras import NamedTupleCursor
 
 def analyse_col_meta(col_comment):
     col_meta = {}
@@ -47,6 +48,10 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
                 ('geometry', 'supports_in'))
     else:
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
+
+SQL_GET_DS_USERS = '''\
+SELECT  usename, usecreatedb FROM pg_user;
+'''
 
 SQL_GET_DBS = '''\
 SELECT  datname  FROM pg_database;
@@ -104,7 +109,9 @@ class PostgreSQLDBDriver:
             kwargs['dbname'] = 'postgres'
         if 'connect_timeout' not in kwargs:
             kwargs['connect_timeout'] = DEFAULT_CONNECT_TIMEOUT
-        return psycopg2.connect(**kwargs)
+        conn = psycopg2.connect(**kwargs)
+        conn.cursor_factory = NamedTupleCursor
+        return conn
     @staticmethod
     def open_server_cursor(db_conn):
         cursor_name = str(uuid.uuid4()) # unique name
@@ -119,6 +126,12 @@ class PostgreSQLDBDriver:
         with db_conn.cursor() as cursor:
             cursor.execute('''SELECT current_database();''')
             return cursor.fetchone()[0]
+    @staticmethod
+    def collect_users(admin_db_conn, metadata_collector):
+        with admin_db_conn.cursor() as cursor:
+            cursor.execute(SQL_GET_DS_USERS)
+            for row in cursor:
+                metadata_collector.register_user(row.usename, row.usecreatedb)
     @staticmethod
     def collect_dbs(admin_db_conn, metadata_collector):
         with admin_db_conn.cursor() as cursor:
