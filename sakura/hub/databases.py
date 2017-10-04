@@ -1,17 +1,9 @@
 from sakura.common.tools import SimpleAttrContainer
 
-QUERY_ONLINE_DATABASES_OF_DAEMON = """
-SELECT Database.*
-FROM DataStore, Database
-WHERE DataStore.datastore_id = Database.datastore_id
-  AND DataStore.daemon_id = :daemon_id
-  AND DataStore.online = 1;
-"""
-
 QUERY_ALL_DATABASES_OF_DAEMON = """
 SELECT db.*, ds.online, ds.host, ds.driver as driver_label
 FROM DataStore ds, Database db
-WHERE ds.datastore_id = ds.datastore_id
+WHERE db.datastore_id = ds.datastore_id
   AND ds.daemon_id = :daemon_id;
 """
 
@@ -31,7 +23,8 @@ class DatabaseInfo(SimpleAttrContainer):
             datastore_id = self.datastore_id,
             name = self.name,
             short_desc = self.short_desc,
-            created = self.created
+            created = self.created,
+            online = self.online
         )
     def get_full_info(self):
         if not self.online:
@@ -95,28 +88,11 @@ class DatabaseRegistry(object):
         return self.info_per_database_id[database_id]
     def restore_daemon_state(self, daemon_info, datastore_ids):
         daemon_id = daemon_info.daemon_id
-        new_online_database_dict = {}
         for info in daemon_info.datastores:
             datastore_id = datastore_ids[(info.host, info.driver_label)]
             if info.online:
-                for database in info.databases:
-                    key = (datastore_id, database.db_name)
-                    new_online_database_dict[key] = database
-        new_online_database_keys = set(new_online_database_dict)
-        old_online_database_dict = {
-            (row.datastore_id, row.db_name) : row \
-            for row in self.db.execute(QUERY_ONLINE_DATABASES_OF_DAEMON, daemon_id = daemon_id)}
-        old_online_database_keys = set(old_online_database_dict)
-        # forget obsolete databases from db
-        for database_key in old_online_database_keys - new_online_database_keys:
-            database_id = old_online_database_dict[database_key].database_id
-            self.db.delete('Database', database_id=database_id)
-        # add new databases in db
-        for key in new_online_database_keys - old_online_database_keys:
-            self.db.insert('Database', datastore_id=key[0], db_name=key[1], name=key[1])
-        # if any change was made, commit
-        if len(new_online_database_keys ^ old_online_database_keys) > 0:
-            self.db.commit()
+                db_names = tuple(db.db_name for db in info.databases)
+                self.restore_databases(datastore_id, db_names)
         # retrieve updated info from db (because we need the ids)
         for row in self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON, daemon_id = daemon_id):
             database_id = row.database_id
@@ -130,3 +106,16 @@ class DatabaseRegistry(object):
                 tags = tags,
                 contacts = contacts,
                 **row)
+    def restore_databases(self, datastore_id, db_names):
+        new_db_names = set(db_names)
+        old_db_names = set(row.db_name for row in \
+                self.db.select('Database', datastore_id = datastore_id))
+        # forget obsolete databases from db
+        for db_name in old_db_names - new_db_names:
+            self.db.delete('Database', db_name=db_name, datastore_id=datastore_id)
+        # add new databases in db
+        for db_name in new_db_names - old_db_names:
+            self.db.insert('Database', datastore_id=datastore_id, db_name=db_name, name=db_name)
+        # if any change was made, commit
+        if len(old_db_names ^ new_db_names) > 0:
+            self.db.commit()
