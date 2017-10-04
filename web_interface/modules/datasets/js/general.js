@@ -13,7 +13,9 @@ function not_yet() {
 function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
-    //console.log(parseInt(database_id));
+    console.log(window.location);
+    console.log("DATABASE ID", parseInt(database_id));
+    /*
     ////////////TEMP////////////////////////
     sakura.common.ws_request('list_databases', [], {}, function (result) {
         if (result.length)
@@ -24,6 +26,7 @@ function recover_datasets() {
         }
     
     ////////////END TEMP////////////////////////
+    */
         sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
         
             console.log(result);
@@ -67,7 +70,7 @@ function recover_datasets() {
                 columns_tags_list = tags_list;
             });
         });
-    });
+    /*});*/
 }
 
 
