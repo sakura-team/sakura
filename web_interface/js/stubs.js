@@ -27,7 +27,10 @@ function buildListStub(idDiv,result,elt) {
     for(i=0;i<result.length;i++) {
 		var tmpInitElt = elt;
 		elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);
-		s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\">"+result[i].name+"</a></td>\n";
+		s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\" ";
+        if (result[i].isGreyedOut==true)
+            s += "style='pointer-events: none; cursor: default; opacity: 0.6;' ";
+        s += ">"+result[i].name+"</a></td>\n";
         if (document.getElementById("cbColSelectTags").checked) {
             s = s + "<td>"+result[i].tags+"</td>";}
         if (document.getElementById("cbColSelectId").checked) {		  
@@ -41,18 +44,20 @@ function buildListStub(idDiv,result,elt) {
         if (document.getElementById("cbColSelectOwner").checked) {
             s = s + "<td>"+result[i].owner+"</td>";}
         s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
-        if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
-            s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-                + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-                + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";
-        }
-        else if (result[i].isViewable=="true") {
-            s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-                + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";
-        }
-        else {
-            s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";
+        if (result[i].isGreyedOut==false) { // if greyed-out, no buttons should appear
+            if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
+                s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+                    + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
+                    + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";
             }
+            else if (result[i].isViewable=="true") {
+                s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
+                    + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";
+            }
+            else {
+                s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";
+                }
+        }
         s = s + "</td></tr>";
 		elt = tmpInitElt;
     }
@@ -71,23 +76,26 @@ function buildListStub(idDiv,result,elt) {
     document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;
 }
 
-
 function listRequestStub(idDiv, n, elt, bd) {
     if (elt == 'Datas/tmpData') {
         ws_request('list_databases', [], {}, function (databases) {
-            var result = new Array();;
-            databases.forEach( function(db, index) {
-                if (index != databases.length-1) {
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner});
-                    });
-                }
-                else { 
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result.push({'name': db_info.label,'id':db.database_id,"owner":db_info.owner});
+            var result = new Array();
+            databases.forEach( function(db) {
+                ws_request('get_database_info', [db.database_id], {}, function(db_info) {
+                    result_info = {'name': db_info.name,'id':db.database_id, 'isGreyedOut': !db_info.online,
+                                   'shortDesc': db_info.short_desc, 'date': moment.unix(db_info.created)._d,
+                                   'tags': db_info.tags };
+                    if (db_info.online) {
+                        result_info['owner'] = db_info.owner;
+                    }
+                    else {
+                        result_info['name'] += ' (OFFLINE)';
+                    }
+                    result.push(result_info);
+                    if (result.length == databases.length) {
                         buildListStub(idDiv,result,elt);
-                    });
-                }
+                    }
+                });
             });
         });
     }
@@ -328,8 +336,8 @@ function eltRequestStub(idDiv,elt,bd) {
 	if (elt == 'Data') {		
 		idElt = getIdFromUrl(window.location.toString());
         ws_request('get_database_info', [+idElt], {}, function(db_info) {
-	      var result = {'name': db_info.label, "userName":db_info.owner,
-		    "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.label},{"name":"Owner","value":db_info.owner}],
+	      var result = {'name': db_info.name, "userName":db_info.owner,
+		    "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
 			"datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
 	      buildEltStub(idDiv,result,elt);} ); }
     else { 
