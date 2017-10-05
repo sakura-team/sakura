@@ -27,23 +27,23 @@ class DatabaseInfo(SimpleAttrContainer):
             online = self.online
         )
     def get_full_info(self):
-        if not self.online:
-            print('Sorry, this database is offline!')
-            return None
-        # ask daemon
-        result = self.daemon.api.get_database_info(
-            datastore_host = self.host,
-            datastore_driver_label = self.driver_label,
-            db_name = self.db_name
-        )
-        # add general metadata
-        result.update(**self.pack())
-        # add tables metadata stored in db
-        result['tables'] = tuple(
-            self.add_table_metadata(info) for info in result['tables'])
-        # drop obsolete table metadata from db
-        db_table_names = set(table['db_table_name'] for table in result['tables'])
-        self.drop_obsolete_table_metadata(db_table_names)
+        # start with general metadata
+        result = self.pack()
+        # if online, explore
+        if self.online:
+            # ask daemon
+            info_from_daemon = self.daemon.api.get_database_info(
+                datastore_host = self.host,
+                datastore_driver_label = self.driver_label,
+                db_name = self.db_name
+            )
+            result.update(**info_from_daemon)
+            # add tables metadata stored in db
+            result['tables'] = tuple(
+                self.add_table_metadata(info) for info in result['tables'])
+            # drop obsolete table metadata from db
+            db_table_names = set(table['db_table_name'] for table in result['tables'])
+            self.drop_obsolete_table_metadata(db_table_names)
         return result
     def add_table_metadata(self, table_info):
         db_table_name = table_info['db_table_name']
