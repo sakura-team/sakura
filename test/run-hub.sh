@@ -18,6 +18,18 @@ on_exit()
 # whatever happens, call on_exit() at the end.
 trap on_exit EXIT
 
+# if there is no central db yet
+if [ ! -f "$HOME/.sakura/central.db" ]
+then
+    # and a custom db skeleton is provided
+    # in the 'test' directory
+    if [ -f "test/hub-central.db" ]
+    then
+        # copy this db skeleton
+        cp "test/hub-central.db" "$HOME/.sakura/central.db"
+    fi
+fi
+
 # prepare hub conf
 cat > $TMPDIR/hub.conf << EOF
 {
