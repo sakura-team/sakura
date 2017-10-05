@@ -1,4 +1,5 @@
 import collections, itertools, io, sys, json, numpy as np
+from datetime import datetime
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 
@@ -12,6 +13,8 @@ ParsedRequest = collections.namedtuple('ParsedRequest',
 def make_json_serializable(obj):
     if isinstance(obj, np.ndarray):
         return obj.tolist()
+    elif isinstance(obj, datetime):
+        return obj.timestamp()
     else:
         return make_serializable(obj)
 
