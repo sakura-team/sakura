@@ -98,6 +98,15 @@ SQL_GET_TABLE_COLUMNS = '''
     ORDER  BY attnum;
 '''
 
+SQL_CREATE_DB = '''
+CREATE DATABASE %(db_name)s WITH OWNER %(db_owner)s;
+'''
+
+SQL_GRANT_DB = '''
+GRANT ALL ON DATABASE %(db_name)s TO %(db_owner)s;
+REVOKE ALL ON DATABASE %(db_name)s FROM PUBLIC;
+'''
+
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 
 class PostgreSQLDBDriver:
@@ -166,6 +175,18 @@ class PostgreSQLDBDriver:
                 col_meta = analyse_col_meta(col_comment)
                 register_column(metadata_collector,
                     table_name, col_name, col_pgtype, col_meta)
+    @staticmethod
+    def create_db(admin_db_conn, db_name, db_owner):
+        # CREATE DATABASE requires to set autocommit, and
+        # cannot be execute in a multiple-statements string
+        saved_mode = admin_db_conn.autocommit
+        admin_db_conn.autocommit = True
+        with admin_db_conn.cursor() as cursor:
+            for sql in (SQL_CREATE_DB, SQL_GRANT_DB):
+                cursor.execute(sql % dict(
+                        db_name = db_name,
+                        db_owner = db_owner))
+        admin_db_conn.autocommit = saved_mode
 
 DRIVER = PostgreSQLDBDriver
 

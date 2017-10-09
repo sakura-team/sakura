@@ -1,3 +1,5 @@
+from sakura.common.tools import local_dt_from_timestamp
+
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
@@ -125,7 +127,18 @@ class GuiToHubAPI(object):
     
     def get_database_info(self, database_id):
         return self.context.databases[database_id].get_full_info()
-    
+
+    def new_database(self, datastore_id, name, **kwargs):
+        # optional arguments of kwargs: short_desc, created, tags, contacts
+        # returns the database_id
+        return self.context.new_database(datastore_id, name, **kwargs)
+
+    def update_database_info(self, database_id, **kwargs):
+        # optional arguments of kwargs: name, short_desc, created, tags, contacts
+        if 'created' in kwargs:
+            kwargs['created'] = local_dt_from_timestamp(kwargs['created'])
+        self.context.databases[database_id].update_metadata(**kwargs)
+
     def list_expected_columns_tags(self, datastore_id):
         # il y a les tags standards auxquels on ajoute
         # les tags deja rencontres sur ce datastore

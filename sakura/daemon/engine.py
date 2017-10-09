@@ -93,3 +93,6 @@ class DaemonEngine(object):
     def get_database_info(self, datastore_host, datastore_driver_label, db_name):
         datastore = self.datastores[(datastore_host, datastore_driver_label)]
         return datastore[db_name]
+    def create_db(self, datastore_host, datastore_driver_label, db_name, owner):
+        datastore = self.datastores[(datastore_host, datastore_driver_label)]
+        datastore.create_db(db_name, owner)

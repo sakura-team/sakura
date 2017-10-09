@@ -7,7 +7,7 @@ from sakura.hub.opinstances import OpInstanceRegistry
 from sakura.hub.links import LinkRegistry
 from sakura.hub.storage import CentralStorage
 from sakura.common.bottle import PicklableFileRequest
-from sakura.common.tools import SimpleAttrContainer
+from sakura.common.tools import SimpleAttrContainer, greenlet_env
 
 class HubContext(object):
     def __init__(self):
@@ -108,3 +108,10 @@ class HubContext(object):
                 project_id = project_id,
                 gui_data = gui_data)
         self.db.commit()
+    def new_database(self, datastore_id, name, **kwargs):
+        greenlet_env.user = 'etienne'    # TODO: handle this properly
+        datastore = self.datastores[datastore_id]
+        database_id = datastore.create_db(name)
+        self.databases.reload_database_from_db(datastore.daemon, database_id)
+        self.databases[database_id].update_metadata(**kwargs)
+        return database_id

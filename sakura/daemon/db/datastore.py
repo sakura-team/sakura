@@ -6,9 +6,7 @@ class DataStoreProber:
         self.datastore = datastore
         self.driver = datastore.driver
     def probe(self):
-        admin_conn = self.driver.connect(
-            host = self.datastore.host,
-            **self.datastore.datastore_admin)
+        admin_conn = self.datastore.admin_connect()
         self.users = []
         self.databases = {}
         self.driver.collect_users(admin_conn, self)
@@ -44,6 +42,10 @@ class DataStore:
         self.users = None        # not probed yet
         self.databases = None    # not probed yet
         self.online = None       # not probed yet
+    def admin_connect(self):
+        return self.driver.connect(
+            host = self.host,
+            **self.datastore_admin)
     def refresh(self):
         self.online = True
         try:
@@ -74,3 +76,8 @@ class DataStore:
         if not self.online:
             raise AttributeError('Sorry, datastore is down.')
         return self.databases[database_label]
+    def create_db(self, db_name, owner):
+        admin_conn = self.admin_connect()
+        self.driver.create_db(admin_conn, db_name, 'sakura_' + owner)
+        admin_conn.close()
+        self.refresh()

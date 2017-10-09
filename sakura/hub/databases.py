@@ -7,6 +7,13 @@ WHERE db.datastore_id = ds.datastore_id
   AND ds.daemon_id = :daemon_id;
 """
 
+QUERY_DATABASE = """
+SELECT db.*, ds.online, ds.host, ds.driver as driver_label
+FROM DataStore ds, Database db
+WHERE db.datastore_id = ds.datastore_id
+  AND db.database_id = :database_id;
+"""
+
 QUERY_DB_CONTACTS = """
 SELECT User.*
 FROM User, DatabaseContacts
@@ -32,7 +39,7 @@ class DatabaseInfo(SimpleAttrContainer):
         # if online, explore
         if self.online:
             # ask daemon
-            info_from_daemon = self.daemon.api.get_database_info(
+            info_from_daemon = self.daemon.get_database_info(
                 datastore_host = self.host,
                 datastore_driver_label = self.driver_label,
                 db_name = self.db_name
@@ -77,6 +84,33 @@ class DatabaseInfo(SimpleAttrContainer):
             self.db.select('DBColumnTags', table_id=table_id, name=col_name))
         col_tags = tuple(db_col_tags | set(col_tags))   # union
         return col_name, col_type, col_tags
+    def update_metadata(self, **kwargs):
+        # update fields of Database table
+        self.db.update('Database',
+                        'database_id',
+                        database_id = self.database_id,
+                        **kwargs)
+        # update tags
+        tags = kwargs.get('tags', None)
+        if tags != None:
+            self.tags = tuple(tags)
+            self.db.delete('DatabaseTags', database_id = self.database_id)
+            for tag in tags:
+                self.db.insert('DatabaseTags',
+                    database_id = self.database_id, tag = tag)
+        # update contacts
+        contacts = kwargs.get('contacts', None)
+        if contacts != None:
+            self.contacts = tuple(contacts)
+            self.db.delete('DatabaseContacts', database_id = self.database_id)
+            for contact in contacts:
+                contact_info = self.db.get_user_info(contact)
+                self.db.insert('DatabaseTags',
+                    database_id = self.database_id, user_id = contact_info.user_id)
+        # commit
+        self.db.commit()
+        # update attributes of self
+        self.__dict__.update(**kwargs)
 
 class DatabaseRegistry(object):
     def __init__(self, db):
@@ -92,21 +126,27 @@ class DatabaseRegistry(object):
             datastore_id = datastore_ids[(info.host, info.driver_label)]
             if info.online:
                 db_names = tuple(db.db_name for db in info.databases)
-                self.restore_databases(datastore_id, db_names)
+                self.restore_databases_for_datastore(datastore_id, db_names)
         # retrieve updated info from db (because we need the ids)
-        for row in self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON, daemon_id = daemon_id):
+        db_rows = self.db.execute(QUERY_ALL_DATABASES_OF_DAEMON, daemon_id = daemon_id)
+        self.reload_databases_from_db(daemon_info.api, db_rows)
+    def reload_databases_from_db(self, daemon, db_rows):
+        for row in db_rows:
             database_id = row.database_id
             tags = tuple(row.tag for row in \
                         self.db.select('DatabaseTags', database_id = database_id))
             contacts = tuple(row.login for row in \
                         self.db.execute(QUERY_DB_CONTACTS, database_id = database_id))
             self.info_per_database_id[database_id] = DatabaseInfo(
-                daemon = daemon_info,
+                daemon = daemon,
                 db = self.db,
                 tags = tags,
                 contacts = contacts,
                 **row)
-    def restore_databases(self, datastore_id, db_names):
+    def reload_database_from_db(self, daemon, database_id):
+        db_rows = self.db.execute(QUERY_DATABASE, database_id = database_id)
+        self.reload_databases_from_db(daemon, db_rows)  # actually, len(db_rows) == 1
+    def restore_databases_for_datastore(self, datastore_id, db_names):
         new_db_names = set(db_names)
         old_db_names = set(row.db_name for row in \
                 self.db.select('Database', datastore_id = datastore_id))

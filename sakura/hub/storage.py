@@ -111,4 +111,4 @@ class CentralStorage(SQLiteDB):
         user_info = self.select_unique("User", login=username)
         if user_info is None:
             raise RuntimeError("No such user: " + username)
-        return dict(**user_info)
+        return user_info
