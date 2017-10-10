@@ -83,31 +83,6 @@ function dataset_download(dataset_id) {
     not_yet();
 }
 
-function dataset_look_at(dataset_id) {
-    var dataset     = database_infos.tables[dataset_id]
-    
-    //HEADER
-    var header_txt  = "<h3>"+dataset.name+"</h3>";
-    header_txt      += "<h8>"+dataset.description+"</h8>";
-    $('#datasets_visu_header').html(header_txt);
-    
-    //BODY
-    var head  = $('#datasets_visu_table_of_rows').find('thead');
-    var body  = $('#datasets_visu_table_of_rows').find('tbody');
-    head.empty()
-    body.empty()
-    
-    var new_h_row = $(head[0].insertRow());
-    (dataset.columns).forEach( function (item) {
-        new_h_row.append("<th>"+item[0]+"</th>");
-    });
-    
-    var new_b_row = $(body[0].insertRow());
-    new_b_row.append("<td>Coming soon</td>");
-    
-    $('#datasets_visu_dataset_modal').modal();
-}
-
 
 function dataset_analytics(dataset_id) {
     not_yet();
@@ -119,6 +94,15 @@ function dataset_delete(dataset_id) {
 }
 
 
+function datasets_info(header_str, body_str) {
+    var h = $('#datasets_info_header');
+    var b = $('#datasets_info_body');
+    h.html("<h3><font color=\"black\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#datasets_info_modal').modal();
+}
+
+
 function datasets_alert(header_str, body_str) {
     var h = $('#datasets_alert_header');
     var b = $('#datasets_alert_body');
@@ -127,11 +111,3 @@ function datasets_alert(header_str, body_str) {
     $('#datasets_alert_modal').modal();
 }
 
-
-function datasets_info(header_str, body_str) {
-    var h = $('#datasets_info_header');
-    var b = $('#datasets_info_body');
-    h.html("<h3><font color=\"black\">"+header_str+"</font></h3>");
-    b.html("<p>"+body_str+"</p>");
-    $('#datasets_info_modal').modal();
-}

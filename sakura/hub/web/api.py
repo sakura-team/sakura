@@ -122,7 +122,7 @@ class GuiToHubAPI(object):
     
     def get_database_info(self, database_id):
         return self.context.databases[database_id].get_full_info()
-        
+    
     def list_expected_columns_tags(self, datastore_id):
         # il y a les tags standards auxquels on ajoute
         # les tags deja rencontres sur ce datastore
@@ -140,3 +140,12 @@ class GuiToHubAPI(object):
         print(data)
         print(date_formats)
         return True
+    
+    def get_rows_from_table(self, table_id, row_start, row_end):
+        import numpy as np
+        
+        print('Asking for rows of table:', table_id )
+        rows = np.arange(100).reshape((100, 1))
+        print('Sending', rows[row_start: row_end])
+        
+        return rows[row_start: row_end]

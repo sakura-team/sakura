@@ -176,12 +176,40 @@
                         <h3 >Dataset Name</h3>
                     </div>
                     <div class="modal-body">
-                        <table class="table table-condensed table-hover table-striped" id="datasets_visu_table_of_rows">
+                        <nav aria-label="..." align="center">
+                            <ul class="pagination" style="margin-bottom: 0px; margin-top: 0px;">
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_top">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_previous();">
+                                        <span class="glyphicon glyphicon-chevron-left"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_top">
+                                    <a class="page-link" onclick="datasets_visu_table_next();">
+                                        <span class="glyphicon glyphicon-chevron-right"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <table class="table table-condensed table-hover table-striped" id="datasets_visu_table_of_rows" style="margin-bottom: 0px;">
                             <thead>
                             </thead>
                             <tbody>
                             </tbody>
                         </table>
+                        <nav aria-label="..." align="center">
+                            <ul class="pagination" style="margin-bottom: 0px; margin-top: 5px;">
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_bottom">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_previous();">
+                                        <span class="glyphicon glyphicon-chevron-left"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_bottom">
+                                    <a class="page-link" onclick="datasets_visu_table_next();">
+                                        <span class="glyphicon glyphicon-chevron-right"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Close</button>
@@ -247,6 +275,7 @@
         </div>
         
         <script src="js/general.js"></script>
+        <script src="js/visu_table.js"></script>
         <script src="js/creation.js"></script>
     </body>
 
