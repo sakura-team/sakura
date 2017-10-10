@@ -10,6 +10,34 @@ function not_yet() {
 }
 
 
+function datasets_info(header_str, body_str) {
+    var h = $('#datasets_info_header');
+    var b = $('#datasets_info_body');
+    h.html("<h3><font color=\"black\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#datasets_info_modal').modal();
+}
+
+
+function datasets_alert(header_str, body_str) {
+    var h = $('#datasets_alert_header');
+    var b = $('#datasets_alert_body');
+    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#datasets_alert_modal').modal();
+}
+
+
+function extension_check(f_name, ext) {
+    //check the name: should have .csv extension
+    var s_name = f_name.split('.');
+    if (s_name[s_name.length - 1].toLowerCase() != ext.toLowerCase()) {
+        datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
+        return false;
+    }
+    return true;
+
+}
 function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
@@ -75,12 +103,45 @@ function recover_datasets() {
     /*});*/
 }
 
-
+/////////////////////////////////////////
+// UPLOAD
 function dataset_upload(dataset_id) {
-    not_yet();
+    $('#datasets_upload_header').html('<h3>Upload Data into <b>'+database_infos.tables[dataset_id].name+'</b></h3>');
+    $('#datasets_upload_select_file').attr('onchange', 'datasets_upload_on_file_selected(this, '+dataset_id+');');
+    $('#datasets_upload_modal').modal();
+}
+
+function datasets_upload_on_file_selected(f, dataset_id) {
+    if (!extension_check(f.value, 'csv')) {
+        return;
+    }
+    
+    var nb_cols = database_infos.tables[dataset_id].columns.length;
+    var lines   = [];
+    //We parse the 10 first lines only
+    Papa.parse(f.files[0], {
+            comments: true,
+            header: true,
+            skipEmptyLines: true,
+            preview: 10,
+            worker: true,
+            step: function(line) {
+                lines.push(line.data[0]);
+            },
+            complete: function() {
+                console.log(lines);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+    });
 }
 
 
+
+
+/////////////////////////////////////////
+// TODO
 function dataset_download(dataset_id) {
     not_yet();
 }
@@ -93,23 +154,5 @@ function dataset_analytics(dataset_id) {
 
 function dataset_delete(dataset_id) {
     not_yet();
-}
-
-
-function datasets_info(header_str, body_str) {
-    var h = $('#datasets_info_header');
-    var b = $('#datasets_info_body');
-    h.html("<h3><font color=\"black\">"+header_str+"</font></h3>");
-    b.html("<p>"+body_str+"</p>");
-    $('#datasets_info_modal').modal();
-}
-
-
-function datasets_alert(header_str, body_str) {
-    var h = $('#datasets_alert_header');
-    var b = $('#datasets_alert_body');
-    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
-    b.html("<p>"+body_str+"</p>");
-    $('#datasets_alert_modal').modal();
 }
 

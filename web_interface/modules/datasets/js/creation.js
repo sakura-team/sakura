@@ -112,10 +112,7 @@ function datasets_send_new(database_id) {
 
 function on_file_selected(f) {
     
-    //check the name: should have .csv extension
-    var s_name = f.value.split('.');
-    if (s_name[s_name.length - 1] != 'csv' && s_name[s_name.length - 1] != 'CSV') {
-        datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
+    if (!extension_check(f.value, 'csv')) {
         return;
     }
     
