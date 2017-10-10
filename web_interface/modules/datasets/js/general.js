@@ -116,20 +116,38 @@ function datasets_upload_on_file_selected(f, dataset_id) {
         return;
     }
     
-    var nb_cols = database_infos.tables[dataset_id].columns.length;
-    var lines   = [];
+    var nb_cols     = database_infos.tables[dataset_id].columns.length;
+    var tbody       = $('#datasets_upload_preview_table').find('tbody');
+    var thead       = $('#datasets_upload_preview_table').find('thead');
+    thead.empty();
+    tbody.empty();
+    
+    var nb_lines = 0
+    var nb_preview_rows = 10;
+    var headers     = null;
     //We parse the 10 first lines only
     Papa.parse(f.files[0], {
             comments: true,
             header: true,
             skipEmptyLines: true,
-            preview: 10,
+            preview: nb_preview_rows,
             worker: true,
             step: function(line) {
-                lines.push(line.data[0]);
+                nb_lines ++;
+                var new_row = $(tbody[0].insertRow(-1));
+                Object.values(line.data[0]).forEach( function (elt) {
+                    new_row.append("<td>"+elt+"</td>");
+                });
+                headers = Object.keys(line.data[0]);
             },
             complete: function() {
-                console.log(lines);
+                headers.forEach( function(elt) {
+                    thead.append("<th>"+elt+"</th>");
+                });
+                if (nb_lines == nb_preview_rows) {
+                    var new_row = $(tbody[0].insertRow(-1));
+                    new_row.append("<td colspan="+headers.length+">...</td>");
+                }
             },
             error: function(error) {
                 console.log(error);

@@ -223,10 +223,21 @@
                     <div id="datasets_upload_header" class="modal-header">
                         <h3 >Upload Data into ...</h3>
                     </div>
-                    <div class="model-body">
-                        <br>
-                        <div class="form-group">
-                            <input id="datasets_upload_select_file" type="file" onchange="datasets_upload_on_file_selected();">
+                    <div class="modal-body">
+                        <div class="panel">
+                            <div class="form-group">
+                                <input id="datasets_upload_select_file" type="file" onchange="datasets_upload_on_file_selected();">
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="form-group">
+                                <table class="table table-condensed table-striped" id="datasets_upload_preview_table">
+                                    <thead>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
