@@ -72,30 +72,7 @@ function datasets_send_new(database_id) {
                     dates.push([csv_file.headers[i], div.children[1].children[0].value]);
                 });
                 
-                var first_chunk = true;
-                Papa.parse(f, {
-                    comments: true,
-                    header: false,
-                    skipEmptyLines: true,
-                    worker: true,
-                    chunk: function(chunk) {
-                        if (first_chunk) {
-                            chunk.data.splice(0, 1);
-                            first_chunk = false;
-                        }
-                        sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data, dates], {}, function(result) {
-                            if (!result) {
-                                console.log("Issue in send file");
-                            }
-                        });
-                    },
-                    complete: function() {
-                        datasets_info('Sending File', 'Done !!');
-                    },
-                    error: function (error) {
-                        console.log(error);
-                    }
-                });
+                datasets_send_file(dataset_id, f, dates);
             }
             else {
                 recover_datasets();

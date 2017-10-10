@@ -108,6 +108,7 @@ function recover_datasets() {
 function dataset_upload(dataset_id) {
     $('#datasets_upload_header').html('<h3>Upload Data into <b>'+database_infos.tables[dataset_id].name+'</b></h3>');
     $('#datasets_upload_select_file').attr('onchange', 'datasets_upload_on_file_selected(this, '+dataset_id+');');
+    $('#datasets_upload_button').attr('onclick', 'datasets_upload('+dataset_id+');');
     $('#datasets_upload_modal').modal();
 }
 
@@ -156,12 +157,49 @@ function datasets_upload_on_file_selected(f, dataset_id) {
 }
 
 
+function datasets_send_file(dataset_id, f, dates) {
+    var first_chunk = true;
+    Papa.parse(f, {
+        comments: true,
+        header: false,
+        skipEmptyLines: true,
+        worker: true,
+        chunk: function(chunk) {
+            if (first_chunk) {
+                chunk.data.splice(0, 1);
+                first_chunk = false;
+            }
+            sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data, dates], {}, function(result) {
+                if (!result) {
+                    console.log("Issue in send file");
+                }
+            });
+        },
+        complete: function() {
+            datasets_info('Sending File', 'Done !!');
+        },
+        error: function (error) {
+            console.log(error);
+        }
+    });
+}
+
+function datasets_upload(dataset_id) {
+    var f = $('#datasets_upload_select_file')[0].files[0];
+    console.log(f);
+}
 
 
 /////////////////////////////////////////
 // TODO
 function dataset_download(dataset_id) {
-    not_yet();
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('col1,col2\nval1,val2\nval3,val4'));
+    element.setAttribute('download', 'test_download.csv');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
 }
 
 
