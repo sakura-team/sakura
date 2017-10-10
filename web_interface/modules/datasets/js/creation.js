@@ -78,12 +78,7 @@ function datasets_send_new(database_id) {
                     skipEmptyLines: true,
                     worker: true,
                     chunk: function(chunk) {
-                        chunk.data.forEach( function(line) {
-                            dates.forEach( function (date) {
-                                line[date[0]] = moment(line[date[0]], date[1]).unix(); 
-                            });
-                        });
-                        sakura.common.ws_request('add_rows_to_table', [dataset_id, chunk.data], {}, function(result) {
+                        sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data, dates], {}, function(result) {
                             if (!result) {
                                 console.log("Issue in send file");
                             }

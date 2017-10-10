@@ -13,9 +13,9 @@ function not_yet() {
 function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
+    /*
     console.log(window.location);
     console.log("DATABASE ID", parseInt(database_id));
-    /*
     ////////////TEMP////////////////////////
     sakura.common.ws_request('list_databases', [], {}, function (result) {
         if (result.length)
