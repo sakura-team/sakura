@@ -30,11 +30,13 @@ function recover_datasets() {
         sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
         
             console.log(result);
+            $('#datasets_name').html(result.name);
+            $('#datasets_description').html(result.short_desc);
+            
             //Filling dataset
             var body = $('#table_of_datasets').find('tbody');
             body.empty();
             result.tables.forEach( function(dataset, index) {
-                console.log(dataset);
                 var dataset_id = index;
                 var new_row = $(document.createElement('tr'));
                 new_row.load('templates/dataset.html', function () {
@@ -44,7 +46,7 @@ function recover_datasets() {
                     $(tds[0]).empty();
                     $(tds[1]).empty();
                     $(tds[0]).append(dataset.name);
-                    $(tds[1]).append(dataset.description);
+                    $(tds[1]).append(dataset.short_desc);
                     spans.toArray().forEach( function(span) {
                         if ($(span).attr('onclick')) {
                             var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
