@@ -251,6 +251,8 @@ function saveModeSubmitControl(event) {
     }
 }
 
+// RMS: The function below has been moved to signIn.js and the name here is affixed with '_old'
+// RMS: Can be removed or commented
 function signInSubmitControl_old(event) {
     if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
         showDiv(event,'HelloYou');
@@ -264,6 +266,8 @@ function signInSubmitControl_old(event) {
     }
 }
 
+// RMS: The function below has been moved to signIn.js and the name here is affixed with '_old'
+// RMS: Can be removed or commented
 function signOutSubmitControl_old(event) {
     res=confirm("Sign Out?");
     if (res) {
@@ -295,8 +299,13 @@ function searchSubmitControl(event,elt) {
 
 
 function showDivCGU(event) {
+    var d = document.getElementById('idDivCGU');
+    console.log("RMS: In SHOWDIVCGU,doc",d);
     $("#signInModal").modal("hide");
+    event.preventDefault();
+    console.log("windowL:",window.location);
     showDiv(event,"CGU");
+//    return; //dismisses the modal box, of course !
 }
 
 
