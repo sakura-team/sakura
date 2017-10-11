@@ -5,6 +5,8 @@ function registerUser(evt = '') {
   if (evt.type === 'click') {
 //    evt.preventDefault();
 
+    var userAccountValues = {}; // dictionary of all values input by user
+    
     // For validation:
     var signUpForm = $('#demo-form').parsley();
     signUpForm
@@ -12,7 +14,10 @@ function registerUser(evt = '') {
       console.log("Form inited");
     })
             .on('field:validated', function () {
-      console.log("In parsley function0");
+      console.log("In parsley function");
+      console.log("Validation done for: ", this.$element);
+      console.log("Validation done for: ", this.$element[0].value);
+      userAccountValues[this.$element[0].name] = this.$element[0].value;
       var ok = $('.parsley-error').length === 0;
       $('.bs-callout-info').toggleClass('hidden', !ok);
       $('.bs-callout-warning').toggleClass('hidden', ok);
@@ -21,7 +26,7 @@ function registerUser(evt = '') {
               return false; // Don't submit form for this demo
             });
 
-    var userAccountValues = {}; // dictionary of all values input by user
+    
 
 //    for (var i = 0; i < signUpForm.elements.length; i++) {
 //      console.log(signUpForm.elements.length);
@@ -39,8 +44,10 @@ function registerUser(evt = '') {
       console.log(result);
       if (result == 1) {
         console.log("Handshake with api.py: Success");
+        alert("New user information added")
       } else {
         console.log("Handshake with api.py: Failure");
+        alert("Incorrect login name or email !")
       }
     });
 
