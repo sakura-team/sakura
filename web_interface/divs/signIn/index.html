@@ -6,10 +6,13 @@
 		<button type="button" id="idButtonCloseModal" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<div class="container">
 		  <div class="row-fluid">
+			
+			<!-- ----------------------- LOGIN SECTION ------------------------ -->
 			<div class="col-md-4">
 			  <h6>Sign in:</h6>
 			  <div class="panel panel-default">
 				<div class="panel-body">
+				  
 				  <form role="form" method="post" id="signInForm">
 					<div class="form-group control-group" data-placement="top" data-original-title="Unknown email address, if you don't have one, please create a new account.">
 					  <label for="signInEmail">Email address</label>
@@ -61,7 +64,7 @@
 						  <h4>Yay!</h4>
 						  <p>Everything seems to be ok :)</p>
 						</div>-->
-			<!-- ----------------------- NEW ACCOUNT ------------------------ -->
+			<!-- ----------------------- NEW ACCOUNT SECTION------------------------ -->
 			<div class="col-md-7">
 			  <h6>New account:</h6>
 			  <div class="panel panel-default">
@@ -71,20 +74,11 @@
 				  <form id="demo-form" data-parsley-validate="">
 					<div class="col-md-6">
 
-					  <div class="form-group control-group" data-placement="right" data-original-title="This email adress is already in use, use the link below if you lost your password">
-						<label for="signUpEmail">Email address *</label>
-						<input type="email" class="form-control" id="signUpEmail" name="signUpEmail" placeholder="Enter email" data-parsley-trigger="change" required=""/>
+					   <div class="form-group">
+						<label for="loginName">Login name *</label>
+						<input type="text" class="form-control" id="loginName" name="loginName" placeholder="Your login name" required=""/>
 					  </div>
-
-					  <div class="form-group">
-						<label for="signUpPassword">Password *</label>
-						<input class="form-control" id="signUpPassword" placeholder="Password" type="password" required=""/>
-					  </div>
-					  <div class="form-group">
-						<label for="signUpConfirmPassword">Confirm Password *</label>
-						<input class="form-control" id="signUpConfirmPassword" placeholder="Confirm Password" type="password" data-parsley-equalto="#signUpPassword" required=""/>
-					  </div>
-
+					  
 					  <div class="form-group">
 						<label for="signUpFirstName">First name *</label>
 						<input type="text" class="form-control" id="signUpFirstName" name="signUpFirstName" placeholder="Your first name" required=""/>
@@ -95,14 +89,29 @@
 						<input class="form-control" id="signUpLastName" name="signUpLastName" placeholder="Your last name" type="text" required=""/>
 					  </div>
 
+					  <div class="form-group control-group" data-placement="right" data-original-title="This email adress is already in use, use the link below if you lost your password">
+						<label for="signUpEmail">Email address *</label>
+						<input type="email" class="form-control" id="signUpEmail" name="signUpEmail" placeholder="Enter email" data-parsley-trigger="change" required=""/>
+					  </div>
+
+					  <div class="form-group">
+						<label for="signUpPassword">Password *</label>
+						<input class="form-control" id="signUpPassword" name="signUpPassword" placeholder="Password" type="password" required=""/>
+					  </div>
+					  <div class="form-group">
+						<label for="signUpConfirmPassword">Confirm Password *</label>
+						<input class="form-control" id="signUpConfirmPassword" name="signUpConfirmPassword" placeholder="Confirm Password" type="password" data-parsley-equalto="#signUpPassword" required=""/>
+					  </div>
+					  
+					</div>
+					  
+					<div class="col-md-6">
 					  <label for="gender">Gender *</label>
 					  <p>
 						M: <input type="radio" name="gender" id="genderM" value="M" required="">
 						F: <input type="radio" name="gender" id="genderF" value="F">
 					  </p>
-					</div>
-
-					<div class="col-md-6">
+					  
 					  <div class="form-group">
 						<label for="signUpCountry">Country *</label>
 						<input type="text" class="form-control" id="signUpCountry" name="signUpCountry" placeholder="Your Country" required=""/>
@@ -121,9 +130,10 @@
 						<input type="text" class="form-control" id="signUpDomain" name="signUpDomain" placeholder="Your domain" />
 					  </div>
 
-					  <div class="checkbox">
+					  <div class="form-group checkbox">
 						<label>
 						  <input id="signInCGU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a onclick="showDivCGU(event);" href="http://sakura.imag.fr/CGU">terms</a>
+					  <!--<input id="signInGCU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a data-dismiss="modal" data-toggle="modal" href="#idDivCGU">terms</a>-->
 						</label>
 					  </div>
 
