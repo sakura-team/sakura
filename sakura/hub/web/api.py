@@ -171,4 +171,23 @@ class GuiToHubAPI(object):
     ########################################
     def set_user_account(self, userAccountValues):
         print(userAccountValues)
-        return True
+        sampleDBDict = {
+        'ritesh': {'signUpEmail': 'ritesh.shah@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'},
+
+        'mike': {'signUpEmail': 'Michael.Ortega@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'},
+
+        'etienne': {'signUpEmail': 'etienne.duble@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'}
+        }
+        if userAccountValues:
+            if userAccountValues["loginName"] in sampleDBDict.keys():
+                print ("loginName matches in DB")
+                return False
+            for existingLoginName in sampleDBDict.keys():
+                print ("looking at sampleDBDict info entries")
+                if sampleDBDict[existingLoginName]["signUpEmail"] == userAccountValues["signUpEmail"]:
+                    print ("email matches in DB")
+                    return False;
+            # none of the entries contain the new email so add the information
+            sampleDBDict[userAccountValues.pop("loginName")] = userAccountValues #adding a new user to sampleDB
+            print ("user information added")
+            return True;
