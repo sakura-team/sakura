@@ -19,7 +19,25 @@ function datasets_upload_ask_for_rows(dataset_id, chunk_index, chunk_size, resul
             datasets_upload_ask_for_rows(dataset_id, chunk_index, chunk_size, results);
         }
         else {
-            console.log(results);
+            var headers = []
+            var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+            dataset.columns.forEach( function(column) {
+                headers.push(column[0].toString());
+            });
+            var txt = Papa.unparse({    delimiter: ",", 
+                                        header: true,
+                                        fields: headers,
+                                        data: results
+                                    });
+            
+            //Create a link from downloading the file
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt));
+            element.setAttribute('download', dataset.name+'.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
         }
     });
 }
@@ -35,14 +53,5 @@ function dataset_download(dataset_id) {
     var wait        = false;
     
     datasets_upload_ask_for_rows(dataset_id, chunk_index, chunk_size, results);
-    
-    //Create a link from downloading the file
-    var element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('col1,col2\nval1,val2\nval3,val4'));
-    element.setAttribute('download', 'test_download.csv');
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
 }
 

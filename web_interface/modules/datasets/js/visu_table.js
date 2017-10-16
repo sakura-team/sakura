@@ -6,7 +6,7 @@ var nb_rows     = 15; //temporary, should be put in a dom element. Soon !
 
 
 function dataset_visu_table(dataset_id) {
-    var dataset     = database_infos.tables[dataset_id]
+    var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
     
     //HEADER
     var header_txt  = "<h3>"+dataset.name+"</h3>";
@@ -29,7 +29,7 @@ function dataset_visu_table(dataset_id) {
     //Rows
     var row_start   = 0;
     sakura.common.ws_request('get_rows_from_table', [dataset_id, row_start, row_start + nb_rows], {}, function (rows) {
-        datasets_visu_table_fill_rows(body, rows, row_start, dataset_id);
+        datasets_visu_table_fill_rows(body, rows, row_start, dataset);
         
         $('#datasets_visu_table_of_rows').data('row_start', row_start);
         $('#datasets_visu_table_of_rows').data('nb_rows', nb_rows);
@@ -44,11 +44,11 @@ function dataset_visu_table(dataset_id) {
 }
 
 
-function datasets_visu_table_fill_rows(body, rows, row_start, dataset_id) {
+function datasets_visu_table_fill_rows(body, rows, row_start, dataset) {
     rows.forEach( function(row, index) {
         var new_b_row = $(body[0].insertRow());
         var line = "<td>"+(row_start+index)+"</td>";
-        (database_infos.tables[dataset_id].columns).forEach( function (item, index) {
+        (dataset.columns).forEach( function (item, index) {
             line += "<td> data "+index+" of row "+row+"</td>";
         });
         new_b_row.append(line);
@@ -57,6 +57,8 @@ function datasets_visu_table_fill_rows(body, rows, row_start, dataset_id) {
 
 
 function datasets_visu_table_previous(dataset_id) {
+    var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+    
     var row_start   = $('#datasets_visu_table_of_rows').data('row_start');
     var nb_rows     = $('#datasets_visu_table_of_rows').data('nb_rows');
     row_start -= nb_rows;
@@ -69,7 +71,7 @@ function datasets_visu_table_previous(dataset_id) {
         var body  = $('#datasets_visu_table_of_rows').find('tbody');
         body.empty()
         
-        datasets_visu_table_fill_rows(body, rows, row_start, dataset_id);
+        datasets_visu_table_fill_rows(body, rows, row_start, dataset);
         
         $('#datasets_visu_table_of_rows').data('row_start', row_start);
         if (row_start == 0) {
@@ -89,6 +91,8 @@ function datasets_visu_table_previous(dataset_id) {
 
 
 function datasets_visu_table_next(dataset_id) {
+    var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+    
     var row_start   = $('#datasets_visu_table_of_rows').data('row_start');
     var nb_rows     = $('#datasets_visu_table_of_rows').data('nb_rows');
     row_start += nb_rows;
@@ -100,7 +104,7 @@ function datasets_visu_table_next(dataset_id) {
         
             body.empty()
             
-            datasets_visu_table_fill_rows(body, rows, row_start, dataset_id);
+            datasets_visu_table_fill_rows(body, rows, row_start, dataset);
             
             $('#datasets_visu_table_of_rows').data('row_start', row_start);
             if (row_start > 0) {

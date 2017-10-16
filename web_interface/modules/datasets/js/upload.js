@@ -2,7 +2,8 @@
 //October, 16th, 2017
 
 function dataset_upload(dataset_id) {
-    $('#datasets_upload_header').html('<h3>Upload Data into <b>'+database_infos.tables[dataset_id].name+'</b></h3>');
+    var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; });
+    $('#datasets_upload_header').html('<h3>Upload Data into <b>'+dataset[0].name+'</b></h3>');
     $('#datasets_upload_select_file').attr('onchange', 'datasets_upload_on_file_selected(this, '+dataset_id+');');
     $('#datasets_upload_button').attr('onclick', 'datasets_upload('+dataset_id+');');
     $('#datasets_upload_modal').modal();
@@ -13,7 +14,9 @@ function datasets_upload_on_file_selected(f, dataset_id) {
         return;
     }
     
-    var nb_cols     = database_infos.tables[dataset_id].columns.length;
+    var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; });
+    console.log(dataset);
+    var nb_cols     = dataset[0].columns.length;
     var tbody       = $('#datasets_upload_preview_table').find('tbody');
     var thead       = $('#datasets_upload_preview_table').find('thead');
     thead.empty();

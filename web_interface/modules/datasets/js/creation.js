@@ -156,8 +156,8 @@ function on_file_selected(f) {
 /////////////////////////////////////////////////////////////////////////////////////
 // ROWS FROM SCRATCH
 
-function datasets_add_a_row(dataset_id) {
-    var body = $('#'+dataset_id).find('tbody');
+function datasets_add_a_row(table_id) {
+    var body = $('#'+table_id).find('tbody');
     var nb_rows = body[0].childElementCount - 1;
     var new_row = $(body[0].insertRow(nb_rows));
     new_row.attr('id', 'datasets_row_' + global_ids);
