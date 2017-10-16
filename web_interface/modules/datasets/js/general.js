@@ -41,6 +41,18 @@ function extension_check(f_name, ext) {
 function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
+    
+    
+    ////////////SANDBOX////////////////////////
+    /*sakura.common.ws_request('set_dataset_gui_data', ['table 0', {'dates': [[0, 'YYYY'], [1, 'MM/DD']]}], {}, function (result) {
+        console.log(result);
+        sakura.common.ws_request('get_dataset_gui_data', ['table 1'], {}, function (result) {
+            console.log(result);
+        });
+    });
+    */
+    ////////////SANDBOX////////////////////////
+
     /*
     console.log(window.location);
     console.log("DATABASE ID", parseInt(database_id));
@@ -171,7 +183,7 @@ function datasets_send_file(dataset_id, f, dates) {
             }
             sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data, dates], {}, function(result) {
                 if (!result) {
-                    console.log("Issue in send file");
+                    console.log("Issue in sending file");
                 }
             });
         },
@@ -186,13 +198,23 @@ function datasets_send_file(dataset_id, f, dates) {
 
 function datasets_upload(dataset_id) {
     var f = $('#datasets_upload_select_file')[0].files[0];
-    console.log(f);
+    
+    //Getting dates format
+    sakura.common.ws_request('get_dataset_gui_data', [dataset_id], {}, function(result) {
+        console.log(result);
+    });
 }
 
 
 /////////////////////////////////////////
 // TODO
 function dataset_download(dataset_id) {
+    file_text = "";
+    
+    //fill file text from hub
+    
+    
+    //Create a link from downloading the file
     var element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent('col1,col2\nval1,val2\nval3,val4'));
     element.setAttribute('download', 'test_download.csv');

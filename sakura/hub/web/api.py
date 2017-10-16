@@ -2,6 +2,10 @@ class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
         self.project_id = 0     # for now
+        
+        ##### TEMP
+        self.datasets_gui_data = {}
+        #####
     
     ########################################
     # Daemons
@@ -107,6 +111,20 @@ class GuiToHubAPI(object):
     
     def get_link_gui_data(self, link_id):
         return self.context.links.get_gui_data(link_id)
+    
+    ########################################
+    # TEMP
+    def get_dataset_gui_data(self, dataset_id):
+        if dataset_id in self.datasets_gui_data:
+            return self.datasets_gui_data[dataset_id]
+        else:
+            return False
+    
+    def set_dataset_gui_data(self, dataset_id, data):
+        self.datasets_gui_data[dataset_id] = data
+        return True
+    
+    ########################################
     
     # added by rms-dev
     # def set_userAccount_gui_data(self, userAccount_gui_data):

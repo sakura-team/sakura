@@ -73,6 +73,11 @@ function datasets_send_new(database_id) {
                 });
                 
                 datasets_send_file(dataset_id, f, dates);
+                sakura.common.ws_request('set_dataset_gui_data', [dataset_id, {'dates': dates}], {}, function (result) {
+                    if (!result) {
+                        console.log("Issue on sending dates to datasets_gui_data!!!");
+                    }
+                });
             }
             else {
                 recover_datasets();
