@@ -163,7 +163,10 @@ class GuiToHubAPI(object):
         import numpy as np
         
         print('Asking for rows of table:', table_id )
-        rows = np.arange(100).reshape((100, 1))
+        rows = np.arange(200).reshape((200, 1))
         print('Sending', rows[row_start: row_end])
         
-        return rows[row_start: row_end]
+        return rows[row_start: row_end], row_start
+    
+    def get_nb_rows_of_table(self, table_id):
+        return 200
