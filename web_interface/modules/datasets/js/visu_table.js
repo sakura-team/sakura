@@ -10,7 +10,10 @@ function dataset_visu_table(dataset_id) {
     
     //HEADER
     var header_txt  = "<h3>"+dataset.name+"</h3>";
-    header_txt      += "<h8>"+dataset.description+"</h8>";
+    if (dataset.short_desc)
+        header_txt      += "<h8>"+dataset.short_desc+"</h8>";
+    else
+        header_txt      += "<h8>No description found</h8>";
     $('#datasets_visu_header').html(header_txt);
     
     //BODY

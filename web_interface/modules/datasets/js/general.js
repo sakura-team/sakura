@@ -59,9 +59,16 @@ function recover_datasets() {
     ////////////END TEMP////////////////////////
     */
         sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
-        
+            
+            console.log(result);
             $('#datasets_name').html(result.name);
-            $('#datasets_description').html(result.short_desc);
+            if (result.short_desc) {
+                $('#datasets_description').html(result.short_desc);
+            }
+            else {
+                $('#datasets_description').html('No short description');
+            }
+            
             
             //Filling dataset
             var body = $('#table_of_datasets').find('tbody');
