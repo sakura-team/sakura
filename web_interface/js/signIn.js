@@ -4,52 +4,44 @@
 function registerUser(evt = '') {
   if (evt.type === 'click') {
 //    evt.preventDefault();
-
+    console.log("Clicked1")
     var userAccountValues = {}; // dictionary of all values input by user
-    
+    var ok = false;
     // For validation:
-    var signUpForm = $('#demo-form').parsley();
-    signUpForm
-            .on('form:init', function () {
-      console.log("Form inited");
-    })
+//    var signUpForm = ($'#demo-form').parsley();
+
+    $('#demo-form').parsley()
             .on('field:validated', function () {
-      console.log("In parsley function");
-      console.log("Validation done for: ", this.$element);
-      console.log("Validation done for: ", this.$element[0].value);
-      userAccountValues[this.$element[0].name] = this.$element[0].value;
-      var ok = $('.parsley-error').length === 0;
-      $('.bs-callout-info').toggleClass('hidden', !ok);
-      $('.bs-callout-warning').toggleClass('hidden', ok);
-    })
+              console.log("In parsley function");
+              console.log("Validation done for: ", this.$element);
+              console.log("Validation done for: ", this.$element[0].value);
+              userAccountValues[this.$element[0].name] = this.$element[0].value;
+              ok = $('.parsley-error').length === 0;
+              $('.bs-callout-info').toggleClass('hidden', !ok);
+              $('.bs-callout-warning').toggleClass('hidden', ok);
+              console.log("All OK:", ok);
+            })
             .on('form:submit', function () {
-              return false; // Don't submit form for this demo
-            });
-
-    
-
-//    for (var i = 0; i < signUpForm.elements.length; i++) {
-//      console.log(signUpForm.elements.length);
-//      console.log("Name: " + signUpForm.elements[i].name);
-//      console.log("Value: " + signUpForm.elements[i].value);
-//      userAccountValues[signUpForm.elements[i].name] = signUpForm.elements[i].value;
-//    }
-
-    console.log('In progress');
+              console.log("Form:submit invoked");
+              console.log('In progress');
 //    var ws_for_userRegn = sakura.common.ws_request();
 //    console.log('Current RPC: ' + ws_for_userRegn);
 //    console.log('Destination RPC to send data is required');
 
-    sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (result) {
-      console.log(result);
-      if (result == 1) {
-        console.log("Handshake with api.py: Success");
-        alert("New user information added")
-      } else {
-        console.log("Handshake with api.py: Failure");
-        alert("Incorrect login name or email !")
-      }
-    });
+              sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (result) {
+                console.log(result);
+                if (result == 1) {
+                  console.log("Handshake with api.py: Success");
+                  alert("New user information added")
+                  return;
+                } else {
+                  console.log("Handshake with api.py: Failure");
+                  alert("Incorrect login name or email !")
+                  return;
+                }
+              });
+            });
+
 
   } else {
     console.log('Not implemented yet: ' + evt.type);
