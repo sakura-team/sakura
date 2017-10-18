@@ -132,6 +132,7 @@ class GuiToHubAPI(object):
         
         'etienne': {'signUpEmail': 'etienne.duble@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'}
       }
+
       if userAccountValues:
         if userAccountValues["loginName"] in sampleDBDict.keys():
           print ("loginName matches in DB")
