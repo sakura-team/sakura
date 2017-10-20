@@ -30,7 +30,7 @@ class DatabaseInfo(SimpleAttrContainer):
             datastore_id = self.datastore_id,
             name = self.name,
             short_desc = self.short_desc,
-            created = self.created,
+            creation_date = self.creation_date,
             online = self.online
         )
     def get_full_info(self):

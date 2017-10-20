@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS Database (
     name TEXT,
     db_name TEXT,
     short_desc TEXT,
-    created TIMESTAMP WITH TIME ZONE,
+    creation_date TIMESTAMP WITH TIME ZONE,
     UNIQUE(datastore_id, db_name),
     UNIQUE(datastore_id, name)
 );
@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS DBTable (
     name TEXT,
     db_table_name TEXT,
     short_desc TEXT,
-    created TIMESTAMP WITH TIME ZONE,
+    creation_date TIMESTAMP WITH TIME ZONE,
     UNIQUE(database_id, db_table_name),
     UNIQUE(database_id, name)
 );
