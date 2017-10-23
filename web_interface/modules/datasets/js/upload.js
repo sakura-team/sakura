@@ -15,7 +15,6 @@ function datasets_upload_on_file_selected(f, dataset_id) {
     }
     
     var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; });
-    console.log(dataset);
     var nb_cols     = dataset[0].columns.length;
     var tbody       = $('#datasets_upload_preview_table').find('tbody');
     var thead       = $('#datasets_upload_preview_table').find('thead');
@@ -61,9 +60,11 @@ function datasets_upload(dataset_id) {
     
     //Getting dates format
     sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
-        console.log(result);
+        var date_formats = [];
+        //var date_formats = result['gui_data']['dates'];
+        
+        //Then sending rows
+        datasets_send_file(dataset_id, f, date_formats);
     });
-    
-    /////TODO /////////
 }
 
