@@ -25,15 +25,15 @@ function buildListStub(idDiv,result,elt) {
         + '</tr></thead>'
         + '<tbody id="idTBodyList'+eltAncetre+'">';
     for(i=0;i<result.length;i++) {
-		var tmpInitElt = elt;
-		elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);
-		s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\" ";
+        var tmpInitElt = elt;
+        elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);
+        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\" ";
         if (result[i].isGreyedOut==true)
             s += "style='pointer-events: none; cursor: default; opacity: 0.6;' ";
         s += ">"+result[i].name+"</a></td>\n";
         if (document.getElementById("cbColSelectTags").checked) {
             s = s + "<td>"+result[i].tags+"</td>";}
-        if (document.getElementById("cbColSelectId").checked) {		  
+        if (document.getElementById("cbColSelectId").checked) {
             s = s + "<td>"+result[i].id+"</td>";}
         if (document.getElementById("cbColSelectShortDesc").checked) {
             s = s + "<td>"+result[i].shortDesc+"</td>";}  
@@ -59,7 +59,7 @@ function buildListStub(idDiv,result,elt) {
                 }
         }
         s = s + "</td></tr>";
-		elt = tmpInitElt;
+        elt = tmpInitElt;
     }
     s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
         + '</tbody>';
@@ -109,7 +109,17 @@ function listRequestStub(idDiv, n, elt, bd) {
                                 'tags': op.tags,
                                 'id': op.id,
                                 'daemon': op.daemon,
-                                'svg': op.svg};
+                                'svg': op.svg,
+                                'date': op.date,
+                                'owner': op.owner,
+                                'modif': op.modification_date};
+                
+                //Display of undefined fields
+                Object.keys(result_info).forEach( function(key) {
+                    if (!result_info[key]) {
+                        result_info[key] = "__";
+                    }
+                });
                 result.push(result_info);
             });
             buildListStub(idDiv,result,elt);
@@ -118,8 +128,10 @@ function listRequestStub(idDiv, n, elt, bd) {
     else {
         console.log(elt);
         result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"owner":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"owner":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
-        buildListStub(idDiv,result,elt);}
-    return ;}
+        buildListStub(idDiv,result,elt);
+    }
+    return ;
+}
 
 
 function listRequestStubForRestart(idDiv) {
