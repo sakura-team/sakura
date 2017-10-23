@@ -2,30 +2,32 @@
 <!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
 
 <div style="display:none;" id="idDivOperators" class="classMainDiv">
- 
-	<div style="float:right;">
-	  <img width="80px" height="80px" src="media/Octicons-gear.svg.png" alt="CC-BY-3.0 Wikipedia Gear"></img>
-	  <br />
-	  <br />
-	  <button type="button" onclick="showDiv(event,'Operators/tmpOperator/Work');" class="btn btn-primary">Try it</button></div>
-
-	<h2>Operators</h2>
-	Process Data, Compute Indicators, Visualize.<br /><br />
-	
-
-	<div class="row">
+    
+    <div style="float:right;">
+        <img width="80px" height="80px" src="media/Octicons-gear.svg.png" alt="CC-BY-3.0 Wikipedia Gear"></img>
+        <br />
+        <br />
+        <button type="button" onclick="showDiv(event,'Operators/tmpOperator/Work');" class="btn btn-primary">Try it</button>
+    </div>
+    
+    <h2>Operators</h2>
+    Process Data, Compute Indicators, Visualize.
+    <br />
+    <br />
+    
+    <div class="row">
         <div class="col-md-10">
             <div class="panel panel-default panel-table">
                 <div class="panel-heading">
                     <div class="row">
-						<form class="form-search form-inline col-md-offset-6">
-							<input id="idInputSearchOperators" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Operators');" />
-						</form>
+                        <form class="form-search form-inline col-md-offset-6">
+                            <input id="idInputSearchOperators" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Operators');" />
+                        </form>
                     </div>
                 </div>
                 <div class="panel-body">
                     <table id="idTableOperatorsToFullfill" class="table table-striped table-bordered table-list">
-						<tr><td><a href="javascript:listRequestStub('idTableOperatorsToFullfill',10,'Operators/tmpOperator',false)" class="executeOnShow">liste à remplir</a></td></tr>
+                        <tr><td><a href="javascript:listRequestStub('idTableOperatorsToFullfill',10,'Operators/tmpOperator',false)" class="executeOnShow">liste à remplir</a></td></tr>
                     </table>
                 </div>
                 <div class="panel-footer">
@@ -49,7 +51,4 @@
             </div>
         </div>
     </div>
-    
-
-	</div>
-
+</div>

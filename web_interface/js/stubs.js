@@ -99,14 +99,31 @@ function listRequestStub(idDiv, n, elt, bd) {
             });
         });
     }
+    else if (elt == 'Operators/tmpOperator') {
+        ws_request('list_operators_classes', [], {}, function (operators) {
+            console.log(operators);
+            var result = new Array();
+            operators.forEach( function(op) {
+                result_info = { 'name': op.name,
+                                'shortDesc': op.short_desc,
+                                'tags': op.tags,
+                                'id': op.id,
+                                'daemon': op.daemon,
+                                'svg': op.svg};
+                result.push(result_info);
+            });
+            buildListStub(idDiv,result,elt);
+        });
+    }
     else {
+        console.log(elt);
         result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"owner":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"owner":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
         buildListStub(idDiv,result,elt);}
     return ;}
 
 
 function listRequestStubForRestart(idDiv) {
-	//TODO : supprimer/deplacer alea
+    //TODO : supprimer/deplacer alea
     result=new Array();
     s="";
     i=0;

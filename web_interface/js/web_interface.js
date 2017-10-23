@@ -74,15 +74,18 @@ function showDiv(event, dir, id) {
     //show div
     mainDivs=document.getElementsByClassName('classMainDiv');
     for(i=0;i<mainDivs.length;i++) {
-        mainDivs[i].style.display='none';}
-		
+        mainDivs[i].style.display='none';
+    }
     var idDir = "idDiv";
-	dirs.forEach(function (tmpLocDir) {
-		if (isUrlWithId(tmpLocDir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
-			idDir += tmpLocDir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");}
-		else {
-			idDir += tmpLocDir;}});
-			
+    dirs.forEach(function (tmpLocDir) {
+        if (isUrlWithId(tmpLocDir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
+            idDir += tmpLocDir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");
+        }
+        else {
+            idDir += tmpLocDir;
+        }
+    });
+    
     if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
     }
@@ -117,8 +120,8 @@ function showDiv(event, dir, id) {
     
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
-			idElt = getIdFromUrl(window.location.toString());
-			actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+idElt;
+            idElt = getIdFromUrl(window.location.toString());
+            actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+idElt;
         }
         else {
             eval(actionsOnShow[i].href);
