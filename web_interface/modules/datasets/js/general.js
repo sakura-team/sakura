@@ -83,7 +83,10 @@ function recover_datasets() {
                     $(tds[0]).empty();
                     $(tds[1]).empty();
                     $(tds[0]).append(dataset.name);
-                    $(tds[1]).append(dataset.short_desc);
+                    if (dataset.short_desc)
+                        $(tds[1]).append(dataset.short_desc);
+                    else
+                        $(tds[1]).append("__");
                     spans.toArray().forEach( function(span) {
                         if ($(span).attr('onclick')) {
                             var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);

@@ -3,9 +3,6 @@ class GuiToHubAPI(object):
         self.context = context
         self.project_id = 0     # for now
         
-        ##### TEMP
-        self.datasets_gui_data = {}
-        #####
     
     ########################################
     # Daemons
@@ -113,18 +110,6 @@ class GuiToHubAPI(object):
         return self.context.links.get_gui_data(link_id)
     
     ########################################
-    # TEMP
-    def get_dataset_gui_data(self, dataset_id):
-        if dataset_id in self.datasets_gui_data:
-            return self.datasets_gui_data[dataset_id]
-        else:
-            return False
-    
-    def set_dataset_gui_data(self, dataset_id, data):
-        self.datasets_gui_data[dataset_id] = data
-        return True
-    
-    ########################################
     
     # added by rms-dev
     # def set_userAccount_gui_data(self, userAccount_gui_data):
@@ -150,8 +135,15 @@ class GuiToHubAPI(object):
             ("others", ("longitude", "latitude"))
         )
     
+    def get_table_info(self, table_id):
+        return True;
+        
+    def set_table_info(self, table_id, **kwargs):
+        print(kwargs)
+        return True;
+    
     def new_table(self, database_id, name, description, creation_date, columns):
-        print((database_id, name, description, creation_date, columns))
+        print(database_id, name, description, creation_date, columns)
         return 5690 #New table ID
     
     def add_rows_into_table(self, table_id, data, date_formats):
@@ -167,6 +159,3 @@ class GuiToHubAPI(object):
         print('Sending', rows[row_start: row_end])
         
         return rows[row_start: row_end]
-    
-    def get_nb_rows_of_table(self, table_id):
-        return 200

@@ -60,11 +60,10 @@ function datasets_upload(dataset_id) {
     var f = $('#datasets_upload_select_file')[0].files[0];
     
     //Getting dates format
-    sakura.common.ws_request('get_dataset_gui_data', [dataset_id], {}, function(result) {
+    sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
         console.log(result);
     });
     
     /////TODO /////////
-    
 }
 

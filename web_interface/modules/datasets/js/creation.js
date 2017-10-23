@@ -58,30 +58,37 @@ function datasets_send_new(database_id) {
     //database_id, name, description, creation_date, columns
     sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), columns], {}, function(dataset_id) {
         if (dataset_id >= 0) {
+            
+            var dates = []
+            var date_divs = $('*').filter(function() {
+                return this.id.match(/.*datasets_date_format_fs_div_.*/);
+            });
+            if (ff) {
+                date_divs = $('*').filter(function() {
+                    return this.id.match(/.*datasets_date_format_ff_div_.*/);
+                });
+            }
+            date_divs.toArray().forEach( function(div) {
+                var tab = div.id.split('_');
+                var i = tab[tab.length-1];
+                dates.push([columns[i][0], div.children[1].children[0].value]);
+            });
+            
+            //Sending date formats
+            sakura.common.ws_request('set_table_info', [dataset_id], {'gui_data': {'dates': dates}}, function (result) {
+                if (!result) {
+                    console.log("Issue on sending dates to datasets_gui_data!!!");
+                }
+            });
+            
+            //Sending file
             if (ff) {
                 var f = $('#datasets_file_from_HD')[0].files[0];
-                
-                var date_divs = $('*').filter(function() {
-                    return this.id.match(/.*datasets_date_format_div_.*/);
-                });
-                
-                dates = []
-                date_divs.toArray().forEach( function(div) {
-                    var tab = div.id.split('_');
-                    var i = tab[tab.length-1];
-                    dates.push([csv_file.headers[i], div.children[1].children[0].value]);
-                });
-                
                 datasets_send_file(dataset_id, f, dates);
-                sakura.common.ws_request('set_dataset_gui_data', [dataset_id, {'dates': dates}], {}, function (result) {
-                    if (!result) {
-                        console.log("Issue on sending dates to datasets_gui_data!!!");
-                    }
-                });
             }
-            else {
-                recover_datasets();
-            }
+            
+            //Refresh dataset list
+            recover_datasets();
         }
     });
     
@@ -259,30 +266,42 @@ function datasets_new_tag() {
 // DATES AND TYPES
 
 function datasets_type_change(row_id, from) {
-    if (from.id.indexOf("ff") >= 0) {
-        var td = from.parentNode.parentNode;
-        var select = $(from);
-        if (select.val() == 'date') {
-            if (td.childElementCount == 1) {
+    
+    var select = $(from);
+    var td = from.parentNode.parentNode;
+    
+    if (select.val() == 'date') {
+        if (from.id.indexOf("ff") >= 0) {
+            var tmp = document.createElement('input');
+            $(tmp).load("templates/date_format_input.html", function (input) {
+                var div = $(document.createElement('div'));
+                div.attr("id", "datasets_date_format_ff_div_"+row_id);
+                div.append($(input));
+                $(td).append(div);
+                $(tmp).remove();
+                datasets_check_date_format(row_id, div);
+                var data = csv_file.lines[0][0][csv_file.headers[row_id]];
+                $(div[0].children[3].children[0]).val(data);
+                $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, function(event) {
+                    datasets_check_date_format(event.data.row_id, event.data.div);
+                });
+            });
+        }
+        else {
+            if (select.val() == 'date') {
                 var tmp = document.createElement('input');
-                $(tmp).load("templates/date_format_input.html", function (input) {
+                $(tmp).load("templates/date_format_input_simple.html", function (input) {
                     var div = $(document.createElement('div'));
-                    div.attr("id", "datasets_date_format_div_"+row_id);
+                    div.attr("id", "datasets_date_format_fs_div_"+row_id);
                     div.append($(input));
                     $(td).append(div);
                     $(tmp).remove();
-                    datasets_check_date_format(row_id, div);
-                    var data = csv_file.lines[0][0][csv_file.headers[row_id]];
-                    $(div[0].children[3].children[0]).val(data);
-                    $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, function(event) {
-                        datasets_check_date_format(event.data.row_id, event.data.div);
-                    });
-               });
+                });
             }
         }
-        else if (td.childElementCount > 1) {
-            td.children[1].remove();
-        }
+    }
+    else if (td.childElementCount > 1) {
+        td.children[1].remove();
     }
 }
 
