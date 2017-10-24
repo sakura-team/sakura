@@ -361,15 +361,45 @@ function buildEltStub(idDiv,result,elt) {
     });
 }
 
-function eltRequestStub(idDiv,elt,bd) {
-	if (elt == 'Data') {		
-		idElt = getIdFromUrl(window.location.toString());
+function eltRequestStub(idDiv, elt, bd) {
+    if (elt == 'Data') {
+        idElt = getIdFromUrl(window.location.toString());
         ws_request('get_database_info', [+idElt], {}, function(db_info) {
-	      var result = {'name': db_info.name, "userName":db_info.owner,
-		    "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
-			"datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
-	      buildEltStub(idDiv,result,elt);} ); }
+            var result = {'name': db_info.name, "userName":db_info.owner,
+            "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
+            "datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
+            buildEltStub(idDiv,result,elt);
+        });
+    }
+    else if (elt == 'Operator') {
+        ws_request('list_operators_classes', [], {}, function (operators) {
+            var result = new Array();
+            idElt = getIdFromUrl(window.location.toString());
+            operators.forEach( function(op) {
+                if (op.id == idElt) {
+                    result = {  'name': op.name,
+                                'userName': op.owner,
+                                'info': [   {'name': 'shortDesc', 'value': op.short_desc},
+                                            {'name': 'tags', 'value': op.tags},
+                                            {'name': 'id', 'value': op.id},
+                                            {'name': 'daemon', 'value': op.daemon},
+                                            {'name': 'owner', 'value': op.owner},
+                                            {'name': 'creation date', 'value': op.date},
+                                            {'name': 'modification date', 'value': op.modification_date} ],
+                                'datas':[],
+                                'process':[],
+                                'results':[],
+                                'comments':[],
+                                'fileSystem':[]
+                    }
+                }
+            });
+            buildEltStub(idDiv,result,elt);
+        });
+    }
     else { 
         result = eltStubAlea(elt); // objet {"name":_,"userName":_,"description":_, "info":[...],"datas":[...], "process":[...], "results":[...], "comments":[...],"fileSystem":[...]} détail : {  "name":eltName,"userName":userName,"info":infos, "datas":datas, "process":procs, "results":results, "comments":comments,"fileSystem":fs,"description":desc}
-        buildEltStub(idDiv,result,elt);}
-    return ;}
+        buildEltStub(idDiv,result,elt);
+    }
+    return ;
+}
