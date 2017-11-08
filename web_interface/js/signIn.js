@@ -1,10 +1,32 @@
 //date: September 2017
 //author: rms-dev
 
+function initiateSignInForm(event) {
+  
+  // BEGIN: Populating the country codes -------------
+  // RMS: Change the default country in this code block if required.
+  // RMS: Update country-codes.json for correcting erroneous entries, if any.
+  $.getJSON("./divs/signIn/country-codes.json", function(data){
+    var $selectCountry = $("#signUpCountry");
+    var countryNames = [];
+    // console.log(data);
+    $selectCountry.empty();
+    $.each(data, function(idx, entry){
+      if (entry.name === 'France'){
+        $selectCountry.append("<option selected='selected'>" + entry.name + "</option>");
+      } 
+      else {
+        $selectCountry.append("<option>" + entry.name + "</option>");
+      }
+    });
+  });
+  // END: Populating the country codes -------------
+}
+
 function registerUser(evt = '') {
   if (evt.type === 'click') {
 //    evt.preventDefault();
-    console.log("Clicked1")
+    console.log("Clicked1");
     var userAccountValues = {}; // dictionary of all values input by user
     var ok = false;
     // For validation:
