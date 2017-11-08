@@ -6,13 +6,13 @@
 		<button type="button" id="idButtonCloseModal" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 		<div class="container">
 		  <div class="row-fluid">
-			
+
 			<!-- ----------------------- LOGIN SECTION ------------------------ -->
 			<div class="col-md-4">
 			  <h6>Sign in:</h6>
 			  <div class="panel panel-default">
 				<div class="panel-body">
-				  
+
 				  <form role="form" method="post" id="signInForm">
 					<div class="form-group control-group" data-placement="top" data-original-title="Unknown email address, if you don't have one, please create a new account.">
 					  <label for="signInEmail">Email address</label>
@@ -74,11 +74,11 @@
 				  <form id="demo-form" data-parsley-validate="">
 					<div class="col-md-6">
 
-					   <div class="form-group">
+					  <div class="form-group">
 						<label for="loginName">Login name *</label>
 						<input type="text" class="form-control" id="loginName" name="loginName" placeholder="Your login name" required=""/>
 					  </div>
-					  
+
 					  <div class="form-group">
 						<label for="signUpFirstName">First name *</label>
 						<input type="text" class="form-control" id="signUpFirstName" name="signUpFirstName" placeholder="Your first name" required=""/>
@@ -102,20 +102,24 @@
 						<label for="signUpConfirmPassword">Confirm Password *</label>
 						<input class="form-control" id="signUpConfirmPassword" name="signUpConfirmPassword" placeholder="Confirm Password" type="password" data-parsley-equalto="#signUpPassword" required=""/>
 					  </div>
-					  
+
 					</div>
-					  
+
 					<div class="col-md-6">
 					  <label for="gender">Gender *</label>
 					  <p>
 						M: <input type="radio" name="gender" id="genderM" value="M" required="">
 						F: <input type="radio" name="gender" id="genderF" value="F">
 					  </p>
-					  
+
 					  <div class="form-group">
 						<label for="signUpCountry">Country *</label>
-						<input type="text" class="form-control" id="signUpCountry" name="signUpCountry" placeholder="Your Country" required=""/>
-						<!--						  <select class="form-control"><option value="af">afghanistan</option> </select>-->
+						<select class="form-control" id="signUpCountry" name="signUpCountry" placeholder="Your Country1" required=""/>
+						<option>1</option>
+						<option>2</option>
+						<option>3</option>
+						<option>4</option>
+						</select>
 					  </div>
 					  <div class="form-group">
 						<label for="signUpInstitution">Institution *</label>
@@ -134,7 +138,7 @@
 						<label>
 						  <input id="signInCGU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a onclick="showDivCGU(event);" href="http://sakura.imag.fr/CGU">terms</a>
 						  <!--<input id="signInCGU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a onclick="showDivCGU(event);" href="http://sakura.imag.fr/CGU">terms</a>-->
-					  <!--<input id="signInGCU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a data-dismiss="modal" data-toggle="modal" href="#idDivCGU">terms</a>-->
+						  <!--<input id="signInGCU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a data-dismiss="modal" data-toggle="modal" href="#idDivCGU">terms</a>-->
 						</label>
 					  </div>
 
