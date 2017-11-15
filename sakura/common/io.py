@@ -58,7 +58,7 @@ def print_short(*args):
         return  # do nothing
     OUT = io.StringIO()
     print(*args, file=OUT)
-    if OUT.tell() > 110:
+    if DEBUG_LEVEL == 1 and OUT.tell() > 110:
         OUT.seek(110)
         OUT.write('...\n')
         OUT.truncate()
@@ -108,9 +108,10 @@ class LocalAPIHandler(object):
         with self.session_wrapper():
             res = self.api_runner.do(path, args, kwargs)
             try:
-                self.protocol.dump((req_id, make_serializable(res)), self.f)
+                expanded_res = make_serializable(res)
+                self.protocol.dump((req_id, expanded_res), self.f)
                 if DEBUG_LEVEL == 2:
-                    print_short("sent", req_id, res)
+                    print_short("sent", req_id, expanded_res)
                 elif DEBUG_LEVEL == 1:
                     print_short("sent", req_id, res.__class__)
                 self.f.flush()
