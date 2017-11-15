@@ -2,6 +2,7 @@ import collections, itertools, io, sys, json, numpy as np
 from datetime import datetime
 from gevent.queue import Queue
 from gevent.event import AsyncResult
+from sakura.common.tools import monitored
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 # DEBUG_LEVEL = 1   # print requests and type of results
@@ -69,11 +70,19 @@ class LocalAPIHandler(object):
         self.protocol = protocol
         self.api_runner = AttrCallRunner(local_api)
         if greenlets_pool == None:
+            self.pool = None
             self.handle_request = self.handle_request_base
         else:
             self.pool = greenlets_pool
             self.handle_request = self.handle_request_pool
     def loop(self):
+        if self.pool is None:
+            self.do_loop()
+        else:
+            self.handle_request_base = monitored(self.handle_request_base)
+            self.pool.spawn(self.do_loop)
+            self.handle_request_base.catch_issues()
+    def do_loop(self):
         while True:
             should_continue = self.handle_next_request()
             if not should_continue:

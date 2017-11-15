@@ -1,5 +1,6 @@
 import sys, gevent
 from gevent.local import local
+from gevent.queue import Queue
 from datetime import datetime, timezone
 
 # object storing greenlet-local data
@@ -40,3 +41,25 @@ def local_dt_from_timestamp(ts):
     naive_utc = datetime.utcfromtimestamp(ts)
     aware_utc = naive_utc.replace(tzinfo = timezone.utc)
     return aware_utc.astimezone()   # convert to local time
+
+class MonitoredFunc(object):
+    def __init__(self, func):
+        self.func = func
+        self.out_queue = Queue()
+    def __call__(self, *args, **kwargs):
+        try:
+            res = self.func(*args, **kwargs)
+        except BaseException as e:
+            # propagate exception to monitoring greenlet
+            self.out_queue.put(e)
+        self.out_queue.put(None)
+    def catch_issues(self):
+        # wait for end or exception
+        while True:
+            out = self.out_queue.get()
+            if isinstance(out, BaseException):
+                raise out
+
+# decorator allowing to catch exceptions in children greenlets
+def monitored(func):
+    return MonitoredFunc(func)
