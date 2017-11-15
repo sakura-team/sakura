@@ -1,4 +1,4 @@
-import collections, itertools, io, sys, json, numpy as np
+import collections, itertools, io, sys, json, numpy as np, contextlib
 from datetime import datetime
 from gevent.queue import Queue
 from gevent.event import AsyncResult
@@ -64,11 +64,18 @@ def print_short(*args):
         OUT.truncate()
     sys.stdout.write(OUT.getvalue())
 
+@contextlib.contextmanager
+def void_context_manager():
+    yield
+
 class LocalAPIHandler(object):
-    def __init__(self, f, protocol, local_api, greenlets_pool = None):
+    def __init__(self, f, protocol, local_api,
+                greenlets_pool = None,
+                session_wrapper = void_context_manager):
         self.f = f
         self.protocol = protocol
         self.api_runner = AttrCallRunner(local_api)
+        self.session_wrapper = session_wrapper
         if greenlets_pool == None:
             self.pool = None
             self.handle_request = self.handle_request_base
@@ -98,16 +105,17 @@ class LocalAPIHandler(object):
         self.handle_request(*req)
         return True
     def handle_request_base(self, req_id, path, args, kwargs):
-        res = self.api_runner.do(path, args, kwargs)
-        try:
-            self.protocol.dump((req_id, make_serializable(res)), self.f)
-            if DEBUG_LEVEL == 2:
-                print_short("sent", req_id, res)
-            elif DEBUG_LEVEL == 1:
-                print_short("sent", req_id, res.__class__)
-            self.f.flush()
-        except BaseException as e:
-            print('could not send response:', e)
+        with self.session_wrapper():
+            res = self.api_runner.do(path, args, kwargs)
+            try:
+                self.protocol.dump((req_id, make_serializable(res)), self.f)
+                if DEBUG_LEVEL == 2:
+                    print_short("sent", req_id, res)
+                elif DEBUG_LEVEL == 1:
+                    print_short("sent", req_id, res.__class__)
+                self.f.flush()
+            except BaseException as e:
+                print('could not send response:', e)
     def handle_request_pool(self, *args):
         self.pool.spawn(self.handle_request_base, *args)
 
