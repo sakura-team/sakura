@@ -1,5 +1,5 @@
+import time
 from sakura.common.tools import greenlet_env
-from datetime import datetime
 
 class DatabaseMixin:
     @property
@@ -88,7 +88,7 @@ class DatabaseMixin:
         greenlet_env.user = 'etienne'    # TODO: handle this properly
         owner = greenlet_env.user
         if creation_date is None:
-            creation_date = datetime.now() 
+            creation_date = time.time()
         # register in central db
         new_db = cls(   datastore = datastore,
                         name = name,

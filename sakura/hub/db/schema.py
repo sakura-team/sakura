@@ -1,6 +1,5 @@
 from pony.orm import Required, Optional, Set, Json, \
                      composite_key as UNIQUE, PrimaryKey
-from datetime import datetime
 from sakura.hub.mixins.project import ProjectMixin
 from sakura.hub.mixins.daemon import DaemonMixin
 from sakura.hub.mixins.datastore import DatastoreMixin
@@ -12,6 +11,8 @@ from sakura.hub.mixins.opinstance import OpInstanceMixin
 from sakura.hub.mixins.link import LinkMixin
 from sakura.hub.mixins.param import OpParamMixin
 from sakura.hub.mixins.user import UserMixin
+
+epoch = float
 
 def define_schema(db):
 
@@ -81,7 +82,7 @@ def define_schema(db):
         name = Required(str)
         db_name = Required(str)
         short_desc = Optional(str)
-        creation_date = Optional(datetime)
+        creation_date = Optional(epoch)
         tags = Optional(Json, default = [])
         owner = Optional(User, reverse = 'db_owner_of')
         users_rw = Set(User, reverse = 'db_rw')
@@ -96,7 +97,7 @@ def define_schema(db):
         name = Required(str)
         db_table_name = Required(str)
         short_desc = Optional(str)
-        creation_date = Optional(datetime)
+        creation_date = Optional(epoch)
         columns = Set('DBColumn')
         UNIQUE(database, db_table_name)
         UNIQUE(database, name)

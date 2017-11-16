@@ -1,5 +1,3 @@
-from sakura.common.tools import local_dt_from_timestamp
-
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
@@ -136,8 +134,6 @@ class GuiToHubAPI(object):
 
     def update_database_info(self, database_id, **kwargs):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
-        if 'creation_date' in kwargs:
-            kwargs['creation_date'] = local_dt_from_timestamp(kwargs['creation_date'])
         self.context.databases[database_id].update_metadata(self.context, **kwargs)
 
     def list_expected_columns_tags(self, datastore_id):

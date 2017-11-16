@@ -1,7 +1,6 @@
 import sys, gevent
 from gevent.local import local
 from gevent.queue import Queue
-from datetime import datetime, timezone
 
 # object storing greenlet-local data
 greenlet_env = local()
@@ -36,11 +35,6 @@ class SimpleAttrContainer:
         return v
     def _asdict(self):
         return self.__dict__.copy()
-
-def local_dt_from_timestamp(ts):
-    naive_utc = datetime.utcfromtimestamp(ts)
-    aware_utc = naive_utc.replace(tzinfo = timezone.utc)
-    return aware_utc.astimezone()   # convert to local time
 
 class MonitoredFunc(object):
     def __init__(self, func):
