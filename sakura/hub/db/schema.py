@@ -19,6 +19,15 @@ def define_schema(db):
     class User(db.Entity, UserMixin):
         login = PrimaryKey(str)
         email = Required(str, unique=True)
+        password = Required(str)
+        first_name = Optional(str)
+        last_name = Optional(str)
+        creation_date = Optional(epoch)     # registration time/date
+        gender = Optional(str)
+        country = Optional(str)
+        institution = Optional(str)
+        occupation = Optional(str)          # work profile related
+        work_domain = Optional(str)         # research topics
         ds_admin_of = Set('Datastore')
         ds_rw = Set('Datastore')
         ds_ro = Set('Datastore')
