@@ -27,6 +27,8 @@ def make_serializable(obj):
     # with other objects, try to be smart
     if isinstance(obj, dict):
         return { k: make_serializable(v) for k, v in obj.items() }
+    elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
+        return tuple(make_serializable(o) for o in obj.select())
     elif hasattr(obj, 'pack'):
         return make_serializable(obj.pack())
     elif hasattr(obj, '_asdict'):

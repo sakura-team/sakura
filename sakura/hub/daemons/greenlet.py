@@ -3,7 +3,7 @@ import pickle
 from gevent.server import StreamServer
 from sakura.hub.daemons.manager import \
             rpc_client_manager, rpc_server_manager
-from sakura.hub.tools import monitored
+from sakura.common.tools import monitored
 import sakura.hub.conf as conf
 from enum import Enum
 

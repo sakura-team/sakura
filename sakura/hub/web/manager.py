@@ -1,6 +1,7 @@
 import collections
 from sakura.common.io import LocalAPIHandler, compactjson
 from sakura.hub.web.api import GuiToHubAPI
+from sakura.hub.db import db_session_wrapper
 
 # caution: the object should be sent all at once,
 # otherwise it will be received as several messages
@@ -28,7 +29,8 @@ def rpc_manager(context, wsock):
     f = FileWSock(wsock)
     # manage api requests
     local_api = GuiToHubAPI(context)
-    handler = LocalAPIHandler(f, compactjson, local_api)
+    handler = LocalAPIHandler(f, compactjson, local_api,
+                session_wrapper = db_session_wrapper)
     handler.loop()
     print('GUI RPC disconnected.')
 

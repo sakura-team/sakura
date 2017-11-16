@@ -19,14 +19,14 @@ on_exit()
 trap on_exit EXIT
 
 # if there is no central db yet
-if [ ! -f "$HOME/.sakura/central.db" ]
+if [ ! -f "$HOME/.sakura/hub.db" ]
 then
     # and a custom db skeleton is provided
     # in the 'test' directory
-    if [ -f "test/hub-central.db" ]
+    if [ -f "test/hub.db" ]
     then
         # copy this db skeleton
-        cp "test/hub-central.db" "$HOME/.sakura/central.db"
+        cp "test/hub.db" "$HOME/.sakura/hub.db"
     fi
 fi
 

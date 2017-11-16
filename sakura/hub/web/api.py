@@ -9,32 +9,31 @@ class GuiToHubAPI(object):
     ########################################
     # Daemons
     def list_daemons(self):
-        return list(self.context.list_daemons_serializable())
-    
+        return self.context.daemons
     
     ########################################
     # Operators
     
     def list_operators_classes(self):
-        return self.context.list_op_classes_serializable()
+        return self.context.op_classes
     
     def list_operators_instance_ids(self):
-        return list(self.context.op_instances)
+        return tuple(op.id for op in self.context.op_instances.select())
     
     # instantiate an operator and return the instance info
     def create_operator_instance(self, cls_id):
-        return self.context.create_operator_instance(cls_id)
+        return self.context.op_instances.create_instance(self.context, cls_id)
     
     # delete operator instance and links involved
     def delete_operator_instance(self, op_id):
-        return self.context.delete_operator_instance(op_id)
+        return self.context.op_instances[op_id].delete_instance()
     
     # returns info about operator instance: cls_name, inputs, outputs, parameters
     def get_operator_instance_info(self, op_id):
-        return self.context.op_instances.pack(op_id)
+        return self.context.op_instances[op_id]
     
     def set_parameter_value(self, op_id, param_id, value):
-        return self.context.op_instances.set_parameter_value(op_id, param_id, value)
+        return self.context.op_params.lookup(op_id, param_id).set_value(value)
     
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
         return self.context.op_instances[op_id].input_streams[in_id].get_range(row_start, row_end)
@@ -77,7 +76,7 @@ class GuiToHubAPI(object):
     ########################################
     # Links
     def list_link_ids(self):
-        return list(self.context.links)
+        return tuple(l.id for l in self.context.links.select())
     
     def get_link_info(self, link_id):
         return self.context.links[link_id]
@@ -86,7 +85,7 @@ class GuiToHubAPI(object):
         return self.context.create_link(src_op_id, src_out_id, dst_op_id, dst_in_id)
     
     def delete_link(self, link_id):
-        return self.context.delete_link(link_id)
+        return self.context.links[link_id].delete_link()
 
     def get_possible_links(self, src_op_id, dst_op_id):
         return self.context.get_possible_links(src_op_id, dst_op_id)
@@ -94,22 +93,22 @@ class GuiToHubAPI(object):
     ########################################
     # Gui
     def set_operator_instance_gui_data(self, op_id, gui_data):
-        self.context.op_instances.set_gui_data(op_id, gui_data)
-    
+        self.context.op_instances[op_id].gui_data = gui_data
+
     def get_operator_instance_gui_data(self, op_id):
-        return self.context.op_instances.get_gui_data(op_id)
-    
+        return self.context.op_instances[op_id].gui_data
+
     def set_project_gui_data(self, project_gui_data):
-        self.context.set_project_gui_data(self.project_id, project_gui_data)
+        self.context.projects.set_gui_data(self.project_id, project_gui_data)
     
     def get_project_gui_data(self):
-        return self.context.get_project_gui_data(self.project_id)
+        return self.context.projects.get_gui_data(self.project_id)
     
     def set_link_gui_data(self, link_id, gui_data):
-        self.context.links.set_gui_data(link_id, gui_data)
-    
+        self.context.links[link_id].gui_data = gui_data
+
     def get_link_gui_data(self, link_id):
-        return self.context.links.get_gui_data(link_id)
+        return self.context.links[link_id].gui_data
     
     ########################################
     
@@ -120,24 +119,26 @@ class GuiToHubAPI(object):
     ########################################
     # Databases
     def list_datastores(self):
-        return self.context.datastores.list()
+        return self.context.datastores
     
     def list_databases(self):
-        return self.context.databases.list()
+        return self.context.databases
     
     def get_database_info(self, database_id):
-        return self.context.databases[database_id].get_full_info()
+        return self.context.databases[database_id].get_full_info(self.context)
 
     def new_database(self, datastore_id, name, **kwargs):
         # optional arguments of kwargs: short_desc, creation_date, tags, contacts
         # returns the database_id
-        return self.context.new_database(datastore_id, name, **kwargs)
+        datastore = self.context.datastores[datastore_id]
+        return self.context.databases.create_db(
+                        self.context, datastore, name, **kwargs)
 
     def update_database_info(self, database_id, **kwargs):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
         if 'creation_date' in kwargs:
             kwargs['creation_date'] = local_dt_from_timestamp(kwargs['creation_date'])
-        self.context.databases[database_id].update_metadata(**kwargs)
+        self.context.databases[database_id].update_metadata(self.context, **kwargs)
 
     def list_expected_columns_tags(self, datastore_id):
         # il y a les tags standards auxquels on ajoute

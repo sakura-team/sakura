@@ -10,6 +10,8 @@ class DaemonEngine(object):
         self.op_instances = {}
         self.hub = None
         self.fragment_sources = {}
+    def fire_data_issue(self, issue):
+        raise Exception(issue)
     def register_hub_api(self, hub_api):
         self.hub = hub_api
     def get_daemon_info_serializable(self):

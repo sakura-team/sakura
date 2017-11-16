@@ -6,6 +6,7 @@ Python3 modules:
 * karellen-geventws (python3-compatible fork of gevent-websocket)
 * bottle
 * numpy
-* websocket-client (optional, only for running web API tests)
 * psycopg2
+* pony
+* websocket-client (optional, only for running web API tests)
 

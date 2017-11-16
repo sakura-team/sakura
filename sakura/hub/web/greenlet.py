@@ -3,7 +3,8 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
-from sakura.hub.tools import monitored
+from sakura.hub.db import db_session_wrapper
+from sakura.common.tools import monitored
 from pathlib import Path
 from bottle import template
 from collections import namedtuple
@@ -24,7 +25,8 @@ def web_greenlet(context, webapp_path):
     @app.route('/opfiles/<op_id:int>/<filepath:path>')
     def serve_operator_file(op_id, filepath):
         print('serving operator %d file %s' % (op_id, filepath), end="")
-        resp = context.serve_operator_file(op_id, filepath)
+        with db_session_wrapper():
+            resp = context.serve_operator_file(op_id, filepath)
         print(' ->', resp.status_line)
         return resp
 
