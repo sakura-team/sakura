@@ -107,6 +107,11 @@ GRANT ALL ON DATABASE %(db_name)s TO %(db_owner)s;
 REVOKE ALL ON DATABASE %(db_name)s FROM PUBLIC;
 '''
 
+SQL_DESC_COLUMN = '"%(db_col_name)s" %(col_type)s'
+SQL_CREATE_TABLE = '''
+CREATE TABLE "%(db_table_name)s" (%(columns_sql)s);
+'''
+
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 
 class PostgreSQLDBDriver:
@@ -187,6 +192,21 @@ class PostgreSQLDBDriver:
                         db_name = db_name,
                         db_owner = db_owner))
         admin_db_conn.autocommit = saved_mode
+    @staticmethod
+    def create_table(db_conn, db_table_name, columns):
+        columns_sql = ', '.join(
+            SQL_DESC_COLUMN % dict(
+                db_col_name = db_col_name,
+                col_type = col_type
+            ) for db_col_name, col_type in columns
+        )
+        sql = SQL_CREATE_TABLE % dict(
+            db_table_name = db_table_name,
+            columns_sql = columns_sql
+        )
+        with db_conn.cursor() as cursor:
+            cursor.execute(sql)
+        db_conn.commit()
 
 DRIVER = PostgreSQLDBDriver
 

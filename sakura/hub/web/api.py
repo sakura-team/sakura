@@ -147,10 +147,13 @@ class GuiToHubAPI(object):
 
     def get_table_info(self, table_id):
         return self.context.tables[table_id]
-        
-    def new_table(self, database_id, name, description, creation_date, columns):
-        print(database_id, name, description, creation_date, columns)
-        return 5690 #New table ID
+
+    def new_table(self, database_id, name, columns, **kwargs):
+        # optional arguments of kwargs: short_desc, creation_date
+        # returns the table_id
+        database = self.context.databases[database_id]
+        return self.context.tables.create_table(
+                        self.context, database, name, columns, **kwargs)
 
     def update_table_info(self, table_id, **kwargs):
         # optional arguments of kwargs: name, description, creation_date

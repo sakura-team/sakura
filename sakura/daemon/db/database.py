@@ -40,11 +40,12 @@ class Database:
         # TODO correctly pass user credentials up to here
         # for now we just select the first user and consider
         # password is the same as username
-        dbuser = 'sakura_' + tuple(self.users.keys())[0]
-        password = dbuser
-        print(dict(
-            dbname=self.db_name, user=dbuser, password=password
-        ))
+        if user is None:
+            dbuser = 'sakura_' + tuple(self.users.keys())[0]
+        else:
+            dbuser = 'sakura_' + user
+        if password is None:
+            password = dbuser
         return self.dbms.driver.connect(
             host     = self.dbms.host,
             dbname   = self.db_name,
@@ -69,3 +70,8 @@ class Database:
             owner = self.owner,
             users = self.users
         )
+    def create_table(self, user, passwd, db_table_name, columns):
+        db_conn = self.connect(user, passwd)
+        self.dbms.driver.create_table(db_conn, db_table_name, columns)
+        db_conn.close()
+        self.refresh_tables()
