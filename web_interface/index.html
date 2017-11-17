@@ -38,7 +38,7 @@
             <p>Store and Analyse Data</p>
             <div id="idTopRightWidget" style="top: 35px; right: 35px; width: 160px; position: absolute; text-align: left;">
                 <div id="idSignInWidget">
-                    <a onclick="initiateSignInForm(event);" class="btn" data-toggle="modal" data-target="#signInModal">
+                    <a onclick="initiateSignInForm(event);" class="btn" data-toggle="modal" href="#signInModal">
                         <span class="glyphicon glyphicon-user" aria-hidden="true">
                         </span>&nbsp; Sign in &nbsp;
                     </a>
@@ -104,8 +104,9 @@
                 <div w3-include-html="divs/results/work.html"></div>
                 <div w3-include-html="divs/results/historic.html"></div>
                 <div w3-include-html="divs/documentation/index.html"></div>
-                <div w3-include-html="divs/documentation/cgu.html"></div>
+<!-- rms-dev:"signIn/index.html must precede "documentation/cgu.html" for correct stacked modal behavior for CGU-->
                 <div w3-include-html="divs/signIn/index.html"></div>
+				<div w3-include-html="divs/documentation/cgu.html"></div>
                 <div w3-include-html="divs/create/index.html"></div>
                 <div w3-include-html="divs/create/datasets.html"></div>
                 <div w3-include-html="divs/colSelect/index.html"></div>
