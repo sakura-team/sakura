@@ -63,8 +63,6 @@ function registerUser(evt = '') {
                 }
               });
             });
-
-
   } else {
     console.log('Not implemented yet: ' + evt.type);
   }
