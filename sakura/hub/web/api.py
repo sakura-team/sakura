@@ -144,18 +144,18 @@ class GuiToHubAPI(object):
             ("processing", ("sorted_asc", "sorted_desc", "unique")),
             ("others", ("longitude", "latitude"))
         )
-    
+
     def get_table_info(self, table_id):
-        return True;
+        return self.context.tables[table_id]
         
-    def set_table_info(self, table_id, **kwargs):
-        print(kwargs)
-        return True;
-    
     def new_table(self, database_id, name, description, creation_date, columns):
         print(database_id, name, description, creation_date, columns)
         return 5690 #New table ID
-    
+
+    def update_table_info(self, table_id, **kwargs):
+        # optional arguments of kwargs: name, description, creation_date
+        self.context.tables[table_id].set(**kwargs)
+
     def add_rows_into_table(self, table_id, data, date_formats):
         print(data)
         print(date_formats)
