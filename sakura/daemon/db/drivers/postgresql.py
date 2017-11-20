@@ -92,24 +92,24 @@ SQL_GET_TABLE_COLUMNS = '''
             format_type(atttypid, atttypmod) AS type,
             col_description(attrelid, attnum) AS comment
     FROM   pg_attribute
-    WHERE  attrelid = '%(table_name)s'::regclass::oid
+    WHERE  attrelid = '"%(table_name)s"'::regclass::oid
     AND    attnum > 0
     AND    NOT attisdropped
     ORDER  BY attnum;
 '''
 
 SQL_CREATE_DB = '''
-CREATE DATABASE %(db_name)s WITH OWNER %(db_owner)s;
+CREATE DATABASE "%(db_name)s" WITH OWNER "%(db_owner)s";
 '''
 
 SQL_GRANT_DB = '''
-GRANT ALL ON DATABASE %(db_name)s TO %(db_owner)s;
-REVOKE ALL ON DATABASE %(db_name)s FROM PUBLIC;
+GRANT ALL ON DATABASE "%(db_name)s" TO "%(db_owner)s";
+REVOKE ALL ON DATABASE "%(db_name)s" FROM PUBLIC;
 '''
 
-SQL_DESC_COLUMN = '"%(db_col_name)s" %(col_type)s'
+SQL_DESC_COLUMN = '"%(col_name)s" %(col_type)s'
 SQL_CREATE_TABLE = '''
-CREATE TABLE "%(db_table_name)s" (%(columns_sql)s);
+CREATE TABLE "%(table_name)s" (%(columns_sql)s);
 '''
 
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
@@ -193,15 +193,15 @@ class PostgreSQLDBDriver:
                         db_owner = db_owner))
         admin_db_conn.autocommit = saved_mode
     @staticmethod
-    def create_table(db_conn, db_table_name, columns):
+    def create_table(db_conn, table_name, columns):
         columns_sql = ', '.join(
             SQL_DESC_COLUMN % dict(
-                db_col_name = db_col_name,
+                col_name = col_name,
                 col_type = col_type
-            ) for db_col_name, col_type in columns
+            ) for col_name, col_type in columns
         )
         sql = SQL_CREATE_TABLE % dict(
-            db_table_name = db_table_name,
+            table_name = table_name,
             columns_sql = columns_sql
         )
         with db_conn.cursor() as cursor:

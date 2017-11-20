@@ -59,19 +59,19 @@ class Database:
         db_conn.close()
     def pack(self):
         return dict(
-            db_name = self.db_name,
+            name = self.db_name,
             owner = self.owner,
             tables = self.tables.values(),
             users = self.users
         )
     def overview(self):
         return dict(
-            db_name = self.db_name,
+            name = self.db_name,
             owner = self.owner,
             users = self.users
         )
-    def create_table(self, user, passwd, db_table_name, columns):
+    def create_table(self, user, passwd, table_name, columns):
         db_conn = self.connect(user, passwd)
-        self.dbms.driver.create_table(db_conn, db_table_name, columns)
+        self.dbms.driver.create_table(db_conn, table_name, columns)
         db_conn.close()
         self.refresh_tables()

@@ -89,7 +89,6 @@ def define_schema(db):
     class Database(db.Entity, DatabaseMixin):
         datastore = Required(Datastore)
         name = Required(str)
-        db_name = Required(str)
         short_desc = Optional(str)
         creation_date = Optional(epoch)
         tags = Optional(Json, default = [])
@@ -98,25 +97,20 @@ def define_schema(db):
         users_ro = Set(User, reverse = 'db_ro')
         contacts = Set(User, reverse = 'db_contact_of')
         tables = Set('DBTable')
-        UNIQUE(datastore, db_name)
         UNIQUE(datastore, name)
 
     class DBTable(db.Entity, TableMixin):
         database = Required(Database)
         name = Required(str)
-        db_table_name = Required(str)
         short_desc = Optional(str)
         creation_date = Optional(epoch)
         columns = Set('DBColumn')
-        UNIQUE(database, db_table_name)
         UNIQUE(database, name)
 
     class DBColumn(db.Entity, ColumnMixin):
         table = Required(DBTable)
         col_name = Required(str)
         col_type = Required(str)
-        db_col_name = Required(str)
         daemon_tags = Required(Json, default = [])
         user_tags = Required(Json, default = [])
-        UNIQUE(table, db_col_name)
         UNIQUE(table, col_name)

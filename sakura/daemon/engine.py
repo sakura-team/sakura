@@ -99,7 +99,7 @@ class DaemonEngine(object):
         datastore = self.datastores[(datastore_host, datastore_driver_label)]
         datastore.create_db(db_name, owner)
     def create_table(self, user, passwd, datastore_host, datastore_driver_label,
-                           db_name, db_table_name, columns):
+                           db_name, table_name, columns):
         datastore = self.datastores[(datastore_host, datastore_driver_label)]
         database = datastore.databases[db_name]
-        database.create_table(user, passwd, db_table_name, columns)
+        database.create_table(user, passwd, table_name, columns)

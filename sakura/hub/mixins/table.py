@@ -21,18 +21,14 @@ class TableMixin:
                 greenlet_env.password,
                 datastore.host,
                 datastore.driver_label,
-                database.db_name,
-                self.db_table_name,
+                database.name,
+                self.name,
                 tuple(c.pack_for_daemon() for c in self.columns))
     @classmethod
-    def create_or_update(cls, database, db_table_name, **kwargs):
-        table = cls.get(database = database, db_table_name = db_table_name)
+    def create_or_update(cls, database, name, **kwargs):
+        table = cls.get(database = database, name = name)
         if table is None:
-            # default for the human-readable name will be the name found
-            # inside the database
-            if 'name' not in kwargs:
-                kwargs['name'] = db_table_name
-            table = cls(database = database, db_table_name = db_table_name, **kwargs)
+            table = cls(database = database, name = name, **kwargs)
         else:
             table.set(**kwargs)
         return table
@@ -42,23 +38,13 @@ class TableMixin:
         table.columns = set(context.columns.restore_column(context, table, *col) for col in columns)
         return table
     @classmethod
-    def generate_db_table_name(cls, context, database, name):
-        # compute a sanitized name not used already
-        for db_table_name in context.db.propose_sanitized_names(name):
-            if context.tables.get(
-                            database = database,
-                            db_table_name = db_table_name) is None:
-                return db_table_name  # OK db_table_name is free
-    @classmethod
     def create_table(cls, context, database, name, columns,
                             creation_date = None, **kwargs):
-        db_table_name = cls.generate_db_table_name(context, database, name)
         if creation_date is None:
             creation_date = time.time()
         # register in central db
         new_table = cls(database = database,
                         name = name,
-                        db_table_name = db_table_name,
                         creation_date = creation_date)
         cols = []
         for col_info in columns:
@@ -70,5 +56,4 @@ class TableMixin:
         # return table_id
         context.db.commit()
         return new_table.id
-
 
