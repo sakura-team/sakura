@@ -1,8 +1,4 @@
 class OpClassMixin:
-    def __init__(self, db_objet):
-        self.db_object = db_objet
-    def __getattr__(self, attr):
-        return getattr(self.db_object, attr)
     def pack(self):
         return dict(
             daemon = self.daemon.name,
