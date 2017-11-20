@@ -23,8 +23,7 @@ class SQLQuery:
         self.offset = offset
     def to_sql(self):
         select_clause = 'SELECT ' + ', '.join(
-            self.selected_col_to_sql(db_column) \
-                for db_column in self.selected_cols
+            db_column.to_sql() for db_column in self.selected_cols
         )
         tables = set(db_column.table_name for db_column in self.selected_cols)
         tables |= set(cond[0].table_name for cond in self.conditions)
@@ -45,8 +44,6 @@ class SQLQuery:
         sql_text, values = self.to_sql()
         print(sql_text, values)
         cursor.execute(sql_text, values)
-    def selected_col_to_sql(self, db_column):
-        return db_column.col_name_wrapper % db_column.qualified_name
     def condition_to_sql(self, condition):
         db_column, comp_op, value = condition
         col_name = db_column.qualified_name
