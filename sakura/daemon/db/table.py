@@ -1,8 +1,8 @@
 from sakura.daemon.db.column import DBColumn
 
 class DBTable:
-    def __init__(self, dbname, table_name):
-        self.dbname = dbname
+    def __init__(self, db, table_name):
+        self.db = db
         self.name = table_name
         self.columns = []
     def add_column(self, *col_info):
