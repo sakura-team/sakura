@@ -5,6 +5,9 @@ class DatabaseMixin:
     @property
     def online(self):
         return self.datastore.online and self.datastore.daemon.connected
+    @property
+    def remote_instance(self):
+        return self.datastore.remote_instance.databases[self.name]
     def pack(self):
         return dict(
             tags = self.tags,
@@ -29,11 +32,7 @@ class DatabaseMixin:
         return result
     def update_tables(self, context):
         # ask daemon
-        info_from_daemon = self.datastore.daemon.api.get_database_info(
-            datastore_host = self.datastore.host,
-            datastore_driver_label = self.datastore.driver_label,
-            db_name = self.name
-        )
+        info_from_daemon = self.remote_instance.pack()
         self.tables = set(
             context.tables.restore_table(context, self, **tbl) \
                     for tbl in info_from_daemon['tables']
@@ -43,9 +42,7 @@ class DatabaseMixin:
         # update database fields
         self.set(**kwargs)
     def create_on_datastore(self):
-        self.datastore.daemon.api.create_db(
-                self.datastore.host,
-                self.datastore.driver_label,
+        self.datastore.remote_instance.create_db(
                 self.name,
                 self.owner.login)
     @classmethod

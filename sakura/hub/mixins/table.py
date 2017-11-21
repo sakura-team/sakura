@@ -2,6 +2,9 @@ import time
 from sakura.common.tools import greenlet_env
 
 class TableMixin:
+    @property
+    def remote_instance(self):
+        return self.database.remote_instance.tables[self.name]
     def pack(self):
         return dict(
             table_id = self.id,
@@ -14,14 +17,9 @@ class TableMixin:
     def create_on_datastore(self):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
-        database = self.database
-        datastore = database.datastore
-        datastore.daemon.api.create_table(
+        self.database.remote_instance.create_table(
                 greenlet_env.user,
                 greenlet_env.password,
-                datastore.host,
-                datastore.driver_label,
-                database.name,
                 self.name,
                 tuple(c.pack_for_daemon() for c in self.columns))
     @classmethod

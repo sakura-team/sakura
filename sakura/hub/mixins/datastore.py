@@ -9,6 +9,9 @@ Daemon configuration says admin of %(driver_label)s datastore at %(host)s is non
 This user must be created in Sakura first."""
 
 class DatastoreMixin:
+    @property
+    def remote_instance(self):
+        return self.daemon.api.datastores[(self.host, self.driver_label)]
     def pack(self):
         result = dict(
             daemon_id = self.daemon.id,
