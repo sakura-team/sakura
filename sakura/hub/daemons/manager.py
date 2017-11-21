@@ -19,7 +19,8 @@ def rpc_client_manager(daemon_info, context, sock_file):
     except DaemonDataException as e:
         remote_api.fire_data_issue(str(e))
     remote_api.loop()
-    context.on_daemon_disconnect(daemon_id)
+    with db_session_wrapper():
+        context.on_daemon_disconnect(daemon_id)
     print('rpc connection hub (client) -> %s (server) disconnected.' % daemon_info['name'])
 
 def rpc_server_manager(daemon_info, context, sock_file):
