@@ -10,6 +10,5 @@ def load():
     # and return them.
     # preserve the same order if possible.
     return load_all_in_dir( __name__,
-                            sort = lambda ds: ds.STREAM.label,
                             exc_handler = failed_dataset_load)
 

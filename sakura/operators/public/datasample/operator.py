@@ -11,7 +11,16 @@ class DataSampleOperator(Operator):
         # no inputs
         pass
         # outputs:
+        streams = []
         for ds in datasets.load():
-            self.register_output(ds.STREAM)
+            if hasattr(ds, 'STREAM'):
+                # statically defined stream
+                stream = ds.STREAM
+            else:
+                # dynamically generated stream
+                stream = ds.load_stream(self)
+            streams.append(stream)
+        for stream in sorted(streams, key=lambda s: s.label):
+            self.register_output(stream)
         # no parameters
         pass
