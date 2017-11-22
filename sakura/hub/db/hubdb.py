@@ -2,7 +2,9 @@ import re, sys, types
 import sakura.hub.conf as conf
 from sakura.hub.db.schema import define_schema
 from pony.orm import Database as PonyDatabase,      \
-                     commit, sql_debug, db_session, sql_debug
+                     commit as pony_commit,         \
+                     sql_debug, db_session,         \
+                     CommitException, sql_debug
 
 DEBUG=0
 #DEBUG=1
@@ -10,11 +12,26 @@ DEBUG=0
 if DEBUG == 1:
     sql_debug(True)
 
+def commit():
+    real_exception = None
+    try:
+        pony_commit()
+    except CommitException as e:
+        # check if this is not a disguised KeyboardInterrupt
+        if hasattr(e, 'exceptions') and \
+                e.exceptions[0][0] == KeyboardInterrupt:
+            real_exception = KeyboardInterrupt
+        else:
+            real_exception = e
+    if real_exception is not None:
+        raise real_exception
+
 # Since we use gevent's greenlets, we may get recursive sessions
 # in the current thread.
 # Default behavior of pony is to ignore nested sessions.
 # With the following object, we ensure db updates are commited
 # when we leave a nested session.
+
 
 class MyDBSession:
     stack_size = 0

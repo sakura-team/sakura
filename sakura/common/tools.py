@@ -51,7 +51,9 @@ class MonitoredFunc(object):
         # wait for end or exception
         while True:
             out = self.out_queue.get()
-            if isinstance(out, BaseException):
+            if isinstance(out, KeyboardInterrupt):
+                break
+            elif isinstance(out, BaseException):
                 raise out
 
 # decorator allowing to catch exceptions in children greenlets

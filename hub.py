@@ -21,7 +21,10 @@ def run(webapp_path):
     print('**out**')
 
 if __name__ == "__main__":
-    set_unbuffered_stdout()
-    print('Started.')
-    webapp_path = CURDIR + '/' + conf.WEBAPP
-    run(webapp_path)
+    try:
+        set_unbuffered_stdout()
+        print('Started.')
+        webapp_path = CURDIR + '/' + conf.WEBAPP
+        run(webapp_path)
+    except KeyboardInterrupt:
+        pass    # python already writes 'KeyboardInterrupt' on stdout
