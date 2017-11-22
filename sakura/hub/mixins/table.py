@@ -22,6 +22,15 @@ class TableMixin:
                 greenlet_env.password,
                 self.name,
                 tuple(c.pack_for_daemon() for c in self.columns))
+    def get_range(self, row_start, row_end):
+        greenlet_env.user = 'etienne'               # TODO: handle this properly
+        greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
+        return self.remote_instance.get_range(
+                greenlet_env.user,
+                greenlet_env.password,
+                row_start,
+                row_end
+        )
     @classmethod
     def create_or_update(cls, database, name, **kwargs):
         table = cls.get(database = database, name = name)
