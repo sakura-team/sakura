@@ -2,6 +2,29 @@ import psycopg2, uuid, numpy as np
 from collections import defaultdict
 from psycopg2.extras import DictCursor
 
+TYPES_SAKURA_TO_PG = {
+    'int8':     'smallint',
+    'int16':    'smallint',
+    'int32':    'integer',
+    'int64':    'bigint',
+    'float32':  'real',
+    'float64':  'double precision',
+    'string':   'text',
+    'boolean':  'boolean',
+    'date':     'timestamp with time zone'
+}
+
+TYPES_PG_TO_SAKURA = {
+    'smallint':                 'int16',
+    'integer':                  'int32',
+    'bigint':                   'int64',
+    'real':                     'float32',
+    'double precision':         'float64',
+    'text':                     'string',
+    'boolean':                  'boolean',
+    'timestamp with time zone': 'date'
+}
+
 def analyse_col_meta(col_comment):
     col_meta = {}
     if col_comment != None:
@@ -22,10 +45,6 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
                     'extract(epoch from %(table_name)s.%(col_name)s) as %(col_name)s',
                     'to_timestamp(%s)',
                     ('timestamp',))
-    elif col_pgtype == 'integer':
-        metadata_collector.register_column(table_name, col_name, np.int32)
-    elif col_pgtype == 'bigint':
-        metadata_collector.register_column(table_name, col_name, np.int64)
     elif col_pgtype.startswith('character varying('):
         max_length = int(col_pgtype[18:-1])
         metadata_collector.register_column(table_name, col_name, (np.str, max_length))
@@ -47,6 +66,9 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
                 'ST_AsGeoJSON(%(table_name)s.%(col_name)s) as %(col_name)s',
                 'ST_GeomFromGeoJSON(%s)',
                 ('geometry', 'supports_in'))
+    elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
+        metadata_collector.register_column(\
+                table_name, col_name, TYPES_PG_TO_SAKURA[col_pgtype])
     else:
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
 
@@ -199,7 +221,7 @@ class PostgreSQLDBDriver:
         columns_sql = ', '.join(
             SQL_DESC_COLUMN % dict(
                 col_name = col_name,
-                col_type = col_type
+                col_type = TYPES_SAKURA_TO_PG[col_type]
             ) for col_name, col_type in columns
         )
         sql = SQL_CREATE_TABLE % dict(
