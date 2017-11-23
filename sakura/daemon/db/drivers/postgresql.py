@@ -1,6 +1,6 @@
 import psycopg2, uuid, numpy as np
 from collections import defaultdict
-from psycopg2.extras import NamedTupleCursor
+from psycopg2.extras import DictCursor
 
 def analyse_col_meta(col_comment):
     col_meta = {}
@@ -125,7 +125,7 @@ class PostgreSQLDBDriver:
         if 'connect_timeout' not in kwargs:
             kwargs['connect_timeout'] = DEFAULT_CONNECT_TIMEOUT
         conn = psycopg2.connect(**kwargs)
-        conn.cursor_factory = NamedTupleCursor
+        conn.cursor_factory = DictCursor
         return conn
     @staticmethod
     def open_server_cursor(db_conn):
@@ -146,7 +146,8 @@ class PostgreSQLDBDriver:
         with admin_db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_DS_USERS)
             for row in cursor:
-                metadata_collector.register_user(row.usename, row.usecreatedb)
+                metadata_collector.register_user(
+                        row['usename'], row['usecreatedb'])
     @staticmethod
     def collect_dbs(admin_db_conn, metadata_collector):
         with admin_db_conn.cursor() as cursor:

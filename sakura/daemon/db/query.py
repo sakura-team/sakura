@@ -27,7 +27,7 @@ class SQLQuery:
         )
         tables = set(db_column.table_name for db_column in self.selected_cols)
         tables |= set(cond[0].table_name for cond in self.conditions)
-        from_clause = 'FROM ' + ', '.join(tables)
+        from_clause = 'FROM "' + '", "'.join(tables) + '"'
         where_clause, offset_clause, cond_vals = '', '', ()
         if len(self.conditions) > 0:
             cond_texts, cond_vals = (), ()
@@ -46,7 +46,7 @@ class SQLQuery:
         cursor.execute(sql_text, values)
     def condition_to_sql(self, condition):
         db_column, comp_op, value = condition
-        col_name = db_column.qualified_name
+        col_name = db_column.to_sql()
         op_sql_special = COMP_OP_TO_SQL_SPECIAL.get((comp_op, value), None)
         if op_sql_special != None:
             sql = col_name + ' ' + op_sql_special
