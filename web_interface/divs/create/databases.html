@@ -1,5 +1,5 @@
 
-<div class="modal fade" id="createDSModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div class="modal fade" id="createDataBaseModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate" style="width: 95%;">
         <div class="modal-content">
             <div class="modal-body">
@@ -10,30 +10,30 @@
                             <div class="panel panel-default">
                                 <div class="panel-body">
                                         <div class="form-group control-group" data-original-title="Give a name.">
-                                            <label for="dataset_name_input">Name</label>
-                                            <input class="form-control" id="dataset_name_input" name="dataset_name_input" placeholder="Enter a name"/>
+                                            <label for="database_name_input">Name</label>
+                                            <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name"/>
                                         </div>
                                         <div class="form-group control-group" data-original-title="Give short description.">
-                                            <label for="dataset_shortdescription_input">Short Description</label>
-                                            <input class="form-control" id="dataset_shortdescription_input" name="dataset_shortdescription_input" placeholder="Enter short description"/>
+                                            <label for="database_shortdescription_input">Short Description</label>
+                                            <input class="form-control" id="database_shortdescription_input" name="database_shortdescription_input" placeholder="Enter short description"/>
                                         </div>
                                         <!--<div class="form-group control-group" data-original-title="Give tags.">
-                                            <label for="dataset_tags_input">Tag</label>
-                                            <input class="form-control" id="dataset_tags_input" name="dataset_tags_input" placeholder="Enter tags"/>
+                                            <label for="database_tags_input">Tag</label>
+                                            <input class="form-control" id="database_tags_input" name="database_tags_input" placeholder="Enter tags"/>
                                         </div>
                                         -->
                                         <div class="form-group control-group" data-original-title="Give DBMS.">
-                                            <label for="dataset_dbms_input">DataBase Management System</label>
-                                            <select class="form-control" id="dataset_dbms_input" >
+                                            <label for="database_dbms_input">DataBase Management System (or DataStores)</label>
+                                            <select class="form-control" id="database_dbms_input" >
                                             </select>
                                         </div>
                                         <div class="form-group control-group" data-original-title="Give DBMS.">
-                                            <label for="dataset_public_input"> 
-                                            <input id="dataset_public_input" name="publicAccess" type="checkbox" /> 
+                                            <label for="database_public_input"> 
+                                            <input id="database_public_input" name="publicAccess" type="checkbox" /> 
                                             Public 
                                             </label>
                                         </div>
-                                        <button type="button" class="btn btn-primary" id="createSubmit" onclick="new_dataset();">Submit</button>
+                                        <button type="button" class="btn btn-primary" id="createSubmit" onclick="new_database();">Submit</button>
                                 </div>
                             </div>
                         </div>

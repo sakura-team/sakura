@@ -6,33 +6,33 @@ function fill_dbms() {
     //first we ask the hub the dbms
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
         console.log(result);
-        $('#dataset_dbms_input').empty();
+        $('#database_dbms_input').empty();
             result.forEach( function(sgbd) {
-            $('#dataset_dbms_input').append('<option value="'+sgbd['datastore_id']+'">datastore_id: '+sgbd['datastore_id']+" / daemon_id: "+sgbd['daemon_id']+'</option>');
+            $('#database_dbms_input').append('<option value="'+sgbd['datastore_id']+'">datastore_id: '+sgbd['datastore_id']+" / daemon_id: "+sgbd['daemon_id']+'</option>');
         });
     });
 }
 
 
-function new_dataset() {
-    var name = $('#dataset_name_input').val();
+function new_database() {
+    var name = $('#database_name_input').val();
     
     if ((name.replace(/ /g,"")).length == 0) {
         alert("Empty name!! We cannot create data without a name.");
         return ;
     }
     
-    var short_d     = $('#dataset_shortdescription_input').val();
+    var short_d     = $('#database_shortdescription_input').val();
     //var tags      = $('#dataset_tags_input').val();
-    var dbms_id     = $('#dataset_dbms_input').val();
-    var public_val  = $('#dataset_public_input')[0].checked;
+    var dbms_id     = $('#database_dbms_input').val();
+    var public_val  = $('#database_public_input')[0].checked;
     
-    sakura.common.ws_request('new_dataset', [name, short_d, '', parseInt(dbms_id), public_val], {}, function(result) {
+    sakura.common.ws_request('new_database', [parseInt(dbms_id), name], {'short_desc': short_d}, function(result) {
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
         else {
-            $('#createDSModal').modal('hide');
+            $('#createDataBaseModal').modal('hide');
         }
     });
 }
