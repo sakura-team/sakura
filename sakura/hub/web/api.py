@@ -154,10 +154,8 @@ class GuiToHubAPI(object):
         self.context.tables[table_id].set(**kwargs)
 
     def add_rows_into_table(self, table_id, data, date_formats):
-        print(data)
-        print(date_formats)
-        return True
-    
+        return self.context.tables[table_id].add_rows(data, date_formats)
+
     def get_rows_from_table(self, table_id, row_start, row_end):
         return self.context.tables[table_id].get_range(row_start, row_end)
 

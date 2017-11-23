@@ -31,6 +31,15 @@ class TableMixin:
                 row_start,
                 row_end
         )
+    def add_rows(self, data, date_formats):
+        greenlet_env.user = 'etienne'               # TODO: handle this properly
+        greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
+        return self.remote_instance.add_rows(
+                greenlet_env.user,
+                greenlet_env.password,
+                data,
+                date_formats
+        )
     @classmethod
     def create_or_update(cls, database, name, **kwargs):
         table = cls.get(database = database, name = name)

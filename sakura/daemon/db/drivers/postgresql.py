@@ -231,6 +231,19 @@ class PostgreSQLDBDriver:
         with db_conn.cursor() as cursor:
             cursor.execute(sql)
         db_conn.commit()
+    @staticmethod
+    def add_rows(db_conn, table_name, rows, date_formats):
+        if len(rows) == 0:
+            return  # nothing to do
+        if len(date_formats) > 0:
+            raise NotImplementedError('date_formats parameter not handled yet.')
+        tuple_pattern = '(' + ','.join(('%s',)*len(rows[0])) + ')'
+        with db_conn.cursor() as cursor:
+            args_str = b','.join(cursor.mogrify(tuple_pattern, row) for row in rows)
+            cursor.mogrify('"%s"' % table_name)
+            cursor.execute(b"INSERT INTO " + cursor.mogrify('"%s"' % table_name) + \
+                           b" VALUES " + args_str)
+        db_conn.commit()
 
 DRIVER = PostgreSQLDBDriver
 
