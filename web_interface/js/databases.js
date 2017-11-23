@@ -8,7 +8,8 @@ function fill_dbms() {
         console.log(result);
         $('#database_dbms_input').empty();
             result.forEach( function(sgbd) {
-            $('#database_dbms_input').append('<option value="'+sgbd['datastore_id']+'">datastore_id: '+sgbd['datastore_id']+" / daemon_id: "+sgbd['daemon_id']+'</option>');
+            if (sgbd['online'])
+                $('#database_dbms_input').append('<option value="'+sgbd['datastore_id']+'">datastore_id: '+sgbd['datastore_id']+" / daemon_id: "+sgbd['daemon_id']+'</option>');
         });
     });
 }
