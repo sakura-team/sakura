@@ -50,14 +50,16 @@ function datasets_send_new(database_id) {
         
         var type = $($(cols[i]).find('select')[0]).val();
         var tags = $($(cols[i]).find('select')[1]).val();
+        if (tags == null)
+            tags = [];
         columns.push([label, type, tags]);
     };
     
-    
+    console.log(columns);
     //Sending the new dataset description
     //database_id, name, description, creation_date, columns
-    sakura.common.ws_request('new_table', [database_id, name, desc, ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix(), columns], {}, function(dataset_id) {
-        if (dataset_id >= 0) {
+    sakura.common.ws_request('new_table', [database_id, name, columns], {'short_desc': desc, 'creation_date': ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix()}, function(dataset_id) {
+        if (false) { //(dataset_id >= 0) {
             
             var dates = []
             var date_divs = $('*').filter(function() {
