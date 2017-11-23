@@ -2,8 +2,10 @@
 //August, 21st, 2017
 
 
-function fill_dbms() {
+function database_update_creation_modal() {
     //first we ask the hub the dbms
+    $("#database_submit_button").html('Submit');
+    
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
         console.log(result);
         $('#database_dbms_input').empty();
@@ -12,6 +14,7 @@ function fill_dbms() {
                 $('#database_dbms_input').append('<option value="'+sgbd['datastore_id']+'">datastore_id: '+sgbd['datastore_id']+" / daemon_id: "+sgbd['daemon_id']+'</option>');
         });
     });
+    
 }
 
 
@@ -28,12 +31,21 @@ function new_database() {
     var dbms_id     = $('#database_dbms_input').val();
     var public_val  = $('#database_public_input')[0].checked;
     
+    $("#database_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+    
+    
     sakura.common.ws_request('new_database', [parseInt(dbms_id), name], {'short_desc': short_d}, function(result) {
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
         else {
             $('#createDataBaseModal').modal('hide');
+            
         }
     });
+}
+
+
+function close_modal() {
+    $('#createDataBaseModal').modal('hide');
 }
