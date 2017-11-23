@@ -42,9 +42,9 @@ sakura.common.get_ws_url = function () {
 
 sakura.common.ws_onmessage = function (evt) {
     // parse the message
-    sakura.common.debug('ws_request got answer');
     var json = JSON.parse(evt.data);
     var cb_idx = json[0];
+    sakura.common.debug('ws_request ' + cb_idx + ' got answer');
     var result = json[1];
     var callback = sakura.common.callbacks[cb_idx];
     // sakura.common.callbacks[cb_idx] will no longer be needed
@@ -63,7 +63,7 @@ sakura.common.ws_request = function (func_name, args, kwargs, callback) {
         sakura.common.debug('document NOT ready');
         // restart the call when document is ready
         sakura.common.add_document_onready(function() {
-            sakura.common.debug('recalling ws_request after document is ready');
+            sakura.common.debug('recalling ws_request ' + func_name + ' after document is ready');
             sakura.common.ws_request(func_name, args, kwargs, callback);
         });
         return;
@@ -77,11 +77,11 @@ sakura.common.ws_request = function (func_name, args, kwargs, callback) {
         ws.onopen = function() {
             sakura.common.free_ws.push(ws);
             // restart the call
-            sakura.common.debug('recalling ws_request with new ws');
+            sakura.common.debug('recalling ws_request ' + func_name + ' with new ws');
             sakura.common.ws_request(func_name, args, kwargs, callback);
         }
         ws.onerror = function() {
-            console.error("ws error!");
+            console.error("ws " + func_name + " error!");
         }
         return;
     }
@@ -97,6 +97,7 @@ sakura.common.ws_request = function (func_name, args, kwargs, callback) {
     sakura.common.callbacks[cb_idx] = callback;
     // prepare the message and send it
     var msg = JSON.stringify([ cb_idx, [func_name], args, kwargs ]);
+    console.log('ws_request: ' + msg);
     sakura.common.debug('ws_request sending msg');
     ws.send(msg);
 }
