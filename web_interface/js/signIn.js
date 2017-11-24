@@ -2,20 +2,19 @@
 //author: rms-dev
 
 function initiateSignInForm(event) {
-  
+
   // BEGIN: Populating the country codes -------------
   // RMS: Change the default country in this code block if required.
   // RMS: Update country-codes.json for correcting erroneous entries, if any.
-  $.getJSON("./divs/signIn/country-codes.json", function(data){
+  $.getJSON("./divs/signIn/country-codes.json", function (data) {
     var $selectCountry = $("#signUpCountry");
     var countryNames = [];
     // console.log(data);
     $selectCountry.empty();
-    $.each(data, function(idx, entry){
-      if (entry.name === 'France'){
+    $.each(data, function (idx, entry) {
+      if (entry.name === 'France') {
         $selectCountry.append("<option selected='selected'>" + entry.name + "</option>");
-      } 
-      else {
+      } else {
         $selectCountry.append("<option>" + entry.name + "</option>");
       }
     });
@@ -23,50 +22,58 @@ function initiateSignInForm(event) {
   // END: Populating the country codes -------------
 }
 
+
 function registerUser(evt = '') {
   if (evt.type === 'click') {
-//    evt.preventDefault();
-    console.log("Clicked1");
+    evt.preventDefault();
     var userAccountValues = {}; // dictionary of all values input by user
-    var ok = false;
-    // For validation:
-//    var signUpForm = ($'#demo-form').parsley();
-
-    $('#demo-form').parsley()
-            .on('field:validated', function () {
-              console.log("In parsley function");
-              console.log("Validation done for: ", this.$element);
-              console.log("Validation done for: ", this.$element[0].value);
-              userAccountValues[this.$element[0].name] = this.$element[0].value;
-              ok = $('.parsley-error').length === 0;
-              $('.bs-callout-info').toggleClass('hidden', !ok);
-              $('.bs-callout-warning').toggleClass('hidden', ok);
-              console.log("All OK:", ok);
-            })
-            .on('form:submit', function () {
-              console.log("Form:submit invoked");
-              console.log('In progress');
-//    var ws_for_userRegn = sakura.common.ws_request();
-//    console.log('Current RPC: ' + ws_for_userRegn);
-//    console.log('Destination RPC to send data is required');
-
-              sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (result) {
-                console.log(result);
-                if (result == 1) {
-                  console.log("Handshake with api.py: Success");
-                  alert("New user information added")
-                  return;
-                } else {
-                  console.log("Handshake with api.py: Failure");
-                  alert("Incorrect login name or email !")
-                  return;
-                }
-              });
+    var $modalForm = document.getElementById("signInModal");
+    var formInstance = $('#demo-form').parsley();
+    formInstance.on('form:validated', function () {
+      console.log("In form:validated function");
+      ok = $('.parsley-error').length === 0;
+      $('.bs-callout-info').toggleClass('hidden', !ok);
+      $('.bs-callout-warning').toggleClass('hidden', ok);
+    });
+    var formValidated = formInstance.validate();
+    alert("formValidated: " + formValidated);
+    if (formValidated) {
+      var fieldsObj = formInstance.fields;
+      if (fieldsObj.length > 0)
+      {
+        fieldsObj.forEach(function (fieldIdx) {
+          console.log('fieldIdx ' + fieldIdx);
+          console.log(fieldIdx.element.name + "=" + fieldIdx.value);
+          userAccountValues[fieldIdx.element.name] = fieldIdx.value;
+        });
+      } else {
+        console.log("ERROR: Form fields are empty"); //checking for empty fields
+      }
+      console.log(userAccountValues);
+      sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (wsResult) {
+        if (typeof (wsResult) !== 'undefined') {
+          console.log("Handshake with api.py: Success");
+          console.log(wsResult);
+          userAccountValues = {};
+          if (wsResult) {  
+            alert("New user information added")
+            $('#signInModal').on('hidden.bs.modal', function () {
+              $(this).find('form').trigger('reset');
             });
-  } else {
-    console.log('Not implemented yet: ' + evt.type);
-  }
-  return;
+            $("#signInModal").modal("hide");
+            return;
+          } else {
+            alert("Login name or email exists!")
+            return;
+          }
+        } else {
+          console.log("Handshake with api.py: Failure");
+        }
+      });
+    } else {
+      console.log("Form validation failed");
+    }
+  } // end if click
 }
 
 function signInSubmitControl(event) {
@@ -81,11 +88,6 @@ function signInSubmitControl(event) {
   }
 }
 
-// function validateAllValues(formName){}
-//    if True:validated
-//      returns valueDictionary  
-//    else
-//      error handling
 
 function signOutSubmitControl(event) {
   res = confirm("Sign Out?");
