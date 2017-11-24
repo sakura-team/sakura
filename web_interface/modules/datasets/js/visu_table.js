@@ -51,9 +51,14 @@ function datasets_visu_table_fill_rows(body, rows, row_start, dataset) {
     rows.forEach( function(row, index) {
         var new_b_row = $(body[0].insertRow());
         var line = "<td>"+(row_start+index)+"</td>";
-        (dataset.columns).forEach( function (item, index) {
-            line += "<td> data "+index+" of row "+row+"</td>";
+        row.forEach( function(item) {
+            line += "<td>"+item+"</td>";
         });
+        /*(dataset.columns).forEach( function (item, index) {
+            line += "<td>"+row[+"</td>";
+            });
+        });
+        */
         new_b_row.append(line);
     });
 }
