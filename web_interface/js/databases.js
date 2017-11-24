@@ -1,18 +1,22 @@
 //Code started by Michael Ortega for the LIG
 //August, 21st, 2017
 
+var database_datastores = null;
 
 function database_update_creation_modal() {
-    //first we ask the hub the dbms
+    //first we ask the hub the datastore
     $("#database_submit_button").html('Submit');
     
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
-        console.log(result);
-        $('#database_dbms_input').empty();
-            result.forEach( function(sgbd) {
-            if (sgbd['online'])
-                $('#database_dbms_input').append('<option value="'+sgbd['datastore_id']+'">datastore_id: '+sgbd['datastore_id']+" / daemon_id: "+sgbd['daemon_id']+'</option>');
+        database_datastores = result;
+        $('#database_datastore_input').empty();
+        result.forEach( function(ds) {
+            if (ds['online']) {
+                console.log(ds);
+                $('#database_datastore_input').append('<option value="'+ds['datastore_id']+'">'+ds['driver_label']+" service on "+ds['host']+'</option>');
+            }
         });
+        $('#database_datastore_input').append('<option value="more">more (in progress)</option>');
     });
     
 }
@@ -27,25 +31,41 @@ function new_database() {
     }
     
     var short_d     = $('#database_shortdescription_input').val();
-    //var tags      = $('#dataset_tags_input').val();
-    var dbms_id     = $('#database_dbms_input').val();
+    var ds_id       = parseInt($('#database_datastore_input').val());
     var public_val  = $('#database_public_input')[0].checked;
     
     $("#database_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     
     
-    sakura.common.ws_request('new_database', [parseInt(dbms_id), name], {'short_desc': short_d}, function(result) {
+    sakura.common.ws_request('new_database', [ds_id, name], {'short_desc': short_d}, function(result) {
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
         else {
-            $('#createDataBaseModal').modal('hide');
+            $('#create_database_modal').modal('hide');
             
         }
     });
 }
 
 
-function close_modal() {
-    $('#createDataBaseModal').modal('hide');
+function database_close_modal(id) {
+    $('#'+id).modal('hide');
+}
+
+
+function database_datastore_on_change() {
+    if ($('#database_datastore_input').val() == 'more') {
+        var tab = $('#database_offline_datastores');
+        tab.empty();
+        database_datastores.forEach( function(ds) {
+            if (!ds['online']) {
+                var new_b_row = $(tab[0].insertRow());
+                var line = "<td>"+ds['driver_label']+" service on "+ds['host']+"</td>";
+                new_b_row.append(line);
+            }
+        });
+        
+        $('#databases_other_datastores_modal').modal('show');
+    }
 }

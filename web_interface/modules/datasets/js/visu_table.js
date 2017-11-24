@@ -54,11 +54,6 @@ function datasets_visu_table_fill_rows(body, rows, row_start, dataset) {
         row.forEach( function(item) {
             line += "<td>"+item+"</td>";
         });
-        /*(dataset.columns).forEach( function (item, index) {
-            line += "<td>"+row[+"</td>";
-            });
-        });
-        */
         new_b_row.append(line);
     });
 }
