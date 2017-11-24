@@ -22,7 +22,7 @@ class SQLStream(OutputStreamBase):
         if chunk_size == None:
             chunk_size = cursor.arraysize
         while True:
-            rowlist = cursor.fetchmany(chunk_size)
+            rowlist = list(tuple(row) for row in cursor.fetchmany(chunk_size))
             if len(rowlist) == 0:
                 break
             yield np.array(rowlist, self.get_dtype()).view(NumpyChunk)
