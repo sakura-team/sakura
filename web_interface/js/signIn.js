@@ -1,7 +1,7 @@
 //date: September 2017
 //author: rms-dev
 
-function initiateSignInForm(event) {
+function initiateSignInSignUpForm(event) {
 
   // BEGIN: Populating the country codes -------------
   // RMS: Change the default country in this code block if required.
