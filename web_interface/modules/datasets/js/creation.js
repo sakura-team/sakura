@@ -55,11 +55,9 @@ function datasets_send_new(database_id) {
         columns.push([label, type, tags]);
     };
     
-    console.log(columns);
     //Sending the new dataset description
-    //database_id, name, description, creation_date, columns
     sakura.common.ws_request('new_table', [database_id, name, columns], {'short_desc': desc, 'creation_date': ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix()}, function(dataset_id) {
-        if (false) { //(dataset_id >= 0) {
+        if (dataset_id >= 0) {
             
             var dates = []
             var date_divs = $('*').filter(function() {
@@ -77,11 +75,13 @@ function datasets_send_new(database_id) {
             });
             
             //Sending date formats
+            /*
             sakura.common.ws_request('set_table_info', [dataset_id], {'gui_data': {'dates': dates}}, function (result) {
                 if (!result) {
                     console.log("Issue on sending dates to datasets_gui_data!!!");
                 }
             });
+            */
             
             //Sending file
             if (ff) {
