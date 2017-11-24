@@ -28,7 +28,7 @@ function registerUser(evt = '') {
     evt.preventDefault();
     var userAccountValues = {}; // dictionary of all values input by user
     var $modalForm = document.getElementById("signInModal");
-    var formInstance = $('#demo-form').parsley();
+    var formInstance = $('#signUpForm').parsley();
     formInstance.on('form:validated', function () {
       console.log("In form:validated function");
       ok = $('.parsley-error').length === 0;
