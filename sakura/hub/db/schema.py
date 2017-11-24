@@ -109,8 +109,10 @@ def define_schema(db):
 
     class DBColumn(db.Entity, ColumnMixin):
         table = Required(DBTable)
+        col_id = Required(int)
         col_name = Required(str)
         col_type = Required(str)
         daemon_tags = Required(Json, default = [])
         user_tags = Required(Json, default = [])
+        PrimaryKey(table, col_id)
         UNIQUE(table, col_name)

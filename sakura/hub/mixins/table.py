@@ -5,6 +5,9 @@ class TableMixin:
     @property
     def remote_instance(self):
         return self.database.remote_instance.tables[self.name]
+    @property
+    def ordered_columns(self):
+        return sorted(self.columns, key=lambda col: col.col_id)
     def pack(self):
         return dict(
             table_id = self.id,
@@ -12,7 +15,7 @@ class TableMixin:
             name = self.name,
             short_desc = self.short_desc,
             creation_date = self.creation_date,
-            columns = tuple(c.pack() for c in self.columns)
+            columns = tuple(c.pack() for c in self.ordered_columns)
         )
     def create_on_datastore(self):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
@@ -21,7 +24,7 @@ class TableMixin:
                 greenlet_env.user,
                 greenlet_env.password,
                 self.name,
-                tuple(c.pack_for_daemon() for c in self.columns))
+                tuple(c.pack_for_daemon() for c in self.ordered_columns))
     def get_range(self, row_start, row_end):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
@@ -51,7 +54,9 @@ class TableMixin:
     @classmethod
     def restore_table(cls, context, database, columns, **tbl):
         table = cls.create_or_update(database, **tbl)
-        table.columns = set(context.columns.restore_column(context, table, *col) for col in columns)
+        table.columns = set(
+                context.columns.restore_column(context, table, col_id, *col) \
+                        for col_id, col in enumerate(columns))
         return table
     @classmethod
     def create_table(cls, context, database, name, columns,
@@ -63,8 +68,8 @@ class TableMixin:
                         name = name,
                         creation_date = creation_date)
         cols = []
-        for col_info in columns:
-            col = context.columns.create_column(context, new_table, *col_info)
+        for col_id, col_info in enumerate(columns):
+            col = context.columns.create_column(context, new_table, col_id, *col_info)
             cols.append(col)
         new_table.set(columns = cols, **kwargs)
         # request daemon to create table on the remote datastore
