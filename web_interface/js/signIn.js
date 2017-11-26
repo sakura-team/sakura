@@ -1,7 +1,34 @@
 //date: September 2017
 //author: rms-dev
-
+//
+//
+//BEGIN: Refreshing the modal in case any parsley class attributes remain while user logins
 function initiateSignInSignUpForm(event) {
+  var $signUpForm = document.getElementById("signUpForm");
+  for (i = 0; i < $signUpForm.length; i++) {
+    if ($signUpForm.elements[i].classList.contains("form-control")) {
+      $signUpForm.elements[i].className = "form-control";
+      $signUpForm.elements[i].value = "";
+    }
+  }
+  /* remove border around all input elements */
+if (navigator.userAgent.toLowerCase().indexOf("chrome") >= 0) {
+	$(window).load(function () {
+		$('input:-webkit-autofill').each(function () {
+			var text = $(this).val();
+			var id = $(this).attr('id');
+			$(this).after(this.outerHTML).remove();
+			$('input[id=' + id + ']').val(text);                    
+		});
+	});
+}
+  
+  
+  $('.parsley-errors-list').remove();
+  $('.form-control').value = '';
+  $(this).find('form').trigger('reset');
+
+  //END: Refreshing the modal
 
   // BEGIN: Populating the country codes -------------
   // RMS: Change the default country in this code block if required.
@@ -55,7 +82,7 @@ function registerUser(evt = '') {
           console.log("Handshake with api.py: Success");
           console.log(wsResult);
           userAccountValues = {};
-          if (wsResult) {  
+          if (wsResult) {
             alert("New user information added")
             $('#signInModal').on('hidden.bs.modal', function () {
               $(this).find('form').trigger('reset');
