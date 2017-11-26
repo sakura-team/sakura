@@ -3,7 +3,7 @@
 //
 //
 //BEGIN: Refreshing the modal in case any parsley class attributes remain while user logins
-function initiateSignInSignUpForm(event) {
+function initiateSignInModal(event) {
   var $signUpForm = document.getElementById("signUpForm");
   for (i = 0; i < $signUpForm.length; i++) {
     if ($signUpForm.elements[i].classList.contains("form-control")) {
@@ -11,18 +11,6 @@ function initiateSignInSignUpForm(event) {
       $signUpForm.elements[i].value = "";
     }
   }
-  /* remove border around all input elements */
-if (navigator.userAgent.toLowerCase().indexOf("chrome") >= 0) {
-	$(window).load(function () {
-		$('input:-webkit-autofill').each(function () {
-			var text = $(this).val();
-			var id = $(this).attr('id');
-			$(this).after(this.outerHTML).remove();
-			$('input[id=' + id + ']').val(text);                    
-		});
-	});
-}
-  
   
   $('.parsley-errors-list').remove();
   $('.form-control').value = '';
