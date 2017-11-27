@@ -7,6 +7,7 @@ function database_update_creation_modal() {
     //first we ask the hub the datastore
     $("#database_submit_button").html('Submit');
     
+    
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
         database_datastores = result;
         $('#database_datastore_input').empty();
@@ -17,6 +18,8 @@ function database_update_creation_modal() {
             }
         });
         $('#database_datastore_input').append('<option value="more">more (in progress)</option>');
+        $('#database_datastore_input').selectpicker('refresh');
+
     });
     
 }
