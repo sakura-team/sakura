@@ -41,12 +41,13 @@ function new_database() {
     
     
     sakura.common.ws_request('new_database', [ds_id, name], {'short_desc': short_d}, function(result) {
+        //result = new database id
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
         else {
             $('#create_database_modal').modal('hide');
-            
+            showDiv(null, 'Datas/Data-'+result, null);
         }
     });
 }

@@ -11,6 +11,7 @@ function not_yet(s = '') {
 
 
 function showDiv(event, dir, id) {
+    
     //todo : déplacer les event.preventDefault() ici ?
     //save mode ?
     
@@ -127,7 +128,8 @@ function showDiv(event, dir, id) {
             eval(actionsOnShow[i].href);
         }
     }
-    event.preventDefault();
+    if (event)
+        event.preventDefault();
 }
 
 
