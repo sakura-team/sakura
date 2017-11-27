@@ -28,7 +28,7 @@ function datasets_alert(header_str, body_str) {
 }
 
 
-function extension_check(f_name, ext) {
+function datasets_extension_check(f_name, ext) {
     //check the name: should have .csv extension
     var s_name = f_name.split('.');
     if (s_name[s_name.length - 1].toLowerCase() != ext.toLowerCase()) {
@@ -144,12 +144,12 @@ function datasets_send_file(dataset_id, f, dates) {
 }
 
 
-function dataset_analytics(dataset_id) {
+function datasets_analytics(dataset_id) {
     not_yet();
 }
 
 
-function dataset_delete(dataset_id) {
+function datasets_delete(dataset_id) {
     not_yet();
 }
 

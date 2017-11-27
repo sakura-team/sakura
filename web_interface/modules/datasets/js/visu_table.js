@@ -5,7 +5,7 @@
 var nb_rows     = 15; //temporary, should be put in a dom element. Soon !
 
 
-function dataset_visu_table(dataset_id) {
+function datasets_visu_dataset(dataset_id) {
     var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
     
     //HEADER

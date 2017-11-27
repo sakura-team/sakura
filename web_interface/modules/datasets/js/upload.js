@@ -1,7 +1,7 @@
 //Code started by Michael Ortega for the LIG
 //October, 16th, 2017
 
-function dataset_upload(dataset_id) {
+function datasets_open_upload_modal(dataset_id) {
     var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; });
     $('#datasets_upload_header').html('<h3>Upload Data into <b>'+dataset[0].name+'</b></h3>');
     $('#datasets_upload_select_file').attr('onchange', 'datasets_upload_on_file_selected(this, '+dataset_id+');');
@@ -10,7 +10,7 @@ function dataset_upload(dataset_id) {
 }
 
 function datasets_upload_on_file_selected(f, dataset_id) {
-    if (!extension_check(f.value, 'csv')) {
+    if (!datasets_extension_check(f.value, 'csv')) {
         return;
     }
     

@@ -103,7 +103,7 @@ function datasets_send_new(database_id) {
 
 function datasets_on_file_selected(f) {
     
-    if (!extension_check(f.value, 'csv')) {
+    if (!datasets_extension_check(f.value, 'csv')) {
         return;
     }
     

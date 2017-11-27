@@ -43,7 +43,7 @@ function datasets_upload_ask_for_rows(dataset_id, chunk_index, chunk_size, resul
 }
 
 
-function dataset_download(dataset_id) {
+function datasets_download(dataset_id) {
     file_text = "";
     
     var results = [];
