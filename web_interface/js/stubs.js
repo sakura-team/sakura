@@ -24,6 +24,7 @@ function buildListStub(idDiv,result,elt) {
         + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
         + '</tr></thead>'
         + '<tbody id="idTBodyList'+eltAncetre+'">';
+    
     for(i=0;i<result.length;i++) {
         var tmpInitElt = elt;
         elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);
@@ -73,29 +74,46 @@ function buildListStub(idDiv,result,elt) {
         + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+3)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+3)+"'>"+(document.pageElt+3)+"</a></li>"
         + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+4)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+4)+"'>"+(document.pageElt+4)+"</a></li>"
         + "<li><a aria-label='Next' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+5)+"'><span aria-hidden='true'>»</span></a></li>";
-    document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;
+    
+    if (document.getElementById("idDivPagination"+eltAncetre))
+        document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;
 }
 
+
+function databases_sort(a, b) {
+    return a.name > b.name ? 1 : -1;
+}
+
+
 function listRequestStub(idDiv, n, elt, bd) {
+
+    //Here we deal with the databases
     if (elt == 'Datas/tmpData') {
         ws_request('list_databases', [], {}, function (databases) {
             var result = new Array();
+            databases.sort(databases_sort);
+            var index = 0;
+            n = databases.length;
             databases.forEach( function(db) {
-                ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                    result_info = {'name': db_info.name,'id':db.database_id, 'isGreyedOut': !db_info.online,
-                                   'shortDesc': db_info.short_desc, 'date': moment.unix(db_info.creation_date)._d,
-                                   'tags': db_info.tags };
-                    if (db_info.online) {
-                        result_info['owner'] = db_info.owner;
-                    }
-                    else {
-                        result_info['name'] += ' (OFFLINE)';
-                    }
-                    result.push(result_info);
-                    if (result.length == databases.length) {
-                        buildListStub(idDiv,result,elt);
-                    }
-                });
+                index += 1;
+                if (index <= n) {
+                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
+                        result_info = {'name': db_info.name,'id':db.database_id, 'isGreyedOut': !db_info.online,
+                                       'shortDesc': db_info.short_desc, 'date': moment.unix(db_info.creation_date)._d,
+                                       'tags': db_info.tags };
+                        if (db_info.online) {
+                            result_info['owner'] = db_info.owner;
+                        }
+                        else {
+                            result_info['name'] += ' (OFFLINE)';
+                        }
+                        result.push(result_info);
+                        if (result.length == n) {
+                            result.sort(databases_sort);
+                            buildListStub(idDiv,result,elt);
+                        }
+                    });
+                };
             });
         });
     }

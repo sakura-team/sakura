@@ -4,10 +4,10 @@
 var database_datastores = null;
 
 function database_update_creation_modal() {
-    //first we ask the hub the datastore
+    //submit button: back to initial display
     $("#database_submit_button").html('Submit');
     
-    
+    //first we ask the hub the datastore
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
         database_datastores = result;
         $('#database_datastore_input').empty();
