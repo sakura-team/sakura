@@ -133,10 +133,13 @@ function showDiv(event, dir, id) {
 
 /* Divers */
 function isUrlWithId(url) {
-return url.match(/[A-Za-z]+-[0-9]+/);}
+    return url.match(/[A-Za-z]+-[0-9]+/);
+}
+
 
 function getIdFromUrl(url) {
-  return	url.match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");}
+    return url.match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
+}
 
 
 function chgShowColumns(event) {

@@ -33,7 +33,7 @@
                 </tbody>
             </table>
             &nbsp&nbsp
-            <button title="Add a new table" type="button" class="btn btn-primary btn-xs" onclick="$('#datasets_creation_modal').modal();">
+            <button title="Add a new dataset" type="button" class="btn btn-primary btn-xs" onclick="$('#datasets_creation_modal').modal();">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
             </button>
             <!--
@@ -63,7 +63,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Description</label>
-                                    <input class="form-control input-sm" id="datasets_creation_description" type="text" placeholder="Shortly describe the new table">
+                                    <input class="form-control input-sm" id="datasets_creation_description" type="text" placeholder="Shortly describe this new dataset">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 0px;">
                                     <label>Creation date</label>
@@ -81,6 +81,7 @@
                                         <script type="text/javascript">
                                             $(function () {
                                                 $('#datasets_creation_datetimepicker').datetimepicker();
+                                                $('#datasets_creation_datetimepicker').data("DateTimePicker").date(new Date())
                                             });
                                         </script>
                                     </div>
@@ -113,7 +114,7 @@
                                     
                                     <div id="datasets_creation_from_file_pan" class="tab-pane fade in">
                                         <div id="datasets_file_input" class="form-group">
-                                            <input id="datasets_file_from_HD" type="file" onchange="on_file_selected(this);">
+                                            <input id="datasets_file_from_HD" type="file" onchange="datasets_on_file_selected(this);">
                                         </div>
                                         <hr>
                                         <table class="table table-condensed" id="datasets_creation_from_file_columns">
@@ -131,7 +132,7 @@
                                     <div id="from_file_pan" class="tab-pane fade">
                                         <div class="form-group">
                                             <label> File</label>
-                                            <input id="datasets_file_from_HD" type="file" onchange="on_file_selected(this);">
+                                            <input id="datasets_file_from_HD" type="file" onchange="datasets_on_file_selected(this);">
                                         </div>
                                     </div>
                                 </div>

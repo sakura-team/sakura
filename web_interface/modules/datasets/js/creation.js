@@ -101,7 +101,7 @@ function datasets_send_new(database_id) {
 /////////////////////////////////////////////////////////////////////////////////////
 // FILE MANAGEMENT
 
-function on_file_selected(f) {
+function datasets_on_file_selected(f) {
     
     if (!extension_check(f.value, 'csv')) {
         return;
@@ -342,3 +342,4 @@ function getType(str){
     else if (date.test(str)) return "date";
     else return "string";
 }
+
