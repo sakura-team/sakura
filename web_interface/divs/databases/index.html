@@ -24,12 +24,22 @@
                     </div>
                 </div>
                 <div class="panel-body">
-                    <table id="idTableDatasToFullfill" class="table table-striped table-bordered table-list">
-                        <tr><td><a href="javascript:listRequestStub('idTableDatasToFullfill',10,'Datas/tmpData',false)" class="executeOnShow">
+                    <table id="idTableDatasToFullfill" class="table table-striped table-bordered table-list" style="margin-bottom: 0px;">
+                        <tr>
+                            <td>
+                                <a href="javascript:listRequestStub('idTableDatasToFullfill',10,'Datas/tmpData',false)" class="executeOnShow">
                                     Looking for databases ... 
                                     <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
-                                </a></td></tr>
+                                </a>
+                            </td>
+                        </tr>
                     </table>
+                    <div class="pull-left">
+                        &nbsp;
+                        <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#create_database_modal" onclick="database_update_creation_modal();">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        </a>
+                    </div>
                 </div>
                 <div class="panel-footer">
                     <div class="row">
@@ -38,14 +48,6 @@
                                 <ul class="pagination" id="idDivPaginationDatas">
                                 </ul>
                             </nav>
-                        </div>
-                        <div class="col col-xs-3">
-                            <div class="pull-right">
-                                <a class="btn btn-primary" data-toggle="modal" data-target="#create_database_modal" onclick="database_update_creation_modal();">
-                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                    New Data
-                                </a>
-                            </div>
                         </div>
                     </div>
                 </div>
