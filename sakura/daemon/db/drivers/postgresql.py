@@ -42,7 +42,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
                     table_name,
                     col_name,
                     np.float64,
-                    'extract(epoch from %(table_name)s.%(col_name)s) as %(col_name)s',
+                    'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"',
                     'to_timestamp(%s)',
                     ('timestamp',))
     elif col_pgtype.startswith('character varying('):
@@ -63,7 +63,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
             np_type = (np.str, max_length)
         metadata_collector.register_column(
                 table_name, col_name, np_type,
-                'ST_AsGeoJSON(%(table_name)s.%(col_name)s) as %(col_name)s',
+                'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"',
                 'ST_GeomFromGeoJSON(%s)',
                 ('geometry', 'supports_in'))
     elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
