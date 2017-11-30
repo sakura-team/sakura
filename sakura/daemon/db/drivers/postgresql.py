@@ -232,12 +232,10 @@ class PostgreSQLDBDriver:
             cursor.execute(sql)
         db_conn.commit()
     @staticmethod
-    def add_rows(db_conn, table_name, rows, date_formats):
+    def add_rows(db_conn, table_name, value_wrappers, rows):
         if len(rows) == 0:
             return  # nothing to do
-        if len(date_formats) > 0:
-            raise NotImplementedError('date_formats parameter not handled yet.')
-        tuple_pattern = '(' + ','.join(('%s',)*len(rows[0])) + ')'
+        tuple_pattern = '(' + ','.join(value_wrappers) + ')'
         with db_conn.cursor() as cursor:
             args_str = b','.join(cursor.mogrify(tuple_pattern, row) for row in rows)
             cursor.mogrify('"%s"' % table_name)

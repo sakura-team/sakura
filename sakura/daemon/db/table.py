@@ -15,6 +15,7 @@ class DBTable:
         stream = SQLTableStream(self.name, self, user, passwd)
         return stream.get_range(row_start, row_end)
     def add_rows(self, user, passwd, rows, date_formats):
+        value_wrappers = tuple(col.value_wrapper for col in self.columns)
         db_conn = self.db.connect(user, passwd)
-        self.db.dbms.driver.add_rows(db_conn, self.name, rows, date_formats)
+        self.db.dbms.driver.add_rows(db_conn, self.name, value_wrappers, rows)
         db_conn.close()
