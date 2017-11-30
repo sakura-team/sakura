@@ -72,7 +72,7 @@ function listRequestStub(idDiv, n, elt, bd) {
 
     //Here we deal with the databases
     if (elt == 'Datas/tmpData') {
-        ws_request('list_databases', [], {}, function (databases) {
+        sakura.common.ws_request('list_databases', [], {}, function (databases) {
             var result = new Array();
             databases.sort(databases_sort);
             var index = 0;
@@ -80,7 +80,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             databases.forEach( function(db) {
                 index += 1;
                 if (index <= n) {
-                    ws_request('get_database_info', [db.database_id], {}, function(db_info) {
+                    sakura.common.ws_request('get_database_info', [db.database_id], {}, function(db_info) {
                         result_info = {'name': db_info.name,'id':db.database_id, 'isGreyedOut': !db_info.online,
                                        'shortDesc': db_info.short_desc, 'date': moment.unix(db_info.creation_date)._d,
                                        'tags': db_info.tags };
@@ -101,7 +101,7 @@ function listRequestStub(idDiv, n, elt, bd) {
         });
     }
     else if (elt == 'Operators/tmpOperator') {
-        ws_request('list_operators_classes', [], {}, function (operators) {
+        sakura.common.ws_request('list_operators_classes', [], {}, function (operators) {
             var result = new Array();
             operators.forEach( function(op) {
                 result_info = { 'name': op.name,
@@ -208,7 +208,7 @@ function historyRequestStub(idDiv,n,elt,bd) {
         result=historyStubAlea(n);
         buildHistoryStub(idDiv,result,elt);}
     else {     // version réseau à faire
-        ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
+        sakura.common.ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
     return ;}
 
 
@@ -363,7 +363,7 @@ function buildEltStub(idDiv,result,elt) {
 function eltRequestStub(idDiv, elt, bd) {
     if (elt == 'Data') {
         idElt = getIdFromUrl(window.location.toString());
-        ws_request('get_database_info', [+idElt], {}, function(db_info) {
+        sakura.common.ws_request('get_database_info', [+idElt], {}, function(db_info) {
             var result = {'name': db_info.name, "userName":db_info.owner,
             "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
             "datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
@@ -371,7 +371,7 @@ function eltRequestStub(idDiv, elt, bd) {
         });
     }
     else if (elt == 'Operator') {
-        ws_request('list_operators_classes', [], {}, function (operators) {
+        sakura.common.ws_request('list_operators_classes', [], {}, function (operators) {
             var result = new Array();
             idElt = getIdFromUrl(window.location.toString());
             operators.forEach( function(op) {
