@@ -55,33 +55,31 @@ function datasets_send_new(database_id) {
         columns.push([label, type, tags]);
     };
     
+    var dates = []
+    var date_divs = $('*').filter(function() {
+        return this.id.match(/.*datasets_date_format_fs_div_.*/);
+    });
+    if (ff) {
+        date_divs = $('*').filter(function() {
+            return this.id.match(/.*datasets_date_format_ff_div_.*/);
+        });
+    }
+    date_divs.toArray().forEach( function(div) {
+        var tab = div.id.split('_');
+        var i = tab[tab.length-1];
+        dates.push({'column_id': parseInt(i), 'column_name': columns[i][0], 'format': div.children[1].children[0].value});
+    });
+    
     //Sending the new dataset description
     sakura.common.ws_request('new_table', [database_id, name, columns], {'short_desc': desc, 'creation_date': ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix()}, function(dataset_id) {
         if (dataset_id >= 0) {
             
-            var dates = []
-            var date_divs = $('*').filter(function() {
-                return this.id.match(/.*datasets_date_format_fs_div_.*/);
-            });
-            if (ff) {
-                date_divs = $('*').filter(function() {
-                    return this.id.match(/.*datasets_date_format_ff_div_.*/);
-                });
-            }
-            date_divs.toArray().forEach( function(div) {
-                var tab = div.id.split('_');
-                var i = tab[tab.length-1];
-                dates.push([columns[i][0], div.children[1].children[0].value]);
-            });
-            
             //Sending date formats
-            /*
-            sakura.common.ws_request('set_table_info', [dataset_id], {'gui_data': {'dates': dates}}, function (result) {
-                if (!result) {
-                    console.log("Issue on sending dates to datasets_gui_data!!!");
-                }
-            });
-            */
+            //sakura.common.ws_request('set_table_info', [dataset_id], {'gui_data': {'dates': dates}}, function (result) {
+            //    if (!result) {
+            //        console.log("Issue on sending dates to datasets_gui_data!!!");
+            //    }
+            //});
             
             //Sending file
             if (ff) {

@@ -128,8 +128,15 @@ function datasets_send_file(dataset_id, f, dates) {
                 chunk.data.splice(0, 1);
                 first_chunk = false;
             }
-            sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data, dates], {}, function(result) {
-                if (!result) {
+            chunk.data.forEach( function(line) {
+                dates.forEach(function(date) {
+                    d = line[date.column_id];
+                    line[date.column_id] = moment(d, date.format).unix();
+                });
+            });
+            
+            sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data], {}, function(result) {
+                if (result) {
                     console.log("Issue in sending file");
                 }
             });
