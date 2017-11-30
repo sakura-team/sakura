@@ -27,7 +27,12 @@ def get_gui_api(f, protocol):
     def remote_api_handler(path, args, kwargs):
         protocol.dump((0, path, args, kwargs), f)
         f.flush()
-        return protocol.load(f)[1]
+        response = protocol.load(f)[1]
+        if response[0] == False:
+            print('ERROR: ' + response[1])
+            return None
+        else:
+            return response[1]
     remote_api = AttrCallAggregator(remote_api_handler)
     return remote_api
 

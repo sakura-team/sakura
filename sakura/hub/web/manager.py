@@ -23,6 +23,17 @@ class FileWSock(object):
         self.wsock.send(self.msg)
         self.msg = ''
 
+class ResultWrapper:
+    @staticmethod
+    def on_success(result):
+        return (True, result)
+    @staticmethod
+    def on_exception(exc):
+        if isinstance(exc, ValueError):
+            return (False, str(exc))
+        else:
+            raise exc
+
 def rpc_manager(context, wsock):
     print('New GUI RPC connection.')
     # make wsock a file-like object
@@ -30,7 +41,8 @@ def rpc_manager(context, wsock):
     # manage api requests
     local_api = GuiToHubAPI(context)
     handler = LocalAPIHandler(f, compactjson, local_api,
-                session_wrapper = db_session_wrapper)
+                session_wrapper = db_session_wrapper,
+                result_wrapper = ResultWrapper)
     handler.loop()
     print('GUI RPC disconnected.')
 

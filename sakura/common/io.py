@@ -67,14 +67,24 @@ def print_short(*args):
 def void_context_manager():
     yield
 
+class VoidResultWrapper:
+    @staticmethod
+    def on_success(result):
+        return result
+    @staticmethod
+    def on_exception(exc):
+        raise exc
+
 class LocalAPIHandler(object):
     def __init__(self, f, protocol, local_api,
                 greenlets_pool = None,
-                session_wrapper = void_context_manager):
+                session_wrapper = void_context_manager,
+                result_wrapper = VoidResultWrapper):
         self.f = f
         self.protocol = protocol
         self.api_runner = AttrCallRunner(local_api)
         self.session_wrapper = session_wrapper
+        self.result_wrapper = result_wrapper
         if greenlets_pool == None:
             self.pool = None
             self.handle_request = self.handle_request_base
@@ -105,7 +115,11 @@ class LocalAPIHandler(object):
         return True
     def handle_request_base(self, req_id, path, args, kwargs):
         with self.session_wrapper():
-            res = self.api_runner.do(path, args, kwargs)
+            try:
+                res = self.api_runner.do(path, args, kwargs)
+                res = self.result_wrapper.on_success(res)
+            except BaseException as e:
+                res = self.result_wrapper.on_exception(e)
             try:
                 expanded_res = make_serializable(res)
                 self.protocol.dump((req_id, expanded_res), self.f)

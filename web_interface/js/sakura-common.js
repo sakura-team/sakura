@@ -26,8 +26,8 @@ sakura.common.add_document_onready(function() {
 
 // websocket management
 // --------------------
-sakura.common.callbacks = {};
-sakura.common.next_cb_idx = 0;
+sakura.common.pending_requests = {};
+sakura.common.next_req_idx = 0;
 sakura.common.free_ws = [];
 
 sakura.common.get_ws_url = function () {
@@ -40,23 +40,38 @@ sakura.common.get_ws_url = function () {
     return proto + "//" + loc.host + "/websockets/rpc";
 }
 
+sakura.common.default_error_callback = function (msg) {
+    alert(msg);
+}
+
 sakura.common.ws_onmessage = function (evt) {
     // parse the message
     var json = JSON.parse(evt.data);
-    var cb_idx = json[0];
-    sakura.common.debug('ws_request ' + cb_idx + ' got answer');
-    var result = json[1];
-    var callback = sakura.common.callbacks[cb_idx];
-    // sakura.common.callbacks[cb_idx] will no longer be needed
-    delete sakura.common.callbacks[cb_idx];
-    // we have the result, thus this websocket is free again
-    sakura.common.free_ws.push(callback.ws);
+    var req_idx = json[0];
+    sakura.common.debug('ws_request ' + req_idx + ' got answer');
+    var response = json[1];
+    var req = sakura.common.pending_requests[req_idx];
+    // sakura.common.pending_requests[req_idx] will no longer be needed
+    delete sakura.common.pending_requests[req_idx];
+    // we have the response, thus this websocket is free again
+    sakura.common.free_ws.push(req.ws);
     // call the callback that was given with the request
-    callback(result);
+    if (response[0])
+    {
+        req.callback(response[1]);
+    }
+    else
+    {
+        req.error_callback(response[1]);
+    }
 }
 
-sakura.common.ws_request = function (func_name, args, kwargs, callback) {
+sakura.common.ws_request = function (func_name, args, kwargs, callback, error_callback) {
     var ws;
+    if (typeof error_callback === 'undefined')
+    {
+        error_callback = sakura.common.default_error_callback;
+    }
     // firefox fails if we call ws API too early
     if (sakura.common.document_ready == false)
     {
@@ -64,7 +79,7 @@ sakura.common.ws_request = function (func_name, args, kwargs, callback) {
         // restart the call when document is ready
         sakura.common.add_document_onready(function() {
             sakura.common.debug('recalling ws_request ' + func_name + ' after document is ready');
-            sakura.common.ws_request(func_name, args, kwargs, callback);
+            sakura.common.ws_request(func_name, args, kwargs, callback, error_callback);
         });
         return;
     }
@@ -78,7 +93,7 @@ sakura.common.ws_request = function (func_name, args, kwargs, callback) {
             sakura.common.free_ws.push(ws);
             // restart the call
             sakura.common.debug('recalling ws_request ' + func_name + ' with new ws');
-            sakura.common.ws_request(func_name, args, kwargs, callback);
+            sakura.common.ws_request(func_name, args, kwargs, callback, error_callback);
         }
         ws.onerror = function() {
             console.error("ws " + func_name + " error!");
@@ -87,16 +102,18 @@ sakura.common.ws_request = function (func_name, args, kwargs, callback) {
     }
     // everything is fine, continue
     // get a callback id
-    var cb_idx = sakura.common.next_cb_idx;
-    sakura.common.next_cb_idx += 1;
+    var req_idx = sakura.common.next_req_idx;
+    sakura.common.next_req_idx += 1;
     // pop one of the free websockets
     ws = sakura.common.free_ws.pop();
-    // attach the websocket we will use to the callback, for later reference
-    callback.ws = ws;
-    // record the callback using its id
-    sakura.common.callbacks[cb_idx] = callback;
+    // record the request using its id
+    sakura.common.pending_requests[req_idx] = {
+        'ws': ws,
+        'callback': callback,
+        'error_callback': error_callback
+    };
     // prepare the message and send it
-    var msg = JSON.stringify([ cb_idx, [func_name], args, kwargs ]);
+    var msg = JSON.stringify([ req_idx, [func_name], args, kwargs ]);
     console.log('ws_request: ' + msg);
     sakura.common.debug('ws_request sending msg');
     ws.send(msg);
