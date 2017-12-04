@@ -16,11 +16,26 @@ def to_namedtuple(clsname, d):
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
 
-    @app.route('/websockets/rpc')
     @monitored
-    def handle_rpc_websocket():
-        wsock = bottle_get_wsock(bottle.request)
-        rpc_manager(context, wsock)
+    def ws_handle(session):
+        wsock = bottle_get_wsock()
+        rpc_manager(context, wsock, session)
+
+    @app.route('/websockets/sessions/new')
+    def ws_new_session():
+        session = None
+        with db_session_wrapper():
+            session = context.new_session()
+        ws_handle(session)
+
+    @app.route('/websockets/sessions/connect/<secret:int>')
+    def ws_connect_session(secret):
+        session = None
+        with db_session_wrapper():
+            session = context.get_session(secret)
+        if session is None:
+            bottle.abort(401, 'Wrong secret.')
+        ws_handle(session)
 
     @app.route('/opfiles/<op_id:int>/<filepath:path>')
     def serve_operator_file(op_id, filepath):
@@ -50,4 +65,4 @@ def web_greenlet(context, webapp_path):
     server = WSGIServer(("0.0.0.0", conf.web_port), app,
                         handler_class=WebSocketHandler)
     server.start()
-    handle_rpc_websocket.catch_issues()
+    ws_handle.catch_issues()

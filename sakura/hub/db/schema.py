@@ -11,6 +11,7 @@ from sakura.hub.mixins.opinstance import OpInstanceMixin
 from sakura.hub.mixins.link import LinkMixin
 from sakura.hub.mixins.param import OpParamMixin
 from sakura.hub.mixins.user import UserMixin
+from sakura.hub.mixins.session import SessionMixin
 
 epoch = float
 
@@ -35,6 +36,11 @@ def define_schema(db):
         db_ro = Set('Database')
         db_owner_of = Set('Database')
         db_contact_of = Set('Database')
+        sessions = Set('Session')
+
+    class Session(db.Entity, SessionMixin):
+        user = Optional(User)
+        timeout = Required(epoch)
 
     class Project(db.Entity, ProjectMixin):
         gui_data = Optional(str)

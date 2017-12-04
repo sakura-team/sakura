@@ -34,15 +34,17 @@ class ResultWrapper:
         else:
             raise exc
 
-def rpc_manager(context, wsock):
+def rpc_manager(context, wsock, session):
     print('New GUI RPC connection.')
     # make wsock a file-like object
     f = FileWSock(wsock)
     # manage api requests
-    local_api = GuiToHubAPI(context)
+    local_api = GuiToHubAPI(context, session)
     handler = LocalAPIHandler(f, compactjson, local_api,
                 session_wrapper = db_session_wrapper,
                 result_wrapper = ResultWrapper)
+    session.num_ws += 1
     handler.loop()
+    session.num_ws -= 1
     print('GUI RPC disconnected.')
 

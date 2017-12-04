@@ -1,9 +1,19 @@
 class GuiToHubAPI(object):
-    def __init__(self, context):
+    def __init__(self, context, session):
         self.context = context
         self.project_id = 0     # for now
-        
-    
+        self.session_id = session.id
+
+    # We cannot simply keep the session object we got
+    # at __init__() call, because it is a pony db object
+    # thus its scope is limited to a db session.
+    # And for each call, we get a different db session.
+    # Thus we use a property below, in order to get
+    # an object valid for the current db session.
+    @property
+    def session(self):
+        return self.context.sessions[self.session_id]
+
     ########################################
     # Daemons
     def list_daemons(self):
@@ -183,3 +193,11 @@ class GuiToHubAPI(object):
             sampleDBDict[userAccountValues.pop("loginName")] = userAccountValues #adding a new user to sampleDB
             print ("user information added")
             return True;
+    # Session management
+    ####################
+    def renew_session(self):
+        return self.session.renew()
+
+    def generate_session_secret(self):
+        return self.context.session_secrets.generate_secret(self.session)
+

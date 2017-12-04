@@ -1,13 +1,16 @@
 import bottle
 from sakura.common.bottle import PicklableFileRequest
 from sakura.hub.db import instanciate_db
+from sakura.hub.secrets import SecretsRegistry
 
 class HubContext(object):
+    SESSION_SECRETS_LIFETIME = 5
     def __init__(self):
         self.db = instanciate_db()
         self.daemons = self.db.Daemon
         self.projects = self.db.Project
         self.users = self.db.User
+        self.sessions = self.db.Session
         self.op_classes = self.db.OpClass
         self.op_instances = self.db.OpInstance
         self.links = self.db.Link
@@ -16,6 +19,12 @@ class HubContext(object):
         self.databases = self.db.Database
         self.tables = self.db.DBTable
         self.columns = self.db.DBColumn
+        self.session_secrets = SecretsRegistry(
+                        HubContext.SESSION_SECRETS_LIFETIME)
+    def new_session(self):
+        return self.sessions.new_session(self)
+    def get_session(self, session_secret):
+        return self.session_secrets.get_obj(session_secret)
     def on_daemon_connect(self, daemon_info, api):
         daemon = self.daemons.restore_daemon(self, api = api, **daemon_info)
         return daemon.id
