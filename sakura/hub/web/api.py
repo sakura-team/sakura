@@ -169,30 +169,6 @@ class GuiToHubAPI(object):
     def get_rows_from_table(self, table_id, row_start, row_end):
         return self.context.tables[table_id].get_range(row_start, row_end)
 
-    # User Management
-    ########################################
-    def set_user_account(self, userAccountValues):
-        print(userAccountValues)
-        sampleDBDict = {
-        'ritesh': {'signUpEmail': 'ritesh.shah@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'},
-
-        'mike': {'signUpEmail': 'Michael.Ortega@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'},
-
-        'etienne': {'signUpEmail': 'etienne.duble@imag.fr', 'signUpPassword': 'a', 'signUpConfirmPassword': 'a', 'signUpFirstName': 'aa', 'signUpLastName': 'a', 'gender': 'M', 'signUpCountry': 'a', 'signUpInstitution': 'a', 'signUpStatus': '', 'signUpDomain': '', 'signInCGU': 'cguNotRead'}
-        }
-        if userAccountValues:
-            if userAccountValues["loginName"] in sampleDBDict.keys():
-                print ("loginName matches in DB")
-                return False
-            for existingLoginName in sampleDBDict.keys():
-                print ("looking at sampleDBDict info entries")
-                if sampleDBDict[existingLoginName]["signUpEmail"] == userAccountValues["signUpEmail"]:
-                    print ("email matches in DB")
-                    return False;
-            # none of the entries contain the new email so add the information
-            sampleDBDict[userAccountValues.pop("loginName")] = userAccountValues #adding a new user to sampleDB
-            print ("user information added")
-            return True;
     # Session management
     ####################
     def renew_session(self):
@@ -201,3 +177,13 @@ class GuiToHubAPI(object):
     def generate_session_secret(self):
         return self.context.session_secrets.generate_secret(self.session)
 
+    # User management
+    #################
+    def new_user(self, **user_info):
+        return self.context.users.new_user(self.context, **user_info)
+
+    def login(self, email, password):
+        self.session.user = self.context.users.from_credentials(email, password)
+
+    def logout(self):
+        self.session.user = None
