@@ -6,6 +6,24 @@ function datasets_open_upload_modal(dataset_id) {
     $('#datasets_upload_header').html('<h3>Upload Data into <b>'+dataset[0].name+'</b></h3>');
     $('#datasets_upload_select_file').attr('onchange', 'datasets_upload_on_file_selected(this, '+dataset_id+');');
     $('#datasets_upload_button').attr('onclick', 'datasets_upload('+dataset_id+');');
+    sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
+            var thead = $('#datasets_upload_expected_columns').find('thead');
+            var tbody = $('#datasets_upload_expected_columns').find('tbody');
+            thead.empty()
+            tbody.empty()
+            var new_row_head = $(thead[0].insertRow());
+            var new_row_body = $(tbody[0].insertRow());
+        result.columns.forEach( function (col) {
+            new_row_head.append('<th>'+col[0]+'</th>');
+            if (col[1] != '<U0')
+                new_row_body.append('<td>'+col[1]+'</td>');
+            else
+                new_row_body.append('<td>string</td>');
+            console.log(col);
+        });
+        
+        //datasets_upload_expected_columns
+    });
     $('#datasets_upload_modal').modal();
 }
 

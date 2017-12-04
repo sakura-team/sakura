@@ -227,9 +227,23 @@
                     <div class="modal-body">
                         <div class="panel">
                             <div class="form-group">
+                                <h4>Expected columns</h4>
+                                <table class="table table-condensed table-striped" id="datasets_upload_expected_columns">
+                                    <thead>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="panel">
+                            <h4>Select a file</h4>
+                            <div class="form-group">
                                 <input id="datasets_upload_select_file" type="file" onchange="datasets_upload_on_file_selected();">
                             </div>
                         </div>
+                        
                         <div class="panel">
                             <div class="form-group">
                                 <table class="table table-condensed table-striped" id="datasets_upload_preview_table">
