@@ -2,81 +2,58 @@
 
 
 function buildListStub(idDiv,result,elt) {
+
     var eltAncetre=elt.split("/")[0];
-    s="";
-    s = s +'<thead><tr>'
-        + '<th class="col-text">Name</th>';
-    if (document.getElementById("cbColSelectTags").checked) {
-        s = s + '<th class="col-text"><span class="glyphicon glyphicon-tag" aria-hidden="true"></span></th>';}
-    if (document.getElementById("cbColSelectId").checked) {
-        s = s +  '<th class="col-text">Id</th>';}
-    if (document.getElementById("cbColSelectShortDesc").checked) {
-        s = s +  '<th class="col-text">Short Desc.</th>';}
-    if (document.getElementById("cbColSelectDate").checked) {
-        s = s +  '<th class="col-text">Date</th>';}
-    if (document.getElementById("cbColSelectModification").checked) {
-        s = s +  '<th class="col-text">Modif.</th>';}
-    if (document.getElementById("cbColSelectOwner").checked) {
-        s = s +  '<th class="col-text">Owner</th>';}
-    s = s +  '<th class="col-tools"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></th>'
-        + '<th class="col-text" style="max-width:3px; overflow:hidden">'
-        + '<a class="btn" style="padding:2px;" data-toggle="modal" data-target="#colSelectModal">'
-        + '<span style="left:-10px;" class="glyphicon glyphicon-list" aria-hidden="true"></span></a></th>'
-        + '</tr></thead>'
-        + '<tbody id="idTBodyList'+eltAncetre+'">';
     
-    for(i=0;i<result.length;i++) {
-        var tmpInitElt = elt;
-        elt=elt.replace(/tmp(.*)/,"$1-"+result[i].id);
-        s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"','"+result[i].id+"');\" href=\"http://sakura.imag.fr/"+elt+"/"+result[i].id+"\" ";
-        if (result[i].isGreyedOut==true)
-            s += "style='pointer-events: none; cursor: default; opacity: 0.6;' ";
-        s += ">"+result[i].name+"</a></td>\n";
-        if (document.getElementById("cbColSelectTags").checked) {
-            s = s + "<td>"+result[i].tags+"</td>";}
-        if (document.getElementById("cbColSelectId").checked) {
-            s = s + "<td>"+result[i].id+"</td>";}
-        if (document.getElementById("cbColSelectShortDesc").checked) {
-            s = s + "<td>"+result[i].shortDesc+"</td>";}  
-        if (document.getElementById("cbColSelectDate").checked) {
-            s = s + "<td>"+result[i].date+"</td>";}
-        if (document.getElementById("cbColSelectModification").checked) {
-            s = s + "<td>"+result[i].modif+"</td>";} 
-        if (document.getElementById("cbColSelectOwner").checked) {
-            s = s + "<td>"+result[i].owner+"</td>";}
-        s = s	+ "<td colspan='2' align='center' style='padding:2px;'>";
-        if (result[i].isGreyedOut==false) { // if greyed-out, no buttons should appear
-            if ((result[i].isViewable=="true") && (result[i].isEditable=="true")) {
-                s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-                    + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-                    + "<a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>";
+    //Head of the list, according to the selected columns
+    var thead = $('#'+idDiv).find('thead');
+    var tbody = $('#'+idDiv).find('tbody');
+    thead.empty();
+    tbody.empty();
+    var new_row_head = $(thead[0].insertRow());
+    var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
+    var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
+    
+    new_row_head.append('<th>Name</th>');
+    list_cols_gui.forEach( function (lelt) {
+    if (document.getElementById("cbColSelect"+lelt).checked)
+        new_row_head.append('<th>'+lelt+'</th>');
+    });
+    
+    //Last col for the wrench
+    var last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
+    var cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
+    cell.append('<a class="btn" style="padding:6px;" data-toggle="modal" data-target="#colSelectModal">'
+        + '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></a>'
+        + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>');
+    new_row_head.append(cell);
+        
+    //Body of the list
+    result.forEach( function (row) {
+        
+        var new_row = $(tbody[0].insertRow());
+        var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
+        //adding link
+        var name_link = $('<a>',{   text: row.name,
+                                    title: 'Blah',
+                                    href: 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id,
+                                    onclick: 'showDiv(event, "'+tmp_elt+'","' +row.id+'")'
+                        });
+        
+        var cell = $('<td>');
+        cell.append(name_link);
+        new_row.append(cell);
+        
+        list_cols_gui.forEach( function (lelt, index) {
+            if (document.getElementById("cbColSelect"+lelt).checked) {
+                new_row.append('<td>'+row[list_cols_hub[index]]+'</td>');
             }
-            else if (result[i].isViewable=="true") {
-                s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-                    + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>";
-            }
-            else {
-                s = s + "<a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-close' aria-hidden='true'></span></a>";
-                }
-        }
-        s = s + "</td></tr>";
-        elt = tmpInitElt;
-    }
-    s = s + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>' //TODO : (</div> ?) relance l'affichage aleatoire, à supprimer quand on aura la version avec bd  
-        + '</tbody>';
-    document.getElementById(idDiv).innerHTML = s;
+        });
+        var last_cell = new_row[0].cells[new_row[0].cells.length-1];
+        last_cell.colSpan = 2;
+    });
+    tbody[0].id = 'idTBodyList'+eltAncetre;
     
-    //maj de la pagination    
-    s = "<li><a aria-label='Previous' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-5)+"' span aria-hidden='true'>«</span></a></li>"
-        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt-0)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt-0)+"'>"+(document.pageElt-0)+"</a></li>"
-        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+1)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+1)+"'>"+(document.pageElt+1)+"</a></li>"
-        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+2)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+2)+"'>"+(document.pageElt+2)+"</a></li>"
-        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+3)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+3)+"'>"+(document.pageElt+3)+"</a></li>"
-        + "<li><a onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+4)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+4)+"'>"+(document.pageElt+4)+"</a></li>"
-        + "<li><a aria-label='Next' onclick='showDiv(event,\""+eltAncetre+"?page="+(document.pageElt+5)+"\");' href='http://sakura.imag.fr/"+eltAncetre+"?page="+(document.pageElt+5)+"'><span aria-hidden='true'>»</span></a></li>";
-    
-    if (document.getElementById("idDivPagination"+eltAncetre))
-        document.getElementById("idDivPagination"+eltAncetre).innerHTML = s;
 }
 
 
@@ -119,7 +96,6 @@ function listRequestStub(idDiv, n, elt, bd) {
     }
     else if (elt == 'Operators/tmpOperator') {
         ws_request('list_operators_classes', [], {}, function (operators) {
-            console.log(operators);
             var result = new Array();
             operators.forEach( function(op) {
                 result_info = { 'name': op.name,
@@ -144,7 +120,6 @@ function listRequestStub(idDiv, n, elt, bd) {
         });
     }
     else {
-        console.log(elt);
         result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"owner":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"owner":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
         buildListStub(idDiv,result,elt);
     }

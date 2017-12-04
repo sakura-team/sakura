@@ -2,30 +2,36 @@
 <!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
 
 <div style="display:none;" id="idDivResults" class="classMainDiv">
-
-	<div style="float:right;">
-      <img width="80px" height="80px" src="media/Article_icon_cropped.svg.png" alt="CC-BY-3.0 Wikipedia Article"></img>
-	  <br />
-	  <br />
-	  <button type="button" onclick="showDiv(event,'Results/tmpResult/Work');" class="btn btn-primary">Try it</button></div>
-
-	<h2>Results</h2>
-	Show your results and the storytelling of your projects.<br /><br />
-	
-
-	<div class="row">
+    <div style="float:right;">
+        <img width="80px" height="80px" src="media/Article_icon_cropped.svg.png" alt="CC-BY-3.0 Wikipedia Article"></img>
+        <br />  
+        <br /> 
+        <button type="button" onclick="showDiv(event,'Results/tmpResult/Work');" class="btn btn-primary">Try it</button>
+    </div>
+        
+    <h2>Results</h2>
+    Show your results and the storytelling of your projects.<br /><br />
+    <div class="row">
         <div class="col-md-10">
             <div class="panel panel-default panel-table">
                 <div class="panel-heading">
                     <div class="row">
-						<form class="form-search form-inline col-md-offset-6">
-							<input id="idInputSearchResults" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Results');" />
-						</form>
+                        <form class="form-search form-inline col-md-offset-6">
+                            <input id="idInputSearchResults" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Results');" />
+                        </form>
                     </div>
                 </div>
                 <div class="panel-body">
                     <table id="idTableResultsToFullfill" class="table table-striped table-bordered table-list">                        
-						<tr><td><a href="javascript:listRequestStub('idTableResultsToFullfill',10,'Results/tmpResult',false)" class="executeOnShow">liste à remplir</a></td></tr>
+                        <thead>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <a href="javascript:listRequestStub('idTableResultsToFullfill',10,'Results/tmpResult',false)" class="executeOnShow">liste à remplir</a>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
                 <div class="panel-footer">
@@ -49,6 +55,4 @@
             </div>
         </div>
     </div>
-    
-	
-	</div>
+</div>

@@ -13,7 +13,6 @@ function database_update_creation_modal() {
         $('#database_datastore_input').empty();
         result.forEach( function(ds) {
             if (ds['online']) {
-                console.log(ds);
                 $('#database_datastore_input').append('<option value="'+ds['datastore_id']+'">'+ds['driver_label']+" service on "+ds['host']+'</option>');
             }
         });
