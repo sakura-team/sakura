@@ -35,7 +35,6 @@ function buildListStub(idDiv,result,elt) {
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
         //adding link
         var name_link = $('<a>',{   text: row.name,
-                                    title: 'Blah',
                                     href: 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id,
                                     onclick: 'showDiv(event, "'+tmp_elt+'","' +row.id+'")'
                         });
@@ -46,7 +45,14 @@ function buildListStub(idDiv,result,elt) {
         
         list_cols_gui.forEach( function (lelt, index) {
             if (document.getElementById("cbColSelect"+lelt).checked) {
-                new_row.append('<td>'+row[list_cols_hub[index]]+'</td>');
+                if (lelt == 'Date' && row[list_cols_hub[index]] instanceof Date) {
+                    var d = row[list_cols_hub[index]].toDateString();
+                    var h = row[list_cols_hub[index]].toLocaleTimeString();
+                    new_row.append('<td>'+d+'</td>');
+                }
+                else {
+                    new_row.append('<td>'+row[list_cols_hub[index]]+'</td>');
+                }
             }
         });
         var last_cell = new_row[0].cells[new_row[0].cells.length-1];
