@@ -33,6 +33,9 @@ function datasets_open_upload_modal(dataset_id) {
         });
         datasets_upload_expected_columns = result.columns;
     });
+    
+    $('#datasets_upload_button').prop("disabled",true);
+    
     $('#datasets_upload_modal').modal();
 }
 
@@ -74,9 +77,15 @@ function datasets_upload_on_file_selected(f, dataset_id) {
                 if (headers.length != datasets_upload_expected_columns.length) {
                     bg_color = 'bg-danger';
                     alert('Wrong number of columns');
+                    $('#datasets_upload_button').prop("disabled",true);
                 }
+                else {
+                    $('#datasets_upload_button').prop("disabled",false);
+                }
+                
+                var new_row_head = $(thead[0].insertRow());
                 headers.forEach( function(elt, index) {
-                    thead.append("<th class='"+bg_color+"'>"+elt+"</th>");
+                    new_row_head.append("<th class='"+bg_color+"'>"+elt+"</th>");
                 });
                 if (nb_lines == nb_preview_rows) {
                     var new_row = $(tbody[0].insertRow(-1));
@@ -88,8 +97,6 @@ function datasets_upload_on_file_selected(f, dataset_id) {
                 console.log(error);
             }
     });
-    
-    console.log('here');
 }
 
 
