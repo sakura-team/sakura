@@ -42,6 +42,7 @@ class FileWSock(object):
         self.connected = False
         self.ever_connected = False
         self.msg = ''
+        self.wsock = None
     def connect(self):
         self.wsock = create_connection(self.url)
         self.connected = True
@@ -78,7 +79,8 @@ class FileWSock(object):
                     print('.', end='', flush=True)
                 time.sleep(1)
     def close(self):
-        self.wsock.close()
+        if self.wsock is not None:
+            self.wsock.close()
     def flush(self):
         # actually, we only detect errors when we read the response,
         # so we cannot just send the message here and forget it.
