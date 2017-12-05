@@ -64,8 +64,10 @@ function registerUser(evt = '') {
       } else {
         console.log("ERROR: Form fields are empty"); //checking for empty fields
       }
+      delete userAccountValues['signUpConfirmPassword'];
+      delete userAccountValues['signInCGU'];
       console.log(userAccountValues);
-      sakura.common.ws_request('set_user_account', [userAccountValues], {}, function (wsResult) {
+      sakura.common.ws_request('new_user', [], userAccountValues, function (wsResult) {
         if (typeof (wsResult) !== 'undefined') {
           console.log("Handshake with api.py: Success");
           console.log(wsResult);
@@ -84,7 +86,10 @@ function registerUser(evt = '') {
         } else {
           console.log("Handshake with api.py: Failure");
         }
-      });
+      },
+        function (error_message) {
+            console.log(error_message);
+        });
     } else {
       console.log("Form validation failed");
     }
