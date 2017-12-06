@@ -3,6 +3,7 @@ from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
+from sakura.hub.web.cache import webcache_serve
 from sakura.hub.db import db_session_wrapper
 from sakura.common.tools import monitored
 from pathlib import Path
@@ -52,6 +53,10 @@ def web_greenlet(context, webapp_path):
                     object_hook = lambda d: to_namedtuple('Params', d))
         with (Path(webapp_path) / 'modules' / 'workflow' / filepath).open() as f:
             return template(f.read(), **params._asdict())
+
+    @app.route('/webcache/cdnjs/<filepath:path>')
+    def serve_cdnjs_cache(filepath):
+        return webcache_serve('cdnjs', filepath)
 
     # if no route was found above, look for static files in webapp subdir
     @app.route('/')
