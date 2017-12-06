@@ -61,6 +61,12 @@ sakura.common.ws.complete_url = function (path) {
 }
 
 sakura.common.ws.get_first_url = function () {
+    var searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has('session-secret')) {
+        return sakura.common.ws.get_duplicate_url(
+                searchParams.get('session-secret')
+        );
+    }
     return sakura.common.ws.complete_url("/websockets/sessions/new");
 }
 
