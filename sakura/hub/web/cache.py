@@ -23,4 +23,6 @@ def webcache_serve(cdn, filepath):
         except urllib.error.HTTPError as e:
             return bottle.abort(e.code, e.msg)
     # serve the file from the cache
-    return bottle.static_file('/' + cachesubpath, root = webcache_dir)
+    resp = bottle.static_file('/' + cachesubpath, root = webcache_dir)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    return resp
