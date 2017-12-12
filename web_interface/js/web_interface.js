@@ -118,11 +118,18 @@ function showDiv(event, dir, id) {
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
-    
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
-            idElt = getIdFromUrl(window.location.toString());
-            actionsOnShow[i].src = "/modules/datasets/index.html?database_id="+idElt;
+            var aos = actionsOnShow[i];
+            sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
+                if (aos.id == 'iframe_datasets') {
+                    idElt = getIdFromUrl(window.location.toString());
+                    aos.src = "/modules/datasets/index.html?database_id="+idElt+"&session-secret="+ss;
+                }
+                else if (aos.id == 'iframe_workflow') {
+                    aos.src = "/modules/workflow/index.html?session-secret="+ss;
+                }
+            });
         }
         else {
             eval(actionsOnShow[i].href);
