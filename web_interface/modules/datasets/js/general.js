@@ -42,77 +42,60 @@ function recover_datasets() {
     
     var database_id = window.location.search.substr(1).split("=")[1];
     
-    
-    ////////////SANDBOX////////////////////////
-    ////////////SANDBOX////////////////////////
-    
-    /*
-    ////////////TEMP////////////////////////
-    sakura.common.ws_request('list_databases', [], {}, function (result) {
-        if (result.length)
-            database_id = result[0].database_id;
-        else {
-            alert("No database found !!!");
-            return;
+    sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
+            
+        console.log(result);
+        $('#datasets_name').html(result.name);
+        if (result.short_desc) {
+            $('#datasets_description').html(result.short_desc);
         }
-    
-    ////////////END TEMP////////////////////////
-    */
-        sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
-            
-            console.log(result);
-            $('#datasets_name').html(result.name);
-            if (result.short_desc) {
-                $('#datasets_description').html(result.short_desc);
-            }
-            else {
-                $('#datasets_description').html('No short description');
-            }
-            
-            
-            //Filling dataset
-            var body = $('#table_of_datasets').find('tbody');
-            body.empty();
-            result.tables.forEach( function(dataset, index) {
-                var dataset_id = dataset.table_id;
-                var new_row = $(document.createElement('tr'));
-                new_row.load('templates/dataset.html', function () {
-                    var tds = new_row.find('td');
-                    var spans = $(tds[2]).find('span');
-                    
-                    $(tds[0]).empty();
-                    $(tds[1]).empty();
-                    $(tds[0]).append(dataset.name);
-                    if (dataset.short_desc)
-                        $(tds[1]).append(dataset.short_desc);
-                    else
-                        $(tds[1]).append("__");
-                    spans.toArray().forEach( function(span) {
-                        if ($(span).attr('onclick')) {
-                            var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
-                             $(span).attr('onclick', new_oc);
-                        }
-                    });
+        else {
+            $('#datasets_description').html('No short description');
+        }
+        
+        
+        //Filling dataset
+        var body = $('#table_of_datasets').find('tbody');
+        body.empty();
+        result.tables.forEach( function(dataset, index) {
+            var dataset_id = dataset.table_id;
+            var new_row = $(document.createElement('tr'));
+            new_row.load('templates/dataset.html', function () {
+                var tds = new_row.find('td');
+                var spans = $(tds[2]).find('span');
+                
+                $(tds[0]).empty();
+                $(tds[1]).empty();
+                $(tds[0]).append(dataset.name);
+                if (dataset.short_desc)
+                    $(tds[1]).append(dataset.short_desc);
+                else
+                    $(tds[1]).append("__");
+                spans.toArray().forEach( function(span) {
+                    if ($(span).attr('onclick')) {
+                        var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
+                         $(span).attr('onclick', new_oc);
+                    }
                 });
-                body.append(new_row);
             });
-            
-            //Updating/emptying html elements
-            $('#datasets_creation_name').val("");
-            $('#datasets_creation_description').val("");
-            $("#datasets_file_from_HD").val("");
-            $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+')');
-            
-            datasets_add_a_row('datasets_creation_from_scratch_columns');
-            database_infos = result;
-            
-            //Ask for the existing tags
-            var datastore_id = 0;   // TODO
-            sakura.common.ws_request('list_expected_columns_tags', [datastore_id], {}, function (tags_list) {
-                columns_tags_list = tags_list;
-            });
+            body.append(new_row);
         });
-    /*});*/
+        
+        //Updating/emptying html elements
+        $('#datasets_creation_name').val("");
+        $('#datasets_creation_description').val("");
+        $("#datasets_file_from_HD").val("");
+        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+')');
+        
+        datasets_add_a_row('datasets_creation_from_scratch_columns');
+        database_infos = result;
+        
+        //Ask for the existing tags
+        var datastore_id = 0;   // TODO
+        sakura.common.ws_request('list_expected_columns_tags', [datastore_id], {}, function (tags_list) {
+            columns_tags_list = tags_list;
+        });
+    });
 }
 
 
