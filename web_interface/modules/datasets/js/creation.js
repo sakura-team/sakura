@@ -271,11 +271,28 @@ function datasets_type_change(row_id, from) {
             div.append($(input));
             $(td).append(div);
             $(tmp).remove();
-            datasets_check_date_format(row_id, div);
-            var data = csv_file.lines[0][0][csv_file.headers[row_id]];
-            $(div[0].children[3].children[0]).val(data);
-            $(div[0].children[1].children[0]).on('keyup', {'row_id': row_id, 'div': div}, function(event) {
-                datasets_check_date_format(event.data.row_id, event.data.div);
+            var date = csv_file.lines[0][0][csv_file.headers[row_id]];
+            
+            datasets_check_date_format( date,
+                                        $(div[0].children[1]),
+                                        $(div[0].children[1].children[0]),
+                                        $(div[0].children[5]),
+                                        $(div[0].children[5].children[0])
+                                        );
+            
+            $(div[0].children[3].children[0]).val(date);
+            $(div[0].children[1].children[0]).on('keyup', {'date': date, 
+                                                    'format_div': $(div[0].children[1]),
+                                                    'format_input': $(div[0].children[1].children[0]),
+                                                    'result_div': $(div[0].children[5]),
+                                                    'result_input': $(div[0].children[5].children[0])
+                                                    }, function(event) {
+                
+                datasets_check_date_format( event.data.date, 
+                                            event.data.format_div,
+                                            event.data.format_input,
+                                            event.data.result_div,
+                                            event.data.result_input);
             });
         });
     }
@@ -285,20 +302,17 @@ function datasets_type_change(row_id, from) {
 }
 
 
-function datasets_check_date_format(row_id, div) {
-    
-    var format = $(div[0].children[1].children[0]).val();
-    var date = csv_file.lines[0][0][csv_file.headers[row_id]];
-    var m2 = moment(date, format);
+function datasets_check_date_format(date, format_div, format_input, result_div, result_input) {
+    var m2 = moment(date, format_input.val());
     if (! m2._isValid) {
-        $(div[0].children[1]).attr("class", "has-error");
-        $(div[0].children[5]).attr("class", "has-error");
-        $(div[0].children[5].children[0]).val("Invalid format");
+        format_div.attr("class", "has-error");
+        result_div.attr("class", "has-error");
+        result_input.val("Invalid format");
     }
-    else {
-        $(div[0].children[1]).attr("class", "");
-        $(div[0].children[5]).attr("class", "has-success");
-        $(div[0].children[5].children[0]).val(m2._d);
+    else{
+        format_div.attr("class", "");
+        result_div.attr("class", "has-success");
+        result_input.val(m2._d);
     }
 }
 
