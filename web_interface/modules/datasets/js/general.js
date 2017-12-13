@@ -40,7 +40,11 @@ function datasets_extension_check(f_name, ext) {
 }
 function recover_datasets() {
     
-    var database_id = window.location.search.substr(1).split("=")[1];
+    var searchParams = new URLSearchParams(window.location.search);
+    var database_id = null;
+    if (searchParams.has('database_id')) {
+        database_id = searchParams.get('database_id')
+    }
     
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
             
