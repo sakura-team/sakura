@@ -103,7 +103,7 @@ function recover_datasets() {
 }
 
 
-function datasets_send_file(dataset_id, f, dates) {
+function datasets_send_file(dataset_id, f, dates, modal) {
     var first_chunk = true;
     Papa.parse(f, {
         comments: true,
@@ -130,6 +130,7 @@ function datasets_send_file(dataset_id, f, dates) {
         },
         complete: function() {
             datasets_info('Sending File', 'Done !!');
+            modal.modal('hide');
         },
         error: function (error) {
             console.log(error);

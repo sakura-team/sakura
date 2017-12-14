@@ -77,15 +77,13 @@ function datasets_send_new(database_id) {
             //Sending file
             if (ff) {
                 var f = $('#datasets_file_from_HD')[0].files[0];
-                datasets_send_file(dataset_id, f, dates);
+                datasets_send_file(dataset_id, f, dates, $("#datasets_creation_modal"));
             }
             
             //Refresh dataset list
             recover_datasets();
         }
     });
-    
-    $("#datasets_creation_modal").modal('hide');
 }
 
 
