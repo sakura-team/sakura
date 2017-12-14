@@ -197,8 +197,11 @@ function datasets_upload_data_format_modal(col) {
 
 
 function datasets_upload_save_date_format() {
-    var format = $($('#datasets_date_format_body')[0].children[1].children[0]).val();
-    datasets_upload_checked_columns[datasets_upload_current_column] = format;
+    var result = $($('#datasets_date_format_body')[0].children[5].children[0]).val();
+    if (result != 'Invalid format') {
+        var format = $($('#datasets_date_format_body')[0].children[1].children[0]).val();
+        datasets_upload_checked_columns[datasets_upload_current_column] = format;
+    }
     datasets_upload_fill_table();
     $('#datasets_date_format_modal').modal('hide');
 }
