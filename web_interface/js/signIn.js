@@ -51,7 +51,6 @@ function registerUser(evt = '') {
       $('.bs-callout-warning').toggleClass('hidden', ok);
     });
     var formValidated = formInstance.validate();
-    alert("formValidated: " + formValidated);
     if (formValidated) {
       var fieldsObj = formInstance.fields;
       if (fieldsObj.length > 0)
@@ -66,30 +65,35 @@ function registerUser(evt = '') {
       }
       delete userAccountValues['signUpConfirmPassword'];
       delete userAccountValues['signInCGU'];
-      console.log(userAccountValues);
-      sakura.common.ws_request('new_user', [], userAccountValues, function (wsResult) {
-        if (typeof (wsResult) !== 'undefined') {
-          console.log("Handshake with api.py: Success");
-          console.log(wsResult);
-          userAccountValues = {};
-          if (wsResult) {
-            alert("New user information added")
-            $('#signInModal').on('hidden.bs.modal', function () {
-              $(this).find('form').trigger('reset');
-            });
-            $("#signInModal").modal("hide");
-            return;
-          } else {
-            alert("Login name or email exists!")
-            return;
-          }
-        } else {
-          console.log("Handshake with api.py: Failure");
-        }
-      },
+      // console.log(userAccountValues); //before password hashing
+      //begin client-side hashing using crypto.js library
+      let login = userAccountValues['login'];
+      let password = userAccountValues['password'];
+      let hashed_sha256 = CryptoJS.SHA256(password);
+      let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
+      userAccountValues['password'] = client_hashed;      
+      // console.log(userAccountValues); //after password hashing
+      
+      //begin request calls for websocket
+      sakura.common.ws_request('new_user', [], userAccountValues, 
+        function (wsResult) {
+	    	  console.log("wsResult:"+wsResult);
+	    	  if (wsResult) {
+	    		  userAccountValues = {};
+	    		  alert("'"+login + "' has been registered");
+	    		  $('#signInModal').on('hidden.bs.modal', function () {
+	    			  $(this).find('form').trigger('reset');
+	    		  });
+	    		  $("#signInModal").modal("hide");
+	    		  return;
+	    	  } else {
+	    		  console.log("Error callbacks in the new_user function need to be handled properly");
+	    		  return;
+	    	  }
+        }, 
         function (error_message) {
-            console.log(error_message);
-        });
+    	      alert(error_message);
+    	  }); 
     } else {
       console.log("Form validation failed");
     }

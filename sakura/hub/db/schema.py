@@ -21,6 +21,8 @@ def define_schema(db):
         login = PrimaryKey(str)
         email = Required(str, unique=True)
         password = Required(str)
+        salt = Required(bytes)
+        hash = Required(bytes)
         first_name = Optional(str)
         last_name = Optional(str)
         creation_date = Optional(epoch)     # registration time/date
@@ -28,7 +30,7 @@ def define_schema(db):
         country = Optional(str)
         institution = Optional(str)
         occupation = Optional(str)          # work profile related
-        work_domain = Optional(str)         # research topics
+        work_domain = Optional(str)         # research topic
         ds_admin_of = Set('Datastore')
         ds_rw = Set('Datastore')
         ds_ro = Set('Datastore')
