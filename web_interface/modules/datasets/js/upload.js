@@ -71,13 +71,14 @@ function datasets_upload_on_file_selected(f, dataset_id) {
             },
             complete: function() {
                 datasets_upload_checked_columns = [];
-                for (var i=0; i<datasets_upload_headers.length;i++) {
-                    if (datasets_upload_expected_columns[i][2].indexOf('timestamp') === -1)
-                        datasets_upload_checked_columns.push('none');
-                    else
-                        datasets_upload_checked_columns.push(null);
+                if (datasets_upload_headers.length == datasets_upload_expected_columns.length) {
+                    for (var i=0; i<datasets_upload_headers.length;i++) {
+                        if (datasets_upload_expected_columns[i][2].indexOf('timestamp') === -1)
+                            datasets_upload_checked_columns.push('none');
+                        else
+                            datasets_upload_checked_columns.push(null);
+                    }
                 }
-                
                 datasets_upload_table_full = false;
                 if (nb_lines == nb_preview_rows)
                     datasets_upload_table_full = true;
@@ -103,7 +104,10 @@ function datasets_upload_fill_table() {
     
     if (datasets_upload_headers.length != datasets_upload_expected_columns.length) {
         bg_color = 'bg-danger';
-        alert('Wrong number of columns');
+        datasets_alert("Columns number",'This file has a wrong number of columns, that does not match the table header');
+        $('#datasets_upload_button').prop("disabled",true);
+    }
+    else if (datasets_upload_checked_columns.indexOf(null) != -1) {
         $('#datasets_upload_button').prop("disabled",true);
     }
     else {
@@ -159,7 +163,7 @@ function datasets_upload(dataset_id) {
     var f = $('#datasets_upload_select_file')[0].files[0];
     
     if (datasets_upload_checked_columns.indexOf(null) != -1) {
-        alert("Date format missing !!!");
+        datasets_alert("Date format", "At least one date format is missing (red column)!!!");
         return;
     }
     

@@ -37,7 +37,8 @@ function datasets_send_new(database_id) {
         }
     });
     
-    var columns = []
+    var columns = [];
+    var labels  = [];
     //Data from each row
     for (var i=0; i< nb_cols; i++) {
         var inputs = $(cols[i]).find('input');
@@ -47,6 +48,12 @@ function datasets_send_new(database_id) {
             datasets_alert("Columns Name", "Each column should have an explicit name");
             return;
         }
+        if (labels.indexOf(label) != -1) {
+            datasets_alert("Columns Name", "Each column should have a different name: two '"+label+"' detected !");
+            return;
+        }
+        else
+            labels.push(label);
         
         var type = $($(cols[i]).find('select')[0]).val();
         var tags = $($(cols[i]).find('select')[1]).val();
