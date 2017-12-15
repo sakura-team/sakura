@@ -22,7 +22,7 @@ class UserMixin:
         salt = os.urandom(32)
         dk = hashlib.pbkdf2_hmac('sha256', bytes(client_hashed,'utf8'), salt, 100000)
         server_hashed = binascii.hexlify(dk)
-        cls(login = login, email = email, password = client_hashed, salt = salt, hash = server_hashed, **user_info)
+        cls(login = login, email = email, password_salt = salt, password_hash = server_hashed, **user_info)
         context.db.commit()
         return True
         
@@ -33,8 +33,8 @@ class UserMixin:
             raise ValueError('Email "%s" is unknown.' % email)
         client_hashed = password  # receive the client_hashed password entered in the signIn form
         db_login = user.login # receive the user login from db
-        db_salt = user.salt # receive the salt from db
-        db_hash = user.hash # receive the server_hashed passwd from db
+        db_salt = user.password_salt # receive the salt from db
+        db_hash = user.password_hash # receive the server_hashed passwd from db
         # recalculate the hash from this password to match it agains the db entry
         dk = hashlib.pbkdf2_hmac('sha256', bytes(client_hashed,'utf8'), db_salt, 100000)
         recalculated_hash = binascii.hexlify(dk)

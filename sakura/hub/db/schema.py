@@ -20,9 +20,8 @@ def define_schema(db):
     class User(db.Entity, UserMixin):
         login = PrimaryKey(str)
         email = Required(str, unique=True)
-        password = Required(str)
-        salt = Required(bytes)
-        hash = Required(bytes)
+        password_salt = Required(bytes)
+        password_hash = Required(bytes)
         first_name = Optional(str)
         last_name = Optional(str)
         creation_date = Optional(epoch)     # registration time/date
