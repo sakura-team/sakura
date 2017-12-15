@@ -16,11 +16,11 @@
 				  <form role="form" id="signInForm">
 					<div class="form-group control-group" data-placement="top" data-original-title="Unknown email address, if you don't have one, please create a new account.">
 					  <label for="signInEmail">Email address</label>
-					  <input class="form-control" id="signInEmail" name="signInEmail" placeholder="Enter email" type="email" />
+					  <input class="form-control" id="signInEmail" name="signInEmail" placeholder="Enter email" type="email" required="" />
 					</div>
 					<div class="form-group" data-placement="top" data-original-title="Your password doesn't match your email adress.">
 					  <label for="signInPassword">Password</label>
-					  <input name="signInPassword" class="form-control" id="signInPassword" placeholder="Password" type="password" />
+					  <input name="signInPassword" class="form-control" id="signInPassword" placeholder="Password" type="password" required=""/>
 					</div>
 					<div class="checkbox">
 					  <label>
@@ -28,7 +28,8 @@
 					  </label>
 					</div>
 					<input name="authentification" value="connect" type="hidden" />
-					<button type="submit" class="btn btn-default" id="signInSubmit" onclick="signInSubmitControl(event);">Connect</button>
+					<input type="button" class="col-md-5 pull-left btn btn-default" id="signInSubmit" value="Sign In" onclick="signInSubmitControl(event);">
+<!-- 					<button type="submit" class="btn btn-default" id="signInSubmit" onclick="signInSubmitControl(event);">Connect</button> -->
 				  </form>
 				</div>
 			  </div>
