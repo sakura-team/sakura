@@ -69,8 +69,13 @@ function recover_datasets() {
                 var spans = $(tds[2]).find('span');
                 
                 $(tds[0]).empty();
+                $(tds[0]).append($('<a>',{  text: dataset.name,
+                                            style: "cursor: pointer;",
+                                            onclick: "datasets_visu_dataset("+dataset_id+");"
+                                            })
+                                );
+                
                 $(tds[1]).empty();
-                $(tds[0]).append(dataset.name);
                 if (dataset.short_desc)
                     $(tds[1]).append(dataset.short_desc);
                 else
