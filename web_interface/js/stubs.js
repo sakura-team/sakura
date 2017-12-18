@@ -34,13 +34,16 @@ function buildListStub(idDiv,result,elt) {
         var new_row = $(tbody[0].insertRow());
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
         //adding link
-        var name_link = $('<a>',{   text: row.name,
+        var cell = $('<td>');
+        if (row.name.indexOf('OFFLINE') === -1)
+            cell.append($('<a>',{   text: row.name,
                                     href: 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id,
                                     onclick: 'showDiv(event, "'+tmp_elt+'","' +row.id+'")'
-                        });
+                                }) 
+                        );
+        else
+            cell.append(row.name);
         
-        var cell = $('<td>');
-        cell.append(name_link);
         new_row.append(cell);
         
         list_cols_gui.forEach( function (lelt, index) {
