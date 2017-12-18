@@ -52,16 +52,21 @@ function datasets_visu_table_fill_rows(body, rows, row_start, dataset) {
     var cols = dataset.columns;
     rows.forEach( function(row, r_index) {
         var new_b_row = $(body[0].insertRow());
-        var line = "<td>"+(row_start+r_index)+"</td>";
+        new_b_row.append($('<td>', {text: ''+(row_start+r_index)
+                                })
+                        );
         row.forEach( function(item, c_index) {
             if (this_col_is_a_date(cols[c_index])) {
                 var date = moment.unix(parseInt(item));
-                line += "<td>"+date._d.toLocaleString()+"</td>";
+                new_b_row.append($('<td>', {text: date._d.toLocaleString()
+                                    })
+                                );
             }
             else
-                line += "<td>"+item+"</td>";
+                new_b_row.append($('<td>', {text: item
+                                            })
+                                );
         });
-        new_b_row.append(line);
     });
 }
 
