@@ -32,7 +32,7 @@ function datasets_open_upload_modal(dataset_id) {
         result.columns.forEach( function (col) {
             new_row_head.append('<th>'+col[0]+'</th>');
             if (col[1] != '<U0')
-                if (col[2].indexOf('timestamp') === -1)
+                if (! this_col_is_a_date(col))
                     new_row_body.append('<td>'+col[1]+'</td>');
                 else
                     new_row_body.append('<td>date</td>');
@@ -73,7 +73,7 @@ function datasets_upload_on_file_selected(f, dataset_id) {
                 datasets_upload_checked_columns = [];
                 if (datasets_upload_headers.length == datasets_upload_expected_columns.length) {
                     for (var i=0; i<datasets_upload_headers.length;i++) {
-                        if (datasets_upload_expected_columns[i][2].indexOf('timestamp') === -1)
+                        if (! this_col_is_a_date(datasets_upload_expected_columns[i]))
                             datasets_upload_checked_columns.push('none');
                         else
                             datasets_upload_checked_columns.push(null);
@@ -118,7 +118,7 @@ function datasets_upload_fill_table() {
     //Filling Headers
     var new_row_head = $(thead[0].insertRow());
     datasets_upload_headers.forEach( function(elt, index) {
-        if (datasets_upload_expected_columns[index][2].indexOf('timestamp') === -1)
+        if (! this_col_is_a_date(datasets_upload_expected_columns[index]))
             new_row_head.append("<th class='"+bg_color+"'>"+elt+"</th>");
         else {
             var bg_color2 = bg_color;
@@ -137,7 +137,7 @@ function datasets_upload_fill_table() {
     datasets_upload_lines.forEach( function (line) {
         var new_row = $(tbody[0].insertRow(-1));
         line.forEach( function (elt, index) {
-            if (datasets_upload_expected_columns[index][2].indexOf('timestamp') === -1)
+            if (! this_col_is_a_date(datasets_upload_expected_columns[index]))
                 new_row.append('<td class="'+bg_color+'">'+elt+'</td>');
             else {
                 var bg_color2 = bg_color;

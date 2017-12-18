@@ -144,8 +144,10 @@ function datasets_send_file(dataset_id, f, dates, modal) {
 }
 
 
-function datasets_analytics(dataset_id) {
-    not_yet();
+function this_col_is_a_date(col) {
+    if (col[2].indexOf('timestamp') === -1)
+        return false;
+    return true;
 }
 
 
