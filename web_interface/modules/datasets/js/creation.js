@@ -308,8 +308,39 @@ function datasets_new_tag() {
 /////////////////////////////////////////////////////////////////////////////////////
 // CONSTRAINTS
 function datasets_foreign_key(row, from_what) {
+    var body = $('#datasets_foreign_key_table').find('tbody');
+    var head = $('#datasets_foreign_key_table').find('thead');
+    body.empty();
+    head.empty();
+    
+    var max_cols = 0;
+    database_infos.tables.forEach( function (ds) {
+        if (ds.columns.length > max_cols)
+            max_cols = ds.columns.length;
+    });
+    
+    //Filling Head
+    var new_row = $(head[0].insertRow(-1));
+    new_row.append($('<th>', {text: 'Dataset'}));
+    new_row.append($('<th>', {  text: 'Columns',
+                                colspan: max_cols}));
+    
+    //Filling Body
+    database_infos.tables.forEach( function (ds) {
+        new_row = $(body[0].insertRow(-1));
+        new_row.append($('<td>', {text: ds.name}));
+        ds.columns.forEach( function(col) {
+            console.log(col);
+            new_row.append($('<td>', {  html: "<input type='checkbox'></input>",
+                                        title: col[0]}));
+        });
+        for (var i=0; i< max_cols - ds.columns.length;i++)
+            new_row.append($('<td>', { text: "."}));
+    });
+    
     $('#datasets_foreign_key_modal').modal();
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 // DATES AND TYPES
