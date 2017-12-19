@@ -118,7 +118,8 @@ function datasets_upload_fill_table() {
     //Filling Headers
     var new_row_head = $(thead[0].insertRow());
     datasets_upload_headers.forEach( function(elt, index) {
-        if (! this_col_is_a_date(datasets_upload_expected_columns[index]))
+        if (datasets_upload_headers.length != datasets_upload_expected_columns.length ||
+            ! this_col_is_a_date(datasets_upload_expected_columns[index]))
             new_row_head.append("<th class='"+bg_color+"'>"+elt+"</th>");
         else {
             var bg_color2 = bg_color;
@@ -137,7 +138,8 @@ function datasets_upload_fill_table() {
     datasets_upload_lines.forEach( function (line) {
         var new_row = $(tbody[0].insertRow(-1));
         line.forEach( function (elt, index) {
-            if (! this_col_is_a_date(datasets_upload_expected_columns[index]))
+            if (datasets_upload_headers.length != datasets_upload_expected_columns.length ||
+                ! this_col_is_a_date(datasets_upload_expected_columns[index]))
                 new_row.append('<td class="'+bg_color+'">'+elt+'</td>');
             else {
                 var bg_color2 = bg_color;
