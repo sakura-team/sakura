@@ -4,7 +4,6 @@
 
 var nb_rows     = 15; //temporary, should be put in a dom element. Soon !
 
-
 function datasets_visu_dataset(dataset_id) {
     var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
     
@@ -41,6 +40,28 @@ function datasets_visu_dataset(dataset_id) {
         $($('#datasets_visu_table_next_bottom')[0].children[0]).attr('onclick', 'datasets_visu_table_next('+dataset_id+');');
         $($('#datasets_visu_table_previous_top')[0].children[0]).attr('onclick', 'datasets_visu_table_previous('+dataset_id+');');
         $($('#datasets_visu_table_previous_bottom')[0].children[0]).attr('onclick', 'datasets_visu_table_previous('+dataset_id+');');
+        
+        if ($('#datasets_visu_table_previous_top')[0].className.indexOf('disabled') === -1) {
+            [$('#datasets_visu_table_previous_top'), $('#datasets_visu_table_previous_bottom')].forEach( function(li) {
+                li.addClass('disabled');
+                $(li[0].children[0]).css('pointer-events', 'none');
+            });
+        }
+        
+        if (rows.length < nb_rows) {
+            [$('#datasets_visu_table_next_top'), $('#datasets_visu_table_next_bottom')].forEach( function(li) {
+                li.addClass('disabled');
+                $(li[0].children[0]).css('pointer-events', 'none');
+            });
+        }
+        else {
+            if ($('#datasets_visu_table_previous_top')[0].className.indexOf('disabled') != -1) {
+                [$('#datasets_visu_table_next_top'), $('#datasets_visu_table_next_bottom')].forEach( function(li) {
+                    li.removeClass('disabled');
+                    $(li[0].children[0]).css('pointer-events', 'auto');
+                });
+            }
+        }
         
         $('#datasets_visu_dataset_modal').modal();
     });
