@@ -138,7 +138,7 @@ function datasets_send_file(dataset_id, f, dates, modal) {
             modal.modal('hide');
         },
         error: function (error) {
-            console.log(error);
+            datasets_alert("Parsing error:", error);
         }
     });
 }

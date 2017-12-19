@@ -85,7 +85,7 @@ function datasets_upload_on_file_selected(f, dataset_id) {
                 datasets_upload_fill_table();
             },
             error: function(error) {
-                console.log(error);
+                datasets_alert("Parsing error:", error);
             }
     });
 }

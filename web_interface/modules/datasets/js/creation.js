@@ -4,13 +4,17 @@
 
 var current_select  = null;
 var global_ids      = 0;
-//var file_lines      = null;
-//var first_data_line = null;
 
 var csv_file = {'headers': [], 'lines': []};
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
+
+
+function datasets_open_creation() {
+    $('#datasets_creation_modal').modal();
+}
+
 
 function datasets_send_new(database_id) {
     
@@ -127,6 +131,7 @@ function datasets_on_file_selected(f) {
                 csv_file.headers.forEach( function(col, index) {
                     var new_row = $(body[0].insertRow(-1));
                     new_row.load('templates/creation_dataset_row.html', function () {
+                        var before_last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 2]);
                         var inputs = new_row.find('input');
                         inputs[0].value = col;
                         
@@ -134,6 +139,25 @@ function datasets_on_file_selected(f) {
                         var type_select = $(select[0]);
                         var tags_select = $(select[1]);
                         
+                        var tog = $('<input>', {   id: "pkey_ff_"+index,
+                                                title: "Is this column a primary key ?",
+                                                type: "checkbox"
+                                            });
+                        tog.attr('data-toggle', "toggle");
+                        tog.attr('data-on', "Is a PKey");
+                        tog.attr('data-off', "Not a PKey");
+                        tog.attr('data-size', "mini");
+                        tog.attr('data-width', "80");
+                        
+                        before_last_cel.append(tog);
+                        before_last_cel.append('&nbsp;')
+                        before_last_cel.append($('<button>', {  type:"button",
+                                                                class: "btn btn-xs btn-outline btn-secondary",
+                                                                text: "FKey",
+                                                                title: "Click for defining a foreign key",
+                                                                onclick: "datasets_foreign_key("+index+", 'ff');"
+                                                            }));
+                        $('#pkey_ff_'+index).bootstrapToggle();
                         new_row.find("td:last").remove();
                         
                         type_select.attr('id', 'datasets_ff_type_select_'+index);
@@ -152,7 +176,7 @@ function datasets_on_file_selected(f) {
                 });
             },
             error: function(error) {
-                console.log(error);
+                datasets_alert("Parsing error:", error);
             }
     });
 }
@@ -160,7 +184,6 @@ function datasets_on_file_selected(f) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // ROWS FROM SCRATCH
-
 function datasets_add_a_row(table_id) {
     var body = $('#'+table_id).find('tbody');
     var nb_rows = body[0].childElementCount - 1;
@@ -169,11 +192,33 @@ function datasets_add_a_row(table_id) {
     
     new_row.load('templates/creation_dataset_row.html', function () {
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
+        var before_last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 2]);
+        
         $(last_cel.find('span')[0]).attr('onclick', "$('#datasets_row_"+global_ids+"').remove();");
         
         var select = new_row.find('select');
         var type_select = $(select[0]);
         var tags_select = $(select[1]);
+        
+        var tog = $('<input>', {   id: "pkey_fs_"+global_ids,
+                                                title: "Is this column a primary key ?",
+                                                type: "checkbox"
+                                            });
+        tog.attr('data-toggle', "toggle");
+        tog.attr('data-on', "Is a PKey");
+        tog.attr('data-off', "Not a PKey");
+        tog.attr('data-size', "mini");
+        tog.attr('data-width', "80");
+        
+        before_last_cel.append(tog);
+        before_last_cel.append('&nbsp;')
+        before_last_cel.append($('<button>', {  type:"button",
+                                                class: "btn btn-xs btn-outline btn-secondary",
+                                                text: "FKey",
+                                                title: "Click for defining a foreign key",
+                                                onclick: "datasets_foreign_key("+global_ids+", 'fs');"
+                                            }));
+        $('#pkey_fs_'+global_ids).bootstrapToggle();
         
         type_select.attr('id', 'datasets_fs_type_select_'+global_ids);
         type_select.attr('onchange', "datasets_type_change("+global_ids+",this);");
@@ -195,7 +240,6 @@ function datasets_add_a_row(table_id) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // TAGS
-
 function datasets_fill_select_tags(tags_select) {
     tags_select.append('<option data-hidden="true" value="Select..."></option>')
     $('#datasets_new_tag_select_group').empty();
@@ -260,9 +304,15 @@ function datasets_new_tag() {
     $('#datasets_new_tag_name').val("");
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////
+// CONSTRAINTS
+function datasets_foreign_key(row, from_what) {
+    $('#datasets_foreign_key_modal').modal();
+}
+
 /////////////////////////////////////////////////////////////////////////////////////
 // DATES AND TYPES
-
 function datasets_type_change(row_id, from) {
     
     var select = $(from);
@@ -303,21 +353,6 @@ function datasets_type_change(row_id, from) {
     }
     else if (td.childElementCount > 1) {
         td.children[1].remove();
-    }
-}
-
-
-function datasets_check_date_format(date, format_div, format_input, result_div, result_input) {
-    var m2 = moment(date, format_input.val());
-    if (! m2._isValid) {
-        format_div.attr("class", "has-error");
-        result_div.attr("class", "has-error");
-        result_input.val("Invalid format");
-    }
-    else{
-        format_div.attr("class", "");
-        result_div.attr("class", "has-success");
-        result_input.val(m2._d);
     }
 }
 

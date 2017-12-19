@@ -8,12 +8,15 @@
     <script src="/webcache/cdnjs/moment.js/2.19.3/moment.min.js"></script>        <!--Managing dates-->
     <script src="/webcache/cdnjs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="/webcache/cdnjs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+    <script src="/webcache/cdnjs/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
     <script src="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
     <script src="/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js"></script>           <!--Managing csv files-->
     <script src="/js/sakura-common.js"></script>
+    
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
     </head>
     
@@ -32,19 +35,9 @@
                 </tbody>
             </table>
             &nbsp&nbsp
-            <button title="Add a new dataset" type="button" class="btn btn-primary btn-xs" onclick="$('#datasets_creation_modal').modal();">
+            <button title="Add a new dataset" type="button" class="btn btn-primary btn-xs" onclick="datasets_open_creation();">
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
             </button>
-            <!--
-            <br>
-            <br>
-            TODO:
-            <ul>
-            <li>Guidelines about dynamic upload</li>
-            <li>Guidelines on How to use API to DataSet</li>
-            <li>table keys</li>
-            </ul>
-            -->
         </div>
         
         <!--CREATION MODAL-->
@@ -101,7 +94,7 @@
                                                     <th class="col-md-2" style="text-align:left">Name
                                                     <th class="col-md-1" style="text-align:left">Type
                                                     <th class="col-md-3" style="text-align:left">Tags
-                                                    <th class="col-md-1">&nbsp;
+                                                    <th colspan=2 class="col-md-2" style="text-align:left">Constraints
                                             </thead>
                                             <tbody>
                                                 <tr>
@@ -119,9 +112,10 @@
                                         <table class="table table-condensed" id="datasets_creation_from_file_columns">
                                             <thead>
                                                 <tr>
-                                                    <th class="col-md-1" style="text-align:left">Name
+                                                    <th class="col-md-2" style="text-align:left">Name
                                                     <th class="col-md-1" style="text-align:left">Type
                                                     <th class="col-md-3" style="text-align:left">Tags
+                                                    <th colspan=2 class="col-md-2" style="text-align:left">Constraints
                                             </thead>
                                             <tbody>
                                             </tbody>
@@ -165,6 +159,22 @@
             </div>
         </div>
         -->
+        
+        <!-- FOREIGN KEY MODAL -->
+        <div id="datasets_foreign_key_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div id="datasets_foreign_key_header" class="modal-header">
+                        <h3 >Foreign Keys Definitions</h3>
+                    </div>
+                    <div class="modal-body">
+                    </div>
+                    <div id="datasets_foreign_key_footer" class="modal-footer">
+                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" onclick="not_yet();">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <!-- DATASET VISU MODAL -->
         <div id="datasets_visu_dataset_modal" class="modal fade" style="width: 100%" role="document">
