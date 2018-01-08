@@ -137,17 +137,14 @@ function datasets_on_file_selected(f) {
                         var type_select = $(select[0]);
                         var tags_select = $(select[1]);
                         
-                        var tog = $('<input>', {   id: "pkey_ff_"+index,
-                                                title: "Is this column a primary key ?",
-                                                type: "checkbox"
-                                            });
-                        tog.attr('data-toggle', "toggle");
-                        tog.attr('data-on', "Is a PKey");
-                        tog.attr('data-off', "Not a PKey");
-                        tog.attr('data-size', "mini");
-                        tog.attr('data-width', "80");
+                        before_last_cel.append($('<button>', {  id: "pkey_ff_"+index,
+                                                                type: "button",
+                                                                class: "btn btn-xs btn-secondary",
+                                                                text: "PKey",
+                                                                title: "Click for defining a primary key",
+                                                                onclick: "datasets_primary_key("+index+", 'ff');"
+                                                                }));
                         
-                        before_last_cel.append(tog);
                         before_last_cel.append('&nbsp;')
                         before_last_cel.append($('<button>', {  type:"button",
                                                                 class: "btn btn-xs btn-outline btn-secondary",
@@ -155,7 +152,7 @@ function datasets_on_file_selected(f) {
                                                                 title: "Click for defining a foreign key",
                                                                 onclick: "datasets_foreign_key("+index+", 'ff');"
                                                             }));
-                        $('#pkey_ff_'+index).bootstrapToggle();
+                        
                         new_row.find("td:last").remove();
                         
                         type_select.attr('id', 'datasets_ff_type_select_'+index);
@@ -198,17 +195,13 @@ function datasets_add_a_row(table_id) {
         var type_select = $(select[0]);
         var tags_select = $(select[1]);
         
-        var tog = $('<input>', {   id: "pkey_fs_"+global_ids,
-                                                title: "Is this column a primary key ?",
-                                                type: "checkbox"
-                                            });
-        tog.attr('data-toggle', "toggle");
-        tog.attr('data-on', "Is a PKey");
-        tog.attr('data-off', "Not a PKey");
-        tog.attr('data-size', "mini");
-        tog.attr('data-width', "80");
-        
-        before_last_cel.append(tog);
+        before_last_cel.append($('<button>', {  id: "pkey_fs_"+global_ids,
+                                                type: "button",
+                                                class: "btn btn-xs btn-secondary",
+                                                text: "PKey",
+                                                title: "Click for defining a primary key",
+                                                onclick: "datasets_primary_key("+global_ids+", 'fs');"
+                                                }));
         before_last_cel.append('&nbsp;');
         before_last_cel.append('&nbsp;');
         before_last_cel.append($('<button>', {  type:"button",
@@ -217,7 +210,6 @@ function datasets_add_a_row(table_id) {
                                                 title: "Click for defining a foreign key",
                                                 onclick: "datasets_foreign_key("+global_ids+", 'fs');"
                                             }));
-        $('#pkey_fs_'+global_ids).bootstrapToggle();
         
         type_select.attr('id', 'datasets_fs_type_select_'+global_ids);
         type_select.attr('onchange', "datasets_type_change("+global_ids+",this);");
@@ -339,6 +331,20 @@ function datasets_foreign_key(row, from_what) {
     $('#datasets_foreign_key_modal').modal();
 }
 
+
+function datasets_primary_key(row, from_what) {
+    if ($('#pkey_'+from_what+'_'+row).attr("class").indexOf("active") == -1) {
+        $('#pkey_'+from_what+'_'+row).addClass("active");
+        $('#pkey_'+from_what+'_'+row).removeClass("btn-secondary");
+        $('#pkey_'+from_what+'_'+row).addClass("btn-primary");
+    }
+    else {
+        $('#pkey_'+from_what+'_'+row).removeClass("active");
+        $('#pkey_'+from_what+'_'+row).removeClass("btn-primary");
+        $('#pkey_'+from_what+'_'+row).addClass("btn-secondary");
+    }
+
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 // DATES AND TYPES
