@@ -161,23 +161,31 @@
         -->
         
         <!-- FOREIGN KEY MODAL -->
-        <div id="datasets_foreign_key_modal" class="modal fade" role="dialog">
+        <div id="datasets_foreign_key_modal" role="dialog" class="modal fade abs-modal">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div id="datasets_foreign_key_header" class="modal-header">
-                        <h3 >Foreign Keys Definitions</h3>
-                    </div>
-                    <div class="modal-body">
-                    <table class="table table-condensed" id="datasets_foreign_key_table">
-                    <thead>
-                    </thead>
-                    <tbody>
-                    </tbody>
+                    <div class="modal-body" style='padding-top:10px; padding-bottom:10px;'>
+                    <table width='100%'>
+                        <tr>
+                            <td>
+                                <table class="table table-condensed" id="datasets_foreign_key_table" style="margin-bottom:0px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Dataset / Table
+                                            <th>Column
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><select id='datasets_fkey_select_table'></select>
+                                            <td><select id='datasets_fkey_select_column'></select>
+                                    </tbody>
+                                </table>
+                            <td align='right' style='vertical-align: bottom;'>
+                                <button id="datasets_fkey_validate_button" type="button" class="btn btn-primary btn-xs" data-dismiss="modal" onclick="not_yet();">Ok</button>
                     </table>
                     </div>
-                    <div id="datasets_foreign_key_footer" class="modal-footer">
-                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" onclick="not_yet();">Ok</button>
-                    </div>
+                    
                 </div>
             </div>
         </div>

@@ -1,6 +1,14 @@
 /*Code started by Michael Ortega for the LIG*/
 /*September 19th, 2017*/
 
+body{
+    overflow: auto;
+}
+
 .modal{
    overflow: auto;
+}
+
+.abs-modal.in{
+    position: absolute;
 }

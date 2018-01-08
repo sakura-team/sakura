@@ -299,34 +299,28 @@ function datasets_new_tag() {
 /////////////////////////////////////////////////////////////////////////////////////
 // CONSTRAINTS
 function datasets_foreign_key(row, from_what) {
-    var body = $('#datasets_foreign_key_table').find('tbody');
-    var head = $('#datasets_foreign_key_table').find('thead');
-    body.empty();
-    head.empty();
     
-    var max_cols = 0;
-    database_infos.tables.forEach( function (ds) {
-        if (ds.columns.length > max_cols)
-            max_cols = ds.columns.length;
+    $('#datasets_foreign_key_modal')[0].style.top = (mouse.y-75)+'px';
+    
+    $('#datasets_fkey_select_table').empty();
+    var options_ds = "";
+    var options_cols = "";
+    
+    database_infos.tables.forEach( function (ds, index) {
+        options_ds += '<option>'+ds.name+'</option>';        
+        if (index == 0) {
+            ds.columns.forEach( function(col) {
+                options_cols += '<option>'+col[0]+'</option>';
+            });
+        }
     });
     
-    //Filling Head
-    var new_row = $(head[0].insertRow(-1));
-    new_row.append($('<th>', {text: 'Dataset'}));
-    new_row.append($('<th>', {  html: 'Columns <span style="color:grey; font-weight:normal;"">(names displayed when hovering)',
-                                colspan: max_cols}));
+    $('#datasets_fkey_select_table').append(options_ds);
+    $('#datasets_fkey_select_table').attr('onChange', 'datasets_fkey_select_table_onchange();');
     
-    //Filling Body
-    database_infos.tables.forEach( function (ds) {
-        new_row = $(body[0].insertRow(-1));
-        new_row.append($('<td>', {text: ds.name}));
-        ds.columns.forEach( function(col) {
-            new_row.append($('<td>', {  html: "<input type='checkbox'></input>",
-                                        title: col[0]}));
-        });
-        for (var i=0; i< max_cols - ds.columns.length;i++)
-            new_row.append($('<td>', { text: "."}));
-    });
+    $('#datasets_fkey_select_column').append(options_cols);
+    
+    $('#datasets_fkey_validate_button').attr('onClick', 'datasets_fkey_validate('+row+',"'+from_what+'");')
     
     $('#datasets_foreign_key_modal').modal();
 }
@@ -346,6 +340,24 @@ function datasets_primary_key(row, from_what) {
 
 }
 
+
+function datasets_fkey_select_table_onchange() {
+    database_infos.tables.forEach( function (ds, index) {
+        if (ds.name == $('#datasets_fkey_select_table').val()) {
+            $('#datasets_fkey_select_column').empty();
+            var options_cols = "";
+            ds.columns.forEach( function(col) {
+                options_cols += '<option>'+col[0]+'</option>';
+            });
+            $('#datasets_fkey_select_column').append(options_cols);
+        }
+    });
+}
+
+
+function datasets_fkey_validate(row, from_what) {
+    console.log(row, from_what);
+}
 /////////////////////////////////////////////////////////////////////////////////////
 // DATES AND TYPES
 function datasets_type_change(row_id, from) {

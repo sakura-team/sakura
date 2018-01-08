@@ -4,6 +4,7 @@
 
 var database_infos = null;
 var columns_tags_list = null;
+var mouse = {x: 0, y: 0};
 
 function not_yet() {
     alert("not yet implemented");
@@ -13,6 +14,13 @@ function not_yet() {
 function datasets_sort_func(a, b) {
     return a.name > b.name ? 1 : -1;
 }
+
+
+$(document).mousemove(function(e) {
+    mouse.x = e.pageX;
+    mouse.y = e.pageY;
+}).mouseover(); // call the handler immediately
+
 
 
 function datasets_info(header_str, body_str) {
