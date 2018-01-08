@@ -106,7 +106,6 @@ function datasets_on_file_selected(f) {
     if (!datasets_extension_check(f.value, 'csv')) {
         return;
     }
-    
     // emptying variable
     csv_file.lines = [];
     csv_file.headers = [];
@@ -117,7 +116,6 @@ function datasets_on_file_selected(f) {
             header: true,
             skipEmptyLines: true,
             preview: 10,
-            worker: true,
             step: function(line) {
                 csv_file.lines.push(line.data);
                 if (csv_file.headers.length == 0)
@@ -211,7 +209,8 @@ function datasets_add_a_row(table_id) {
         tog.attr('data-width', "80");
         
         before_last_cel.append(tog);
-        before_last_cel.append('&nbsp;')
+        before_last_cel.append('&nbsp;');
+        before_last_cel.append('&nbsp;');
         before_last_cel.append($('<button>', {  type:"button",
                                                 class: "btn btn-xs btn-outline btn-secondary",
                                                 text: "FKey",
@@ -322,7 +321,7 @@ function datasets_foreign_key(row, from_what) {
     //Filling Head
     var new_row = $(head[0].insertRow(-1));
     new_row.append($('<th>', {text: 'Dataset'}));
-    new_row.append($('<th>', {  text: 'Columns',
+    new_row.append($('<th>', {  html: 'Columns <span style="color:grey; font-weight:normal;"">(names displayed when hovering)',
                                 colspan: max_cols}));
     
     //Filling Body
@@ -330,7 +329,6 @@ function datasets_foreign_key(row, from_what) {
         new_row = $(body[0].insertRow(-1));
         new_row.append($('<td>', {text: ds.name}));
         ds.columns.forEach( function(col) {
-            console.log(col);
             new_row.append($('<td>', {  html: "<input type='checkbox'></input>",
                                         title: col[0]}));
         });

@@ -10,6 +10,11 @@ function not_yet() {
 }
 
 
+function datasets_sort_func(a, b) {
+    return a.name > b.name ? 1 : -1;
+}
+
+
 function datasets_info(header_str, body_str) {
     var h = $('#datasets_info_header');
     var b = $('#datasets_info_body');
@@ -48,7 +53,8 @@ function recover_datasets() {
     
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
             
-        console.log(result);
+        //Sorting tables by name
+        result.tables.sort(datasets_sort_func);
         $('#datasets_name').html(result.name);
         if (result.short_desc) {
             $('#datasets_description').html(result.short_desc);
@@ -114,7 +120,6 @@ function datasets_send_file(dataset_id, f, dates, modal) {
         comments: true,
         header: false,
         skipEmptyLines: true,
-        worker: true,
         chunk: function(chunk) {
             if (first_chunk) {
                 chunk.data.splice(0, 1);

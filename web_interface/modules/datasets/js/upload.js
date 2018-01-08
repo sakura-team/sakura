@@ -64,7 +64,6 @@ function datasets_upload_on_file_selected(f, dataset_id) {
             header: true,
             skipEmptyLines: true,
             preview: nb_preview_rows,
-            worker: true,
             step: function(line) {
                 datasets_upload_headers = Object.keys(line.data[0]);
                 datasets_upload_lines.push(Object.values(line.data[0]));
