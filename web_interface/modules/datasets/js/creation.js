@@ -36,26 +36,29 @@ function datasets_send_new(database_id) {
     
     
     //Which table body ?
-    var ff = false;
+    var from_what = 'fs';
     var body = $('#datasets_creation_from_scratch_columns').find('tbody');
     var cols = body.find('tr');
     var nb_cols = cols.length - 1;
     $('#datasets_creation_from_file_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
-            ff = true;
+            from_what = 'ff';
             body = $('#datasets_creation_from_file_columns').find('tbody');
             cols = body.find('tr');
             nb_cols = cols.length
+            fkey
         }
     });
     
     var columns = [];
     var labels  = [];
+    
     //Data from each row
     for (var i=0; i< nb_cols; i++) {
         var inputs = $(cols[i]).find('input');
         var label = $(inputs[0]).val();
         
+        //Some verifications
         if (label == 'Column Name') {
             datasets_alert("Columns Name", "Each column should have an explicit name");
             return;
@@ -67,18 +70,27 @@ function datasets_send_new(database_id) {
         else
             labels.push(label);
         
+        //tags
         var type = $($(cols[i]).find('select')[0]).val();
+        var pkey = ($('#pkey_'+from_what+'_'+i).attr("class").indexOf("active") != -1);
+        var fkey = null;
+        if ($('#fkey_'+from_what+'_'+i).attr("class").indexOf("active") != -1) {
+            index = fkeys[from_what].rows.indexOf(i);
+            fkey = fkeys[from_what].data[index];
+        }
         var tags = $($(cols[i]).find('select')[1]).val();
         if (tags == null)
             tags = [];
-        columns.push([label, type, tags]);
+        
+        columns.push([label, type, tags, pkey, fkey]);
     };
+    console.log(fkeys)
     
     var dates = []
     var date_divs = $('*').filter(function() {
         return this.id.match(/.*datasets_date_format_fs_div_.*/);
     });
-    if (ff) {
+    if (from_what == 'ff') {
         date_divs = $('*').filter(function() {
             return this.id.match(/.*datasets_date_format_ff_div_.*/);
         });
@@ -94,7 +106,7 @@ function datasets_send_new(database_id) {
         if (dataset_id >= 0) {
             
             //Sending file
-            if (ff) {
+            if (from_what == 'ff') {
                 var f = $('#datasets_file_from_HD')[0].files[0];
                 datasets_send_file(dataset_id, f, dates, $("#datasets_creation_modal"));
             }
@@ -231,6 +243,7 @@ function datasets_add_a_row(table_id) {
         $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
         $('#datasets_fs_tags_select_'+global_ids).change(datasets_tags_select_change);
         $('#datasets_new_tag_select_group').selectpicker('refresh');
+        console.log($('#datasets_creation_datetimepicker'));
         $('#datasets_new_tag_name').val("");
         
         global_ids ++;
@@ -319,12 +332,11 @@ function datasets_new_tag() {
 function datasets_foreign_key(row, from_what) {
     
     $('#datasets_foreign_key_modal')[0].style.top = (mouse.y-75)+'px';
-    
     $('#datasets_fkey_select_table').empty();
     $('#datasets_fkey_select_column').empty();
+    
     var options_ds = "";
     var options_cols = "";
-    
     database_infos.tables.forEach( function (ds, index) {
         options_ds += '<option>'+ds.name+'</option>';        
         if (index == 0) {
@@ -341,6 +353,15 @@ function datasets_foreign_key(row, from_what) {
     
     $('#datasets_fkey_validate_button').attr('onClick', 'datasets_fkey_validate('+row+',"'+from_what+'");');
     $('#datasets_fkey_cancel_button').attr('onClick', 'datasets_fkey_cancel('+row+',"'+from_what+'");');
+    
+    
+    //filling if already defined
+    if ($('#fkey_'+from_what+'_'+row).attr("class").indexOf('active') != -1) {
+        var index = fkeys[from_what].rows.indexOf(row);
+        $('#datasets_fkey_select_table').val(fkeys[from_what].data[index][0]);
+        datasets_fkey_select_table_onchange();
+        $('#datasets_fkey_select_column').val(fkeys[from_what].data[index][1]);
+    }
     
     $('#datasets_foreign_key_modal').modal();
 }
@@ -395,6 +416,7 @@ function datasets_fkey_cancel(row, from_what) {
     $('#fkey_'+from_what+'_'+row).removeClass("active");
     $('#fkey_'+from_what+'_'+row).removeClass("btn-primary");
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////
 // DATES AND TYPES
