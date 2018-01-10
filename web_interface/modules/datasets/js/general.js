@@ -63,12 +63,16 @@ function recover_datasets() {
             
         //Sorting tables by name
         result.tables.sort(datasets_sort_func);
+        
+        //Saving the db infos
+        database_infos = result;
+        
         $('#datasets_name').html(result.name);
         if (result.short_desc) {
             $('#datasets_description').html(result.short_desc);
         }
         else {
-            $('#datasets_description').html('No short description');
+            $('#datasets_description').html('<font color="lightgrey">No short description</font>');
         }
         
         
@@ -93,7 +97,7 @@ function recover_datasets() {
                 if (dataset.short_desc)
                     $(tds[1]).append(dataset.short_desc);
                 else
-                    $(tds[1]).append("__");
+                    $(tds[1]).append("<font color='lightgrey'>No description</font>");
                 spans.toArray().forEach( function(span) {
                     if ($(span).attr('onclick')) {
                         var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
@@ -105,9 +109,6 @@ function recover_datasets() {
         });
         
         $('#datasets_open_creation_button').attr('onclick', 'datasets_open_creation('+database_id+');');
-        
-        datasets_add_a_row('datasets_creation_from_scratch_columns');
-        database_infos = result;
         
         //Ask for the existing tags
         var datastore_id = 0;   // TODO
