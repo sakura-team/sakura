@@ -19,7 +19,13 @@ var fkeys = {   'fs': {
 // CREATION
 
 
-function datasets_open_creation() {
+function datasets_open_creation(db_id) {
+    //Updating/emptying html elements
+    $('#datasets_creation_name').val("");
+    $('#datasets_creation_description').val("");
+    $("#datasets_file_from_HD").val("");
+    $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+db_id+')');
+    
     $('#datasets_creation_modal').modal();
 }
 

@@ -104,11 +104,7 @@ function recover_datasets() {
             body.append(new_row);
         });
         
-        //Updating/emptying html elements
-        $('#datasets_creation_name').val("");
-        $('#datasets_creation_description').val("");
-        $("#datasets_file_from_HD").val("");
-        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+database_id+')');
+        $('#datasets_open_creation_button').attr('onclick', 'datasets_open_creation('+database_id+');');
         
         datasets_add_a_row('datasets_creation_from_scratch_columns');
         database_infos = result;
