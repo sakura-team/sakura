@@ -157,6 +157,21 @@ function datasets_send_file(dataset_id, f, dates, modal) {
 }
 
 
+function datasets_check_date_format(date, format_div, format_input, result_div, result_input) {
+    var m2 = moment(date, format_input.val());
+    if (! m2._isValid) {
+        format_div.attr("class", "has-error");
+        result_div.attr("class", "has-error");
+        result_input.val("Invalid format");
+    }
+    else{
+        format_div.attr("class", "");
+        result_div.attr("class", "has-success");
+        result_input.val(m2._d);
+    }
+}
+
+
 function this_col_is_a_date(col) {
     if (col[2].indexOf('timestamp') === -1)
         return false;
