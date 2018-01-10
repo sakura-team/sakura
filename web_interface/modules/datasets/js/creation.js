@@ -84,7 +84,6 @@ function datasets_send_new(database_id) {
         
         columns.push([label, type, tags, pkey, fkey]);
     };
-    console.log(fkeys)
     
     var dates = []
     var date_divs = $('*').filter(function() {
@@ -243,7 +242,9 @@ function datasets_add_a_row(table_id) {
         $('#datasets_fs_tags_select_'+global_ids).selectpicker('refresh');
         $('#datasets_fs_tags_select_'+global_ids).change(datasets_tags_select_change);
         $('#datasets_new_tag_select_group').selectpicker('refresh');
-        console.log($('#datasets_creation_datetimepicker'));
+        
+        $('#datasets_creation_datetimepicker').datetimepicker();
+        $('#datasets_creation_datetimepicker').data("DateTimePicker").date(new Date());
         $('#datasets_new_tag_name').val("");
         
         global_ids ++;
@@ -338,10 +339,11 @@ function datasets_foreign_key(row, from_what) {
     var options_ds = "";
     var options_cols = "";
     database_infos.tables.forEach( function (ds, index) {
-        options_ds += '<option>'+ds.name+'</option>';        
+        console.log(ds);
+        options_ds += '<option value='+ds.database_id+'>'+ds.name+'</option>';        
         if (index == 0) {
-            ds.columns.forEach( function(col) {
-                options_cols += '<option>'+col[0]+'</option>';
+            ds.columns.forEach( function(col, index) {
+                options_cols += '<option value='+index+'>'+col[0]+'</option>';
             });
         }
     });
@@ -385,8 +387,8 @@ function datasets_fkey_select_table_onchange() {
         if (ds.name == $('#datasets_fkey_select_table').val()) {
             $('#datasets_fkey_select_column').empty();
             var options_cols = "";
-            ds.columns.forEach( function(col) {
-                options_cols += '<option>'+col[0]+'</option>';
+            ds.columns.forEach( function(col, index) {
+                options_cols += '<option value='+index+'>'+col[0]+'</option>';
             });
             $('#datasets_fkey_select_column').append(options_cols);
         }
@@ -404,6 +406,7 @@ function datasets_fkey_validate(row, from_what) {
     
     $('#fkey_'+from_what+'_'+row).addClass("active");
     $('#fkey_'+from_what+'_'+row).addClass("btn-primary");
+    console.log(fkeys);
 }
 
 
