@@ -21,13 +21,30 @@ function datasets_open_creation(db_id) {
     $("#datasets_file_from_HD").val("");
     $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+db_id+')');
     
-    //Creating at least one row (NOT CORRECT BECAUSE IT CREATES A NEW ROW EACH TIME WE OPEN)
     if (datasets_creation_first_time) {
+        //Creating at least one row (NOT CORRECT BECAUSE IT CREATES A NEW ROW EACH TIME WE OPEN)
         datasets_add_a_row('datasets_creation_from_scratch_columns');
+        
+        //Red frame for the new dataset name
+        $($('#datasets_creation_name')[0].parentElement).addClass('has-error');
+        $('#datasets_creation_name').on('keyup', function() {datasets_creation_check_name($('#datasets_creation_name'));});
+        
         datasets_creation_first_time = false;
     }
     
     $('#datasets_creation_modal').modal();
+}
+
+
+function datasets_creation_check_name(input) {
+    if (input.val().replace(/^\s+|\s+$/g, '').length != 0) {
+        $(input[0].parentElement).removeClass('has-error');
+        $(input[0].parentElement).addClass('has-success');
+    }
+    else {
+        $(input[0].parentElement).removeClass('has-success');
+        $(input[0].parentElement).addClass('has-error');
+    }
 }
 
 
@@ -212,6 +229,27 @@ function datasets_add_a_row(table_id) {
     new_row.attr('id', 'datasets_row_' + datasets_creation_global_ids);
     
     new_row.load('templates/creation_dataset_row.html', function () {
+        var first_cel = $(new_row[0].childNodes[0]);
+        first_cel.addClass('has-error');
+        first_cel.attr('id', 'datasets_creation_col_name_fs_'+datasets_creation_global_ids);
+        
+        var input = $($(first_cel.children()[0]).children()[0]);
+        input.attr('title', '"Column Name" is not a correct name');
+        input.on('keyup', {'input': input, 'iparent': first_cel, 'from_what': 'fs'}, function(event) {
+            if (event.data.input.val() == 'Column Name') {
+                event.data.iparent.removeClass('has-success');
+                event.data.iparent.addClass('has-error');
+                event.data.input.attr('title', '"Column Name" is not a correct name');
+            }
+            else {
+                event.data.iparent.removeClass('has-error');
+                event.data.iparent.addClass('has-success');
+                event.data.input.attr('title', '');
+            }
+            
+            datasets_creation_check_column_names(event.data.from_what);
+        });
+        
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
         var before_last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 2]);
         
@@ -265,6 +303,24 @@ function datasets_remove_line(row, from_what) {
     //Remove the line
     $('#datasets_row_'+row).remove();
     
+}
+
+
+function datasets_creation_check_column_names(from_what) {
+    var body = $('#datasets_creation_from_scratch_columns').find('tbody');
+    var cols = body.find('tr');
+    labels = [];
+    for (var i=0; i<cols.length-1;i++) {
+        var inputs = $(cols[i]).find('input');
+        var label = $(inputs[0]).val();
+        var index = labels.indexOf(label);
+        if ( index != -1) {
+            $('#datasets_creation_col_name_'+from_what+'_'+i).removeClass('has-success');
+            $('#datasets_creation_col_name_'+from_what+'_'+i).addClass('has-error');
+            $(inputs[0]).attr('title', 'This name is already used');
+        }
+        labels.push(label);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
