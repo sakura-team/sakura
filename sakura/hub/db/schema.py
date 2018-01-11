@@ -121,5 +121,8 @@ def define_schema(db):
         col_type = Required(str)
         daemon_tags = Required(Json, default = [])
         user_tags = Required(Json, default = [])
+        primary_key = Required(bool)
+        foreign_key = Optional('DBColumn', reverse = 'foreign_key_of')
+        foreign_key_of = Set('DBColumn', reverse = 'foreign_key')
         PrimaryKey(table, col_id)
         UNIQUE(table, col_name)

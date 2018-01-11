@@ -36,41 +36,41 @@ def analyse_col_meta(col_comment):
                     col_meta[attr[12:]] = int(value)
     return col_meta
 
-def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta):
+def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta, col_pk, col_fk):
+    col_name_wrapper = '"%(table_name)s"."%(col_name)s"'
+    value_wrapper = '%s'
+    tags = ()
     if col_pgtype == 'timestamp with time zone':
-        metadata_collector.register_column(
-                    table_name,
-                    col_name,
-                    np.float64,
-                    'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"',
-                    'to_timestamp(%s)',
-                    ('timestamp',))
+        col_type = np.float64
+        col_name_wrapper = 'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"'
+        value_wrapper = 'to_timestamp(%s)'
+        tags = ('timestamp',)
     elif col_pgtype.startswith('character varying('):
         max_length = int(col_pgtype[18:-1])
-        metadata_collector.register_column(table_name, col_name, (np.str, max_length))
+        col_type = (np.str, max_length)
     elif col_pgtype in ('text', 'character varying'):
         max_length = col_meta.get('max_text_chars', None)
         if max_length is None:
-            np_type = str   # string of unknown length
+            col_type = str   # string of unknown length
         else:
-            np_type = (np.str, max_length)
-        metadata_collector.register_column(table_name, col_name, np_type)
+            col_type = (np.str, max_length)
     elif col_pgtype.startswith('geometry'):
         max_length = col_meta.get('max_geojson_chars', None)
         if max_length is None:
-            np_type = str   # string of unknown length
+            col_type = str   # string of unknown length
         else:
-            np_type = (np.str, max_length)
-        metadata_collector.register_column(
-                table_name, col_name, np_type,
-                'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"',
-                'ST_GeomFromGeoJSON(%s)',
-                ('geometry', 'supports_in'))
+            col_type = (np.str, max_length)
+        col_name_wrapper = 'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"'
+        value_wrapper = 'ST_GeomFromGeoJSON(%s)'
+        tags = ('geometry', 'supports_in')
     elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
-        metadata_collector.register_column(\
-                table_name, col_name, TYPES_PG_TO_SAKURA[col_pgtype])
+        col_type = TYPES_PG_TO_SAKURA[col_pgtype]
     else:
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
+    metadata_collector.register_column(
+            table_name, col_name, col_type,
+            col_name_wrapper, value_wrapper,
+            tags, col_pk, col_fk)
 
 SQL_GET_DS_USERS = '''\
 SELECT  usename, usecreatedb FROM pg_user;
@@ -110,15 +110,35 @@ WHERE c.relkind = 'r'
       AND c.relname !~ '^_';
 '''
 
+# note: we do not handle foreign key definitions spanning on several columns...
 SQL_GET_TABLE_COLUMNS = '''
-    SELECT  attname,
-            format_type(atttypid, atttypmod) AS type,
-            col_description(attrelid, attnum) AS comment
-    FROM   pg_attribute
-    WHERE  attrelid = '"%(table_name)s"'::regclass::oid
-    AND    attnum > 0
-    AND    NOT attisdropped
-    ORDER  BY attnum;
+    WITH    pk_attnums AS (
+                SELECT unnest(indkey) as pk_attnum
+                FROM pg_index
+                WHERE pg_index.indrelid = '"%(table_name)s"'::regclass::oid
+                AND indisprimary),
+            fk_info AS (
+                SELECT r.conkey[1] as attnum, c.relname as fk_table, fk_a.attname as fk_attname
+                FROM pg_catalog.pg_constraint r, pg_attribute fk_a, pg_catalog.pg_class c
+                WHERE r.conrelid = '"%(table_name)s"'::regclass
+                AND r.contype = 'f'
+                AND fk_a.attrelid = r.confrelid
+                AND fk_a.attnum = r.confkey[1]
+                AND r.confrelid = c.oid
+            )
+    SELECT  a.attname,
+            format_type(a.atttypid, a.atttypmod) AS type,
+            col_description(a.attrelid, a.attnum) AS comment,
+            a.attnum IN (SELECT pk_attnum FROM pk_attnums) as pk,
+            fk.fk_table,
+            fk.fk_attname
+    FROM   pg_attribute a
+    LEFT JOIN fk_info fk
+        ON fk.attnum = a.attnum
+    WHERE  a.attrelid = '"%(table_name)s"'::regclass::oid
+    AND    a.attnum > 0
+    AND    NOT a.attisdropped
+    ORDER  BY a.attnum;
 '''
 
 SQL_CREATE_DB = '''
@@ -131,6 +151,7 @@ REVOKE ALL ON DATABASE "%(db_name)s" FROM PUBLIC;
 '''
 
 SQL_DESC_COLUMN = '"%(col_name)s" %(col_type)s'
+SQL_FK = ' REFERENCES "%(table_name)s" ("%(col_name)s")'
 SQL_CREATE_TABLE = '''
 CREATE TABLE "%(table_name)s" (%(columns_sql)s);
 '''
@@ -200,10 +221,15 @@ class PostgreSQLDBDriver:
         with db_conn.cursor() as cursor:
             cursor.execute(sql)
             rows = cursor.fetchall()
-            for col_name, col_pgtype, col_comment in rows:
+            for col_name, col_pgtype, col_comment, col_pk, \
+                    col_fk_table, col_fk_attname in rows:
+                if col_fk_table is None:
+                    col_fk = None
+                else:
+                    col_fk = (col_fk_table, col_fk_attname)
                 col_meta = analyse_col_meta(col_comment)
                 register_column(metadata_collector,
-                    table_name, col_name, col_pgtype, col_meta)
+                    table_name, col_name, col_pgtype, col_meta, col_pk, col_fk)
     @staticmethod
     def create_db(admin_db_conn, db_name, db_owner):
         # CREATE DATABASE requires to set autocommit, and
@@ -218,15 +244,30 @@ class PostgreSQLDBDriver:
         admin_db_conn.autocommit = saved_mode
     @staticmethod
     def create_table(db_conn, table_name, columns):
-        columns_sql = ', '.join(
-            SQL_DESC_COLUMN % dict(
+        pk = tuple(col_name for col_name, col_type, col_pk, col_fk_info \
+                            in columns if col_pk)
+        columns_sql = []
+        for col_name, col_type, col_pk, col_fk_info in columns:
+            col_sql = SQL_DESC_COLUMN % dict(
                 col_name = col_name,
                 col_type = TYPES_SAKURA_TO_PG[col_type]
-            ) for col_name, col_type in columns
-        )
+            )
+            if col_pk and len(pk) == 1:
+                col_sql += ' PRIMARY KEY'
+            if col_fk_info is not None:
+                fk_table_name, fk_col_name = col_fk_info
+                col_sql += SQL_FK % dict(
+                    table_name = fk_table_name,
+                    col_name = fk_col_name
+                )
+            columns_sql.append(col_sql)
+        if len(pk) > 1:
+            escaped_pk_cols = tuple('"%s"' % col_name for col_name in pk)
+            constraint_sql = "PRIMARY KEY (" + ', '.join(escaped_pk_cols) + ")"
+            columns_sql.append(constraint_sql)
         sql = SQL_CREATE_TABLE % dict(
             table_name = table_name,
-            columns_sql = columns_sql
+            columns_sql = ', '.join(columns_sql)
         )
         with db_conn.cursor() as cursor:
             cursor.execute(sql)
