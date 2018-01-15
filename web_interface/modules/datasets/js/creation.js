@@ -15,6 +15,7 @@ var datasets_creation_fkeys             = { 'fs': {
 // CREATION
 
 function datasets_open_creation(db_id) {
+    
     //Updating/emptying html elements
     $('#datasets_creation_name').val("");
     $('#datasets_creation_description').val("");
@@ -135,6 +136,7 @@ function datasets_send_new(database_id) {
             
             //Refresh dataset list
             recover_datasets();
+            $("#datasets_creation_modal").modal('hide');
         }
     });
 }
@@ -445,7 +447,7 @@ function datasets_primary_key(row, from_what) {
 
 function datasets_fkey_select_table_onchange() {
     database_infos.tables.forEach( function (ds, index) {
-        if (ds.name == $('#datasets_fkey_select_table').val()) {
+        if (ds.table_id == $('#datasets_fkey_select_table').val()) {
             $('#datasets_fkey_select_column').empty();
             var options_cols = "";
             ds.columns.forEach( function(col, index2) {
