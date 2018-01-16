@@ -57,6 +57,15 @@ class TableMixin:
                 context.columns.restore_column(context, table, col_id, *col) \
                         for col_id, col in enumerate(columns))
         return table
+    def update_foreign_keys(self, context, columns_info):
+        for col_id, col_info in enumerate(columns_info):
+            col_name, col_type, daemon_tags, pk, fk_info = col_info
+            if fk_info is not None:
+                col = context.columns.get(
+                    table = self,
+                    col_id = col_id
+                )
+                col.update_foreign_key(context, *fk_info)
     @classmethod
     def create_table(cls, context, database, name, columns,
                             creation_date = None, **kwargs):

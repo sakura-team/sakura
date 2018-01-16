@@ -33,10 +33,19 @@ class DatabaseMixin:
     def update_tables(self, context):
         # ask daemon
         info_from_daemon = self.remote_instance.pack()
+        # update tables (except foreign keys - a referenced table
+        # may not be created yet otherwise)
         self.tables = set(
-            context.tables.restore_table(context, self, **tbl) \
-                    for tbl in info_from_daemon['tables']
+            context.tables.restore_table(context, self, **tbl_info) \
+                    for tbl_info in info_from_daemon['tables']
         )
+        # update foreign keys
+        for tbl_info in info_from_daemon['tables']:
+            table = context.tables.get(
+                database = self,
+                name = tbl_info['name']
+            )
+            table.update_foreign_keys(context, tbl_info['columns'])
     def update_metadata(self, context, **kwargs):
         kwargs = self.format_metadata(context, **kwargs)
         # update database fields
