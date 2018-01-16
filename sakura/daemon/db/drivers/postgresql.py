@@ -40,26 +40,21 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     select_clause_wrapper = '"%(table_name)s"."%(col_name)s"'
     value_wrapper = '%s'
     tags = ()
+    params = {}
     if col_pgtype == 'timestamp with time zone':
-        col_type = np.float64
+        col_type = 'date'
         select_clause_wrapper = 'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"'
         value_wrapper = 'to_timestamp(%s)'
         tags = ('timestamp',)
     elif col_pgtype.startswith('character varying('):
-        max_length = int(col_pgtype[18:-1])
-        col_type = (np.str, max_length)
+        col_type = 'string'
+        params.update(max_length = int(col_pgtype[18:-1]))
     elif col_pgtype in ('text', 'character varying'):
-        max_length = col_meta.get('max_text_chars', None)
-        if max_length is None:
-            col_type = str   # string of unknown length
-        else:
-            col_type = (np.str, max_length)
+        col_type = 'string'
+        params.update(max_length = col_meta.get('max_text_chars', None))
     elif col_pgtype.startswith('geometry'):
-        max_length = col_meta.get('max_geojson_chars', None)
-        if max_length is None:
-            col_type = str   # string of unknown length
-        else:
-            col_type = (np.str, max_length)
+        col_type = 'geometry'
+        params.update(max_length = col_meta.get('max_geojson_chars', None))
         select_clause_wrapper = 'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"'
         value_wrapper = 'ST_GeomFromGeoJSON(%s)'
         tags = ('geometry', 'supports_in')
@@ -70,7 +65,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     metadata_collector.register_column(
             table_name, col_name, col_type,
             select_clause_wrapper, value_wrapper,
-            tags, col_pk, col_fk)
+            tags, col_pk, col_fk, **params)
 
 SQL_GET_DS_USERS = '''\
 SELECT  usename, usecreatedb FROM pg_user;

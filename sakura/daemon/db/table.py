@@ -6,8 +6,8 @@ class DBTable:
         self.db = db
         self.name = table_name
         self.columns = []
-    def add_column(self, *col_info):
-        col = DBColumn(self.name, *col_info)
+    def add_column(self, *col_info, **params):
+        col = DBColumn(self.name, *col_info, **params)
         self.columns.append(col)
     def pack(self):
         return dict(name = self.name, columns = self.columns)
