@@ -23,7 +23,7 @@ class SQLQuery:
         self.offset = offset
     def to_sql(self):
         select_clause = 'SELECT ' + ', '.join(
-            db_column.to_sql() for db_column in self.selected_cols
+            db_column.to_sql_select_clause() for db_column in self.selected_cols
         )
         tables = set(db_column.table_name for db_column in self.selected_cols)
         tables |= set(cond[0].table_name for cond in self.conditions)
@@ -46,7 +46,7 @@ class SQLQuery:
         cursor.execute(sql_text, values)
     def condition_to_sql(self, condition):
         db_column, comp_op, value = condition
-        col_name = db_column.to_sql()
+        col_name = db_column.to_sql_where_clause()
         op_sql_special = COMP_OP_TO_SQL_SPECIAL.get((comp_op, value), None)
         if op_sql_special != None:
             sql = col_name + ' ' + op_sql_special

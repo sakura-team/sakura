@@ -37,12 +37,12 @@ def analyse_col_meta(col_comment):
     return col_meta
 
 def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta, col_pk, col_fk):
-    col_name_wrapper = '"%(table_name)s"."%(col_name)s"'
+    select_clause_wrapper = '"%(table_name)s"."%(col_name)s"'
     value_wrapper = '%s'
     tags = ()
     if col_pgtype == 'timestamp with time zone':
         col_type = np.float64
-        col_name_wrapper = 'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"'
+        select_clause_wrapper = 'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"'
         value_wrapper = 'to_timestamp(%s)'
         tags = ('timestamp',)
     elif col_pgtype.startswith('character varying('):
@@ -60,7 +60,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
             col_type = str   # string of unknown length
         else:
             col_type = (np.str, max_length)
-        col_name_wrapper = 'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"'
+        select_clause_wrapper = 'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"'
         value_wrapper = 'ST_GeomFromGeoJSON(%s)'
         tags = ('geometry', 'supports_in')
     elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
@@ -69,7 +69,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
     metadata_collector.register_column(
             table_name, col_name, col_type,
-            col_name_wrapper, value_wrapper,
+            select_clause_wrapper, value_wrapper,
             tags, col_pk, col_fk)
 
 SQL_GET_DS_USERS = '''\

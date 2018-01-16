@@ -4,7 +4,7 @@ class DBColumn:
     def __init__(self,  table_name,
                         col_name,
                         np_type,
-                        col_name_wrapper,
+                        select_clause_wrapper,
                         value_wrapper,
                         tags,
                         primary_key,
@@ -12,7 +12,7 @@ class DBColumn:
         self.table_name = table_name
         self.col_name = col_name
         self.np_dtype = np.dtype(np_type)
-        self.col_name_wrapper = col_name_wrapper
+        self.select_clause_wrapper = select_clause_wrapper
         self.value_wrapper = value_wrapper
         self.tags = list(tags)
         self.primary_key = primary_key
@@ -20,9 +20,13 @@ class DBColumn:
     def pack(self):
         return (self.col_name, str(self.np_dtype), self.tags,
                         self.primary_key, self.foreign_key_info)
-    def to_sql(self):
-        return self.col_name_wrapper % dict(
+    def to_sql_where_clause(self):
+        return '"%(table_name)s"."%(col_name)s"' % dict(
             table_name = self.table_name,
             col_name = self.col_name
         )
-
+    def to_sql_select_clause(self):
+        return self.select_clause_wrapper % dict(
+            table_name = self.table_name,
+            col_name = self.col_name
+        )
