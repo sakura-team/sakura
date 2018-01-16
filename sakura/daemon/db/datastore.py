@@ -39,23 +39,38 @@ class DataStore:
         self.sakura_admin = sakura_admin
         self.driver_label = driver_label
         self.driver = drivers.get(driver_label)
-        self.users = None        # not probed yet
-        self.databases = None    # not probed yet
-        self.online = None       # not probed yet
+        self._users = None        # not probed yet
+        self._databases = None    # not probed yet
+        self._online = None       # not probed yet
     def admin_connect(self):
         return self.driver.connect(
             host = self.host,
             **self.datastore_admin)
+    @property
+    def users(self):
+        if self._users is None:
+            self.refresh()
+        return self._users
+    @property
+    def databases(self):
+        if self._databases is None:
+            self.refresh()
+        return self._databases
+    @property
+    def online(self):
+        if self._online is None:
+            self.refresh()
+        return self._online
     def refresh(self):
-        self.online = True
         try:
             prober = DataStoreProber(self)
-            self.users, databases = prober.probe()
-            self.databases = { d.db_name: d for d in databases }
+            self._users, databases = prober.probe()
+            self._databases = { d.db_name: d for d in databases }
+            self._online = True
         except BaseException as exc:
             print('WARNING: %s Data Store at %s is down: %s' % \
                     (self.driver_label, self.host, str(exc).strip()))
-            self.online = False
+            self._online = False
     def pack(self):
         res = dict(
             host = self.host,
