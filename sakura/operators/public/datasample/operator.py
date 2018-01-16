@@ -18,7 +18,11 @@ class DataSampleOperator(Operator):
                 stream = ds.STREAM
             else:
                 # dynamically generated stream
-                stream = ds.load_stream(self)
+                try:
+                    stream = ds.load_stream(self)
+                except BaseException as exc:
+                    print('WARNING: could not load dataset %s: %s. IGNORED.' % \
+                            (ds.__name__, str(exc).strip()))
             streams.append(stream)
         for stream in sorted(streams, key=lambda s: s.label):
             self.register_output(stream)
