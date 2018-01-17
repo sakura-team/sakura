@@ -119,10 +119,10 @@ function signInSubmitControl(event) {
 	    			  $(this).find('form').trigger('reset');
 	    		  });
 	    		  $("#signInModal").modal("hide");
-	    		  firstSignInWidget = document.getElementsByName("twinSignInWidgets")[0];
-	    		  secondSignInWidget = document.getElementsByName("twinSignInWidgets")[1];
-	    		  firstSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
-	    		  secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';    		  
+	    		  signInWidget = document.getElementsByName("signInWidget")[0];
+	    		  //secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
+	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
+	    		  //secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';    		  
 	    		  return;
 	        }, 
 	        function (error_message) {
@@ -138,10 +138,10 @@ function signInSubmitControl(event) {
 function signOutSubmitControl(event) {
   res = confirm("Sign Out?");
   if (res) {
-	  firstSignInWidget = document.getElementsByName("twinSignInWidgets")[0];
-		secondSignInWidget = document.getElementsByName("twinSignInWidgets")[1];
-	    firstSignInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-	    secondSignInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
+	  signInWidget = document.getElementsByName("signInWidget")[0];
+		//secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
+	  signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
+	  //secondSignInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
     showDiv(event, "");
     return;
   } else {
