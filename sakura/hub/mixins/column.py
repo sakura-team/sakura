@@ -43,8 +43,8 @@ class ColumnMixin:
         if fk_info is None:
             fk_col = None
         else:
-            tbl_id, col_id = tuple(fk_info)
-            fk_col = context.columns[int(tbl_id), int(col_id)]
+            fk_tbl_id, fk_col_id = tuple(fk_info)
+            fk_col = context.columns[int(fk_tbl_id), int(fk_col_id)]
         return cls.create_or_update(table, col_id,
                                     col_name = col_name,
                                     col_type = col_type,
