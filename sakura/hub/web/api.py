@@ -182,9 +182,9 @@ class GuiToHubAPI(object):
     def new_user(self, **user_info):
         return self.context.users.new_user(self.context, **user_info)
 
-    def login(self, email, password):
-        print (self.context.users.from_credentials(email, password))
-        return self.context.users.from_credentials(email, password)
+    def login(self, loginOrEmail, password):
+        print (self.context.users.from_credentials(loginOrEmail, password))
+        return self.context.users.from_credentials(loginOrEmail, password)
 
     def logout(self):
         self.session.user = None

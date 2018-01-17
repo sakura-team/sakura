@@ -104,12 +104,12 @@ function signInSubmitControl(event) {
 	if (event.type === 'click') {
 	  event.preventDefault();
 	  var userSignInValues = {}; // dictionary of email and password entered by user
-	  let email = document.getElementById("signInEmail").value;
+	  let loginOrEmail = document.getElementById("signInLoginOrEmail").value;
 	  let password = document.getElementById("signInPassword").value;
-	  if (email.length > 0 && password.length > 0){
+	  if (loginOrEmail.length > 0 && password.length > 0){
 		  let hashed_sha256 = CryptoJS.SHA256(password);
 		  let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
-		  userSignInValues['email'] = email;
+		  userSignInValues['loginOrEmail'] = loginOrEmail;
 		  userSignInValues['password'] = client_hashed
 	      sakura.common.ws_request('login', [], userSignInValues, 
 	        function (wsResult) {

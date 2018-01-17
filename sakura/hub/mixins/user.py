@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """User registration or login related"""
-import os, hashlib, binascii
+import os, hashlib, binascii, re
 
 class UserMixin:
    
@@ -27,10 +27,14 @@ class UserMixin:
         return True
         
     @classmethod
-    def from_credentials(cls, email, password):
-        user = cls.get(email = email)
+    def from_credentials(cls, loginOrEmail, password):
+        user = None
+        if re.search('@',loginOrEmail):
+            user = cls.get(email = loginOrEmail)
         if user is None:
-            raise ValueError('Email "%s" is unknown.' % email)
+            user = cls.get(login = loginOrEmail)
+        if user is None:
+            raise ValueError('Login and/or email "%s" is unknown.' % loginOrEmail)
         client_hashed = password  # receive the client_hashed password entered in the signIn form
         db_login = user.login # receive the user login from db
         db_salt = user.password_salt # receive the salt from db
