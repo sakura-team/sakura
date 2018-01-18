@@ -290,13 +290,14 @@ function datasets_add_a_row(table_id) {
         
         type_select.attr('id', 'datasets_fs_type_select_'+datasets_creation_global_ids);
         type_select.attr('onchange', "datasets_type_change("+datasets_creation_global_ids+",this);");
+        type_select.attr('data-width', '100px');
+        type_select.selectpicker('refresh');
         
         tags_select.attr('id', 'datasets_fs_tags_select_'+datasets_creation_global_ids);
         datasets_fill_select_tags(tags_select);
-        
-        $('#datasets_fs_type_select_'+datasets_creation_global_ids).selectpicker('refresh');
-        $('#datasets_fs_tags_select_'+datasets_creation_global_ids).selectpicker('refresh');
-        $('#datasets_fs_tags_select_'+datasets_creation_global_ids).change(datasets_tags_select_change);
+        tags_select.attr('data-width', '100px');
+        tags_select.selectpicker('refresh');
+        tags_select.change(datasets_tags_select_change);
         $('#datasets_new_tag_select_group').selectpicker('refresh');
         
         $('#datasets_creation_datetimepicker').datetimepicker();
@@ -579,8 +580,6 @@ function datasets_type_change(row_id, from) {
         datasets_fkey_cancel(row_id, 'ff');
     else
         datasets_fkey_cancel(row_id, 'fs');
-    
-    console.log(datasets_creation_fkeys);
 }
 
 
