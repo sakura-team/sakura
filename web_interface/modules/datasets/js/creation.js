@@ -573,6 +573,14 @@ function datasets_type_change(row_id, from) {
     else if (td.childElementCount > 1) {
         td.children[1].remove();
     }
+    
+    //When type changes we should delete the fkey
+    if (from.id.indexOf("ff") >= 0)
+        datasets_fkey_cancel(row_id, 'ff');
+    else
+        datasets_fkey_cancel(row_id, 'fs');
+    
+    console.log(datasets_creation_fkeys);
 }
 
 
