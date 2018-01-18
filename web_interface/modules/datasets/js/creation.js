@@ -455,14 +455,14 @@ function datasets_foreign_key(row, from_what) {
     if (!found_at_least_one) {
         $('#datasets_fkey_select_table').append('<option>No table has a pkey of '+type+' for now</option>');
         $('#datasets_fkey_validate_button').attr('onClick', '');
-        $('#datasets_fkey_validate_button').prop('disabled', 'true');
+        $('#datasets_fkey_validate_button').prop('disabled', true);
         $('#datasets_fkey_cancel_button').attr('onClick', '');
     }
     else {
         $('#datasets_fkey_select_table').append(options_ds);
         $('#datasets_fkey_select_table').attr('onChange', 'datasets_fkey_select_table_onchange();');
         $('#datasets_fkey_select_column').append(options_cols);    
-        $('#datasets_fkey_validate_button').prop('disabled  ', 'false');
+        $('#datasets_fkey_validate_button').prop('disabled', false);
         $('#datasets_fkey_validate_button').attr('onClick', 'datasets_fkey_validate('+row+',"'+from_what+'");');
         $('#datasets_fkey_cancel_button').attr('onClick', 'datasets_fkey_cancel('+row+',"'+from_what+'");');
     }
