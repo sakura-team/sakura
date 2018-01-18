@@ -16,20 +16,24 @@ var datasets_creation_fkeys             = { 'fs': {
 
 function datasets_open_creation(db_id) {
     
-    //Updating/emptying html elements
-    $('#datasets_creation_name').val("");
-    $('#datasets_creation_description').val("");
-    $("#datasets_file_from_HD").val("");
-    $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+db_id+')');
-    
     if (datasets_creation_first_time) {
-        //Creating at least one row (NOT CORRECT BECAUSE IT CREATES A NEW ROW EACH TIME WE OPEN)
+        $('#datasets_creation_name').val("");
+        $('#datasets_creation_description').val("");
+        $("#datasets_file_from_HD").val("");
+        $('#datasets_creation_button').attr('onclick', 'datasets_send_new('+db_id+')');
+        
+        //Creating at least one row
+        datasets_creation_empty_tables();
         datasets_add_a_row('datasets_creation_from_scratch_columns');
         
         //Red frame for the new dataset name
         $($('#datasets_creation_name')[0].parentElement).addClass('has-error');
         $('#datasets_creation_name').on('keyup', function() {datasets_creation_check_name($('#datasets_creation_name'));});
         
+        datasets_creation_fkeys             = { 'fs': {
+                                                    'rows': [], 'data': []  }, 
+                                                'ff': {
+                                                    'rows': [], 'data': []  }   };
         datasets_creation_first_time = false;
     }
     
@@ -82,6 +86,9 @@ function datasets_send_new(database_id) {
         var inputs = $(cols[i]).find('input');
         var label = $(inputs[0]).val();
         
+        var tab = $(cols[i])[0].id.split('_');
+        var global_i = parseInt(tab[tab.length -1]);
+        
         //Some verifications
         if (label == 'Column Name') {
             datasets_alert("Columns Name", "Each column should have an explicit name");
@@ -96,9 +103,10 @@ function datasets_send_new(database_id) {
         
         //tags
         var type = $($(cols[i]).find('select')[0]).val();
-        var pkey = ($('#pkey_'+from_what+'_'+i).attr("class").indexOf("active") != -1);
+        var pkey = ($('#pkey_'+from_what+'_'+global_i).attr("class").indexOf("active") != -1);
         var fkey = null;
-        if ($('#fkey_'+from_what+'_'+i).attr("class").indexOf("active") != -1) {
+        
+        if ($('#fkey_'+from_what+'_'+global_i).attr("class").indexOf("active") != -1) {
             index = datasets_creation_fkeys[from_what].rows.indexOf(i);
             fkey = datasets_creation_fkeys[from_what].data[index];
         }
@@ -136,6 +144,7 @@ function datasets_send_new(database_id) {
             
             //Refresh dataset list
             recover_datasets();
+            datasets_creation_first_time = true;
             $("#datasets_creation_modal").modal('hide');
         }
     });
@@ -172,6 +181,7 @@ function datasets_on_file_selected(f) {
                 
                 datasets_creation_csv_file.headers.forEach( function(col, index) {
                     var new_row = $(body[0].insertRow(-1));
+                    new_row.attr('id', 'datasets_row_ff_' + index);
                     new_row.load('templates/creation_dataset_row.html', function () {
                         var before_last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 2]);
                         var inputs = new_row.find('input');
@@ -223,7 +233,7 @@ function datasets_on_file_selected(f) {
 
 
 /////////////////////////////////////////////////////////////////////////////////////
-// ROWS FROM SCRATCH
+// ROWS 
 function datasets_add_a_row(table_id) {
     var body = $('#'+table_id).find('tbody');
     var nb_rows = body[0].childElementCount - 1;
@@ -299,12 +309,26 @@ function datasets_add_a_row(table_id) {
     return new_row;
 }
 
+function datasets_creation_empty_tables() {
+    console.log('here');
+    var body = $('#datasets_creation_from_file_columns').find('tbody');
+    body.empty();
+    //body = $('#datasets_creation_from_scratch_columns').find('tbody');
+    var trs = $('#datasets_creation_from_scratch_columns').find('tbody').find('tr');
+    for (var i=0; i< trs.length-1; i++) {
+        console.log(trs[i]);
+        var tab = trs[i].id.split('_');
+        var row_id = parseInt(tab[tab.length -1]);
+        datasets_remove_line(row_id, 'fs');
+    }
+}
+
 function datasets_remove_line(row, from_what) {
+    console.log(row, from_what);
     //Remove the foreign key if there is one
     datasets_fkey_cancel(row, from_what);
     //Remove the line
     $('#datasets_row_'+row).remove();
-    
 }
 
 
