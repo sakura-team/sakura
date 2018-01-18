@@ -400,25 +400,45 @@ function datasets_foreign_key(row, from_what) {
     $('#datasets_fkey_select_table').empty();
     $('#datasets_fkey_select_column').empty();
     
-    var options_ds = "";
-    var options_cols = "";
-    database_infos.tables.forEach( function (ds, index) {
-        options_ds += '<option value='+ds.table_id+'>'+ds.name+'</option>';        
-        if (index == 0) {
-            ds.columns.forEach( function(col, index2) {
-                options_cols += '<option value='+index2+'>'+col[0]+'</option>';
-            });
+    var options_ds          = "";
+    var options_cols        = "";
+    var found_at_least_one  = false
+    var table_filled        = false
+    
+    database_infos.tables.forEach( function (ds) {
+        //as this table a primary key ?
+        var as_a_pkey = false;
+        ds.columns.forEach( function(c) {
+            if (c[3])
+                as_a_pkey = true;
+                found_at_least_one = true;
+        });
+        
+        if (as_a_pkey) {
+            options_ds += '<option value='+ds.table_id+'>'+ds.name+'</option>';        
+            if (!table_filled) {
+                ds.columns.forEach( function(col, index) {
+                    options_cols += '<option value='+index+'>'+col[0]+'</option>';
+                });
+                table_filled = true;
+            }
         }
     });
     
-    $('#datasets_fkey_select_table').append(options_ds);
-    $('#datasets_fkey_select_table').attr('onChange', 'datasets_fkey_select_table_onchange();');
-    
-    $('#datasets_fkey_select_column').append(options_cols);
-    
-    $('#datasets_fkey_validate_button').attr('onClick', 'datasets_fkey_validate('+row+',"'+from_what+'");');
-    $('#datasets_fkey_cancel_button').attr('onClick', 'datasets_fkey_cancel('+row+',"'+from_what+'");');
-    
+    if (!found_at_least_one) {
+        $('#datasets_fkey_select_table').append('<option>No table has a pkey for now</option>');
+        $('#datasets_fkey_validate_button').attr('onClick', '');
+        $('#datasets_fkey_validate_button').prop('disabled', 'true');
+        $('#datasets_fkey_cancel_button').attr('onClick', '');
+    }
+    else {
+        $('#datasets_fkey_select_table').append(options_ds);
+        $('#datasets_fkey_select_table').attr('onChange', 'datasets_fkey_select_table_onchange();');
+        $('#datasets_fkey_select_column').append(options_cols);    
+        $('#datasets_fkey_validate_button').prop('disabled  ', 'false');
+        $('#datasets_fkey_validate_button').attr('onClick', 'datasets_fkey_validate('+row+',"'+from_what+'");');
+        $('#datasets_fkey_cancel_button').attr('onClick', 'datasets_fkey_cancel('+row+',"'+from_what+'");');
+    }
     
     //filling if already defined
     if ($('#fkey_'+from_what+'_'+row).attr("class").indexOf('active') != -1) {
