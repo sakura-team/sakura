@@ -149,6 +149,32 @@ function signOutSubmitControl(event) {
   }
 }
 
+function pwdRecoverySubmitControl(event) {
+	if (event.type === 'click') {
+	  event.preventDefault();
+	  var pwdRecoveryValues = {}; // dictionary of email and password entered by user
+	  let loginOrEmail = document.getElementById("pwdRecoveryLoginOrEmail").value;
+	  if (loginOrEmail.length > 0){
+		  pwdRecoveryValues['loginOrEmail'] = loginOrEmail;
+	      sakura.common.ws_request('pwdRecovery', [], pwdRecoveryValues, 
+	        function (wsResult) {
+		    	  console.log("wsResult:"+wsResult);
+		    	  alert("Mail sent");
+		    	  $('#signInModal').on('hidden.bs.modal', function () {
+	    			  $(this).find('form').trigger('reset');
+	    		  });
+	    		  return;
+	        }, 
+	        function (error_message) {
+	    	      alert(error_message);
+	    	  });     
+	   } // end checking empty fields
+	  else {
+		  alert("Fill the field");
+	  }
+	} //end if event click
+}
+
 function not_implemented(s = '') {
   if (s == '') {
     alert('Not implemented yet');
