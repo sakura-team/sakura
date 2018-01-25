@@ -192,4 +192,6 @@ class GuiToHubAPI(object):
     def pwdRecovery(self, loginOrEmail):
         return self.context.users.pwdRecovery(self.context, loginOrEmail)
 
+    def changePassword(self, loginOrEmail, currentPassword, newPassword):
+        return self.context.users.changePassword(self.context, loginOrEmail, currentPassword, newPassword)
 		

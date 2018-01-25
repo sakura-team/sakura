@@ -82,3 +82,29 @@ class UserMixin:
         #s.quit()
         context.db.commit()
         return True
+
+    @classmethod
+    def changePassword(cls, context, loginOrEmail, currentPassword, newPassword):
+        user = None
+        if re.search('@',loginOrEmail):
+            user = cls.get(email = loginOrEmail)
+        if user is None:
+            user = cls.get(login = loginOrEmail)
+        if user is None:
+            raise ValueError('Login and/or email "%s" is unknown.' % loginOrEmail)
+        client_current_hashed = currentPassword  # receive the client_current_hashed password entered in the signIn form
+        db_login = user.login # receive the user login from db
+        db_salt = user.password_salt # receive the salt from db
+        # recalculate the hash from this password to match it agains the db entry
+        dk_current = hashlib.pbkdf2_hmac('sha256', bytes(client_current_hashed,'utf8'), db_salt, 100000)
+        recalculated_current_hash = binascii.hexlify(dk_current)
+        db_hash = user.password_hash # receive the server_hashed passwd from db
+        if db_hash != recalculated_current_hash:
+            raise ValueError('Invalid password.')
+        else:
+            client_new_hashed = newPassword  # receive the client_new_hashed password entered in the signIn form
+            dk_new = hashlib.pbkdf2_hmac('sha256', bytes(client_new_hashed,'utf8'), db_salt, 100000)
+            recalculated_new_hash = binascii.hexlify(dk_new)
+            user.password_hash = recalculated_new_hash 
+            context.db.commit()                    
+        return db_login
