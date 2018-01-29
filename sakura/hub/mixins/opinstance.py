@@ -1,4 +1,5 @@
 class OpInstanceMixin:
+    INSTANCIATED = set()
     @property
     def daemon_api(self):
         return self.op_class.daemon.api
@@ -10,9 +11,13 @@ class OpInstanceMixin:
         return self.daemon_api.op_instances[self.id]
     @property
     def instanciated(self):
-        if not '_instanciated' in self.__dict__:
-            self._instanciated = False
-        return self._instanciated
+        return self.id in OpInstanceMixin.INSTANCIATED
+    @instanciated.setter
+    def instanciated(self, boolean):
+        if boolean:
+            OpInstanceMixin.INSTANCIATED.add(self.id)
+        else:
+            OpInstanceMixin.INSTANCIATED.remove(self.id)
     def __getattr__(self, attr):
         # if we cannot find the attr,
         # let's look at the real operator
@@ -26,10 +31,10 @@ class OpInstanceMixin:
         return res
     def instanciate_on_daemon(self):
         self.daemon_api.create_operator_instance(self.op_class.name, self.id)
-        self._instanciated = True
+        self.instanciated = True
         return self.remote_instance
     def delete_on_daemon(self):
-        self._instanciated = False
+        self.instanciated = False
         self.daemon_api.delete_operator_instance(self.id)
     @classmethod
     def create_instance(cls, context, op_cls_id):
