@@ -11,21 +11,22 @@ class DBProber:
         self.driver.collect_db_tables(self.db_conn, self)
         self.db_conn.close()
         return self.tables
-    def register_table(self, table_name):
+    def register_table(self, table_name, **metadata):
         print("DB probing: found table %s" % table_name)
-        self.tables[table_name] = DBTable(self.db, table_name)
+        self.tables[table_name] = DBTable(self.db, table_name, **metadata)
         self.driver.collect_table_columns(self.db_conn, self, table_name)
     def register_column(self, table_name, *col_info, **params):
         print("----------- found column " + str(col_info))
         self.tables[table_name].add_column(*col_info, **params)
 
 class Database:
-    def __init__(self, dbms, db_name):
+    def __init__(self, dbms, db_name, **metadata):
         self.dbms = dbms
         self.db_name = db_name
         self.owner = None
         self.users = defaultdict(lambda: dict(READ=False, WRITE=False))
         self._tables = None
+        self.metadata = metadata
     @property
     def tables(self):
         if self._tables is None:
@@ -60,7 +61,8 @@ class Database:
             name = self.db_name,
             owner = self.owner,
             tables = self.tables.values(),
-            users = self.users
+            users = self.users,
+            **self.metadata
         )
     def overview(self):
         return dict(
