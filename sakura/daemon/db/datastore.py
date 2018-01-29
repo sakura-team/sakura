@@ -1,4 +1,5 @@
 from sakura.daemon.db import drivers
+from sakura.daemon.db import adapters
 from sakura.daemon.db.database import Database
 
 class DataStoreProber:
@@ -33,7 +34,8 @@ class DataStoreProber:
             self.databases[db_name].grant(user, privtype)
 
 class DataStore:
-    def __init__(self, host, datastore_admin, sakura_admin, driver_label):
+    def __init__(self, host, datastore_admin, sakura_admin,
+                 driver_label, adapter_label):
         self.host = host
         self.datastore_admin = datastore_admin
         self.sakura_admin = sakura_admin
@@ -42,6 +44,7 @@ class DataStore:
         self._users = None        # not probed yet
         self._databases = None    # not probed yet
         self._online = None       # not probed yet
+        self.adapter = adapters.get(adapter_label)
     def admin_connect(self):
         return self.driver.connect(
             host = self.host,

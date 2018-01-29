@@ -6,7 +6,10 @@ from sakura.daemon.processing.parameter import ParameterException
 class DaemonEngine(object):
     def __init__(self, op_classes, datastores):
         self.op_classes = op_classes
-        self.datastores = { (d.host, d.driver_label): d for d in datastores }
+        self.datastores = {}
+        for ds in datastores:
+            ds = ds.adapter.adapt(ds)
+            self.datastores[(ds.host, ds.driver_label)] = ds
         self.op_instances = {}
         self.hub = None
         self.fragment_sources = {}

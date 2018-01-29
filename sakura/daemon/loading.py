@@ -34,7 +34,8 @@ def load_datastores():
             host = ds_conf['host'],
             datastore_admin = ds_conf['datastore-admin'],
             sakura_admin = ds_conf['sakura-admin'],
-            driver_label = ds_conf['driver']
+            driver_label = ds_conf['driver'],
+            adapter_label = ds_conf.get('adapter', 'native')
         )
         ds.refresh()
         datastores.append(ds)
