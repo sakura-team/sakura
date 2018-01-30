@@ -140,7 +140,11 @@ function pwdRecoverySubmitControl(event) {
 	      sakura.common.ws_request('pwdRecovery', [], pwdRecoveryValues, 
 	        function (wsResult) {
 		    	  console.log("wsResult:"+wsResult);
-		    	  alert("Mail sent");
+				  tmpCanSendMail = false;
+				  if tmpCanSendMail { // temporary (and below and in user.py !)
+				    alert("Mail sent");}
+				  else {
+					alert("new passwd : ttt (temporary)");}
 		    	  $('#signInModal').on('hidden.bs.modal', function () {
 	    			  $(this).find('form').trigger('reset');});
 	    		  return;}, 
