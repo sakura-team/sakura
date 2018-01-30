@@ -60,7 +60,7 @@ class UserMixin:
             user = cls.get(login = loginOrEmail)
         if user is None:
             raise ValueError('Login and/or email "%s" is unknown.' % loginOrEmail)
-        tmpCanSendMail = False # temporary (and below)
+        tmpCanSendMail = False # temporary (and below and in signIn.js !)
         if tmpCanSendMail:
             password = ''
             for i in range(10):
