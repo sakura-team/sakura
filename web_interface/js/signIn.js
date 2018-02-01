@@ -141,7 +141,7 @@ function pwdRecoverySubmitControl(event) {
 	        function (wsResult) {
 		    	  console.log("wsResult:"+wsResult);
 				  tmpCanSendMail = false;
-				  if tmpCanSendMail { // temporary (and below and in user.py !)
+				  if (tmpCanSendMail) { // temporary (and below and in user.py !)
 				    alert("Mail sent");}
 				  else {
 					alert("new passwd : ttt (temporary)");}
