@@ -1,6 +1,14 @@
 <td style="vertical-align: middle; text-align:left;">
-    <div class="col-sm-12" style="padding-left: 0px;">
-        <input class="form-control" type="text" value="Column Name" autocomplete='off'>
+    <div style="padding-left: 0px;">
+        <table>
+            <tr>
+            <td style="vertical-align: middle;">
+                <input id="datasets_creation_col_name_temp" class="form-control" type="text" value="Column Name" autocomplete='off'/>
+            <td style="vertical-align: middle;">
+                <button id="datasets_creation_PKey_temp" title="Select column for primary key" class="btn btn-secondary btn-xs" onclick="not_yet();" style="margin-left: 3px; padding-left: 4px; padding-right: 4px;">
+                        <img src="images/key.png" width="13px" height="13px"/>
+                </button>
+        </table>
     <div>
 <td style="vertical-align: middle;  text-align:left;">
     <select onchange="datasets_type_change(-1);" id="datasets_type_select">
@@ -17,6 +25,5 @@
 <td style="vertical-align: middle; text-align:left">                                                
     <select id="datasets_tags_select" multiple>
     </select>
-<td style="vertical-align: middle; text-align:left">
 <td style="vertical-align: middle; text-align: right;"">
     <span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick=""></span>

@@ -24,8 +24,8 @@
         
         <!-- MAIN TABLE-->
         <div class="container" id="datasets_container">
-            <h3 id='datasets_name'>Database Name</h3>
-            <font color="grey"><p id='datasets_description'>Short description</p></font>
+            <!--<h3 id='datasets_name'>Database Name</h3>
+            <font color="grey"><p id='datasets_description'>Short description</p></font>-->
             <table class="table table-condensed table-hover table-striped" id="table_of_datasets">
                 <thead>
                     <tr>
@@ -41,8 +41,8 @@
         </div>
         
         <!--CREATION MODAL-->
-        <div class="modal fade" id="datasets_creation_modal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
+        <div class="modal fade" id="datasets_creation_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 100%">
+            <div class="modal-dialog modal-lg" role="document" style='width: 90%'>
                 <div class="modal-content">
                     <div class="modal-header">
                         <h3>New Dataset</h3>
@@ -82,20 +82,47 @@
                             <div class="panel-body">
                                 <div class="tab-content">
                                     <div id="datasets_creation_from_scratch_pan" class="tab-pane fade in active">
-                                        <table class="table table-condensed" id="datasets_creation_from_scratch_columns">
-                                            <thead>
-                                                <tr>
-                                                    <th class="col-md-2" style="text-align:left">Name
-                                                    <th class="col-md-1" style="text-align:left">Type
-                                                    <th class="col-md-3" style="text-align:left">Tags
-                                                    <th colspan=2 class="col-md-2" style="text-align:left">Constraints
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td colspan=5>
-                                                        <span title="delete" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_add_a_row('datasets_creation_from_scratch_columns');"></span>
-                                            </tbody>
-                                        </table>
+                                        <div class="tab-content">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">Columns
+                                                </div>
+                                                <div class="panel-body" style="padding-top:5px; padding-bottom: 0px;">
+                                                    <table class="table table-condensed" id="datasets_creation_from_scratch_columns" style="width: 100%; margin-bottom: 0px;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="text-align:left">Name
+                                                                <th style="text-align:left">Type
+                                                                <th style="text-align:left">Tags
+                                                                <th/>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td colspan=4>
+                                                                    <span title="add a column" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_add_a_row('datasets_creation_from_scratch_columns');"></span>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default" style="margin-bottom: 0px;">
+                                                <div class="panel-heading">Keys
+                                                </div>
+                                                <div class="panel-body" style="padding-top:5px; padding-bottom: 0px;">                                                    
+                                                    <table class="table" sytle="width: 100%; border: none;" style="margin-bottom: 0px;">
+                                                        <tr>
+                                                            <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                                <label style="margin-left: 5px;">Primary</label>
+                                                            <td style="border-top: none; padding-top: 1px;" id="datasets_creation_fs_PKey_input">
+                                                                <!--<input id="datasets_creation_fs_PKey_input" type="text" value="Click on the keys right to the column names (Warning: order is important)" class="field left" readonly style="width: 100%; border: 0;"/>-->
+                                                                None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>
+                                                        <tr>
+                                                            <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                                <label style="margin-left: 5px;">Foreigns</label>
+                                                            <td style="border-top: none; padding-top: 1px;">
+                                                                <span id="datasets_creation_fs_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="not_yet();"></span>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     
                                     <div id="datasets_creation_from_file_pan" class="tab-pane fade in">
@@ -115,12 +142,6 @@
                                             </tbody>
                                         </table>
                                         
-                                    </div>
-                                    <div id="from_file_pan" class="tab-pane fade">
-                                        <div class="form-group">
-                                            <label> File</label>
-                                            <input id="datasets_file_from_HD" type="file" onchange="datasets_on_file_selected(this);">
-                                        </div>
                                     </div>
                                 </div>
                             </div>
