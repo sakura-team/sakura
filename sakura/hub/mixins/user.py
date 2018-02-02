@@ -77,6 +77,34 @@ class UserMixin:
         #s = smtplib.SMTP('localhost')
         #s.send_message(msg)
         #s.quit()
+        '''To : $$user.email$$
+Subject : [Sakura] Demande de réinitialisation de mot de passe/Request for a new password
+Body :
+
+(english below)
+Bonjour $$user.First_Name$$ $$user.Last_Name$$, 
+
+  Une demande de réinitialisation de mot de passe a été demandée 
+pour votre compte utilisateur « $$user.login$$ » sur Sakura ($$sakura_URL$$). 
+
+  Un nouveau mot de passe vous a été attribué : « $$passwd$$ »   
+
+  Veuillez le modifier le plus rapidement possible (signIn/ChangePassword).
+
+  Si vous avez besoin d'aide, veuillez contacter l'administrateur du site.
+  
+  
+(in french above)  
+Dear $$user.First_Name$$ $$user.Last_Name$$, 
+
+  we have received a request for a new password about « $$user.login$$ » (you) 
+for Sakura ($$sakura_URL$$). 
+
+  your new passord is : « $$passwd$$ »   
+
+  Please, change it quickly (signIn/ChangePassword).
+
+  Contact site adminstrator for any help .'''
         context.db.commit()
         return True
 
