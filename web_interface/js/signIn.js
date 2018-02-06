@@ -97,8 +97,8 @@ function signInSubmitControl(event) {
 	  if (loginOrEmail.length > 0 && password.length > 0){
 		  let hashed_sha256 = CryptoJS.SHA256(password);
 		  let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
-		  userSignInValues['loginOrEmail'] = loginOrEmail;
-		  userSignInValues['password'] = client_hashed
+		  userSignInValues.login_or_email = loginOrEmail;
+		  userSignInValues.password = client_hashed
 	      sakura.common.ws_request('login', [], userSignInValues, 
 	        function (wsResult) {
 		    	  // console.log("wsResult:"+wsResult);
@@ -136,20 +136,19 @@ function pwdRecoverySubmitControl(event) {
 	  var pwdRecoveryValues = {}; // dictionary of email and password entered by user
 	  let loginOrEmail = document.getElementById("pwdRecoveryLoginOrEmail").value;
 	  if (loginOrEmail.length > 0){
-		  pwdRecoveryValues['loginOrEmail'] = loginOrEmail;
-	      sakura.common.ws_request('pwdRecovery', [], pwdRecoveryValues, 
+		  pwdRecoveryValues.login_or_email = loginOrEmail;
+	      sakura.common.ws_request('recover_password', [], pwdRecoveryValues,
 	        function (wsResult) {
-		    	  console.log("wsResult:"+wsResult);
-				  tmpCanSendMail = false;
-				  if (tmpCanSendMail) { // temporary (and below and in user.py !)
-				    alert("Mail sent");}
-				  else {
-					alert("new passwd : ttt (temporary)");}
-		    	  $('#signInModal').on('hidden.bs.modal', function () {
-	    			  $(this).find('form').trigger('reset');});
-	    		  return;}, 
+                alert("Mail sent. Checkout your mailbox.");
+                $('#signInModal').on('hidden.bs.modal', function () {
+                      $(this).find('form').trigger('reset');
+                });
+                return;
+            },
 	        function (error_message) {
-	    	      alert(error_message);});} 
+                  alert(error_message);
+            });
+      }
 	  else {
 		  alert("Fill the field");}}
 }
@@ -159,28 +158,35 @@ function changePasswordSubmitControl(event) {
 	  event.preventDefault();
 	  var changePasswordValues = {}; // dictionary of email and password entered by user
 	  let loginOrEmail = document.getElementById("changePasswordLoginOrEmail").value;
-	  let currentPassword = document.getElementById("changePasswordCurrentPassword").value;
+	  let currentPasswordOrRT = document.getElementById("changePasswordCurrentPasswordOrRT").value;
 	  let newPassword = document.getElementById("changePasswordNewPassword").value;
 	  let confirmPassword = document.getElementById("changePasswordConfirmPassword").value;
 	  if (newPassword != confirmPassword) {
 	    alert("New password and Confirm password should be the same.");
 	    return;}
-	  if ((loginOrEmail.length > 0) && (currentPassword.length > 0) && (newPassword.length > 0)){
-	    changePasswordValues['loginOrEmail'] = loginOrEmail;
-	    let hashed_current_sha256 = CryptoJS.SHA256(currentPassword);
-	    let client_current_hashed = hashed_current_sha256.toString(CryptoJS.enc.Base64);
-	    changePasswordValues['currentPassword'] = client_current_hashed;
+	  if ((loginOrEmail.length > 0) && (currentPasswordOrRT.length > 0) && (newPassword.length > 0)){
+	    changePasswordValues.login_or_email = loginOrEmail;
+        if (currentPasswordOrRT.substring(0, 4) == "rec-") {
+            // recovery token, send it unmodified
+            changePasswordValues.current_password_or_rec_token = currentPasswordOrRT
+        }
+        else {
+            // current password, hash it
+            let hashed_current_sha256 = CryptoJS.SHA256(currentPasswordOrRT);
+            let client_current_hashed = hashed_current_sha256.toString(CryptoJS.enc.Base64);
+            changePasswordValues.current_password_or_rec_token = client_current_hashed;
+        }
 	    let hashed_new_sha256 = CryptoJS.SHA256(newPassword);
 	    let client_new_hashed = hashed_new_sha256.toString(CryptoJS.enc.Base64);
-	    changePasswordValues['newPassword'] = client_new_hashed;
-	    sakura.common.ws_request('changePassword', [], changePasswordValues, 
+	    changePasswordValues.new_password = client_new_hashed;
+	    sakura.common.ws_request('change_password', [], changePasswordValues,
 	      function (wsResult) {
 	        console.log("wsResult:"+wsResult);
 	        alert("Password changed");
 	        $('#signInModal').on('hidden.bs.modal', function () {
 	          $(this).find('form').trigger('reset');});
 	        $("#signInModal").modal("hide");
-	        return;}, 
+	        return;},
 	      function (error_message) {
 	        alert(error_message);});}
 	  else {

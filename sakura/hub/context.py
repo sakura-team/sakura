@@ -5,6 +5,7 @@ from sakura.hub.secrets import SecretsRegistry
 
 class HubContext(object):
     SESSION_SECRETS_LIFETIME = 5
+    PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
     def __init__(self):
         self.db = instanciate_db()
         self.daemons = self.db.Daemon
@@ -21,6 +22,8 @@ class HubContext(object):
         self.columns = self.db.DBColumn
         self.session_secrets = SecretsRegistry(
                         HubContext.SESSION_SECRETS_LIFETIME)
+        self.pw_recovery_secrets = SecretsRegistry(
+                        HubContext.PW_RECOVERY_SECRETS_LIFETIME)
     def new_session(self):
         return self.sessions.new_session(self)
     def get_session(self, session_secret):

@@ -1,119 +1,102 @@
 # -*- coding: utf-8 -*-
 """User registration or login related"""
-import os, hashlib, binascii, re, base64, smtplib, random
-from email.mime.text import MIMEText
+import os, hashlib, binascii, re, base64, smtplib, random, bottle
+from sakura.hub.myemail import sendmail
 
+RECOVERY_MAIL_SUBJECT = "Password recovery"
+RECOVERY_MAIL_CONTENT = '''
+Dear %(firstname)s %(lastname)s,
+We have received a request for password recovery from sakura user %(login)s (you).
+On Sakura login window, click on "Change Password" and enter the following:
+
+                    login or email: %(login)s
+current password or recovery token: %(rec_token)s
+                      new password: <your-new-password-here>
+              confirm new password: <your-new-password-here>
+
+Note: For security reasons, the recovery token expires after %(delay)d minutes.
+
+'''
 
 class UserMixin:
-   
+
     @classmethod
     def from_logins(cls, logins):
         return [cls.get(login = login) for login in logins]
-   
+
+    @classmethod
+    def hash_password(cls, password, salt = None):
+        if salt == None:
+            salt = os.urandom(32)
+        dk = hashlib.pbkdf2_hmac('sha256', bytes(password,'utf8'), salt, 100000)
+        return salt, binascii.hexlify(dk)
+
     @classmethod
     def new_user(cls, context, login, email, password, **user_info):
         # print (type(cls))
-        
         if cls.get(login = login) is not None:
             raise ValueError('Login name "%s" already exists!' % login)
         if cls.get(email = email) is not None:
             raise ValueError('Email "%s" already exists!' % email)
-        
         # all checks for existing user completed here, proceeding to new user registration
-        client_hashed = password
-        salt = os.urandom(32)
-        dk = hashlib.pbkdf2_hmac('sha256', bytes(client_hashed,'utf8'), salt, 100000)
-        server_hashed = binascii.hexlify(dk)
-        cls(login = login, email = email, password_salt = salt, password_hash = server_hashed, **user_info)
+        salt, hashed_password = cls.hash_password(password)
+        cls(login = login, email = email, password_salt = salt, password_hash = hashed_password, **user_info)
         context.db.commit()
         return True
-        
+
     @classmethod
-    def userFromLoginOrEmail(cls, loginOrEmail):
+    def from_login_or_email(cls, login_or_email):
         user = None
-        if re.search('@',loginOrEmail):
-            user = cls.get(email = loginOrEmail)
+        if re.search('@',login_or_email):
+            user = cls.get(email = login_or_email)
         if user is None:
-            user = cls.get(login = loginOrEmail)
+            user = cls.get(login = login_or_email)
         if user is None:
-            raise ValueError('Login and/or email "%s" is unknown.' % loginOrEmail)
+            raise ValueError('Login and/or email "%s" is unknown.' % login_or_email)
         return user
 
     @classmethod
-    def from_credentials(cls, context, loginOrEmail, password):
-        user = cls.userFromLoginOrEmail(loginOrEmail)
-        client_hashed = password  # receive the client_hashed password entered in the signIn form
-        db_login = user.login # receive the user login from db
-        db_salt = user.password_salt # receive the salt from db
-        db_hash = user.password_hash # receive the server_hashed passwd from db
+    def from_credentials(cls, context, login_or_email, password, err_msg = 'Invalid password.'):
+        user = cls.from_login_or_email(login_or_email)
+        user.check_password(password, err_msg)
+        return user
+
+    def check_password(self, password, err_msg):
         # recalculate the hash from this password to match it agains the db entry
-        dk = hashlib.pbkdf2_hmac('sha256', bytes(client_hashed,'utf8'), db_salt, 100000)
-        recalculated_hash = binascii.hexlify(dk)
-        if db_hash != recalculated_hash:
-            raise ValueError('Invalid password.')
-        return user
+        salt, hashed_password = self.hash_password(password, self.password_salt)
+        if self.password_hash != hashed_password:
+            raise ValueError(err_msg)
 
     @classmethod
-    def pwdRecovery(cls, context, loginOrEmail):
-        user = cls.userFromLoginOrEmail(loginOrEmail)
-        tmpCanSendMail = False # temporary (and below and in signIn.js !)
-        if tmpCanSendMail:
-            password = ''
-            for i in range(10):
-                password = password + "abcdefghjkmnpqrstuvwyzABDEFGHJKMNPQRSTUVWXYZ2345689-/=.,?!:+"[int(random.random()*60)]
-        else:
-            password = "ttt"
-        client_hashed = base64.b64encode(hashlib.sha256(bytes(password,'utf8')).digest());
-        salt = os.urandom(32)
-        dk = hashlib.pbkdf2_hmac('sha256', client_hashed, salt, 100000)
-        server_hashed = binascii.hexlify(dk)
-        user.password_salt = salt
-        user.password_hash = server_hashed
-        #msg = MIMEText("new password (change it):'"+password+"'")
-        #msg['Subject'] = 'New passord for Sakura (change it).'
-        #msg['From'] = 'Sakura-Recovery'
-        #msg['To'] = user.email
-        #s = smtplib.SMTP('localhost')
-        #s.send_message(msg)
-        #s.quit()
-        '''To : $$user.email$$
-Subject : [Sakura] Demande de réinitialisation de mot de passe/Request for a new password
-Body :
-
-(english below)
-Bonjour $$user.First_Name$$ $$user.Last_Name$$, 
-
-  Une demande de réinitialisation de mot de passe a été demandée 
-pour votre compte utilisateur « $$user.login$$ » sur Sakura ($$sakura_URL$$). 
-
-  Un nouveau mot de passe vous a été attribué : « $$passwd$$ »   
-
-  Veuillez le modifier le plus rapidement possible (signIn/ChangePassword).
-
-  Si vous avez besoin d'aide, veuillez contacter l'administrateur du site.
-  
-  
-(in french above)  
-Dear $$user.First_Name$$ $$user.Last_Name$$, 
-
-  we have received a request for a new password about « $$user.login$$ » (you) 
-for Sakura ($$sakura_URL$$). 
-
-  your new passord is : « $$passwd$$ »   
-
-  Please, change it quickly (signIn/ChangePassword).
-
-  Contact site adminstrator for any help .'''
-        context.db.commit()
-        return True
+    def recover_password(cls, context, login_or_email):
+        user = cls.from_login_or_email(login_or_email)
+        secret = context.pw_recovery_secrets.generate_secret(user.login)
+        rec_token = 'rec-' + str(secret)
+        content = RECOVERY_MAIL_CONTENT % dict(
+                firstname = user.first_name,
+                lastname = user.last_name,
+                login = user.login,
+                rec_token = rec_token,
+                delay = context.PW_RECOVERY_SECRETS_LIFETIME / 60)
+        sendmail(user.email, RECOVERY_MAIL_SUBJECT, content)
 
     @classmethod
-    def changePassword(cls, context, loginOrEmail, currentPassword, newPassword):
-        user = cls.from_credentials(context, loginOrEmail, currentPassword)
-        db_salt = user.password_salt
-        client_new_hashed = newPassword  # receive the client_new_hashed password entered in the signIn form
-        dk_new = hashlib.pbkdf2_hmac('sha256', bytes(client_new_hashed,'utf8'), db_salt, 100000)
-        recalculated_new_hash = binascii.hexlify(dk_new)
-        user.password_hash = recalculated_new_hash
-        context.db.commit()
-        return user
+    def change_password(cls, context,
+                login_or_email, curr_passwd_or_rec_token, new_password):
+        user = None
+        if curr_passwd_or_rec_token.startswith('rec-'):
+            try:
+                secret = int(curr_passwd_or_rec_token[4:])
+            except:
+                raise ValueError('Recovery token is invalid.')
+            login = context.pw_recovery_secrets.get_obj(secret)
+            if login is None:
+                raise ValueError('Recovery token is invalid (possibly expired).')
+            # we have a valid recovery token
+            user = cls.get(login = login)
+            if login_or_email not in (user.login, user.email):
+                raise ValueError('Recovery token does not match login or email entry.')
+        if user is None:
+            user = cls.from_credentials(context, login_or_email, curr_passwd_or_rec_token)
+        # all is ok, update password
+        user.password_salt, user.password_hash = cls.hash_password(new_password)

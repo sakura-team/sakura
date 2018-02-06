@@ -182,15 +182,16 @@ class GuiToHubAPI(object):
     def new_user(self, **user_info):
         return self.context.users.new_user(self.context, **user_info)
 
-    def login(self, loginOrEmail, password):
-        self.session.user = self.context.users.from_credentials(self.context, loginOrEmail, password)
+    def login(self, login_or_email, password):
+        self.session.user = self.context.users.from_credentials(self.context, login_or_email, password)
         return self.session.user.login
 
     def logout(self):
         self.session.user = None
 
-    def pwdRecovery(self, loginOrEmail):
-        self.context.users.pwdRecovery(self.context, loginOrEmail)
+    def recover_password(self, login_or_email):
+        self.context.users.recover_password(self.context, login_or_email)
 
-    def changePassword(self, loginOrEmail, currentPassword, newPassword):
-        self.context.users.changePassword(self.context, loginOrEmail, currentPassword, newPassword)
+    def change_password(self, login_or_email, current_password_or_rec_token, new_password):
+        self.context.users.change_password(self.context,
+                login_or_email, current_password_or_rec_token, new_password)
