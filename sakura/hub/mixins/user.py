@@ -51,8 +51,7 @@ class UserMixin:
         recalculated_hash = binascii.hexlify(dk)
         if db_hash != recalculated_hash:
             raise ValueError('Invalid password.')
-        return db_login
-
+        return user
 
     @classmethod
     def pwdRecovery(cls, context, loginOrEmail):
@@ -110,12 +109,11 @@ for Sakura ($$sakura_URL$$).
 
     @classmethod
     def changePassword(cls, context, loginOrEmail, currentPassword, newPassword):
-        db_login = cls.from_credentials(context, loginOrEmail, currentPassword)
-        user = cls.get(login = db_login)
+        user = cls.from_credentials(context, loginOrEmail, currentPassword)
         db_salt = user.password_salt
         client_new_hashed = newPassword  # receive the client_new_hashed password entered in the signIn form
         dk_new = hashlib.pbkdf2_hmac('sha256', bytes(client_new_hashed,'utf8'), db_salt, 100000)
         recalculated_new_hash = binascii.hexlify(dk_new)
-        user.password_hash = recalculated_new_hash 
-        context.db.commit()                    
-        return db_login
+        user.password_hash = recalculated_new_hash
+        context.db.commit()
+        return user
