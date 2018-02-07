@@ -111,14 +111,13 @@
                                                         <tr>
                                                             <td class="col-md-1" style="border-top: none; padding-top: 1px;">
                                                                 <label style="margin-left: 5px;">Primary</label>
-                                                            <td style="border-top: none; padding-top: 1px;" id="datasets_creation_fs_PKey_input">
-                                                                <!--<input id="datasets_creation_fs_PKey_input" type="text" value="Click on the keys right to the column names (Warning: order is important)" class="field left" readonly style="width: 100%; border: 0;"/>-->
+                                                            <td style="border-top: none; padding-top: 1px;" id="datasets_creation_fs_pkey_input">
                                                                 None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>
                                                         <tr>
                                                             <td class="col-md-1" style="border-top: none; padding-top: 1px;">
                                                                 <label style="margin-left: 5px;">Foreigns</label>
                                                             <td style="border-top: none; padding-top: 1px;">
-                                                                <span id="datasets_creation_fs_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="not_yet();"></span>
+                                                                <span id="datasets_creation_fs_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_foreign_modal('fs');"></span>
                                                     </table>
                                                 </div>
                                             </div>
@@ -176,7 +175,7 @@
         -->
         
         <!-- FOREIGN KEY MODAL -->
-        <div id="datasets_foreign_key_modal" role="dialog" class="modal fade abs-modal">
+        <!--<div id="datasets_foreign_key_modal" role="dialog" class="modal fade abs-modal">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-body" style='padding-top:10px; padding-bottom:10px;'>
@@ -201,7 +200,29 @@
                                 <button id="datasets_fkey_cancel_button" type="button" class="btn btn-secondary btn-xs" data-dismiss="modal" onclick="not_yet();">No FKey</button>
                     </table>
                     </div>
-                    
+                </div>
+            </div>
+        </div>-->
+        <div id="datasets_creation_fkey_modal" role="dialog" class="modal fade abs-modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Foreign Key Definition</h3>
+                    </div>
+                    <div class="modal-body" style='padding-top:10px; padding-bottom:10px;'>
+                        <label>
+                            Select dataset/table&nbsp;&nbsp;
+                        </label>
+                        <select id="datasets_creation_fkey_modal_select_table">
+                            <option value="None">None</option>
+                        </select>
+                        <table width='100%' id='datasets_creation_fkey_modal_matrix'>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="datasets_creation_fkey_modal_validate_button" type="button" class="btn btn-primary btn-xs" data-dismiss="modal" onclick="not_yet();">Set FKey</button>
+                        <button id="datasets_creation_fkey_modal_cancel_button" type="button" class="btn btn-secondary btn-xs" data-dismiss="modal" onclick="not_yet();">No FKey</button>
+                    </div>
                 </div>
             </div>
         </div>

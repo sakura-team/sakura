@@ -207,7 +207,7 @@ function datasets_on_file_selected(f) {
                         before_last_cel.append($('<button>', {  id: "pkey_ff_"+index,
                                                                 type: "button",
                                                                 class: "btn btn-xs btn-secondary",
-                                                                text: "PKey",
+                                                                text: "pkey",
                                                                 title: "Click for defining a primary key",
                                                                 onclick: "datasets_primary_key("+index+", 'ff');"
                                                                 }));
@@ -283,8 +283,8 @@ function datasets_add_a_row(table_id) {
         var type_select = $(select[0]);
         var tags_select = $(select[1]);
         
-        $('#datasets_creation_PKey_temp').attr('onclick', 'datasets_primary_key('+datasets_creation_global_ids+', "fs");');
-        $('#datasets_creation_PKey_temp').attr('id', 'datasets_creation_fs_PKey_'+datasets_creation_global_ids);
+        $('#datasets_creation_pkey_temp').attr('onclick', 'datasets_primary_key('+datasets_creation_global_ids+', "fs");');
+        $('#datasets_creation_pkey_temp').attr('id', 'datasets_creation_fs_pkey_'+datasets_creation_global_ids);
         
         type_select.attr('id', 'datasets_fs_type_select_'+datasets_creation_global_ids);
         type_select.attr('onchange', "datasets_type_change("+datasets_creation_global_ids+",this);");
@@ -341,7 +341,7 @@ function datasets_creation_check_column_names(from_what, parent) {
         labels.push(label);
      });
      
-     datasets_creation_update_PKey(from_what);
+     datasets_creation_update_pkey(from_what);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -413,6 +413,86 @@ function datasets_new_tag() {
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CONSTRAINTS
+function datasets_primary_key(row, from_what) {
+    
+    var butt = $('#datasets_creation_'+from_what+'_pkey_'+row);
+    if (butt.attr("class").indexOf("active") == -1) {
+        //Button appearance
+        butt.addClass('active');
+        butt.addClass('btn-primary');
+        butt.html('<img src="images/key_white.png" width="13px" height="13px"/>');
+        
+        //Globla var
+        datasets_creation_pkeys[from_what].rows.push(row);
+    }
+    else {
+        //Button appearance
+        butt.removeClass('active');
+        butt.removeClass('btn-primary');
+        butt.html('<img src="images/key.png" width="13px" height="13px"/>');
+        
+        //Globla var
+        var index = datasets_creation_pkeys[from_what].rows.indexOf(row);
+        datasets_creation_pkeys[from_what].rows.splice(index, 1);
+    }
+    
+    datasets_creation_update_pkey(from_what);
+}
+
+
+function datasets_creation_update_pkey(from_what) {
+    
+    //Updating GUI text
+    var s = "";
+    if (datasets_creation_pkeys[from_what].rows.length != 0) {
+        var index = datasets_creation_pkeys[from_what].rows[0];
+        var col_name = $("#datasets_creation_col_name_"+from_what+"_"+index).val();
+        
+        s += "("+col_name;
+        for (var i=1; i< datasets_creation_pkeys[from_what].rows.length; i++) {
+            index = datasets_creation_pkeys[from_what].rows[i];
+            col_name = $("#datasets_creation_col_name_"+from_what+"_"+index).val();
+            s += ' , '+col_name;
+        }
+        s += ')';
+    }
+    else {
+        s = 'None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>';
+    }
+    
+    $('#datasets_creation_'+from_what+'_pkey_input').html(s);
+}
+
+function datasets_foreign_modal(from_what) {
+    
+    var select = $('#datasets_creation_fkey_modal_select_table');
+    var found_at_least_one  = false
+    
+    var options_ds          = "";
+    
+    database_infos.tables.forEach( function (ds) {
+        //as this table a primary key ?
+        var as_a_pkey = false;
+        ds.columns.forEach( function(c) {
+            if (c[3] > 0) {
+                as_a_pkey = true;
+                found_at_least_one = true;
+            }
+        });
+        if (as_a_pkey) {
+            options_ds += '<option value='+ds.table_id+'>'+ds.name+'</option>';
+        }
+    });
+    
+    if (found_at_least_one) {
+        select.empty();
+        select.append(options_ds);
+    }
+    
+    $('#datasets_creation_fkey_modal').modal();
+}
+
+/*
 function datasets_foreign_key(row, from_what) {
     
     $('#datasets_foreign_key_modal')[0].style.top = (mouse.y-75)+'px';
@@ -474,57 +554,6 @@ function datasets_foreign_key(row, from_what) {
 }
 
 
-function datasets_primary_key(row, from_what) {
-    
-    var butt = $('#datasets_creation_'+from_what+'_PKey_'+row);
-    if (butt.attr("class").indexOf("active") == -1) {
-        //Button appearance
-        butt.addClass('active');
-        butt.addClass('btn-primary');
-        butt.html('<img src="images/key_white.png" width="13px" height="13px"/>');
-        
-        //Globla var
-        datasets_creation_pkeys[from_what].rows.push(row);
-    }
-    else {
-        //Button appearance
-        butt.removeClass('active');
-        butt.removeClass('btn-primary');
-        butt.html('<img src="images/key.png" width="13px" height="13px"/>');
-        
-        //Globla var
-        var index = datasets_creation_pkeys[from_what].rows.indexOf(row);
-        datasets_creation_pkeys[from_what].rows.splice(index, 1);
-    }
-    
-    datasets_creation_update_PKey(from_what);
-}
-
-
-function datasets_creation_update_PKey(from_what) {
-    
-    //Updating GUI text
-    var s = "";
-    if (datasets_creation_pkeys[from_what].rows.length != 0) {
-        var index = datasets_creation_pkeys[from_what].rows[0];
-        var col_name = $("#datasets_creation_col_name_"+from_what+"_"+index).val();
-        
-        s += "("+col_name;
-        for (var i=1; i< datasets_creation_pkeys[from_what].rows.length; i++) {
-            index = datasets_creation_pkeys[from_what].rows[i];
-            col_name = $("#datasets_creation_col_name_"+from_what+"_"+index).val();
-            s += ' , '+col_name;
-        }
-        s += ')';
-    }
-    else {
-        s = 'None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>';
-    }
-    
-    $('#datasets_creation_'+from_what+'_PKey_input').html(s);
-}
-
-
 function datasets_fkey_select_table_onchange() {
     database_infos.tables.forEach( function (ds, index) {
         if (ds.table_id == $('#datasets_fkey_select_table').val()) {
@@ -561,7 +590,7 @@ function datasets_fkey_cancel(row, from_what) {
     $('#fkey_'+from_what+'_'+row).removeClass("active");
     $('#fkey_'+from_what+'_'+row).removeClass("btn-primary");
 }
-
+*/
 
 /////////////////////////////////////////////////////////////////////////////////////
 // DATES AND TYPES
