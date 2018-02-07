@@ -38,7 +38,7 @@ function buildListStub(idDiv,result,elt) {
         if (row.name.indexOf('OFFLINE') === -1)
             cell.append($('<a>',{   text: row.name,
                                     href: 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id,
-                                    onclick: 'showDiv(event, "'+tmp_elt+'","' +row.id+'")'
+                                    onclick: 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");'
                                 }) 
                         );
         else
@@ -216,7 +216,7 @@ function historyRequestStub(idDiv,n,elt,bd) {
 
 
 function buildEltStub(idDiv,result,elt) {
-    s = "";
+    var s = "";
     if (elt=="Project") {
         imageElt = "Simpleicons_Business_notebook.svg.png";
         imageEltInverse = "Simpleicons_Business_notebook_inverse.svg.png";
@@ -237,43 +237,103 @@ function buildEltStub(idDiv,result,elt) {
         imageElt = "Article_icon_cropped.svg.png";
         imageEltInverse = "Article_icon_cropped_inverse.svg.png";
     }
-    s = s + '<h3>'+elt+' '+result.name+"&nbsp;&nbsp;<img  width='40px' height='40px' src='media/"+imageElt+"' alt='CC-BY-3.0 Wikipedia Gears'></img></h3>"
-        + '<div class="col-md-12" id="studyPageContentMain"><div class="row well">'
+    
+    // MAJ tabs
+    /*var tmpCompleteDir ='';
+    if (isUrlWithId(window.location.toString())) {
+        idElt = getIdFromUrl(window.location.toString());
+        var ongletsMain = document.getElementById(idDiv).parentElement.querySelectorAll('ul>li>a');
+        var ongletWork = document.getElementById(document.getElementById(idDiv).parentElement.id.replace("Main","Work")).querySelectorAll('ul>li>a');;
+        var ongletHistoric = document.getElementById(document.getElementById(idDiv).parentElement.id.replace("Main","Historic")).querySelectorAll('ul>li>a');;
+        var onglets = Array();
+        for(var i=0;i<ongletsMain.length;i++) {
+          onglets.push(ongletsMain[i]);}
+        for(var i=0;i<ongletWork.length;i++) {
+          onglets.push(ongletWork[i]);}
+        for(var i=0;i<ongletHistoric.length;i++) {
+          onglets.push(ongletHistoric[i]);}
+        for(var i=0;i<onglets.length;i++) {
+            var tmpOnglet = onglets[i];
+            if (tmpOnglet.href.split('/').length<4) {
+                continue;}
+            dir=tmpOnglet.href.split('/')[3]+'/'+tmpOnglet.href.split('/')[4].replace('tmp','').replace(/-\d+/,'');
+            if (tmpOnglet.href.split('/').length<6) {
+                numOnglet="";}
+            else {
+                numOnglet=tmpOnglet.href.split('/')[5];}
+            tmpOnglet.href=tmpOnglet.href.replace(/tmp([A-Za-z]+)/,"$1-"+idElt);
+            tmpOnglet.href=tmpOnglet.href.replace(/([A-Za-z]+)-[0-9]+/,"$1-"+idElt);
+            tmpCompleteDir = dir+'-'+idElt;
+            if (numOnglet=="Work") {
+                tmpOnglet.onclick=function (event) {showDiv(event,tmpCompleteDir+"/Work");};
+                onclick_work = 'showDiv(event, "'+tmpCompleteDir+'/Work");';
+            }
+            else if (numOnglet=="Historic") {
+                tmpOnglet.onclick=function (event) {showDiv(event,tmpCompleteDir+"/Historic");};
+                onclick_history = 'showDiv(event, "'+tmpCompleteDir+'/Historic");';
+            }
+            else {
+                tmpOnglet.onclick=function (event) {showDiv(event,tmpCompleteDir+"/");};
+                onclick_main = 'showDiv(event, "'+tmpCompleteDir+'/");';
+            }
+        }
+    }*/
+    
+    /*
+    //////////////////////////MIKE START
+    if (isUrlWithId(window.location.toString())) {
+        idElt = getIdFromUrl(window.location.toString());
+        
+        if (idDiv.indexOf('Datas') != -1) {
+            tmpCompleteDir = 'Datas/Data-'+idElt
+        }
+        else if (idDiv.indexOf('Analyses') != -1) {
+            tmpCompleteDir = 'Analyses/Analysis-'+idElt
+        }
+        
+        var container = $('#'+idDiv);
+        var childs = $(container[0].parentNode)[0].children;
+        if (childs.length > 1) {
+            childs[0].remove();
+        }
+        
+        console.log(container[0].id);
+        container.empty();
+    
+        var title = $('<h3>', {html: elt+' '+result.name + '&nbsp;&nbsp;'});
+        title.append($('<img>', {  src: 'media/'+imageElt,
+                                style: 'width: 40px; height: 40px; margin-right: 30px;'
+                                }));
+                            
+        var button_main     = $('<button>', {   html: '<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>',
+                                                class: 'btn btn-ms',
+                                                style: 'border-color: #AAAAAA;',
+                                                title: 'Main page',
+                                                onclick: 'showDiv(event, "'+tmpCompleteDir+'/");'});
+        var button_work     = $('<button>', {   html: '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>',
+                                                class: 'btn btn-ms',
+                                                style: 'border-color: #AAAAAA;',
+                                                onclick: 'showDiv(event, "'+tmpCompleteDir+'/Work");'});
+        var button_history  = $('<button>', {   html: '<span class="glyphicon glyphicon-time" aria-hidden="true"></span>',
+                                                class: 'btn btn-ms',
+                                                style: 'border-color: #AAAAAA;',
+                                                title: 'History of modifications',
+                                                //onclick: 'showDiv(event, "'+tmpCompleteDir+'/Historic");',
+                                                disabled: true});
+        
+        title.append(button_main);
+        title.append(button_work);
+        title.append(button_history);
+        container.before(title);
+    }
+    //////////////////////////MIKE END
+    */
+    
+    /*s = s + '<div class="col-md-12" id="studyPageContentMain">'
+        + '<div class="row well">'
         + '<h4 class="">'+elt+' information</h4>'
         + '<dl class="dl-horizontal col-md-6">';
-		
-	// MAJ tabs
-	if (isUrlWithId(window.location.toString())) {
-		idElt = getIdFromUrl(window.location.toString());
-		var ongletsMain = document.getElementById(idDiv).parentElement.querySelectorAll('ul>li>a');
-		var ongletWork = document.getElementById(document.getElementById(idDiv).parentElement.id.replace("Main","Work")).querySelectorAll('ul>li>a');;
-		var ongletHistoric = document.getElementById(document.getElementById(idDiv).parentElement.id.replace("Main","Historic")).querySelectorAll('ul>li>a');;
-		var onglets = Array();
-		for(var i=0;i<ongletsMain.length;i++) {
-		  onglets.push(ongletsMain[i]);}
-		for(var i=0;i<ongletWork.length;i++) {
-		  onglets.push(ongletWork[i]);}
-		for(var i=0;i<ongletHistoric.length;i++) {
-		  onglets.push(ongletHistoric[i]);}
-		for(var i=0;i<onglets.length;i++) {
-			var tmpOnglet = onglets[i];
-			if (tmpOnglet.href.split('/').length<4) {
-				continue;}
-			dir=tmpOnglet.href.split('/')[3]+'/'+tmpOnglet.href.split('/')[4].replace('tmp','').replace(/-\d+/,'');
-			if (tmpOnglet.href.split('/').length<6) {
-				numOnglet="";}
-			else {
-				numOnglet=tmpOnglet.href.split('/')[5];}
-			tmpOnglet.href=tmpOnglet.href.replace(/tmp([A-Za-z]+)/,"$1-"+idElt);
-		    tmpOnglet.href=tmpOnglet.href.replace(/([A-Za-z]+)-[0-9]+/,"$1-"+idElt);
-			var tmpCompleteDir = dir+'-'+idElt;
-			if (numOnglet=="Work") {
-			  tmpOnglet.onclick=function (event) {showDiv(event,tmpCompleteDir+"/Work");};}
-			else if (numOnglet=="Historic") {
-				tmpOnglet.onclick=function (event) {showDiv(event,tmpCompleteDir+"/Historic");};}
-			else {
-				tmpOnglet.onclick=function (event) {showDiv(event,tmpCompleteDir+"/");};}}}
-	
+    
     //Informations
     for(i=0;i<result.info.length;i++) { 
         s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value;
@@ -315,7 +375,7 @@ function buildEltStub(idDiv,result,elt) {
         +   '<li class="list-group-item"><strong>Volumetric indicator:</strong> <span class="label label-primary pull-right">5</span></li>'
         +   '<li class="list-group-item"><strong>Contact:</strong> <span class="label label-primary pull-right">'+result.userName+'@mail.uni</span></li>'
         + '</ul></div>';
-		
+    
     //Description
     s = s + '<div id="descriptionModalAbout'+elt+'" class="modal fade" role="dialog"><div class="modal-dialog">'
         + '<div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
@@ -355,13 +415,17 @@ function buildEltStub(idDiv,result,elt) {
             + '<span class="date sub-text">'+result.comments[i].name+' on '+result.comments[i].date+'</span></div></li><br />';
         }
     s = s + '<a href="javascript:eltRequestStub(\''+idDiv+'\',\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd
-    document.getElementById(idDiv).innerHTML = s;
+    
+    document.getElementById(idDiv).innerHTML = document.getElementById(idDiv).innerHTML + s;
+    
     editorAbout = CKEDITOR.replace( "editor1"+elt);
     editorAbout.on( "change", function( evt ) { 
         sDesc =  editorAbout.getData(); 
         document.getElementById("processShownAboutArea"+elt).innerHTML = sDesc;
     });
+    */
 }
+
 
 function eltRequestStub(idDiv, elt, bd) {
     if (elt == 'Data') {

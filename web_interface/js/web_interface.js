@@ -1,5 +1,10 @@
 /// LIG March 2017
 
+////////////GLOBALS
+var web_interface_current_db_id = -1;
+
+
+////////////FUNCTIONS
 function not_yet(s = '') {
     if (s == '') {
         alert('Not implemented yet');
@@ -10,7 +15,18 @@ function not_yet(s = '') {
 }
 
 
-function showDiv(event, dir, id) {
+function recursiveReplace(node, init_text, new_text) {
+    if (node.nodeType == 3) { // text node
+        node.nodeValue = node.nodeValue.replace(init_text, new_text);
+    } else if (node.nodeType == 1) { // element
+        $(node).contents().each(function () {
+            recursiveReplace(this, init_text, new_text);
+        });
+    }
+}
+
+
+function showDiv(event, dir, div_id) {
     
     //todo : déplacer les event.preventDefault() ici ?
     //save mode ?
@@ -62,21 +78,26 @@ function showDiv(event, dir, id) {
     }
     
     dir = dir.split("?")[0];
+    
     if (dir=="") {
         dir="Home";
     }
     else if (dir.match("tmp") || isUrlWithId(dir)) {
         if (!(dir.match("Work") || dir.match("Historic") || dir.match("Main")))  {
-            dir = dir + "/Main";
+            if (dir[dir.length -1] == '/') 
+                dir = dir + "Main";
+            else
+                dir = dir + "/Main";
         }
     }
-    
     var dirs = dir.split("/");
+    
     //show div
-    mainDivs=document.getElementsByClassName('classMainDiv');
+    mainDivs = document.getElementsByClassName('classMainDiv');
     for(i=0;i<mainDivs.length;i++) {
         mainDivs[i].style.display='none';
     }
+    
     var idDir = "idDiv";
     dirs.forEach(function (tmpLocDir) {
         if (isUrlWithId(tmpLocDir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
@@ -87,6 +108,7 @@ function showDiv(event, dir, id) {
         }
     });
     
+    
     if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
     }
@@ -95,6 +117,7 @@ function showDiv(event, dir, id) {
     }
     
     document.getElementById(idDir).style.display='inline';
+    
     
     //activate navbar   
     var d = document.getElementById("navbar_ul");
@@ -114,17 +137,78 @@ function showDiv(event, dir, id) {
         bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\"http://sakura.imag.fr/"+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
         tmpDir = tmpDir + "/";
     }
+    
     bct = bct + "<li class='active'>"+dirs[i]+"</li>";
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
+    
+    if (window.location.toString().indexOf('tmpData') == -1) {
+        var tab = window.location.toString().split("/");
+         if (tab.length == 5) {
+            tab = tab[tab.length-1].split("-");
+        }
+        else {
+            tab = tab[tab.length-2].split("-");
+        }
+        web_interface_current_db_id = parseInt(tab[tab.length -1]);
+    }
+    
+    if (div_id == 'idDatasMainToFullfill') {
+        
+        document.getElementById('idDivDatastmpDataMain').style.display='inline';
+        if (dir.indexOf('Main') != -1) {
+            console.log("META");
+            $('#databases_buttons_main').addClass("btn-primary");
+            $('#databases_buttons_work').removeClass("btn-primary");
+            $('#databases_buttons_historic').removeClass("btn-primary");
+            
+            document.getElementById('idDivDatastmpDataMeta').style.display='inline';
+        }
+        else if (dir.indexOf('Work') != -1) {
+            console.log("WORK");
+            $('#databases_buttons_main').removeClass("btn-primary");
+            $('#databases_buttons_work').addClass("btn-primary");
+            $('#databases_buttons_historic').removeClass("btn-primary");
+        }
+        else if (dir.indexOf('Historic') != -1) {
+            console.log("HISTORY");
+            $('#databases_buttons_main').removeClass("btn-primary");
+            $('#databases_buttons_work').removeClass("btn-primary");
+            $('#databases_buttons_historic').addClass("btn-primary");
+        }
+    }
+    else if (dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main")) {
+        
+        document.getElementById('idDivDatastmpDataMeta').style.display='inline';
+        $('#databases_buttons_main').addClass("btn-primary");
+        $('#databases_buttons_work').removeClass("btn-primary");
+        $('#databases_buttons_historic').removeClass("btn-primary");
+        
+        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/', 'idDatasMainToFullfill');");
+        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Work', 'idDatasMainToFullfill');");
+        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Historic', 'idDatasMainToFullfill');");
+        
+        sakura.common.ws_request('get_database_info', [web_interface_current_db_id], {}, function(db_info) {
+            $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
+            if (db_info.short_desc.length > 2) {
+                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
+            }
+            else {
+                $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+            }
+            
+            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
+        });
+    }
+    
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             var aos = actionsOnShow[i];
             sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
                 if (aos.id == 'iframe_datasets') {
-                    idElt = getIdFromUrl(window.location.toString());
-                    aos.src = "/modules/datasets/index.html?database_id="+idElt+"&session-secret="+ss;
+                    //idElt = getIdFromUrl(window.location.toString());
+                    aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_db_id+"&session-secret="+ss;
                 }
                 else if (aos.id == 'iframe_workflow') {
                     aos.src = "/modules/workflow/index.html?session-secret="+ss;
@@ -132,9 +216,12 @@ function showDiv(event, dir, id) {
             });
         }
         else {
-            eval(actionsOnShow[i].href);
+            if (!div_id) {
+                eval(actionsOnShow[i].href);
+            }
         }
     }
+    
     if (event)
         event.preventDefault();
 }

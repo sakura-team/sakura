@@ -1,0 +1,130 @@
+<!--LIG, March 2017-->
+
+<div style="display:none;" id="idDivDatastmpDataMeta" class="classMainDiv">
+    
+    <!--Information-->
+    <div class="row well">
+        <dl class="dl-horizontal col-md-6">
+            <dt class="description-terms-align-left">element</dt>
+            <dd class="editableDescriptionField">value</dd>
+        </dl>
+        <ul class="list-group col-md-6" id="database_db_meta_quali">
+            <li class="list-group-item list-group-item-info">
+                <strong>About <em>_db_name_</script></em> :</strong>
+            </li>
+            <li class="list-group-item">
+                <strong>Qualitative indicator:</strong>
+                <span class="label label-primary pull-right">5</span>
+            </li>
+            <li class="list-group-item">
+                <strong>Volumetric indicator:</strong>
+                <span class="label label-primary pull-right">5</span>
+            </li>
+            <li class="list-group-item">
+                <strong>Contact:</strong>
+                <span class="label label-primary pull-right">_user_name_@mail.uni</span>
+            </li>
+        </ul>
+    </div>
+    <div id="descriptionModalAbout__elt__" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Edit Explanation About</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <textarea name="editor1__elt__" id="editor1__elt__" rows="10" cols="60">__description__</textarea>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" onClick="not_yet();">Save and close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <br />
+    <br />
+    <!--Description-->
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="">
+                                <font color="#ffffff">Description of <em>_db_name_</em>&nbsp;&nbsp;
+                                    <img  width='40px' height='40px' src='media/Linecons_database_inverse.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img>
+                                </font>
+                            </h4>
+                        </td>
+                        <td align="right">
+                            <button title="Modification of the Explanation About" class="btn btn-default btn-xs pull-right clPlusFieldButton" style="cursor: pointer; display:none;" data-toggle="modal" data-target="#descriptionModalAbout'+elt+'">
+                                <span class=" glyphicon glyphicon-pencil"></span>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="processShownAboutArea'+elt+'" class="panel-body">__description__
+    </div>
+    
+    <br />
+    <br />
+    <!--FileSystem-->
+    <div class="well row">
+        <h4 class="">Filesystem related to <em>_db_name_</em>
+        </h4>
+        <table class="table table-bordered" id="fileBrowser">
+            <thead>
+                <tr>
+                    <th>Name
+                    <th colspan=2>Description
+            </thead>
+            <tbody>
+                <tr>
+                    <td><a onclick="not_yet();">__filename[0]__name__</a>
+                    <td>__filename[0]__description__
+            </tbody>
+        </table>
+        <a class="clPlusFieldButton" onclick="addFile(this,event);" style="cursor: pointer; display:none;" title="add file">
+            <span style="left:33%;" class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        </a>
+    </div>
+    
+    <br />
+    <br />
+    <!--Comments-->
+    <hr style="border-bottom:5px solid;" />
+    <br />
+    <h3>Comments •</h3>
+        <span class="glyphicon glyphicon-user"></span>
+        <form class="form-inline" role="form">
+            <label>Add your Comment: </label>
+            <div class="form-group">
+                <textarea class="form-control" rows="1" id="comment'+elt+'">Your comments
+                </textarea>
+            </div>
+            <div class="form-group">
+                <button onclick="addComment(this,event,\'comment'+elt+'\');" class="btn btn-default">
+                    <span class="glyphicon glyphicon-plus"></span>
+                </button>
+            </div>
+        </form>
+        <hr />
+        <ul class="commentList">
+            <li>
+                <div class="commenterImage">
+                    <span class="glyphicon glyphicon-user"></span>
+                </div>
+                <div class="commentText">
+                    <p class="">__db_comments[0]_comment</p>
+                    <span class="date sub-text">__db_comments[0]_name__ on __db_comments[0]_date__</span>
+                </div>
+            </li>
+        </ul>
+</div>

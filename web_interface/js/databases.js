@@ -45,6 +45,7 @@ function database_creation_check_mandatory() {
 
 
 function database_update_creation_modal() {
+    
     //submit button: back to initial display
     $("#database_submit_button").html('Submit');
     
