@@ -11,11 +11,11 @@ class DBTable:
         self.columns.append(col)
     def pack(self):
         return dict(name = self.name, columns = self.columns)
-    def get_range(self, user, passwd, row_start, row_end):
-        stream = SQLTableStream(self.name, self, user, passwd)
+    def get_range(self, row_start, row_end):
+        stream = SQLTableStream(self.name, self)
         return stream.get_range(row_start, row_end)
-    def add_rows(self, user, passwd, rows):
+    def add_rows(self, rows):
         value_wrappers = tuple(col.value_wrapper for col in self.columns)
-        db_conn = self.db.connect(user, passwd)
+        db_conn = self.db.connect()
         self.db.dbms.driver.add_rows(db_conn, self.name, value_wrappers, rows)
         db_conn.close()

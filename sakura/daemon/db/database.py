@@ -38,22 +38,8 @@ class Database:
             self.owner = user
         else:
             self.users[user][privtype] = True
-    def connect(self, user = None, password = None):
-        # TODO correctly pass user credentials up to here
-        # for now we just select the first user and consider
-        # password is the same as username
-        if user is None:
-            dbuser = 'sakura_' + tuple(self.users.keys())[0]
-        else:
-            dbuser = 'sakura_' + user
-        if password is None:
-            password = dbuser
-        return self.dbms.driver.connect(
-            host     = self.dbms.host,
-            dbname   = self.db_name,
-            user     = dbuser,
-            password = password
-        )
+    def connect(self):
+        return self.dbms.admin_connect(db_name = self.db_name)
     def refresh_tables(self):
         prober = DBProber(self)
         self._tables = prober.probe()
@@ -71,8 +57,8 @@ class Database:
             owner = self.owner,
             users = self.users
         )
-    def create_table(self, user, passwd, table_name, columns):
-        db_conn = self.connect(user, passwd)
+    def create_table(self, table_name, columns):
+        db_conn = self.connect()
         self.dbms.driver.create_table(db_conn, table_name, columns)
         db_conn.close()
         self.refresh_tables()

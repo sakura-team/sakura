@@ -45,7 +45,7 @@ class SQLStream(OutputStreamBase):
             cursor.close()
 
 class SQLTableStream(SQLStream):
-    def __init__(self, label, db_table, user, passwd):
+    def __init__(self, label, db_table):
         query = SQLQuery(db_table.columns, ())
-        self.db_conn = db_table.db.connect(user, passwd)
+        self.db_conn = db_table.db.connect()
         SQLStream.__init__(self, label, query, self.db_conn, db_table.db.dbms.driver)

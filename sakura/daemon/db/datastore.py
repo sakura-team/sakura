@@ -43,10 +43,14 @@ class DataStore:
         self._databases = None    # not probed yet
         self._online = None       # not probed yet
         self.adapter = adapters.get(adapter_label)
-    def admin_connect(self):
-        return self.driver.connect(
+    def admin_connect(self, db_name = None):
+        info = dict(
             host = self.host,
-            **self.datastore_admin)
+            **self.datastore_admin
+        )
+        if db_name is not None:
+            info.update(dbname = db_name)
+        return self.driver.connect(**info)
     @property
     def users(self):
         if self._users is None:

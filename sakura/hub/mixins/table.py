@@ -21,16 +21,12 @@ class TableMixin:
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
         self.database.remote_instance.create_table(
-                greenlet_env.user,
-                greenlet_env.password,
                 self.name,
                 tuple(c.pack_for_daemon() for c in self.ordered_columns))
     def get_range(self, row_start, row_end):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
         return self.remote_instance.get_range(
-                greenlet_env.user,
-                greenlet_env.password,
                 row_start,
                 row_end
         )
@@ -38,8 +34,6 @@ class TableMixin:
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
         return self.remote_instance.add_rows(
-                greenlet_env.user,
-                greenlet_env.password,
                 data
         )
     @classmethod
