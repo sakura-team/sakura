@@ -10,7 +10,7 @@ TYPES_SAKURA_TO_PG = {
     'float32':  'real',
     'float64':  'double precision',
     'string':   'text',
-    'boolean':  'boolean',
+    'bool':     'boolean',
     'date':     'timestamp with time zone'
 }
 
@@ -21,8 +21,7 @@ TYPES_PG_TO_SAKURA = {
     'real':                     'float32',
     'double precision':         'float64',
     'text':                     'string',
-    'boolean':                  'boolean',
-    'timestamp with time zone': 'date'
+    'boolean':                  'bool'
 }
 
 def analyse_col_meta(col_comment):
@@ -41,17 +40,20 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     value_wrapper = '%s'
     tags = ()
     params = {}
-    if col_pgtype == 'timestamp with time zone':
+    if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json'):
+        col_type = 'object'
+    elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
         col_type = 'date'
         select_clause_wrapper = 'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"'
         value_wrapper = 'to_timestamp(%s)'
         tags = ('timestamp',)
-    elif col_pgtype.startswith('character varying('):
+    elif col_pgtype.startswith('character') or col_pgtype.startswith('text'):
         col_type = 'string'
-        params.update(max_length = int(col_pgtype[18:-1]))
-    elif col_pgtype in ('text', 'character varying'):
-        col_type = 'string'
-        params.update(max_length = col_meta.get('max_text_chars', None))
+        tokens = col_pgtype.split('(')
+        if len(tokens) == 1:
+            params.update(max_length = col_meta.get('max_text_chars', None))
+        else:
+            params.update(max_length = int(tokens[1][:-1]))
     elif col_pgtype.startswith('geometry'):
         col_type = 'geometry'
         params.update(max_length = col_meta.get('max_geojson_chars', None))
