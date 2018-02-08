@@ -15,6 +15,8 @@ var datasets_creation_fkeys             = { 'fs': {
                                                 'rows': [], 'data': []  }, 
                                             'ff': {
                                                 'rows': [], 'data': []  }   };
+var error_in_fs_names = true;
+var error_in_ff_names = true;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
@@ -29,7 +31,7 @@ function datasets_open_creation(db_id) {
         
         //Creating at least one row
         datasets_creation_empty_tables();
-        datasets_add_a_row('datasets_creation_from_scratch_columns');
+        datasets_add_a_row('datasets_creation_fs_columns');
         
         //Red frame for the new dataset name
         $($('#datasets_creation_name')[0].parentElement).addClass('has-error');
@@ -78,7 +80,7 @@ function datasets_send_new(database_id) {
     
     //Which table body ?
     var from_what = 'fs';
-    var body = $('#datasets_creation_from_scratch_columns').find('tbody');
+    var body = $('#datasets_creation_fs_columns').find('tbody');
     var cols = body.find('tr');
     var nb_cols = cols.length - 1;
     $('#datasets_creation_from_file_pan').attr("class").split(' ').forEach( function (elt) {
@@ -248,6 +250,7 @@ function datasets_on_file_selected(f) {
 /////////////////////////////////////////////////////////////////////////////////////
 // ROWS 
 function datasets_add_a_row(table_id) {
+    
     var body = $('#'+table_id).find('tbody');
     var nb_rows = body[0].childElementCount - 1;
     var new_row = $(body[0].insertRow(nb_rows));
@@ -261,17 +264,7 @@ function datasets_add_a_row(table_id) {
         
         col_name.attr('title', '"Column Name" is not a correct name');
         col_name.on('keyup', {'input': col_name, 'iparent': parent, 'from_what': 'fs'}, function(event) {
-            if (event.data.input.val() == 'Column Name') {
-                event.data.iparent.removeClass('has-success');
-                event.data.iparent.addClass('has-error');
-                event.data.input.attr('title', '"Column Name" is not a correct name');
-            }
-            else {
-                event.data.iparent.removeClass('has-error');
-                event.data.iparent.addClass('has-success');
-                event.data.input.attr('title', '');
-            }
-            datasets_creation_check_column_names(event.data.from_what, parent);
+            datasets_creation_check_column_names(event.data.from_what);
         });
         
         var last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 1]);
@@ -304,11 +297,11 @@ function datasets_add_a_row(table_id) {
     return new_row;
 }
 
+
 function datasets_creation_empty_tables() {
-    console.log('here');
     var body = $('#datasets_creation_from_file_columns').find('tbody');
     body.empty();
-    var trs = $('#datasets_creation_from_scratch_columns').find('tbody').find('tr');
+    var trs = $('#datasets_creation_fs_columns').find('tbody').find('tr');
     for (var i=0; i< trs.length-1; i++) {
         console.log(trs[i]);
         var tab = trs[i].id.split('_');
@@ -316,6 +309,7 @@ function datasets_creation_empty_tables() {
         datasets_remove_line(row_id, 'fs');
     }
 }
+
 
 function datasets_remove_line(row, from_what) {
     console.log(row, from_what);
@@ -326,22 +320,43 @@ function datasets_remove_line(row, from_what) {
 }
 
 
-function datasets_creation_check_column_names(from_what, parent) {
-    labels = [];
+function datasets_creation_check_column_names(from_what) {
+    var labels = [];
     
+    var error = false;
     $("[id^='datasets_creation_col_name_"+from_what+"']").each(function (i, el) {
-        var label = $(el).val();
-        var index = labels.indexOf(label);
-        
-        if ( index != -1) {
-            parent.removeClass('has-success');
-            parent.addClass('has-error');
-            $(el).attr('title', 'This name is already used');
+        if ($(el).val() == 'Column Name') {
+            $(el.parentElement).removeClass('has-success');
+            $(el.parentElement).addClass('has-error');   
+            $(el).attr('title', '"Column Name" is not a correct name');
+            error = true;
         }
-        labels.push(label);
-     });
-     
-     datasets_creation_update_pkey(from_what);
+        else {
+            var label = $(el).val();
+            var index = labels.indexOf(label);
+            
+            if ( index != -1) {
+                $(el.parentElement).removeClass('has-success');
+                $(el.parentElement).addClass('has-error');
+                error = true;
+                $(el).attr('title', 'This name is already used');
+            }
+            else {
+                $(el.parentElement).removeClass('has-error');
+                $(el.parentElement).addClass('has-success');
+                $(el).attr('title', '');
+            }
+            labels.push(label);
+        }
+    });
+    
+    
+    if (from_what == 'fs')
+        error_in_fs_names = error;
+    else 
+        error_in_ff_names = error;
+    
+    datasets_creation_update_pkey(from_what);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -465,11 +480,21 @@ function datasets_creation_update_pkey(from_what) {
 
 function datasets_foreign_modal(from_what) {
     
+    var error = error_in_fs_names;
+    if (from_what == 'ff')
+        error = error_in_ff_names;
+    
+    if (error) {
+        datasets_alert('Cannot open Foreign Key modal', 'There are errors in <b>Column Names</b>. Please check  before creating a foreign key !');
+        return;
+    }
+    
     var select = $('#datasets_creation_fkey_modal_select_table');
     var found_at_least_one  = false
     
     var options_ds          = "";
     
+    //Filling the select
     database_infos.tables.forEach( function (ds) {
         //as this table a primary key ?
         var as_a_pkey = false;
@@ -489,8 +514,72 @@ function datasets_foreign_modal(from_what) {
         select.append(options_ds);
     }
     
+    //Now we fill the matrix
+    datasets_creation_fill_fkey_matrix('fs');
+    
     $('#datasets_creation_fkey_modal').modal();
 }
+
+
+function datasets_creation_fill_fkey_matrix(from_what) {
+    
+    var col_names   = [];
+    var row_names       = [];
+    
+    database_infos.tables.forEach( function (ds) {
+        if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
+            ds.columns.forEach( function(c) {
+                col_names.push(c[0]);
+            });
+        }
+    });
+    
+    var index = 0;
+    while ($("#datasets_creation_col_name_"+from_what+"_"+index).length) {
+        row_names.push($("#datasets_creation_col_name_"+from_what+"_"+index).val());
+        index += 1;
+    }
+    
+    var td_class = '';
+    if (row_names.length != col_names.length)
+        td_class = 'bg-danger';
+    
+    var body = $('#datasets_creation_fkey_modal_matrix').find('tbody');
+    body.empty();
+    
+    var new_row = $(body[0].insertRow(-1));
+    new_row.append('<td class="'+td_class+'">');
+    col_names.forEach( function (cn) {
+        new_row.append('<td class="'+td_class+'">'+cn);
+    });
+    var rows = [];
+    var index = 0;
+    
+    row_names.forEach( function(name, index) {
+        var new_row = $(body[0].insertRow(-1));
+        new_row.append('<td class="'+td_class+'">'+name);
+        col_names.forEach(function (cn, i) {
+            var td = $('<td>', {class: td_class});
+            var input = $('<input>', {  type: "radio",
+                                        class: "datasets_creation_"+from_what+"_radio_"+i,
+                                        name: "datasets_creation_"+from_what+"_radio_"+index,
+                                        onclick: "datasets_creation_check_mat(this, \'"+from_what+"\');"
+                                        } );
+            td.append(input)
+            new_row.append(td);
+        });
+        index += 1;
+    });
+}
+
+function datasets_creation_check_mat(e, from_what) {
+    $("[class^='datasets_creation_"+from_what+"_radio']").not(e).each( function() {
+        if (this.className == e.className) {
+            this.checked = false;
+        }
+    });
+}
+
 
 /*
 function datasets_foreign_key(row, from_what) {

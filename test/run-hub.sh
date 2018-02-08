@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 cd $(dirname $0)/..
 TMPDIR=$(mktemp -d /tmp/hub.XXXXXXXX)
@@ -9,6 +9,8 @@ if [ "$1" != "" ]
 then
     WEBAPP="$1"
 fi
+
+echo $BASH_VERSION
 
 if [ ! -f test/hub-email.conf ]
 then

@@ -75,19 +75,19 @@
                             </div>
                         
                         <ul class="nav nav-pills">
-                            <li class="active"><a data-toggle="pill" href="#datasets_creation_from_scratch_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Create Dataset From Scratch';">From Scratch</a></li>
+                            <li class="active"><a data-toggle="pill" href="#datasets_creation_fs_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Create Dataset From Scratch';">From Scratch</a></li>
                             <li><a data-toggle="pill" href="#datasets_creation_from_file_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Create Dataset From File';">From File</a></li>
                         </ul>
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="tab-content">
-                                    <div id="datasets_creation_from_scratch_pan" class="tab-pane fade in active">
+                                    <div id="datasets_creation_fs_pan" class="tab-pane fade in active">
                                         <div class="tab-content">
                                             <div class="panel panel-default">
                                                 <div class="panel-heading">Columns
                                                 </div>
                                                 <div class="panel-body" style="padding-top:5px; padding-bottom: 0px;">
-                                                    <table class="table table-condensed" id="datasets_creation_from_scratch_columns" style="width: 100%; margin-bottom: 0px;">
+                                                    <table class="table table-condensed" id="datasets_creation_fs_columns" style="width: 100%; margin-bottom: 0px;">
                                                         <thead>
                                                             <tr>
                                                                 <th style="text-align:left">Name
@@ -98,7 +98,7 @@
                                                         <tbody>
                                                             <tr>
                                                                 <td colspan=4>
-                                                                    <span title="add a column" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_add_a_row('datasets_creation_from_scratch_columns');"></span>
+                                                                    <span title="add a column" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_add_a_row('datasets_creation_fs_columns');"></span>
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -213,10 +213,12 @@
                         <label>
                             Select dataset/table&nbsp;&nbsp;
                         </label>
-                        <select id="datasets_creation_fkey_modal_select_table">
+                        <select id="datasets_creation_fkey_modal_select_table" onchange="datasets_creation_fill_fkey_matrix('fs');")>
                             <option value="None">None</option>
                         </select>
                         <table width='100%' id='datasets_creation_fkey_modal_matrix'>
+                        <tbody>
+                        </tbody>
                         </table>
                     </div>
                     <div class="modal-footer">
