@@ -22,10 +22,10 @@ class SQLStream(OutputStreamBase):
         if chunk_size == None:
             chunk_size = cursor.arraysize
         while True:
-            rowlist = list(tuple(row) for row in cursor.fetchmany(chunk_size))
-            if len(rowlist) == 0:
+            chunk_data = cursor.fetchmany(chunk_size)
+            if len(chunk_data) == 0:
                 break
-            yield np.array(rowlist, self.get_dtype()).view(NumpyChunk)
+            yield NumpyChunk.create(chunk_data, self.get_dtype())
         self.close_cursor(cursor)
     def __select_columns__(self, *col_indexes):
         new_query = self.query.select_columns(*col_indexes)
