@@ -1,4 +1,4 @@
-import collections, itertools, io, sys, json, numpy as np, contextlib
+import collections, itertools, io, sys, json, numpy as np, contextlib, traceback
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
@@ -109,7 +109,11 @@ class LocalAPIHandler(object):
             req = ParsedRequest(*raw_req)
             print_short('received', str(req))
         except BaseException:
-            print('malformed request. closing.')
+            if DEBUG_LEVEL == 0:
+                print('malformed request. closing.')
+            else:
+                print('malformed request? Got exception:')
+                traceback.print_exc()
             return False
         self.handle_request(*req)
         return True
@@ -186,7 +190,15 @@ class AttrCallRunner(object):
                 obj = getattr(obj, attr)
             else:
                 obj = obj[attr[0]]  # getitem
-        return obj(*args, **kwargs)
+        try:
+            return obj(*args, **kwargs)
+        except TypeError:
+            print('Error occured when calling %s(*args, **kwargs), with:' % str(obj))
+            print('args =', str(args))
+            print('kwargs = ', str(kwargs))
+            print('Exception was:')
+            traceback.print_exc()
+            sys.exit()
 
 class RemoteAPIForwarder(AttrCallAggregator):
     def __init__(self, f, protocol):
@@ -211,7 +223,11 @@ class RemoteAPIForwarder(AttrCallAggregator):
         try:
             req_id, res = self.protocol.load(self.f)
         except BaseException:
-            print('malformed result. closing.')
+            if DEBUG_LEVEL == 0:
+                print('malformed result. closing.')
+            else:
+                print('malformed result? Got exception:')
+                traceback.print_exc()
             return False
         async_res = self.reqs[req_id]
         async_res.set(res)

@@ -6,17 +6,18 @@ class DBProber:
         self.db = db
         self.driver = db.dbms.driver
     def probe(self):
+        print("DB probing startup: %s" % self.db.db_name)
         self.db_conn = self.db.connect()
         self.tables = {}
         self.driver.collect_db_tables(self.db_conn, self)
         self.db_conn.close()
         return self.tables
     def register_table(self, table_name, **metadata):
-        print("DB probing: found table %s" % table_name)
+        #print("DB probing: found table %s" % table_name)
         self.tables[table_name] = DBTable(self.db, table_name, **metadata)
         self.driver.collect_table_columns(self.db_conn, self, table_name)
     def register_column(self, table_name, *col_info, **params):
-        print("----------- found column " + str(col_info))
+        #print("----------- found column " + str(col_info))
         self.tables[table_name].add_column(*col_info, **params)
 
 class Database:

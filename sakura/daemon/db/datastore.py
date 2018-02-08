@@ -7,6 +7,7 @@ class DataStoreProber:
         self.datastore = datastore
         self.driver = datastore.driver
     def probe(self):
+        print("DS probing start: %s" % self.datastore.host)
         admin_conn = self.datastore.admin_connect()
         self.users = []
         self.databases = {}
@@ -24,6 +25,7 @@ class DataStoreProber:
         if user:
             self.users.append((user, createdb_grant))
     def register_db(self, db_name):
+        print("DS probing: found database %s" % db_name)
         self.databases[db_name] = Database(self.datastore, db_name)
     def as_sakura_user(self, db_user):
         if db_user.startswith('sakura_'):
