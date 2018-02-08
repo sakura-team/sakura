@@ -15,8 +15,9 @@ var datasets_creation_fkeys             = { 'fs': {
                                                 'rows': [], 'data': []  }, 
                                             'ff': {
                                                 'rows': [], 'data': []  }   };
-var error_in_fs_names = true;
-var error_in_ff_names = true;
+var error_in_fs_names       = true;
+var error_in_ff_names       = true;
+var fkey_matrix_disabled    = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
@@ -314,7 +315,7 @@ function datasets_creation_empty_tables() {
 function datasets_remove_line(row, from_what) {
     console.log(row, from_what);
     //Remove the foreign key if there is one
-    datasets_fkey_cancel(row, from_what);
+    datasets_creation_check_keys(row, from_what);
     //Remove the line
     $('#datasets_'+from_what+'_row_'+row).remove();
 }
@@ -516,6 +517,7 @@ function datasets_foreign_modal(from_what) {
     
     //Now we fill the matrix
     datasets_creation_fill_fkey_matrix('fs');
+    $('#datasets_creation_fkey_modal_validate_button').attr('onclick', "datasets_creation_new_fkey('fs')");
     
     $('#datasets_creation_fkey_modal').modal();
 }
@@ -534,21 +536,26 @@ function datasets_creation_fill_fkey_matrix(from_what) {
         }
     });
     
-    var index = 0;
-    while ($("#datasets_creation_col_name_"+from_what+"_"+index).length) {
-        row_names.push($("#datasets_creation_col_name_"+from_what+"_"+index).val());
-        index += 1;
-    }
+    $("[id^='datasets_creation_col_name_"+from_what+"_']").each( function () {
+        row_names.push($(this).val());
+    });
     
     var td_class = '';
-    if (row_names.length != col_names.length)
+    if (row_names.length != col_names.length) {
         td_class = 'bg-danger';
+        $('#datasets_creation_fkey_modal_validate_button').prop("disabled",true);
+        fkey_matrix_disabled = true;
+    }
+    else {
+        $('#datasets_creation_fkey_modal_validate_button').prop("disabled",false);
+        fkey_matrix_disabled = false;
+    }
     
     var body = $('#datasets_creation_fkey_modal_matrix').find('tbody');
     body.empty();
     
     var new_row = $(body[0].insertRow(-1));
-    new_row.append('<td class="'+td_class+'">');
+    new_row.append('<td>');
     col_names.forEach( function (cn) {
         new_row.append('<td class="'+td_class+'">'+cn);
     });
@@ -570,6 +577,9 @@ function datasets_creation_fill_fkey_matrix(from_what) {
         });
         index += 1;
     });
+    
+    datasets_creation_check_mat_filled(from_what);
+
 }
 
 function datasets_creation_check_mat(e, from_what) {
@@ -578,8 +588,89 @@ function datasets_creation_check_mat(e, from_what) {
             this.checked = false;
         }
     });
+    datasets_creation_check_mat_filled(from_what);
 }
 
+
+function datasets_creation_check_mat_filled(from_what) {
+    var list = $("[class^='datasets_creation_"+from_what+"_radio']");
+    
+    var nb_rows = 0;
+    database_infos.tables.forEach( function (ds) {
+        if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
+            nb_rows = ds.columns.length;
+        }
+    });
+    
+    if (!fkey_matrix_disabled) {
+        
+        var nb_checked = 0
+        
+        list.each( function() {
+            if (this.checked) {
+                nb_checked += 1;
+            }
+        });
+        
+        if (nb_checked != nb_rows) {
+            $('#datasets_creation_fkey_modal_validate_button').prop("disabled",true);
+        }
+        else {
+            $('#datasets_creation_fkey_modal_validate_button').prop("disabled",false);
+        }
+    }
+}
+
+
+function datasets_creation_new_fkey(from_what) {
+    var cols_in = [];
+    var cols_out = [];
+    var table_name = ''
+    
+    var rows = []
+    var cols = []
+    
+    database_infos.tables.forEach( function (ds) {
+        if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
+            console.log(ds);
+            table_name = ds.name;
+            ds.columns.forEach( function(c) {
+                cols.push(c[0]);
+            });
+        }
+    });
+    
+    $("[id^='datasets_creation_col_name_"+from_what+"_']").each( function () {
+        rows.push($(this).val());
+    });
+    
+    $('[name^="datasets_creation_'+from_what+'_radio"]').each( function() {
+        if (this.checked) {
+            var tab1 = this.name.split('_');
+            var tab2 = this.className.split('_');
+            
+            cols_in.push(rows[tab1[tab1.length -1]]);
+            cols_out.push(cols[tab2[tab2.length -1]]);
+        }
+    });
+    
+    if (cols_in.length > 0) {
+        s = '('+cols_in[0];
+        for (var i=1; i<cols_in.length; i++) {
+            s += ','+cols_in[i];
+        }
+        s += ') references \''+table_name+'\'('+cols_out[0];
+        for (var i=1; i<cols_out.length; i++) {
+            s += ','+cols_out[i];
+        }
+        s += ')';
+        console.log(s);
+    }
+}
+
+function datasets_creation_check_keys(row, from_what) {
+    console.log('Entering Check keys function !');
+}
 
 /*
 function datasets_foreign_key(row, from_what) {
@@ -727,9 +818,9 @@ function datasets_type_change(row_id, from) {
     
     //When type changes we should delete the fkey
     if (from.id.indexOf("ff") >= 0)
-        datasets_fkey_cancel(row_id, 'ff');
+        datasets_creation_check_keys(row_id, 'ff');
     else
-        datasets_fkey_cancel(row_id, 'fs');
+        datasets_creation_check_keys(row_id, 'fs');
 }
 
 
