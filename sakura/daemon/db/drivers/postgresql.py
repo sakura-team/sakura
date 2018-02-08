@@ -24,6 +24,8 @@ TYPES_PG_TO_SAKURA = {
     'boolean':                  'bool'
 }
 
+IGNORED_DATABASES = ('template0', 'template1', 'postgres')
+
 def analyse_col_meta(col_comment):
     col_meta = {}
     if col_comment != None:
@@ -194,7 +196,8 @@ class PostgreSQLDBDriver:
             cursor.execute(SQL_GET_DBS)
             for row in cursor:
                 dbname = row[0]
-                metadata_collector.register_db(dbname)
+                if dbname not in IGNORED_DATABASES:
+                    metadata_collector.register_db(dbname)
     @staticmethod
     def collect_db_grants(admin_db_conn, metadata_collector):
         # we must tell metadata_visitor which user has READ, WRITE, OWNER

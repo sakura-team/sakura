@@ -15,11 +15,7 @@ class DataStoreProber:
         self.driver.collect_dbs(admin_conn, self)
         self.driver.collect_db_grants(admin_conn, self)
         admin_conn.close()
-        # filter-out databases with no sakura user
-        databases = tuple(
-                ds for ds in self.databases.values()
-                if len(ds.users) > 0)
-        return self.users, databases
+        return self.users, self.databases.values()
     def register_user(self, db_user, createdb_grant):
         user = self.as_sakura_user(db_user)
         if user:
