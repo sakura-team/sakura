@@ -204,6 +204,7 @@ function datasets_on_file_selected(f) {
                         
                         var col_name    = $('#datasets_creation_col_name_temp');
                         col_name.attr('id', 'datasets_creation_col_name_ff_'+index);
+                        col_name.attr('disabled', true);
                         
                         
                         var select = new_row.find('select');
