@@ -117,7 +117,13 @@
                                                             <td class="col-md-1" style="border-top: none; padding-top: 1px;">
                                                                 <label style="margin-left: 5px;">Foreigns</label>
                                                             <td style="border-top: none; padding-top: 1px;">
-                                                                <span id="datasets_creation_fs_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_foreign_modal('fs');"></span>
+                                                                <table id="datasets_creation_fs_fkey_list">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <span id="datasets_creation_fs_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_foreign_modal('fs');"></span>
+                                                                    </tbody>
+                                                                </table>
                                                     </table>
                                                 </div>
                                             </div>
@@ -175,34 +181,6 @@
         -->
         
         <!-- FOREIGN KEY MODAL -->
-        <!--<div id="datasets_foreign_key_modal" role="dialog" class="modal fade abs-modal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-body" style='padding-top:10px; padding-bottom:10px;'>
-                    <table width='100%'>
-                        <tr>
-                            <td>
-                                <table class="table table-condensed" id="datasets_foreign_key_table" style="margin-bottom:0px;">
-                                    <thead>
-                                        <tr>
-                                            <th>Dataset / Table
-                                            <th>Column
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><select id='datasets_fkey_select_table'></select>
-                                            <td><select id='datasets_fkey_select_column'></select>
-                                    </tbody>
-                                </table>
-                            <td align='right' style='vertical-align: bottom;'>
-                                <button id="datasets_fkey_validate_button" type="button" class="btn btn-primary btn-xs" data-dismiss="modal" onclick="not_yet();">Set FKey</button>
-                                <button id="datasets_fkey_cancel_button" type="button" class="btn btn-secondary btn-xs" data-dismiss="modal" onclick="not_yet();">No FKey</button>
-                    </table>
-                    </div>
-                </div>
-            </div>
-        </div>-->
         <div id="datasets_creation_fkey_modal" role="dialog" class="modal fade abs-modal">
             <div class="modal-dialog">
                 <div class="modal-content">

@@ -665,7 +665,28 @@ function datasets_creation_new_fkey(from_what) {
         }
         s += ')';
         console.log(s);
+        var body = $('#datasets_creation_'+from_what+'_fkey_list').find('tbody');
+        var nb_rows = body[0].childElementCount - 1;
+        var new_row = $(body[0].insertRow(nb_rows));
+        console.log('NB_ROWS', nb_rows);
+        
+        var span = $('<span>', {title: "delete this foreign key",
+                                class: "glyphicon glyphicon-remove",
+                                style: "cursor: pointer;",
+                                onclick: "datasets_creation_fkey_list_remove(\'datasets_creation_"+from_what+"_fkey_td_"+nb_rows+"\', \'"+from_what+"\');" });
+        var td = $('<td>', {id:"datasets_creation_"+from_what+"_fkey_td_"+nb_rows});
+        
+        td.append(span);
+        td.append('&nbsp;&nbsp;'+s);
+        new_row.append(td);
     }
+    
+    $('#datasets_creation_fkey_modal').modal('hide');
+}
+
+
+function datasets_creation_fkey_list_remove(row, from_what) {
+    $('#'+row).remove();
 }
 
 function datasets_creation_check_keys(row, from_what) {
