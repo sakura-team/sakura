@@ -76,7 +76,7 @@
                         
                         <ul class="nav nav-pills">
                             <li class="active"><a data-toggle="pill" href="#datasets_creation_fs_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Create Dataset From Scratch';">From Scratch</a></li>
-                            <li><a data-toggle="pill" href="#datasets_creation_from_file_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Create Dataset From File';">From File</a></li>
+                            <li><a data-toggle="pill" href="#datasets_creation_ff_pan" onclick="$('#datasets_creation_button')[0].childNodes[0].data = 'Create Dataset From File';">From File</a></li>
                         </ul>
                         <div class="panel panel-default">
                             <div class="panel-body">
@@ -130,23 +130,53 @@
                                         </div>
                                     </div>
                                     
-                                    <div id="datasets_creation_from_file_pan" class="tab-pane fade in">
-                                        <div id="datasets_file_input" class="form-group">
-                                            <input id="datasets_file_from_HD" type="file" onchange="datasets_on_file_selected(this);">
+                                    <div id="datasets_creation_ff_pan" class="tab-pane fade in">
+                                        <div class="tab-content">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading"><h5>Columns</h5>
+                                                </div>
+                                                <div class="panel-body" style="padding-top:5px; padding-bottom: 0px;">
+                                                    <div id="datasets_file_input" class="form-group">
+                                                        <input id="datasets_file_from_HD" type="file" onchange="datasets_on_file_selected(this);">
+                                                    </div>
+                                                    <hr>
+                                                    <table class="table table-condensed" id="datasets_creation_ff_columns">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="col-md-2" style="text-align:left">Name
+                                                                <th class="col-md-1" style="text-align:left">Type
+                                                                <th class="col-md-3" style="text-align:left">Tags
+                                                        </thead>
+                                                        <tbody>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                            <div class="panel panel-default" style="margin-bottom: 0px;">
+                                                <div class="panel-heading" style="cursor: pointer;" data-toggle="collapse" data-target="#datasets_creation_ff_keys_div"><h5>Keys</h5>
+                                                </div>
+                                                <div id="datasets_creation_ff_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">
+                                                    <table class="table" sytle="width: 100%; border: none;" style="margin-bottom: 0px;">
+                                                        <tr>
+                                                            <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                                <label style="margin-left: 5px;">Primary</label>
+                                                            <td style="border-top: none; padding-top: 1px;" id="datasets_creation_ff_pkey_input">
+                                                                None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>
+                                                        <tr>
+                                                            <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                                <label style="margin-left: 5px;">Foreigns</label>
+                                                            <td style="border-top: none; padding-top: 1px;">
+                                                                <table class="table table-condensed" id="datasets_creation_ff_fkey_list">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td>
+                                                                                <span id="datasets_creation_ff_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_foreign_modal('ff');"></span>
+                                                                    </tbody>
+                                                                </table>
+                                                    </table>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <hr>
-                                        <table class="table table-condensed" id="datasets_creation_from_file_columns">
-                                            <thead>
-                                                <tr>
-                                                    <th class="col-md-2" style="text-align:left">Name
-                                                    <th class="col-md-1" style="text-align:left">Type
-                                                    <th class="col-md-3" style="text-align:left">Tags
-                                                    <th colspan=2 class="col-md-2" style="text-align:left">Constraints
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                        </table>
-                                        
                                     </div>
                                 </div>
                             </div>
@@ -191,7 +221,7 @@
                         <label>
                             Select dataset/table&nbsp;&nbsp;
                         </label>
-                        <select id="datasets_creation_fkey_modal_select_table" onchange="datasets_creation_fill_fkey_matrix('fs');")>
+                        <select id="datasets_creation_fkey_modal_select_table" onchange="datasets_creation_fill_fkey_matrix();")>
                             <option value="None">None</option>
                         </select>
                         <table width='100%' id='datasets_creation_fkey_modal_matrix'>

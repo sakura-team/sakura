@@ -16,12 +16,11 @@ var datasets_creation_fkeys             = { 'fs': {
                                             'ff': {
                                                 'rows': [], 'data': []  }   };
 var error_in_fs_names       = true;
-var error_in_ff_names       = true;
+var error_in_ff_names       = false;
 var fkey_matrix_disabled    = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
-
 function datasets_open_creation(db_id) {
     
     if (datasets_creation_first_time) {
@@ -84,10 +83,10 @@ function datasets_send_new(database_id) {
     var body = $('#datasets_creation_fs_columns').find('tbody');
     var cols = body.find('tr');
     var nb_cols = cols.length - 1;
-    $('#datasets_creation_from_file_pan').attr("class").split(' ').forEach( function (elt) {
+    $('#datasets_creation_ff_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
             from_what = 'ff';
-            body = $('#datasets_creation_from_file_columns').find('tbody');
+            body = $('#datasets_creation_ff_columns').find('tbody');
             cols = body.find('tr');
             nb_cols = cols.length
             fkey
@@ -192,7 +191,7 @@ function datasets_on_file_selected(f) {
             },
             complete: function() {
                 //Reading columns and first line
-                var body = $('#datasets_creation_from_file_columns').find('tbody');
+                var body = $('#datasets_creation_ff_columns').find('tbody');
                 body.empty();
                 
                 datasets_creation_csv_file.headers.forEach( function(col, index) {
@@ -203,26 +202,16 @@ function datasets_on_file_selected(f) {
                         var inputs = new_row.find('input');
                         inputs[0].value = col;
                         
+                        var col_name    = $('#datasets_creation_col_name_temp');
+                        col_name.attr('id', 'datasets_creation_col_name_ff_'+index);
+                        
+                        
                         var select = new_row.find('select');
                         var type_select = $(select[0]);
                         var tags_select = $(select[1]);
                         
-                        before_last_cel.append($('<button>', {  id: "pkey_ff_"+index,
-                                                                type: "button",
-                                                                class: "btn btn-xs btn-secondary",
-                                                                text: "pkey",
-                                                                title: "Click for defining a primary key",
-                                                                onclick: "datasets_primary_key("+index+", 'ff');"
-                                                                }));
-                        
-                        before_last_cel.append('&nbsp;')
-                        before_last_cel.append($('<button>', {  id: "fkey_ff_"+index,
-                                                                type:"button",
-                                                                class: "btn btn-xs btn-outline btn-secondary",
-                                                                text: "FKey",
-                                                                title: "Click for defining a foreign key",
-                                                                onclick: "datasets_foreign_key("+index+", 'ff');"
-                                                            }));
+                        $('#datasets_creation_pkey_temp').attr('onclick', 'datasets_primary_key('+index+', "ff");');
+                        $('#datasets_creation_pkey_temp').attr('id', 'datasets_creation_ff_pkey_'+index);
                         
                         new_row.find("td:last").remove();
                         
@@ -300,7 +289,7 @@ function datasets_add_a_row(table_id) {
 
 
 function datasets_creation_empty_tables() {
-    var body = $('#datasets_creation_from_file_columns').find('tbody');
+    var body = $('#datasets_creation_ff_columns').find('tbody');
     body.empty();
     var trs = $('#datasets_creation_fs_columns').find('tbody').find('tr');
     for (var i=0; i< trs.length-1; i++) {
@@ -517,9 +506,10 @@ function datasets_foreign_modal(from_what) {
     }
     
     //Now we fill the matrix
-    datasets_creation_fill_fkey_matrix('fs');
-    $('#datasets_creation_fkey_modal_validate_button').attr('onclick', "datasets_creation_new_fkey('fs')");
+    datasets_creation_fill_fkey_matrix(from_what);
+    $('#datasets_creation_fkey_modal_validate_button').attr('onclick', "datasets_creation_new_fkey(\'"+from_what+"\')");
     
+    $('#datasets_creation_fkey_modal_select_table').attr('onchange', 'datasets_creation_fill_fkey_matrix(\''+from_what+'\')')
     $('#datasets_creation_fkey_modal').modal();
 }
 
