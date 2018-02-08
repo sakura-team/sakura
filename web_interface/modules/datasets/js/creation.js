@@ -358,6 +358,7 @@ function datasets_creation_check_column_names(from_what) {
         error_in_ff_names = error;
     
     datasets_creation_update_pkey(from_what);
+    datasets_creation_remove_all_fkeys(from_what);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -541,7 +542,7 @@ function datasets_creation_fill_fkey_matrix(from_what) {
     });
     
     var td_class = '';
-    if (row_names.length != col_names.length) {
+    if (row_names.length < col_names.length) {
         td_class = 'bg-danger';
         $('#datasets_creation_fkey_modal_validate_button').prop("disabled",true);
         fkey_matrix_disabled = true;
@@ -595,10 +596,10 @@ function datasets_creation_check_mat(e, from_what) {
 function datasets_creation_check_mat_filled(from_what) {
     var list = $("[class^='datasets_creation_"+from_what+"_radio']");
     
-    var nb_rows = 0;
+    var nb_cols = 0;
     database_infos.tables.forEach( function (ds) {
         if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
-            nb_rows = ds.columns.length;
+            nb_cols = ds.columns.length;
         }
     });
     
@@ -612,7 +613,7 @@ function datasets_creation_check_mat_filled(from_what) {
             }
         });
         
-        if (nb_checked != nb_rows) {
+        if (nb_checked != nb_cols) {
             $('#datasets_creation_fkey_modal_validate_button').prop("disabled",true);
         }
         else {
@@ -632,7 +633,6 @@ function datasets_creation_new_fkey(from_what) {
     
     database_infos.tables.forEach( function (ds) {
         if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
-            console.log(ds);
             table_name = ds.name;
             ds.columns.forEach( function(c) {
                 cols.push(c[0]);
@@ -655,20 +655,18 @@ function datasets_creation_new_fkey(from_what) {
     });
     
     if (cols_in.length > 0) {
-        s = '('+cols_in[0];
+        s = '<b>('+cols_in[0];
         for (var i=1; i<cols_in.length; i++) {
-            s += ','+cols_in[i];
+            s += ', '+cols_in[i];
         }
-        s += ') references \''+table_name+'\'('+cols_out[0];
+        s += ')</b> references <b>\''+table_name+'\'('+cols_out[0];
         for (var i=1; i<cols_out.length; i++) {
-            s += ','+cols_out[i];
+            s += ', '+cols_out[i];
         }
-        s += ')';
-        console.log(s);
+        s += ')</b>';
         var body = $('#datasets_creation_'+from_what+'_fkey_list').find('tbody');
         var nb_rows = body[0].childElementCount - 1;
         var new_row = $(body[0].insertRow(nb_rows));
-        console.log('NB_ROWS', nb_rows);
         
         var span = $('<span>', {title: "delete this foreign key",
                                 class: "glyphicon glyphicon-remove",
@@ -676,8 +674,8 @@ function datasets_creation_new_fkey(from_what) {
                                 onclick: "datasets_creation_fkey_list_remove(\'datasets_creation_"+from_what+"_fkey_td_"+nb_rows+"\', \'"+from_what+"\');" });
         var td = $('<td>', {id:"datasets_creation_"+from_what+"_fkey_td_"+nb_rows});
         
+        td.append(s+ '&nbsp;&nbsp;');
         td.append(span);
-        td.append('&nbsp;&nbsp;'+s);
         new_row.append(td);
     }
     
@@ -688,6 +686,16 @@ function datasets_creation_new_fkey(from_what) {
 function datasets_creation_fkey_list_remove(row, from_what) {
     $('#'+row).remove();
 }
+
+
+function datasets_creation_remove_all_fkeys(from_what) {
+    var body = $('#datasets_creation_'+from_what+'_fkey_list').find('tbody');
+    var nb_rows = body[0].childElementCount - 1;
+    for (var i=0; i<nb_rows; i++) {
+        var new_row = $(body[0].deleteRow(0));
+    }
+}
+
 
 function datasets_creation_check_keys(row, from_what) {
     console.log('Entering Check keys function !');
