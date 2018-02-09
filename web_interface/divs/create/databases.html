@@ -1,41 +1,73 @@
 
 <div class="modal fade" id="create_database_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate" style="width: 95%;">
+    <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate">
         <div class="modal-content">
+            <div class="modal-header">
+                <h3>Data Creation</h3>
+            </div>
+            
             <div class="modal-body">
-                <div class="container">
-                    <div class="row-fluid">
-                        <div class="col-md">
-                            <h3>New Data Creation</h3>
-                            <div class="panel panel-default">
-                                <div class="panel-body">
-                                        <div class="form-group control-group" data-original-title="Give a name.">
-                                            <label for="database_name_input">Name</label>
-                                            <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name"/>
-                                        </div>
-                                        <div class="form-group control-group" data-original-title="Give short description.">
-                                            <label for="database_shortdescription_input">Short Description</label>
-                                            <input class="form-control" id="database_shortdescription_input" name="database_shortdescription_input" placeholder="Enter short description"/>
-                                        </div>
-                                        <div class="form-group control-group" data-original-title="Give DBMS.">
-                                            <label for="database_datastore_input">DataStores</label>
-                                            <!--<select class="form-control" id="database_datastore_input" onchange="database_datastore_on_change();">-->
-                                            <select class="selectpicker" name="database_datastore_input" id="database_datastore_input" onchange="database_datastore_on_change();" data-width="100%" data-live-search="true"/>
-                                            </select>
-                                        </div>
-                                        <div class="form-group control-group" data-original-title="Give DBMS.">
-                                            <label for="database_public_input"> 
-                                            <input id="database_public_input" name="publicAccess" type="checkbox" /> 
-                                            Public 
-                                            </label>
-                                        </div>
-                                        <button type="button" class="btn btn-primary" id="database_submit_button" onclick="new_database();">Submit</button>
-                                        <button type="button" class="btn" id="database_close_button" onclick="database_close_modal('create_database_modal');">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="form-group control-group has-error" data-original-title="Give a name.">
+                    <label for="database_name_input">Name<font color=red>*</font></label>
+                    <table>
+                        <tr>
+                            <td>
+                                <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name"/>
+                            <td style="padding-left: 10px;">
+                                <label for="database_public_input"> 
+                                    <input id="database_public_input" name="publicAccess" type="checkbox" /> 
+                                    Public<font color=red>*</font>
+                                </label>
+                    </table>
                 </div>
+                <div class="form-group control-group has-error" data-original-title="Give short description.">
+                    <label for="database_shortdescription_input">Short Description<font color=red>*</font></label>
+                    <input class="form-control" id="database_shortdescription_input" name="database_shortdescription_input" placeholder="Enter short description"/>
+                </div>
+                <div class="form-group control-group" data-original-title="Give DBMS.">
+                    <label for="database_datastore_input">DataStores<font color=red>*</font></label>
+                    <select class="selectpicker" name="database_datastore_input" id="database_datastore_input" onchange="database_datastore_on_change();" data-width="100%" data-live-search="true"/>
+                    </select>
+                </div>
+                <hr>
+                <div class="form-group control-group" data-original-title="Give DBMS.">
+                    <label for="database_public_input">Agent Type</label> 
+                    <input class="form-control" id="database_agent_type_input" name="database_agent_type_input" placeholder="Who/What produced this data"/>
+                </div>
+                <div class="form-group control-group" data-original-title="Give DBMS.">
+                    <label for="database_public_input">Domain Topic</label> 
+                    <input class="form-control" id="database_agent_type_input" name="database_agent_type_input" placeholder="What is the research/industrial/academic domain ?"/>
+                </div>
+                <div class="form-group control-group" data-original-title="Give DBMS.">
+                    <table>
+                        <tr>
+                            <td>
+                                <label for="database_public_input">Data Type</label>
+                        <tr>
+                            <td>
+                                &nbsp;<input type='radio' id="database_data_type_input_0" name="database_data_type_input_0"/>
+                                Raw&nbsp;&nbsp;
+                                <input type='radio' id="database_data_type_input_1" name="database_data_type_input_0"/>
+                                Processed&nbsp;&nbsp;
+                                <input type='radio' id="database_data_type_input_2" name="database_data_type_input_0"/>
+                                Mixed
+                    </table>
+                </div>
+                <div class="form-group control-group" data-original-title="Give DBMS.">
+                    <table>
+                        <tr>
+                            <td>
+                                <label for="database_public_input">Licence</label> 
+                        <tr>
+                            <td>
+                                <select id="database_licence_input" name="database_licence_input"/>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="database_submit_button" onclick="new_database();">Submit</button>
+                <button type="button" class="btn" id="database_close_button" onclick="database_close_modal('create_database_modal');">Close</button>
             </div>
         </div>
     </div>
