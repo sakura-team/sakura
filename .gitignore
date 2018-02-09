@@ -3,3 +3,7 @@
 *.egg-info
 .DS_Store
 nbproject/*
+test/psql_proxy*
+test/daemon*-datastores.conf
+test/hub-email.conf
+gitignore-*
