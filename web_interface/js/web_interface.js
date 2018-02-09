@@ -195,8 +195,9 @@ function showDiv(event, dir, div_id) {
             else {
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
             }
-            
+            //Filling MetaData
             recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
+            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
         });
     }
     else if (dir.indexOf("Work") != -1 && dir != 'Datas') {
@@ -218,7 +219,7 @@ function showDiv(event, dir, div_id) {
             else {
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
             }
-            
+            //Filling MetaData            
             recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
         });
     }
