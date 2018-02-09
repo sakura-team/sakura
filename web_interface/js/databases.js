@@ -3,6 +3,54 @@
 
 var database_datastores = null;
 
+
+var database_mandatory = {'name': false, 'short_description': false}
+
+function database_creation_check_name() {
+    if ($('#database_name_input').val().length > 0) {
+        $('#database_div_name_input').removeClass('has-error');
+        database_mandatory.name = true;
+    }
+    else {
+        $('#database_div_name_input').addClass('has-error');
+        database_mandatory.name = false;
+    }
+    database_creation_check_mandatory();
+}
+
+
+function database_creation_check_shortdescription() {
+    if ($('#database_shortdescription_input').val().length > 0) {
+        $('#database_div_shortdescription_input').removeClass('has-error');
+        database_mandatory.short_description = true;
+    }
+    else {
+        $('#database_div_shortdescription_input').addClass('has-error');
+        database_mandatory.short_description = false;
+    }
+    database_creation_check_mandatory();
+}
+
+
+function database_creation_check_mandatory() {
+    var ok = true;
+    
+    for (x in database_mandatory) {
+        if (!database_mandatory[x]) {
+            ok = false;
+        }
+    }
+    
+    if (ok) {
+        $('#database_submit_button').prop('disabled', false);
+        console.log($('#database_submit_button'));
+    }
+    else {
+        $('#database_submit_button').prop('disabled', true);
+    }
+}
+
+
 function database_update_creation_modal() {
     //submit button: back to initial display
     $("#database_submit_button").html('Submit');

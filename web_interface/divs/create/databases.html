@@ -7,25 +7,25 @@
             </div>
             
             <div class="modal-body">
-                <div class="form-group control-group has-error" data-original-title="Give a name.">
-                    <label for="database_name_input">Name<font color=red>*</font></label>
+                <div id="database_div_name_input" class="form-group control-group has-error" data-original-title="Give a name.">
+                    <label for="database_name_input">Name <font color=red>*</font></label>
                     <table>
                         <tr>
                             <td>
-                                <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name"/>
+                                <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name" onkeyup="database_creation_check_name();"/>
                             <td style="padding-left: 10px;">
                                 <label for="database_public_input"> 
                                     <input id="database_public_input" name="publicAccess" type="checkbox" /> 
-                                    Public<font color=red>*</font>
+                                    Public <font color=red>*</font>
                                 </label>
                     </table>
                 </div>
-                <div class="form-group control-group has-error" data-original-title="Give short description.">
-                    <label for="database_shortdescription_input">Short Description<font color=red>*</font></label>
-                    <input class="form-control" id="database_shortdescription_input" name="database_shortdescription_input" placeholder="Enter short description"/>
+                <div id="database_div_shortdescription_input" class="form-group control-group has-error" data-original-title="Give short description.">
+                    <label for="database_shortdescription_input">Short Description <font color=red>*</font></label>
+                    <input class="form-control" id="database_shortdescription_input" name="database_shortdescription_input" placeholder="Enter short description" onkeyup="database_creation_check_shortdescription();"/>
                 </div>
                 <div class="form-group control-group" data-original-title="Give DBMS.">
-                    <label for="database_datastore_input">DataStores<font color=red>*</font></label>
+                    <label for="database_datastore_input">DataStores <font color=red>*</font></label>
                     <select class="selectpicker" name="database_datastore_input" id="database_datastore_input" onchange="database_datastore_on_change();" data-width="100%" data-live-search="true"/>
                     </select>
                 </div>
@@ -40,33 +40,43 @@
                 </div>
                 <div class="form-group control-group" data-original-title="Give DBMS.">
                     <table>
-                        <tr>
-                            <td>
-                                <label for="database_public_input">Data Type</label>
-                        <tr>
-                            <td>
-                                &nbsp;<input type='radio' id="database_data_type_input_0" name="database_data_type_input_0"/>
+                        <tr style="margin-bottom: 10px;">
+                            <td style="vertical-align: middle;">
+                                <label for="database_public_input" style="margin-bottom: 0px;">Data Type</label>
+                            <td style="padding-left: 20px; vertical-align: middle;">
+                                <input type='radio' id="database_data_type_input_0" name="database_data_type_input_0" style="margin-top: 0px;"/>
                                 Raw&nbsp;&nbsp;
-                                <input type='radio' id="database_data_type_input_1" name="database_data_type_input_0"/>
+                                <input type='radio' id="database_data_type_input_1" name="database_data_type_input_0" style="margin-top: 0px;"/>
                                 Processed&nbsp;&nbsp;
-                                <input type='radio' id="database_data_type_input_2" name="database_data_type_input_0"/>
+                                <input type='radio' id="database_data_type_input_2" name="database_data_type_input_0" style="margin-top: 0px;"/>
                                 Mixed
-                    </table>
-                </div>
-                <div class="form-group control-group" data-original-title="Give DBMS.">
-                    <table>
                         <tr>
-                            <td>
-                                <label for="database_public_input">Licence</label> 
+                            <td>&nbsp;
+                            <td>&nbsp;
                         <tr>
-                            <td>
+                            <td style="vertical-align: middle;">
+                                <label for="database_public_input" style="margin-bottom: 0px;">Licence</label> 
+                            <td style="padding-left: 20px;">
                                 <select id="database_licence_input" name="database_licence_input"/>
+                                <option value"Licence1">Licence1</option>
+                                <option value"Licence2">Licence2</option>
+                                <option value"Licence3">Licence3</option>
+                                <option value"Licence4">Licence4</option>
+                                <option value"Licence5">Licence5</option>
                     </table>
                 </div>
+                <hr>
+                <table>
+                    <tr>
+                        <td>
+                            <h5><font color=red>*</font></h5>
+                        <td>
+                            &nbsp;Mandatory fields
+                </table>
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="database_submit_button" onclick="new_database();">Submit</button>
+                <button type="button" class="btn btn-primary" disabled id="database_submit_button" onclick="new_database();">Submit</button>
                 <button type="button" class="btn" id="database_close_button" onclick="database_close_modal('create_database_modal');">Close</button>
             </div>
         </div>
