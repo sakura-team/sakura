@@ -119,7 +119,7 @@ function showDiv(event, dir, div_id) {
     document.getElementById(idDir).style.display='inline';
     
     
-    //activate navbar   
+    //activate navbar
     var d = document.getElementById("navbar_ul");
     for (var i=0; i< d.children.length; i++) {
         d.children[i].className = "";
@@ -154,7 +154,6 @@ function showDiv(event, dir, div_id) {
     }
     
     if (div_id == 'idDatasMainToFullfill') {
-        
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
         if (dir.indexOf('Main') != -1) {
             console.log("META");
@@ -177,7 +176,7 @@ function showDiv(event, dir, div_id) {
             $('#databases_buttons_historic').addClass("btn-primary");
         }
     }
-    else if (dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main")) {
+    else if (dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
         
         document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         $('#databases_buttons_main').addClass("btn-primary");
@@ -200,8 +199,32 @@ function showDiv(event, dir, div_id) {
             recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
         });
     }
+    else if (dir.indexOf("Work") != -1 && dir != 'Datas') {
+        
+        document.getElementById('idDivDatastmpDataMain').style.display='inline';
+        $('#databases_buttons_main').removeClass("btn-primary");
+        $('#databases_buttons_work').addClass("btn-primary");
+        $('#databases_buttons_historic').removeClass("btn-primary");
+        
+        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/', 'idDatasMainToFullfill');");
+        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Work', 'idDatasMainToFullfill');");
+        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Historic', 'idDatasMainToFullfill');");
+        
+        sakura.common.ws_request('get_database_info', [web_interface_current_db_id], {}, function(db_info) {
+            $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
+            if (db_info.short_desc.length > 2) {
+                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
+            }
+            else {
+                $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+            }
+            
+            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
+        });
+    }
     
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
+    
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             var aos = actionsOnShow[i];
