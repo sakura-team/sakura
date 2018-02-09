@@ -34,20 +34,13 @@ function database_creation_check_shortdescription() {
 
 function database_creation_check_mandatory() {
     var ok = true;
-    
-    for (x in database_mandatory) {
-        if (!database_mandatory[x]) {
+    for (x in database_mandatory)
+        if (!database_mandatory[x])
             ok = false;
-        }
-    }
-    
-    if (ok) {
+    if (ok)
         $('#database_submit_button').prop('disabled', false);
-        console.log($('#database_submit_button'));
-    }
-    else {
+    else
         $('#database_submit_button').prop('disabled', true);
-    }
 }
 
 
@@ -66,9 +59,7 @@ function database_update_creation_modal() {
         });
         $('#database_datastore_input').append('<option value="more">more (in progress)</option>');
         $('#database_datastore_input').selectpicker('refresh');
-
     });
-    
 }
 
 
@@ -83,6 +74,18 @@ function new_database() {
     var short_d     = $('#database_shortdescription_input').val();
     var ds_id       = parseInt($('#database_datastore_input').val());
     var public_val  = $('#database_public_input')[0].checked;
+    var agent_type  = $('#database_agent_type_input').val();
+    var domain_topic= $('#database_domain_topic_input').val();
+    var licence     = $('#database_licence_input').val();
+    var data_type   = '';
+    
+    $('[id^="database_data_type_input"]').each( function() {
+        if (this.checked) {
+            var tab = this.id.split("_");
+            data_type = tab[tab.length-1];
+        }
+    });
+    
     
     $("#database_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     
