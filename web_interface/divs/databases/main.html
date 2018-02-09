@@ -1,26 +1,8 @@
 <!--LIG, March 2017-->
 
 <div style="display:none;" id="idDivDatastmpDataMain" class="classMainDiv">
-    <table>
-    <tr>
-        <td>
-            <table>
-                <tr>
-                    <td>
-                        <button id='databases_buttons_main' class= "btn btn-xs" style="border-color: #AAAAAA;" title="Meta data" onclick="showDiv(event, 'Datas/tmpData', 'idDatasMainToFullfill');">
-                            <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
-                        </button>
-                <tr>
-                    <td>
-                        <button id='databases_buttons_work' class= "btn btn-xs" style="border-color: #AAAAAA;" title="Datasets / Tables" onclick="showDiv(event, 'Datas/tmpData/Work', 'idDatasMainToFullfill');">
-                            <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
-                        </button>
-                <tr>
-                    <td>
-                        <button id='databases_buttons_historic' class= "btn btn-xs" style="border-color: #AAAAAA;" disabled title="History of modifications" onclick="showDiv(event, 'Datas/tmpData/Historic', 'idDatasMainToFullfill');">
-                            <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
-                        </button>
-            </table>
+    <table width='100%'>
+    <tr style="border-bottom: 1px solid lightgrey">
         <td>
             <table style="margin-bottom: 10px;">
                 <tr>
@@ -32,6 +14,23 @@
                     <td>
                         <h5 style="margin-bottom: 0px;" id='databases_db_main_short_desc'> Short Description &nbsp;</h5>
             </table>
+        <td align="left" style="vertical-align: bottom;">
+            <table>
+                <tr>
+                    <td>
+                        <button id='databases_buttons_main' class= "btn btn-xs" style="border-color: #AAAAAA;" title="Meta data" onclick="showDiv(event, 'Datas/tmpData', 'idDatasMainToFullfill');">
+                            <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+                        </button>
+                    <td>
+                        <button id='databases_buttons_work' class= "btn btn-xs" style="border-color: #AAAAAA;" title="Datasets / Tables" onclick="showDiv(event, 'Datas/tmpData/Work', 'idDatasMainToFullfill');">
+                            <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                        </button>
+                    <td>
+                        <button id='databases_buttons_historic' class= "btn btn-xs" style="border-color: #AAAAAA;" disabled title="History of modifications" onclick="showDiv(event, 'Datas/tmpData/Historic', 'idDatasMainToFullfill');">
+                            <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
+                        </button>
+            </table>
+        
     </table>
     
     <div id="idDatasMainToFullfill">
