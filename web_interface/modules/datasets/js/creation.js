@@ -15,8 +15,7 @@ var datasets_creation_fkeys             = { 'fs': {
                                                 'rows': [], 'data': []  }, 
                                             'ff': {
                                                 'rows': [], 'data': []  }   };
-var error_in_fs_names       = true;
-var error_in_ff_names       = false;
+var errors = {'name': true, 'fs_names': true, 'ff_names': false};
 var fkey_matrix_disabled    = false;
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -60,10 +59,12 @@ function datasets_creation_check_name(input) {
     if (input.val().replace(/^\s+|\s+$/g, '').length != 0) {
         $(input[0].parentElement).removeClass('has-error');
         $(input[0].parentElement).addClass('has-success');
+        errors.name = false;
     }
     else {
         $(input[0].parentElement).removeClass('has-success');
         $(input[0].parentElement).addClass('has-error');
+        errors.name = true;
     }
 }
 
@@ -283,6 +284,8 @@ function datasets_add_a_row(table_id) {
         $('#datasets_new_tag_name').val("");
         
         datasets_creation_global_ids ++;
+        
+        datasets_creation_check_column_names('fs');
     });
     
     return new_row;
@@ -308,6 +311,8 @@ function datasets_remove_line(row, from_what) {
     datasets_creation_check_keys(row, from_what);
     //Remove the line
     $('#datasets_'+from_what+'_row_'+row).remove();
+    
+    datasets_creation_check_column_names('fs');
 }
 
 
@@ -343,9 +348,9 @@ function datasets_creation_check_column_names(from_what) {
     
     
     if (from_what == 'fs')
-        error_in_fs_names = error;
+        errors.fs_names = error;
     else 
-        error_in_ff_names = error;
+        errors.ff_names = error;
     
     datasets_creation_update_pkey(from_what);
     datasets_creation_remove_all_fkeys(from_what);
@@ -472,12 +477,12 @@ function datasets_creation_update_pkey(from_what) {
 
 function datasets_foreign_modal(from_what) {
     
-    var error = error_in_fs_names;
+    var error =  errors.fs_names || errors.name;
     if (from_what == 'ff')
-        error = error_in_ff_names;
+        error = errors.ff_names || errors.name;
     
     if (error) {
-        datasets_alert('Cannot open Foreign Key modal', 'There are errors in <b>Column Names</b>. Please check  before creating a foreign key !');
+        datasets_alert('Cannot open Foreign Key modal', '<b>Main Name</b> and <b>Column Names</b> should be circled in green before creating a foreign key !');
         return;
     }
     
