@@ -80,26 +80,22 @@ function listRequestStub(idDiv, n, elt, bd) {
             databases.sort(databases_sort);
             var index = 0;
             n = databases.length;
+            
             databases.forEach( function(db) {
-                index += 1;
-                if (index <= n) {
-                    sakura.common.ws_request('get_database_info', [db.database_id], {}, function(db_info) {
-                        result_info = {'name': db_info.name,'id':db.database_id, 'isGreyedOut': !db_info.online,
-                                       'shortDesc': db_info.short_desc, 'date': moment.unix(db_info.creation_date)._d,
-                                       'tags': db_info.tags };
-                        if (db_info.online) {
-                            result_info['owner'] = db_info.owner;
-                        }
-                        else {
-                            result_info['name'] += ' (OFFLINE)';
-                        }
-                        result.push(result_info);
-                        if (result.length == n) {
-                            result.sort(databases_sort);
-                            buildListStub(idDiv,result,elt);
-                        }
-                    });
-                };
+                result_info = {'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
+                                       'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
+                                       'tags': db.tags };
+                if (db.online) {
+                    result_info['owner'] = db.owner;
+                }
+                else {
+                    result_info['name'] += ' (OFFLINE)';
+                }
+                result.push(result_info);
+                if (result.length == n) {
+                    result.sort(databases_sort);
+                    buildListStub(idDiv,result,elt);
+                }
             });
         });
     }
