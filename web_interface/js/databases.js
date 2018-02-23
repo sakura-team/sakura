@@ -53,11 +53,12 @@ function database_update_creation_modal() {
         database_datastores = result;
         $('#database_datastore_input').empty();
         result.forEach( function(ds) {
+            console.log(ds);
             if (ds['online']) {
                 $('#database_datastore_input').append('<option value="'+ds['datastore_id']+'">'+ds['driver_label']+" service on "+ds['host']+'</option>');
             }
         });
-        $('#database_datastore_input').append('<option value="more">more (in progress)</option>');
+        $('#database_datastore_input').append('<option value="other" data-subtext="Requesting access to private datastores">Other</option>');
         $('#database_datastore_input').selectpicker('refresh');
     });
 }
@@ -109,7 +110,7 @@ function database_close_modal(id) {
 
 
 function database_datastore_on_change() {
-    if ($('#database_datastore_input').val() == 'more') {
+    if ($('#database_datastore_input').val() == 'other') {
         var tab = $('#database_offline_datastores');
         tab.empty();
         database_datastores.forEach( function(ds) {

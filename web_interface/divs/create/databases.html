@@ -1,5 +1,5 @@
 
-<div class="modal fade" id="create_database_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+<div class="modal fade" id="create_database_modal" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate">
         <div class="modal-content">
             <div class="modal-header">
@@ -164,33 +164,21 @@
 </div>
 
 
-<div class="modal fade" id="databases_other_datastores_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
-    <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate" style="width: 95%;">
+<div class="modal fade" id="databases_other_datastores_modal" role="dialog" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate">
         <div class="modal-content">
+            <div class="modal-header">
+                <h3>Access Request</h3>
+            </div>
             <div class="modal-body">
-                <div class="container">
-                    <div class="row-fluid">
-                        <div class="col-md">
-                            <h3>Other Datastores</h3>
-                            <div class="panel panel-default">
-                                <div class="panel-body">
-                                    <div class="form-group control-group">
-                                        <label for="database_name_input">Offline (in progress)</label>
-                                        <table class="table table-condensed table-hover table-striped" id="database_offline_datastores">
-                                        </table>
-                                    </div>
-                                    <hr>
-                                    <div class="form-group control-group">
-                                        <label for="database_name_input">Private access (in progress)</label>
-                                        <table class="table table-condensed table-hover table-striped" id="database_unaccessible_datastores">
-                                        <tr><td>fake service on toto.imag.fr</td><td><button>ask for access</button></td>
-                                        </table>
-                                    </div>
-                                    <button type="button" class="btn" id="database_close_button" onclick="database_close_modal('databases_other_datastores_modal');">Close</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <label for="database_name_input">Private DataStores</label>
+                <table class="table table-condensed table-hover table-striped" id="database_unaccessible_datastores">
+                    <tr>
+                        <td>None for now</td>
+                        <td><button disabled>ask for access</button></td>
+                </table>
+                <div align="right">
+                    <button type="button" class="btn" id="database_close_button" align="right" onclick="database_close_modal('databases_other_datastores_modal');">Close</button>
                 </div>
             </div>
         </div>
