@@ -12,3 +12,11 @@ body{
 .abs-modal.in{
     position: absolute;
 }
+
+.bordered_td {
+    border-width: 1px;
+    border-style: solid;
+    padding-left: 5px;
+    padding-right: 5px;
+    border-color: white;
+}

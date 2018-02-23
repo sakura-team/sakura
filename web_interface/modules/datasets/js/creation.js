@@ -17,6 +17,7 @@ var datasets_creation_fkeys             = { 'fs': {
                                                 'rows': [], 'data': []  }   };
 var errors = {'name': true, 'fs_names': true, 'ff_names': false};
 var fkey_matrix_disabled    = false;
+var fkey_matrix_message     = "";
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
@@ -522,54 +523,158 @@ function datasets_foreign_modal(from_what) {
 
 function datasets_creation_fill_fkey_matrix(from_what) {
     
-    var col_names   = [];
-    var row_names       = [];
+    var new_name    = $('#datasets_creation_name').val()
+    var ref_id      = $('#datasets_creation_fkey_modal_select_table').val();
+    var ref_name    = $('#datasets_creation_fkey_modal_select_table :selected').text();
+    var new_cols    = [];
+    var new_types   = [];
+    var ref_cols    = [];
+    var ref_types   = [];
     
     database_infos.tables.forEach( function (ds) {
-        if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
+        if (ds.table_id == ref_id) {
             ds.columns.forEach( function(c) {
-                col_names.push(c[0]);
+                ref_cols.push(c[0]);
+                ref_types.push(c[1]);
             });
         }
     });
     
     $("[id^='datasets_creation_col_name_"+from_what+"_']").each( function () {
-        row_names.push($(this).val());
+        new_cols.push($(this).val());
     });
     
+    $("[id^='datasets_"+from_what+"_type_select_']").each( function () {
+        new_types.push($(this).val());
+    });
+    
+    //Testing number of columns
     var td_class = '';
-    if (row_names.length < col_names.length) {
+    if (new_cols.length < ref_cols.length) {
         td_class = 'bg-danger';
         $('#datasets_creation_fkey_modal_validate_button').prop("disabled",true);
         fkey_matrix_disabled = true;
+        fkey_matrix_message = "New table has not enough columns !";
     }
     else {
         $('#datasets_creation_fkey_modal_validate_button').prop("disabled",false);
         fkey_matrix_disabled = false;
+        fkey_matrix_message = '';
     }
+    
+    //Testing types
+    var ref_poss_types  = [];
+    var ref_poss_nb     = [];
+    ref_types.forEach( function(rc) {
+        var index = ref_poss_types.indexOf(rc);
+        if (index == -1) {
+            ref_poss_types.push(rc);
+            ref_poss_nb.push(1);
+        }
+        else {
+            ref_poss_nb[index] += 1;
+        }
+    });
+    
+    var new_poss_types  = [];
+    var new_poss_nb     = [];
+    new_types.forEach( function(nc) {
+        var index = new_poss_types.indexOf(nc);
+        if (index == -1) {
+            new_poss_types.push(nc);
+            new_poss_nb.push(1);
+        }
+        else {
+            new_poss_nb[index] += 1;
+        }
+    });
+    
+    var error = false;
+    ref_poss_types.forEach( function(rpt, rpt_i) {
+        var index = new_poss_types.indexOf(rpt);
+        if (index == -1) {
+            error = true;
+        }
+        else if (ref_poss_nb[rpt_i] > new_poss_nb[index]) {
+            error = true;
+        }
+    });
+    if (error) {
+        fkey_matrix_disabled = true;
+        td_class = 'bg-danger';
+        if (fkey_matrix_message == '')
+            fkey_matrix_message = "Some columns don't have a corresponding type";
+        else 
+            fkey_matrix_message += "\n And some columns do not have a corresponding type";
+    }
+    
+    /*ref_cols.forEach( function(r_c, ref_i) {
+        var there_is_a_type = false;
+        new_cols.forEach(function (n_c, new_i) {
+            if (ref_types[ref_i] == new_types[new_i] && rows.indexOf()
+                there_is_a_type = true;
+        });
+        if (! there_is_a_type) {
+            fkey_matrix_disabled = true;
+            td_class = 'bg-danger';
+            if (fkey_matrix_message == '')
+                fkey_matrix_message = "Some columns don't have a corresponding type";
+            else 
+                fkey_matrix_message += "\n And some columns don't have a corresponding type";
+        }
+    });*/
     
     var body = $('#datasets_creation_fkey_modal_matrix').find('tbody');
     body.empty();
     
+    //ref name
     var new_row = $(body[0].insertRow(-1));
-    new_row.append('<td>');
-    col_names.forEach( function (cn) {
-        new_row.append('<td class="'+td_class+'">'+cn);
+    if (!fkey_matrix_disabled)
+        new_row.append('<td>');
+    else {
+        var td = $('<td>', {    align: "middle",
+                                style:"cursor: pointer;",
+                                title: fkey_matrix_message } );
+        
+        td.append('<font color=red><span class="glyphicon glyphicon-info-sign"></font></span>');
+        new_row.append(td);
+    }
+    
+    new_row.append('<td>&nbsp;&nbsp;<td class="bordered_td" bgcolor="lightblue" colspan='+ref_cols.length+' align="middle"><h4>'+ref_name+'</h4>');
+    
+    //ref cols
+    new_row = $(body[0].insertRow(-1));
+    new_row.append('<td><td>');
+    ref_cols.forEach( function (rf) {
+        new_row.append('<td bgcolor="lightgrey" align="middle" class="bordered_td">'+rf);
     });
-    var rows = [];
+    
+    //new_name
+    new_row = $(body[0].insertRow(-1));
+    new_row.append('<td class="bordered_td" bgcolor="lightblue" align="middle"><h4>'+new_name+'</h4><td>');
+    ref_cols.forEach( function (rf) {
+        new_row.append('<td>');
+    });
+    
     var index = 0;
     
-    row_names.forEach( function(name, index) {
-        var new_row = $(body[0].insertRow(-1));
-        new_row.append('<td class="'+td_class+'">'+name);
-        col_names.forEach(function (cn, i) {
-            var td = $('<td>', {class: td_class});
-            var input = $('<input>', {  type: "radio",
-                                        class: "datasets_creation_"+from_what+"_radio_"+i,
-                                        name: "datasets_creation_"+from_what+"_radio_"+index,
-                                        onclick: "datasets_creation_check_mat(this, \'"+from_what+"\');"
-                                        } );
-            td.append(input)
+    new_cols.forEach( function(name, index) {
+        new_row = $(body[0].insertRow(-1));
+        new_row.append('<td align="middle" bgcolor="lightgrey" class="bordered_td">'+name+'<td>');
+        ref_cols.forEach(function (cn, i) {
+            if (ref_types[i] == new_types[index]) {
+                var td = $('<td align="middle" class="'+td_class+'">');
+                var input = $('<input>', {  type: "radio",
+                                            class: "datasets_creation_"+from_what+"_radio_"+i,
+                                            name: "datasets_creation_"+from_what+"_radio_"+index,
+                                            onclick: "datasets_creation_check_mat(this, \'"+from_what+"\');"
+                                            } );
+                td.append(input)
+            }
+            else {
+                var td = $('<td align="middle" class="'+td_class+'">&nbsp;');
+                console.log(ref_types[i], new_types[index]);
+            }
             new_row.append(td);
         });
         index += 1;
