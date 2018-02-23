@@ -603,26 +603,10 @@ function datasets_creation_fill_fkey_matrix(from_what) {
         fkey_matrix_disabled = true;
         td_class = 'bg-danger';
         if (fkey_matrix_message == '')
-            fkey_matrix_message = "Some columns don't have a corresponding type";
+            fkey_matrix_message = "Issues with column types !";
         else 
-            fkey_matrix_message += "\n And some columns do not have a corresponding type";
+            fkey_matrix_message += "\n And issues with column types !";
     }
-    
-    /*ref_cols.forEach( function(r_c, ref_i) {
-        var there_is_a_type = false;
-        new_cols.forEach(function (n_c, new_i) {
-            if (ref_types[ref_i] == new_types[new_i] && rows.indexOf()
-                there_is_a_type = true;
-        });
-        if (! there_is_a_type) {
-            fkey_matrix_disabled = true;
-            td_class = 'bg-danger';
-            if (fkey_matrix_message == '')
-                fkey_matrix_message = "Some columns don't have a corresponding type";
-            else 
-                fkey_matrix_message += "\n And some columns don't have a corresponding type";
-        }
-    });*/
     
     var body = $('#datasets_creation_fkey_modal_matrix').find('tbody');
     body.empty();
@@ -640,7 +624,7 @@ function datasets_creation_fill_fkey_matrix(from_what) {
         new_row.append(td);
     }
     
-    new_row.append('<td>&nbsp;&nbsp;<td class="bordered_td" bgcolor="lightblue" colspan='+ref_cols.length+' align="middle"><h4>'+ref_name+'</h4>');
+    new_row.append('<td>&nbsp;&nbsp;<td class="bordered_td" bgcolor="lightblue" colspan='+ref_cols.length+' align="middle"><h4 style="margin-top: 5px; margin-bottom: 5px;">'+ref_name+'</h4>');
     
     //ref cols
     new_row = $(body[0].insertRow(-1));
@@ -651,7 +635,7 @@ function datasets_creation_fill_fkey_matrix(from_what) {
     
     //new_name
     new_row = $(body[0].insertRow(-1));
-    new_row.append('<td class="bordered_td" bgcolor="lightblue" align="middle"><h4>'+new_name+'</h4><td>');
+    new_row.append('<td class="bordered_td" bgcolor="lightblue" align="middle"><h4 style="margin-top: 5px; margin-bottom: 5px;">'+new_name+'</h4><td>');
     ref_cols.forEach( function (rf) {
         new_row.append('<td>');
     });
