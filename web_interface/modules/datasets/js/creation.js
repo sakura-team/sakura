@@ -82,57 +82,24 @@ function datasets_send_new(database_id) {
     
     //Which table body ?
     var from_what = 'fs';
-    var body = $('#datasets_creation_fs_columns').find('tbody');
-    var cols = body.find('tr');
-    var nb_cols = cols.length - 1;
+    //var body = $('#datasets_creation_fs_columns').find('tbody');
+    
     $('#datasets_creation_ff_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
             from_what = 'ff';
-            body = $('#datasets_creation_ff_columns').find('tbody');
-            cols = body.find('tr');
-            nb_cols = cols.length
-            fkey
         }
     });
+
+    var col_names = $('[id^="datasets_creation_col_name_'+from_what+'"]');
+    var col_types = $('[id^="datasets_'+from_what+'_type_select"]');
+    var col_tags = $('[id^="datasets_'+from_what+'_tags_select"]');
     
     var columns = [];
     var labels  = [];
     
     //Data from each row
-    for (var i=0; i< nb_cols; i++) {
-        var inputs = $(cols[i]).find('input');
-        var label = $(inputs[0]).val();
-        
-        var tab = $(cols[i])[0].id.split('_');
-        var global_i = parseInt(tab[tab.length -1]);
-        
-        //Some verifications
-        if (label == 'Column Name') {
-            datasets_alert("Columns Name", "Each column should have an explicit name");
-            return;
-        }
-        if (labels.indexOf(label) != -1) {
-            datasets_alert("Columns Name", "Each column should have a different name: two '"+label+"' detected !");
-            return;
-        }
-        else
-            labels.push(label);
-        
-        //tags
-        var type = $($(cols[i]).find('select')[0]).val();
-        var pkey = ($('#pkey_'+from_what+'_'+global_i).attr("class").indexOf("active") != -1);
-        var fkey = null;
-        
-        if ($('#fkey_'+from_what+'_'+global_i).attr("class").indexOf("active") != -1) {
-            index = datasets_creation_fkeys[from_what].rows.indexOf(i);
-            fkey = datasets_creation_fkeys[from_what].data[index];
-        }
-        var tags = $($(cols[i]).find('select')[1]).val();
-        if (tags == null)
-            tags = [];
-        
-        columns.push([label, type, tags, pkey, fkey]);
-    };
+    for (var i=0; i< col_names.length; i++)
+        columns.push([$(col_names[i]).val(), $(col_types[i]).val(), $(col_tags[i]).val()]);
     
     var dates = []
     var date_divs = $('*').filter(function() {
@@ -149,8 +116,17 @@ function datasets_send_new(database_id) {
         dates.push({'column_id': parseInt(i), 'column_name': columns[i][0], 'format': div.children[1].children[0].value});
     });
     
+    var creation_date = ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix();
+    
+    console.log('DB id:', database_id);
+    console.log('DS name:', name);
+    console.log('Columns:', columns);
+    console.log('Short d:', desc);
+    console.log('C date', creation_date);
+    
+    
     //Sending the new dataset description
-    sakura.common.ws_request('new_table', [database_id, name, columns], {'short_desc': desc, 'creation_date': ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix()}, function(dataset_id) {
+    /*sakura.common.ws_request('new_table', [database_id, name, columns], {'short_desc': desc, 'creation_date': creation_date}, function(dataset_id) {
         if (dataset_id >= 0) {
             
             //Sending file
@@ -165,6 +141,7 @@ function datasets_send_new(database_id) {
             $("#datasets_creation_modal").modal('hide');
         }
     });
+    */
 }
 
 
