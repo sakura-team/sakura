@@ -74,12 +74,20 @@ function new_database() {
     
     var short_d     = $('#database_shortdescription_input').val();
     var ds_id       = parseInt($('#database_datastore_input').val());
-    var public_val  = $('#database_public_input')[0].checked;
-    var agent_type  = $('#database_agent_type_input').val();
-    var domain_topic= $('#database_domain_topic_input').val();
-    var licence     = $('#database_licence_input').val();
-    var data_type   = '';
     
+    var rights      = 'restricted';
+    $('[id^="database_creation_rights_radio"]').each( function() {
+        if (this.checked) {
+            var tab = this.id.split('_');
+            rights = tab[tab.length - 1];
+        }
+    });
+    
+    var agent_type  = $('#database_agent_type_input').val();
+    var topic= $('#database_topic_input').val();
+    //var licence     = $('#database_licence_input').val();
+    
+    var data_type   = '';
     $('[id^="database_data_type_input"]').each( function() {
         if (this.checked) {
             var tab = this.id.split("_");
@@ -87,11 +95,36 @@ function new_database() {
         }
     });
     
+    var licence = "Public";
+    $('[id^="database_data_licence"]').each( function() {
+        if (this.checked) {
+            var tab = this.id.split("_");
+            licence = tab[tab.length-1];
+        }
+    });
+    
     
     $("#database_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
     
+    /*console.log("Name:", name);
+    console.log("Short:", short_d);
+    console.log("Datastore:", ds_id);
+    console.log("Rights:", rights);
+    console.log("Agent type:", agent_type);
+    console.log("Topic:", topic);
+    console.log("Data type:", data_type);
+    console.log("Licence:", licence);
+    */
     
-    sakura.common.ws_request('new_database', [ds_id, name], {'short_desc': short_d}, function(result) {
+    sakura.common.ws_request('new_database', 
+                                [ds_id, name], 
+                                {   'short_desc': short_d, 
+                                    'rights': rights,
+                                    'agent_type': agent_type,
+                                    'topic': topic,
+                                    'data_type': data_type,
+                                    'licence': licence  }, 
+                                function(result) {
         //result = new database id
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
