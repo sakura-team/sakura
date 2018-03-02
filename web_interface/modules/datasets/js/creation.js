@@ -10,14 +10,10 @@ var datasets_creation_pkeys             = { 'fs': {
                                                 'rows': []}, 
                                             'ff': {
                                                 'rows': []} };
-                                                
-var datasets_creation_fkeys             = { 'fs': {
-                                                'rows': [], 'data': []  }, 
-                                            'ff': {
-                                                'rows': [], 'data': []  }   };
-var errors = {'name': true, 'fs_names': true, 'ff_names': false};
-var fkey_matrix_disabled    = false;
-var fkey_matrix_message     = "";
+var datasets_creation_fkeys             = []
+var errors                              = {'name': true, 'fs_names': true, 'ff_names': false};
+var fkey_matrix_disabled                = false;
+var fkey_matrix_message                 = "";
 
 /////////////////////////////////////////////////////////////////////////////////////
 // CREATION
@@ -37,15 +33,11 @@ function datasets_open_creation(db_id) {
         $($('#datasets_creation_name')[0].parentElement).addClass('has-error');
         $('#datasets_creation_name').on('keyup', function() {datasets_creation_check_name($('#datasets_creation_name'));});
         
-        datasets_creation_fkeys             = { 'fs': {
-                                                    'rows': [], 'data': []  }, 
-                                                'ff': {
-                                                    'rows': [], 'data': []  }   };
-        datasets_creation_pkeys             = { 'fs': {
-                                                    'rows': []}, 
-                                                'ff': {
-                                                    'rows': []} };
-        
+        datasets_creation_pkeys = { 'fs': {
+                                        'rows': []}, 
+                                    'ff': {
+                                        'rows': []} };
+        datasets_creationfkeys  = []
         datasets_creation_first_time = false;
         
         $('#datasets_creation_datetimepicker').datetimepicker();
@@ -112,36 +104,36 @@ function datasets_send_new(database_id) {
     }
     
     //Primary Key 
-    var pkey_ids = datasets_creation_pkeys[from_what].rows;
     var pkey = []
-    var rows = $('[id^="datasets_creation_'+from_what+'_pkey_"]');
-    pkey_ids.forEach( function(id) {
-        for (var i =0; i< rows.length;i++) {
-            var tab = rows[i].id.split("_");
-            
-            if (tab[tab.length-1] == id)
-            {
-                pkey.push(i);
-            }
-        }
+    datasets_creation_pkeys[from_what].rows.forEach( function(id) {
+        pkey.push($('#datasets_creation_col_name_'+from_what+'_'+id).val());
     });
     
-    //Foreign keys
+    
+    //Foreign Keys
+    var fkeys = datasets_creation_fkeys;
+    
+    //Creation Date
     var creation_date = ($('#datasets_creation_datetimepicker').data("DateTimePicker").date()).unix();
     
-    console.log('DB id:', database_id);
+    /*console.log('DB id:', database_id);
     console.log('DS name:', name);
     console.log('Columns:', columns);
     console.log('Short d:', desc);
     console.log('C date:', creation_date);
     console.log('Dates:', dates);
     console.log('PKey:', pkey);
-    console.log();
-    console.log(datasets_creation_fkeys);
-    
+    console.log('FKey:', fkeys);
+    */
     
     //Sending the new dataset description
-    /*sakura.common.ws_request('new_table', [database_id, name, columns], {'short_desc': desc, 'creation_date': creation_date}, function(dataset_id) {
+    sakura.common.ws_request(   'new_table', 
+                                [database_id, name, columns], 
+                                {   'short_desc':       desc, 
+                                    'creation_date':    creation_date, 
+                                    'primary_key':      pkey, 
+                                    'foreign_keys':     fkeys   },
+                                function(dataset_id) {
         if (dataset_id >= 0) {
             
             //Sending file
@@ -156,7 +148,6 @@ function datasets_send_new(database_id) {
             $("#datasets_creation_modal").modal('hide');
         }
     });
-    */
 }
 
 
@@ -304,7 +295,6 @@ function datasets_remove_line(row, from_what) {
     datasets_creation_check_keys(row, from_what);
     //Remove the line
     $('#datasets_'+from_what+'_row_'+row).remove();
-    
     
     var index = datasets_creation_pkeys[from_what].rows.indexOf(row);
     if (index != -1)
@@ -707,16 +697,15 @@ function datasets_creation_check_mat_filled(from_what) {
 
 
 function datasets_creation_new_fkey(from_what) {
-    var cols_in = [];
-    var cols_out = [];
-    var table_name = ''
-    
-    var rows = []
-    var cols = []
+    var rows = [];
+    var cols = [];
+    var new_fkey = {'local_columns': [],
+                    'remote_table': {},
+                    'remote_columns': []}
     
     database_infos.tables.forEach( function (ds) {
         if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
-            table_name = ds.name;
+            new_fkey.remote_table   = {'name': ds.name, 'id': ds.table_id};
             ds.columns.forEach( function(c) {
                 cols.push(c[0]);
             });
@@ -732,21 +721,22 @@ function datasets_creation_new_fkey(from_what) {
             var tab1 = this.name.split('_');
             var tab2 = this.className.split('_');
             
-            cols_in.push(rows[tab1[tab1.length -1]]);
-            cols_out.push(cols[tab2[tab2.length -1]]);
+            new_fkey.local_columns.push(rows[tab1[tab1.length -1]]);
+            new_fkey.remote_columns.push(cols[tab2[tab2.length -1]]);
         }
     });
     
-    if (cols_in.length > 0) {
-        s = '<b>('+cols_in[0];
-        for (var i=1; i<cols_in.length; i++) {
-            s += ', '+cols_in[i];
+    if (new_fkey.local_columns.length > 0) {
+        s = '<b>('+new_fkey.local_columns[0];
+        for (var i=1; i<new_fkey.local_columns.length; i++) {
+            s += ', '+new_fkey.local_columns[i];
         }
-        s += ')</b> references <b>\''+table_name+'\'('+cols_out[0];
-        for (var i=1; i<cols_out.length; i++) {
-            s += ', '+cols_out[i];
+        s += ')</b> references <b>\''+new_fkey.remote_table.name+'\'('+new_fkey.remote_columns[0];
+        for (var i=1; i<new_fkey.remote_columns.length; i++) {
+            s += ', '+new_fkey.remote_columns[i];
         }
         s += ')</b>';
+        
         var body = $('#datasets_creation_'+from_what+'_fkey_list').find('tbody');
         var nb_rows = body[0].childElementCount - 1;
         var new_row = $(body[0].insertRow(nb_rows));
@@ -754,29 +744,46 @@ function datasets_creation_new_fkey(from_what) {
         var span = $('<span>', {title: "delete this foreign key",
                                 class: "glyphicon glyphicon-remove",
                                 style: "cursor: pointer;",
-                                onclick: "datasets_creation_fkey_list_remove(\'datasets_creation_"+from_what+"_fkey_td_"+nb_rows+"\', \'"+from_what+"\');" });
+                                onclick: "datasets_creation_fkey_list_remove(\'"+nb_rows+"', \'"+from_what+"\');" });
         var td = $('<td>', {id:"datasets_creation_"+from_what+"_fkey_td_"+nb_rows});
         
         td.append(s+ '&nbsp;&nbsp;');
         td.append(span);
         new_row.append(td);
+        
+        new_fkey.remote_table   = new_fkey.remote_table.id;
+        datasets_creation_fkeys.push(new_fkey);
     }
     
     $('#datasets_creation_fkey_modal').modal('hide');
 }
 
 
-function datasets_creation_fkey_list_remove(row, from_what) {
-    $('#'+row).remove();
+function datasets_creation_fkey_list_remove(id, from_what) {
+    console.log(id);
+    
+    var row_i = 0;
+    $('[id^=datasets_creation_'+from_what+'_fkey_td_]').each( function () {
+        var tab = this.id.split("_");
+        console.log(id);
+        console.log(tab[tab.length -1]);
+        if (id == tab[tab.length -1]) {
+            datasets_creation_fkeys.splice(row_i, 1);
+            return false;
+        }
+        row_i += 1;
+    });
+    
+    $('#datasets_creation_'+from_what+'_fkey_td_'+id).remove();
+    console.log(datasets_creation_fkeys);
 }
 
 
 function datasets_creation_remove_all_fkeys(from_what) {
-    var body = $('#datasets_creation_'+from_what+'_fkey_list').find('tbody');
-    var nb_rows = body[0].childElementCount - 1;
-    for (var i=0; i<nb_rows; i++) {
-        var new_row = $(body[0].deleteRow(0));
-    }
+    $('[id^=datasets_creation_'+from_what+'_fkey_td_]').each( function () {
+        var tab = this.id.split("_");
+        datasets_creation_fkey_list_remove(tab[tab.length -1], from_what);
+    });
 }
 
 
