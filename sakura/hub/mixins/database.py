@@ -1,5 +1,7 @@
 import time
 from sakura.common.tools import greenlet_env
+from enum import Enum
+DB_RIGHTS = Enum('DB_RIGHTS', 'public restricted private')
 
 class DatabaseMixin:
     @property
@@ -9,19 +11,21 @@ class DatabaseMixin:
     def remote_instance(self):
         return self.datastore.remote_instance.databases[self.name]
     def pack(self):
-        return dict(
+        result = dict(
             tags = self.tags,
             contacts = tuple(u.login for u in self.contacts),
             database_id = self.id,
             datastore_id = self.datastore.id,
             name = self.name,
-            short_desc = self.short_desc,
             creation_date = self.creation_date,
+            rights = DB_RIGHTS(self.rights).name,
             owner = None if self.owner is None else self.owner.login,
             users_rw = tuple(u.login for u in self.users_rw),
             users_ro = tuple(u.login for u in self.users_ro),
             online = self.online
         )
+        result.update(**self.metadata)
+        return result
     def get_full_info(self, context):
         # start with general metadata
         result = self.pack()
@@ -55,23 +59,27 @@ class DatabaseMixin:
                 self.name,
                 self.owner.login)
     @classmethod
-    def format_metadata(cls, context, users = None, contacts = None, **kwargs):
+    def format_metadata(cls, context, users = None, contacts = None, **metadata):
+        args = dict(metadata = metadata)
         # format users
         if users is not None:
-            kwargs['users_rw'] = context.users.from_logins(
+            args['users_rw'] = context.users.from_logins(
                         u for u, rights in users.items() if rights['WRITE'])
-            kwargs['users_ro'] = context.users.from_logins(
+            args['users_ro'] = context.users.from_logins(
                         u for u, rights in users.items() if rights['READ'])
         # format contacts
         if contacts is not None:
-            kwargs['contacts'] = context.users.from_logins(contacts)
-        return kwargs
+            args['contacts'] = context.users.from_logins(contacts)
+        return args
     @classmethod
     def create_or_update(cls, context, datastore, name, **kwargs):
         kwargs = cls.format_metadata(context, **kwargs)
         database = cls.get(datastore = datastore, name = name)
         if database is None:
-            database = cls(datastore = datastore, name = name, **kwargs)
+            # if rights not specified (unknown database detected on a daemon),
+            # default to private
+            rights = kwargs.get('rights', DB_RIGHTS.private.value)
+            database = cls(datastore = datastore, name = name, rights = rights, **kwargs)
         else:
             database.set(**kwargs)
         return database
@@ -79,7 +87,7 @@ class DatabaseMixin:
     def restore_database(cls, context, datastore, **db):
         return cls.create_or_update(context, datastore, **db)
     @classmethod
-    def create_db(cls, context, datastore, name, creation_date = None, **kwargs):
+    def create_db(cls, context, datastore, name, rights, creation_date = None, **kwargs):
         greenlet_env.user = 'etienne'    # TODO: handle this properly
         owner = greenlet_env.user
         if creation_date is None:
@@ -88,6 +96,7 @@ class DatabaseMixin:
         new_db = cls(   datastore = datastore,
                         name = name,
                         owner = owner,
+                        rights = getattr(DB_RIGHTS, rights).value,
                         creation_date = creation_date)
         new_db.update_metadata(context, **kwargs)
         # request daemon to create db on the remote datastore

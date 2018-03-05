@@ -96,9 +96,10 @@ def define_schema(db):
     class Database(db.Entity, DatabaseMixin):
         datastore = Required(Datastore)
         name = Required(str)
-        short_desc = Optional(str)
         creation_date = Optional(epoch)
         tags = Optional(Json, default = [])
+        rights = Required(int)  # see DatabaseMixin.DB_RIGHTS
+        metadata = Optional(Json, default = {})
         owner = Optional(User, reverse = 'db_owner_of')
         users_rw = Set(User, reverse = 'db_rw')
         users_ro = Set(User, reverse = 'db_ro')
