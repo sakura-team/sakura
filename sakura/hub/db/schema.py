@@ -113,6 +113,8 @@ def define_schema(db):
         short_desc = Optional(str)
         creation_date = Optional(epoch)
         columns = Set('DBColumn')
+        primary_key = Required(Json, default = [])
+        foreign_keys = Required(Json, default = [])
         UNIQUE(database, name)
 
     class DBColumn(db.Entity, ColumnMixin):
@@ -122,8 +124,5 @@ def define_schema(db):
         col_type = Required(str)
         daemon_tags = Required(Json, default = [])
         user_tags = Required(Json, default = [])
-        primary_key = Required(bool)
-        foreign_key = Optional('DBColumn', reverse = 'foreign_key_of')
-        foreign_key_of = Set('DBColumn', reverse = 'foreign_key')
         PrimaryKey(table, col_id)
         UNIQUE(table, col_name)

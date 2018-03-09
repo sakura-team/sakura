@@ -37,7 +37,7 @@ def analyse_col_meta(col_comment):
                     col_meta[attr[12:]] = int(value)
     return col_meta
 
-def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta, col_pk, col_fk):
+def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta):
     select_clause_wrapper = '"%(table_name)s"."%(col_name)s"'
     value_wrapper = '%s'
     tags = ()
@@ -69,7 +69,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     metadata_collector.register_column(
             table_name, col_name, col_type,
             select_clause_wrapper, value_wrapper,
-            tags, col_pk, col_fk, **params)
+            tags, **params)
 
 SQL_GET_DS_USERS = '''\
 SELECT  usename, usecreatedb FROM pg_user;
@@ -109,35 +109,50 @@ WHERE c.relkind = 'r'
       AND c.relname !~ '^_';
 '''
 
-# note: we do not handle foreign key definitions spanning on several columns...
 SQL_GET_TABLE_COLUMNS = '''
-    WITH    pk_attnums AS (
-                SELECT unnest(indkey) as pk_attnum
-                FROM pg_index
-                WHERE pg_index.indrelid = '"%(table_name)s"'::regclass::oid
-                AND indisprimary),
-            fk_info AS (
-                SELECT r.conkey[1] as attnum, c.relname as fk_table, fk_a.attname as fk_attname
-                FROM pg_catalog.pg_constraint r, pg_attribute fk_a, pg_catalog.pg_class c
-                WHERE r.conrelid = '"%(table_name)s"'::regclass
-                AND r.contype = 'f'
-                AND fk_a.attrelid = r.confrelid
-                AND fk_a.attnum = r.confkey[1]
-                AND r.confrelid = c.oid
-            )
     SELECT  a.attname,
             format_type(a.atttypid, a.atttypmod) AS type,
-            col_description(a.attrelid, a.attnum) AS comment,
-            a.attnum IN (SELECT pk_attnum FROM pk_attnums) as pk,
-            fk.fk_table,
-            fk.fk_attname
+            col_description(a.attrelid, a.attnum) AS comment
     FROM   pg_attribute a
-    LEFT JOIN fk_info fk
-        ON fk.attnum = a.attnum
     WHERE  a.attrelid = '"%(table_name)s"'::regclass::oid
     AND    a.attnum > 0
     AND    NOT a.attisdropped
     ORDER  BY a.attnum;
+'''
+
+SQL_GET_TABLE_FOREIGN_KEYS = '''
+    WITH fk_info AS (
+        SELECT  unnest(r.conkey) as attnum,
+                unnest(r.confkey) as fk_attnum,
+                r.oid,
+                fk_table.relname as fk_table,
+                fk_table.oid as fk_table_oid
+        FROM    pg_catalog.pg_constraint r,
+                pg_catalog.pg_class fk_table
+        WHERE   r.conrelid = '"%(table_name)s"'::regclass
+          AND   r.contype = 'f'
+          AND   r.confrelid = fk_table.oid)
+    SELECT  json_agg(a.attname) as attnames,
+            json_agg(fk_a.attname) as fk_attnames,
+            fk.fk_table
+    FROM    pg_attribute a, pg_attribute fk_a, fk_info fk
+    WHERE   a.attrelid = '"%(table_name)s"'::regclass
+      AND   a.attnum = fk.attnum
+      AND   fk_a.attrelid = fk.fk_table_oid
+      AND   fk_a.attnum = fk.fk_attnum
+    GROUP BY fk.oid, fk.fk_table;
+'''
+
+SQL_GET_TABLE_PRIMARY_KEY = '''
+    WITH pk_info AS (
+        SELECT  unnest(indkey) as attnum
+        FROM    pg_index
+        WHERE   pg_index.indrelid = '"%(table_name)s"'::regclass::oid
+        AND     indisprimary)
+    SELECT  COALESCE(json_agg(a.attname), '[]') as attnames
+    FROM pg_attribute a, pk_info pk
+    WHERE a.attrelid = '"%(table_name)s"'::regclass
+      AND a.attnum = pk.attnum;
 '''
 
 SQL_CREATE_DB = '''
@@ -150,12 +165,16 @@ REVOKE ALL ON DATABASE "%(db_name)s" FROM PUBLIC;
 '''
 
 SQL_DESC_COLUMN = '"%(col_name)s" %(col_type)s'
-SQL_FK = ' REFERENCES "%(table_name)s" ("%(col_name)s")'
+SQL_PK = 'PRIMARY KEY %(pk_cols)s'
+SQL_FK = 'FOREIGN KEY %(local_columns)s REFERENCES "%(remote_table)s" %(remote_columns)s'
 SQL_CREATE_TABLE = '''
 CREATE TABLE "%(table_name)s" (%(columns_sql)s);
 '''
 
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
+
+def identifier_list_to_sql(l):
+    return "(" + ', '.join('"%s"' % name for name in l) + ")"
 
 class PostgreSQLDBDriver:
     NAME = 'postgresql'
@@ -216,20 +235,33 @@ class PostgreSQLDBDriver:
                 tablename = row[0]
                 metadata_collector.register_table(tablename)
     @staticmethod
+    def collect_table_primary_key(db_conn, metadata_collector, table_name):
+        with db_conn.cursor() as cursor:
+            cursor.execute(SQL_GET_TABLE_PRIMARY_KEY % dict(table_name = table_name))
+            for row in cursor:
+                pk_col_names = row[0]
+                metadata_collector.register_primary_key(table_name, pk_col_names)
+    @staticmethod
+    def collect_table_foreign_keys(db_conn, metadata_collector, table_name):
+        with db_conn.cursor() as cursor:
+            cursor.execute(SQL_GET_TABLE_FOREIGN_KEYS % dict(table_name = table_name))
+            for row in cursor:
+                pk_col_names = row[0]
+                metadata_collector.register_foreign_key(
+                        table_name,
+                        local_columns = row['attnames'],
+                        remote_table = row['fk_table'],
+                        remote_columns = row['fk_attnames'])
+    @staticmethod
     def collect_table_columns(db_conn, metadata_collector, table_name):
         sql = SQL_GET_TABLE_COLUMNS % dict(table_name = table_name)
         with db_conn.cursor() as cursor:
             cursor.execute(sql)
             rows = cursor.fetchall()
-            for col_name, col_pgtype, col_comment, col_pk, \
-                    col_fk_table, col_fk_attname in rows:
-                if col_fk_table is None:
-                    col_fk = None
-                else:
-                    col_fk = (col_fk_table, col_fk_attname)
+            for col_name, col_pgtype, col_comment in rows:
                 col_meta = analyse_col_meta(col_comment)
                 register_column(metadata_collector,
-                    table_name, col_name, col_pgtype, col_meta, col_pk, col_fk)
+                    table_name, col_name, col_pgtype, col_meta)
     @staticmethod
     def create_db(admin_db_conn, db_name, db_owner):
         # CREATE DATABASE requires to set autocommit, and
@@ -243,27 +275,24 @@ class PostgreSQLDBDriver:
                         db_owner = db_owner))
         admin_db_conn.autocommit = saved_mode
     @staticmethod
-    def create_table(db_conn, table_name, columns):
-        pk = tuple(col_name for col_name, col_type, col_pk, col_fk_info \
-                            in columns if col_pk)
+    def create_table(db_conn, table_name, columns, primary_key, foreign_keys):
         columns_sql = []
-        for col_name, col_type, col_pk, col_fk_info in columns:
+        for col_name, col_type in columns:
             col_sql = SQL_DESC_COLUMN % dict(
                 col_name = col_name,
                 col_type = TYPES_SAKURA_TO_PG[col_type]
             )
-            if col_pk and len(pk) == 1:
-                col_sql += ' PRIMARY KEY'
-            if col_fk_info is not None:
-                fk_table_name, fk_col_name = col_fk_info
-                col_sql += SQL_FK % dict(
-                    table_name = fk_table_name,
-                    col_name = fk_col_name
-                )
             columns_sql.append(col_sql)
-        if len(pk) > 1:
-            escaped_pk_cols = tuple('"%s"' % col_name for col_name in pk)
-            constraint_sql = "PRIMARY KEY (" + ', '.join(escaped_pk_cols) + ")"
+        if len(primary_key) > 1:
+            constraint_sql = SQL_PK % dict(
+                pk_cols = identifier_list_to_sql(primary_key))
+            columns_sql.append(constraint_sql)
+        for fk_info in foreign_keys:
+            constraint_sql = SQL_FK % dict(
+                local_columns = identifier_list_to_sql(fk_info['local_columns']),
+                remote_table = fk_info['remote_table'],
+                remote_columns = identifier_list_to_sql(fk_info['remote_columns'])
+            )
             columns_sql.append(constraint_sql)
         sql = SQL_CREATE_TABLE % dict(
             table_name = table_name,

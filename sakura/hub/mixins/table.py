@@ -15,14 +15,27 @@ class TableMixin:
             name = self.name,
             short_desc = self.short_desc,
             creation_date = self.creation_date,
-            columns = tuple(c.pack() for c in self.ordered_columns)
+            columns = tuple(c.pack() for c in self.ordered_columns),
+            primary_key = self.primary_key,
+            foreign_keys = tuple(self.foreign_keys)
         )
-    def create_on_datastore(self):
+    def create_on_datastore(self, context):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
+        # adapt foreign keys because daemon need table names, not IDs
+        fk = []
+        for fk_info in self.foreign_keys:
+            remote_table = context.tables[fk_info['remote_table_id']]
+            fk.append(dict(
+                local_columns = fk_info['local_columns'],
+                remote_columns = fk_info['remote_columns'],
+                remote_table = remote_table.name
+            ))
         self.database.remote_instance.create_table(
                 self.name,
-                tuple(c.pack_for_daemon() for c in self.ordered_columns))
+                tuple(c.pack_for_daemon() for c in self.ordered_columns),
+                self.primary_key,
+                fk)
     def get_range(self, row_start, row_end):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
@@ -51,15 +64,17 @@ class TableMixin:
                 context.columns.restore_column(context, table, col_id, *col) \
                         for col_id, col in enumerate(columns))
         return table
-    def update_foreign_keys(self, context, columns_info):
-        for col_id, col_info in enumerate(columns_info):
-            col_name, col_type, daemon_tags, pk, fk_info = col_info
-            if fk_info is not None:
-                col = context.columns.get(
-                    table = self,
-                    col_id = col_id
-                )
-                col.update_foreign_key(context, *fk_info)
+    def update_foreign_keys(self, context, foreign_keys):
+        self.foreign_keys = []
+        for fk_info in foreign_keys:
+            # daemon sends remote table name, we need its ID
+            remote_table = context.tables.get(database = self.database,
+                                                name = fk_info['remote_table'])
+            self.foreign_keys.append(dict(
+                local_columns = fk_info['local_columns'],
+                remote_columns = fk_info['remote_columns'],
+                remote_table_id = remote_table.id
+            ))
     @classmethod
     def create_table(cls, context, database, name, columns,
                             creation_date = None, **kwargs):
@@ -75,7 +90,7 @@ class TableMixin:
             cols.append(col)
         new_table.set(columns = cols, **kwargs)
         # request daemon to create table on the remote datastore
-        new_table.create_on_datastore()
+        new_table.create_on_datastore(context)
         # return table_id
         context.db.commit()
         return new_table.id

@@ -16,9 +16,15 @@ class DBProber:
         #print("DB probing: found table %s" % table_name)
         self.tables[table_name] = DBTable(self.db, table_name, **metadata)
         self.driver.collect_table_columns(self.db_conn, self, table_name)
+        self.driver.collect_table_primary_key(self.db_conn, self, table_name)
+        self.driver.collect_table_foreign_keys(self.db_conn, self, table_name)
     def register_column(self, table_name, *col_info, **params):
         #print("----------- found column " + str(col_info))
         self.tables[table_name].add_column(*col_info, **params)
+    def register_primary_key(self, table_name, pk_col_names):
+        self.tables[table_name].register_primary_key(pk_col_names)
+    def register_foreign_key(self, table_name, **fk_info):
+        self.tables[table_name].register_foreign_key(**fk_info)
 
 class Database:
     def __init__(self, dbms, db_name, **metadata):
@@ -57,8 +63,9 @@ class Database:
             owner = self.owner,
             users = self.users
         )
-    def create_table(self, table_name, columns):
+    def create_table(self, table_name, columns, primary_key, foreign_keys):
         db_conn = self.connect()
-        self.dbms.driver.create_table(db_conn, table_name, columns)
+        self.dbms.driver.create_table(db_conn,
+                table_name, columns, primary_key, foreign_keys)
         db_conn.close()
         self.refresh_tables()
