@@ -516,13 +516,8 @@ function datasets_foreign_modal(from_what) {
     database_infos.tables.forEach( function (ds) {
         //as this table a primary key ?
         var as_a_pkey = false;
-        ds.columns.forEach( function(c) {
-            if (c[3] > 0) {
-                as_a_pkey = true;
-                found_at_least_one = true;
-            }
-        });
-        if (as_a_pkey) {
+        if (ds.primary_key.length > 0) {
+            found_at_least_one = true;
             options_ds += '<option value='+ds.table_id+'>'+ds.name+'</option>';
         }
     });
@@ -554,8 +549,10 @@ function datasets_creation_fill_fkey_matrix(from_what) {
     database_infos.tables.forEach( function (ds) {
         if (ds.table_id == ref_id) {
             ds.columns.forEach( function(c) {
-                ref_cols.push(c[0]);
-                ref_types.push(c[1]);
+                if (ds.primary_key.indexOf(c[0]) != -1) {
+                    ref_cols.push(c[0]);
+                    ref_types.push(c[1]);
+                }
             });
         }
     });
@@ -704,7 +701,7 @@ function datasets_creation_check_mat_filled(from_what) {
     var nb_cols = 0;
     database_infos.tables.forEach( function (ds) {
         if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
-            nb_cols = ds.columns.length;
+            nb_cols = ds.primary_key.length;
         }
     });
     
@@ -738,9 +735,7 @@ function datasets_creation_new_fkey(from_what) {
     database_infos.tables.forEach( function (ds) {
         if (ds.table_id == $('#datasets_creation_fkey_modal_select_table').val()) {
             new_fkey.remote_table   = {'name': ds.name, 'id': ds.table_id};
-            ds.columns.forEach( function(c) {
-                cols.push(c[0]);
-            });
+            cols = ds.primary_key;
         }
     });
     
@@ -783,8 +778,11 @@ function datasets_creation_new_fkey(from_what) {
         td.append(span);
         new_row.append(td);
         
-        new_fkey.remote_table   = new_fkey.remote_table.id;
-        datasets_creation_fkeys.push(new_fkey);
+        datasets_creation_fkeys.push({
+                    'local_columns': new_fkey.local_columns,
+                    'remote_table_id': new_fkey.remote_table.id,
+                    'remote_columns': new_fkey.remote_columns
+        });
     }
     
     $('#datasets_creation_fkey_modal').modal('hide');
