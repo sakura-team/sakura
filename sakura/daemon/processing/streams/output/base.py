@@ -42,7 +42,7 @@ class OutputStreamBase(Registry):
         # return empty chunk
         if in_cache:
             self.range_iter_cache.forget(it)
-        return NumpyChunk(0, self.get_dtype())
+        return NumpyChunk.empty(self.get_dtype())
     def get_dtype(self):
         return np.dtype(list(col.get_dtype() for col in self.columns))
     def select_columns(self, *columns):
