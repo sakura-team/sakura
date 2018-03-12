@@ -189,15 +189,28 @@ function showDiv(event, dir, div_id) {
         
         sakura.common.ws_request('get_database_info', [web_interface_current_db_id], {}, function(db_info) {
             $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-            if (db_info.short_desc.length > 2) {
+            console.log(db_info);
+            /*if (db_info.short_desc.length > 2) {
                 $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
             }
             else {
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-            }
+            }*/
             //Filling MetaData
             recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
             recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
+            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
+            
+            sakura.common.ws_request('list_datastores', [], {}, function(lds) {
+                lds.forEach( function(ds) {
+                    if (ds.datastore_id == db_info.datastore_id)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
+                });
+            });
+            
+            var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
+            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", date);
+            
         });
     }
     else if (dir.indexOf("Work") != -1 && dir != 'Datas') {
