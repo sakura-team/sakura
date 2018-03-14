@@ -158,7 +158,10 @@ class GuiToHubAPI(object):
         database = self.context.databases[database_id]
         return self.context.tables.create_table(
                         self.context, database, name, columns, **kwargs)
-
+    
+    def delete_table(self, table_id):
+        return None
+    
     def update_table_info(self, table_id, **kwargs):
         # optional arguments of kwargs: name, description, creation_date
         self.context.tables[table_id].set(**kwargs)
