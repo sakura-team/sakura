@@ -188,29 +188,73 @@ function showDiv(event, dir, div_id) {
         $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Historic', 'idDatasMainToFullfill');");
         
         sakura.common.ws_request('get_database_info', [web_interface_current_db_id], {}, function(db_info) {
-            $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-            console.log(db_info);
-            /*if (db_info.short_desc.length > 2) {
-                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
-            }
-            else {
-                $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-            }*/
-            //Filling MetaData
-            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
-            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
-            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
             
-            sakura.common.ws_request('list_datastores', [], {}, function(lds) {
-                lds.forEach( function(ds) {
-                    if (ds.datastore_id == db_info.datastore_id)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
+            $('#web_interface_database_metadata').empty();
+            $('#web_interface_database_metadata').load('divs/templates/metadata.html', function() {
+                console.log(db_info);
+                
+                //Name
+                $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
+                
+                //Description
+                if (db_info.short_desc)
+                    $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
+                else
+                    $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+                
+                ///////MetaData
+                //Datastore Host
+                sakura.common.ws_request('list_datastores', [], {}, function(lds) {
+                    lds.forEach( function(ds) {
+                        if (ds.datastore_id == db_info.datastore_id)
+                        recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
+                    });
                 });
+                
+                //Owner
+                if (db_info.owner && db_info.owner != 'null')
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", '..');
+                
+                //Rights
+                if (db_info.rights)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", '..');
+                
+                //Creation date
+                if (db_info.creation_date) {
+                    var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", date);
+                }
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", '..');
+                
+                //Agent Type
+                if (db_info.agent_type)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", db_info.agent_type);
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", '..');
+                
+                //Agent Type
+                if (db_info.licence)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", db_info.licence);
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", '..');
+                
+                //Domain Topic
+                if (db_info.topic)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", db_info.topic);
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", '..');
+                
+                //Data Type
+                if (db_info.data_type)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", db_info.data_type);
+                else
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", '..');
             });
-            
-            var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
-            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", date);
-            
         });
     }
     else if (dir.indexOf("Work") != -1 && dir != 'Datas') {
