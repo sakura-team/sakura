@@ -1,7 +1,7 @@
 /// LIG March 2017
 
 ////////////GLOBALS
-var web_interface_current_db_id = -1;
+var web_interface_current_id = -1;
 
 
 ////////////FUNCTIONS
@@ -26,11 +26,99 @@ function recursiveReplace(node, init_text, new_text) {
 }
 
 
+function fill_database_metadata(db_id) {
+    sakura.common.ws_request('get_database_info', [db_id], {}, function(db_info) {
+        console.log(db_info);
+        $('#web_interface_database_metadata').empty();
+        $('#web_interface_database_metadata').load('divs/templates/datas_metadata.html', function() {
+            
+            //Name
+            $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
+            
+            //Description
+            if (db_info.short_desc)
+                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
+            else
+                $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+            
+            ///////MetaData
+            //Datastore Host
+            sakura.common.ws_request('list_datastores', [], {}, function(lds) {
+                lds.forEach( function(ds) {
+                    if (ds.datastore_id == db_info.datastore_id)
+                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
+                });
+            });
+            
+            //Owner
+            if (db_info.owner && db_info.owner != 'null')
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", '..');
+            
+            //Rights
+            if (db_info.rights)
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", '..');
+            
+            //Creation date
+            if (db_info.creation_date) {
+                var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", date);
+            }
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", '..');
+            
+            //Agent Type
+            if (db_info.agent_type)
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", db_info.agent_type);
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", '..');
+            
+            //Agent Type
+            if (db_info.licence)
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", db_info.licence);
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", '..');
+            
+            //Domain Topic
+            if (db_info.topic)
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", db_info.topic);
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", '..');
+            
+            //Data Type
+            if (db_info.data_type)
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", db_info.data_type);
+            else
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", '..');
+        });
+    });
+}
+
+
+function fill_analysis_metadata(ana_id) {
+    sakura.common.ws_request('get_analysis_info', [ana_id], {}, function(ana_info) {
+        //Name
+        $($('#analysis_main_name')[0]).html('&nbsp;&nbsp;<em>' + ana_info.name + '</em>&nbsp;&nbsp;');
+        
+        //Description
+        if (ana_info.short_desc)
+            $($('#analysis_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + ana_info.short_desc + '</font>&nbsp;&nbsp;');
+        else
+            $($('#analysis_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+    });
+}
+
+
 function showDiv(event, dir, div_id) {
     
     //todo : déplacer les event.preventDefault() ici ?
     //save mode ?
     
+    //Commented for know, just for clarifying the code and avoiding bag behaviors
+    /*
     if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
         res=confirm("Leave edit mode?");
         if (res) {
@@ -53,11 +141,11 @@ function showDiv(event, dir, div_id) {
             event.preventDefault();
             return;
         }
-    }
+    }*/
     
     //set url
     if (event instanceof PopStateEvent) {
-        /* rien dans l'history */
+        // rien dans l'history
     }
     else {
         var stateObj = { where: dir };
@@ -68,6 +156,7 @@ function showDiv(event, dir, div_id) {
             tmp=0;
         }
     }
+    
     
     //normalize dir
     if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1)) {
@@ -109,6 +198,7 @@ function showDiv(event, dir, div_id) {
     });
     
     
+    
     if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
     }
@@ -142,7 +232,7 @@ function showDiv(event, dir, div_id) {
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
     
-    if (window.location.toString().indexOf('tmpData') == -1) {
+    if (window.location.toString().indexOf('tmpData') == -1 || window.location.toString().indexOf('tmpAnalysis')) {
         var tab = window.location.toString().split("/");
          if (tab.length == 5) {
             tab = tab[tab.length-1].split("-");
@@ -150,9 +240,12 @@ function showDiv(event, dir, div_id) {
         else {
             tab = tab[tab.length-2].split("-");
         }
-        web_interface_current_db_id = parseInt(tab[tab.length -1]);
+        web_interface_current_id = parseInt(tab[tab.length -1]);
+        console.log("web_interface_current_id", web_interface_current_id);
     }
     
+    ////////////////////////////////////////////////////////////////////////////////
+    //DATA
     if (div_id == 'idDatasMainToFullfill') {
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
         if (dir.indexOf('Main') != -1) {
@@ -160,6 +253,8 @@ function showDiv(event, dir, div_id) {
             $('#databases_buttons_main').addClass("btn-primary");
             $('#databases_buttons_work').removeClass("btn-primary");
             $('#databases_buttons_historic').removeClass("btn-primary");
+            
+            fill_database_metadata(web_interface_current_id);
             
             document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         }
@@ -183,101 +278,95 @@ function showDiv(event, dir, div_id) {
         $('#databases_buttons_work').removeClass("btn-primary");
         $('#databases_buttons_historic').removeClass("btn-primary");
         
-        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/', 'idDatasMainToFullfill');");
-        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Work', 'idDatasMainToFullfill');");
-        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Historic', 'idDatasMainToFullfill');");
+        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
+        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
+        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'idDatasMainToFullfill');");
         
-        sakura.common.ws_request('get_database_info', [web_interface_current_db_id], {}, function(db_info) {
-            
-            $('#web_interface_database_metadata').empty();
-            $('#web_interface_database_metadata').load('divs/templates/metadata.html', function() {
-                console.log(db_info);
-                
-                //Name
-                $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-                
-                //Description
-                if (db_info.short_desc)
-                    $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
-                else
-                    $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-                
-                ///////MetaData
-                //Datastore Host
-                sakura.common.ws_request('list_datastores', [], {}, function(lds) {
-                    lds.forEach( function(ds) {
-                        if (ds.datastore_id == db_info.datastore_id)
-                        recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
-                    });
-                });
-                
-                //Owner
-                if (db_info.owner && db_info.owner != 'null')
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", '..');
-                
-                //Rights
-                if (db_info.rights)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", '..');
-                
-                //Creation date
-                if (db_info.creation_date) {
-                    var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", date);
-                }
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", '..');
-                
-                //Agent Type
-                if (db_info.agent_type)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", db_info.agent_type);
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", '..');
-                
-                //Agent Type
-                if (db_info.licence)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", db_info.licence);
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", '..');
-                
-                //Domain Topic
-                if (db_info.topic)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", db_info.topic);
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", '..');
-                
-                //Data Type
-                if (db_info.data_type)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", db_info.data_type);
-                else
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", '..');
-            });
-        });
+        fill_database_metadata(web_interface_current_id);
     }
-    else if (dir.indexOf("Work") != -1 && dir != 'Datas') {
+    else if (dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
         
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
         $('#databases_buttons_main').removeClass("btn-primary");
         $('#databases_buttons_work').addClass("btn-primary");
         $('#databases_buttons_historic').removeClass("btn-primary");
         
-        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/', 'idDatasMainToFullfill');");
-        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Work', 'idDatasMainToFullfill');");
-        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_db_id+"/Historic', 'idDatasMainToFullfill');");
+        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
+        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
+        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'idDatasMainToFullfill');");
         
-        sakura.common.ws_request('get_database_info', [web_interface_current_db_id], {}, function(db_info) {
+        sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(db_info) {
             $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-            if (db_info.short_desc.length > 2) {
+            if (db_info.short_desc)
                 $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
-            }
-            else {
+            else
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-            }
-            //Filling MetaData            
-            recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_name_", db_info.name);
+        });
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    //ANALYSIS
+    console.log(div_id, dir);
+    if (div_id == 'idAnalysisMainToFullfill') {
+        document.getElementById('idDivAnalysestmpAnalysisMain').style.display='inline';
+        if (dir.indexOf('Main') != -1) {
+            console.log("META");
+            $('#analysis_buttons_main').addClass("btn-primary");
+            $('#analysis_buttons_work').removeClass("btn-primary");
+            $('#analysis_buttons_historic').removeClass("btn-primary");
+            
+            fill_analysis_metadata(web_interface_current_id);
+            
+            document.getElementById('idDivAnalysestmpAnalysisMeta').style.display='inline';
+        }
+        else if (dir.indexOf('Work') != -1) {
+            console.log("WORK");
+            $('#analysis_buttons_main').removeClass("btn-primary");
+            $('#analysis_buttons_work').addClass("btn-primary");
+            $('#analysis_buttons_historic').removeClass("btn-primary");
+        }
+        else if (dir.indexOf('Historic') != -1) {
+            console.log("HISTORY");
+            $('#analysis_buttons_main').removeClass("btn-primary");
+            $('#analysis_buttons_work').removeClass("btn-primary");
+            $('#analysis_buttons_historic').addClass("btn-primary");
+        }
+        
+        fill_analysis_metadata(web_interface_current_id);
+    }
+    else if (dir.indexOf("Analysis") != -1 && dir != 'Analyses' && dir.indexOf("Main") != -1) {
+        
+        document.getElementById('idDivAnalysestmpAnalysisMeta').style.display='inline';
+        $('#analysis_buttons_main').addClass("btn-primary");
+        $('#analysis_buttons_work').removeClass("btn-primary");
+        $('#analysis_buttons_historic').removeClass("btn-primary");
+        
+        $('#analysis_buttons_main').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/', 'idAnalysisMainToFullfill');");
+        $('#analysis_buttons_work').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/Work', 'idAnalysisMainToFullfill');");
+        $('#analysis_buttons_historic').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/Historic', 'idAnalysisMainToFullfill');");
+        
+        $('#web_interface_analysis_metadata').empty();
+        $('#web_interface_analysis_metadata').load('divs/templates/analysis_metadata.html');
+        
+        fill_analysis_metadata(web_interface_current_id);
+    }
+    else if (dir.indexOf("Work") != -1 && dir != 'Analyses' && dir.indexOf("Analyses") != -1) {
+        
+        document.getElementById('idDivAnalysestmpAnalysisMain').style.display='inline';
+        $('#analysis_buttons_main').removeClass("btn-primary");
+        $('#analysis_buttons_work').addClass("btn-primary");
+        $('#analysis_buttons_historic').removeClass("btn-primary");
+        
+        $('#analysis_buttons_main').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/', 'idAnalysisMainToFullfill');");
+        $('#analysis_buttons_work').attr('onclick', "showDiv(event, 'Analyses/analysis-"+web_interface_current_id+"/Work', 'idAnalysisMainToFullfill');");
+        $('#analysis_buttons_historic').attr('onclick', "showDiv(event, 'Analysis/analysis-"+web_interface_current_id+"/Historic', 'idAnalysisMainToFullfill');");
+        
+        sakura.common.ws_request('get_analysis_info', [web_interface_current_id], {}, function(info) {
+            $($('#analysis_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
+            if (info.short_desc)
+                $($('#analysis_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
+            else
+                $($('#analysis_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
         });
     }
     
@@ -286,10 +375,11 @@ function showDiv(event, dir, div_id) {
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             var aos = actionsOnShow[i];
+            console.log(aos);
             sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
                 if (aos.id == 'iframe_datasets') {
                     //idElt = getIdFromUrl(window.location.toString());
-                    aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_db_id+"&session-secret="+ss;
+                    aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_id+"&session-secret="+ss;
                 }
                 else if (aos.id == 'iframe_workflow') {
                     aos.src = "/modules/workflow/index.html?session-secret="+ss;

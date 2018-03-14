@@ -172,6 +172,14 @@ class GuiToHubAPI(object):
     def delete_table(self, table_id):
         return self.context.tables[table_id].delete_table()
 
+    ########################################
+    # Analysis
+    def get_analysis_info(self, analysis_id):
+        return {'name': 'texting name', 'short_desc': 'testing short description'}
+    
+    def list_analyses(self):
+        return None
+    
     # Session management
     ####################
     def renew_session(self):
