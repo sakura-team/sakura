@@ -138,7 +138,7 @@ class GuiToHubAPI(object):
 
     def update_database_info(self, database_id, **kwargs):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
-        self.context.databases[database_id].update_metadata(self.context, **kwargs)
+        self.context.databases[database_id].update_attributes(self.context, **kwargs)
 
     def list_expected_columns_tags(self, datastore_id):
         # il y a les tags standards auxquels on ajoute
