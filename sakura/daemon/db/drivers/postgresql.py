@@ -171,6 +171,8 @@ SQL_CREATE_TABLE = '''
 CREATE TABLE "%(table_name)s" (%(columns_sql)s);
 '''
 
+SQL_DROP_TABLE = '''DROP TABLE "%(table_name)s"'''
+
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 
 def identifier_list_to_sql(l):
@@ -300,6 +302,11 @@ class PostgreSQLDBDriver:
         )
         with db_conn.cursor() as cursor:
             cursor.execute(sql)
+        db_conn.commit()
+    @staticmethod
+    def delete_table(db_conn, table_name):
+        with db_conn.cursor() as cursor:
+            cursor.execute(SQL_DROP_TABLE % dict(table_name = table_name))
         db_conn.commit()
     @staticmethod
     def add_rows(db_conn, table_name, value_wrappers, rows):

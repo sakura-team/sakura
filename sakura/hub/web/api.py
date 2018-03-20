@@ -169,6 +169,9 @@ class GuiToHubAPI(object):
     def get_rows_from_table(self, table_id, row_start, row_end):
         return self.context.tables[table_id].get_range(row_start, row_end)
 
+    def delete_table(self, table_id):
+        return self.context.tables[table_id].delete_table()
+
     # Session management
     ####################
     def renew_session(self):

@@ -36,6 +36,11 @@ class TableMixin:
                 tuple(c.pack_for_daemon() for c in self.ordered_columns),
                 self.primary_key,
                 fk)
+    def delete_table(self):
+        # delete table on datastore
+        self.database.remote_instance.delete_table(self.name)
+        # delete instance in local db
+        self.delete()
     def get_range(self, row_start, row_end):
         greenlet_env.user = 'etienne'               # TODO: handle this properly
         greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly

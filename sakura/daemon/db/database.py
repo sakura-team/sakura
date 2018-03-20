@@ -69,3 +69,8 @@ class Database:
                 table_name, columns, primary_key, foreign_keys)
         db_conn.close()
         self.refresh_tables()
+    def delete_table(self, table_name):
+        db_conn = self.connect()
+        self.dbms.driver.delete_table(db_conn, table_name)
+        db_conn.close()
+        self.refresh_tables()
