@@ -33,10 +33,15 @@ class OutputStreamBase(Registry):
             it = stream.chunks(chunk_len, row_start)
         # read next chunk and return it
         for chunk in it:
-            # update info about last iterator
-            new_row_start = row_start + chunk.size
-            self.range_iter_cache.save(it,
-                new_row_start, new_row_start + chunk_len, columns, filters)
+            if chunk.size < chunk_len:
+                # end of iterator, remove from cache if present
+                if in_cache:
+                    self.range_iter_cache.forget(it)
+            else:
+                # update info about last iterator
+                new_row_start = row_start + chunk.size
+                self.range_iter_cache.save(it,
+                    new_row_start, new_row_start + chunk_len, columns, filters)
             return chunk
         # if we are here, stream has ended, forget about iterator and
         # return empty chunk
