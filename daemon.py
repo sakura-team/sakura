@@ -7,7 +7,8 @@ from sakura.daemon.loading import load_operator_classes, \
                                 load_datastores
 from sakura.daemon.engine import DaemonEngine
 from sakura.daemon.greenlets import \
-            RPCServerGreenlet, RPCClientGreenlet
+            RPCServerGreenlet, RPCClientGreenlet, PlannerGreenlet
+from sakura.daemon.processing.cache import Cache
 
 def run():
     set_unbuffered_stdout()
@@ -18,19 +19,25 @@ def run():
     datastores = load_datastores()
     engine = DaemonEngine(op_classes, datastores)
 
+    # instanciate greenlets
+    server_greenlet = RPCServerGreenlet(engine)
+    client_greenlet = RPCClientGreenlet(engine)
+    planner_greenlet = PlannerGreenlet()
+
     # prepare greenlets
-    g1 = RPCServerGreenlet(engine)
-    g2 = RPCClientGreenlet(engine)
     try:
-        g1.prepare()
-        g2.prepare()
+        server_greenlet.prepare()
+        client_greenlet.prepare()
+        Cache.plan_cleanup(planner_greenlet)
     except Exception as e:
         sys.stderr.write('ERROR: %s\nAborting.\n' % str(e))
         sys.exit()
 
     print('Started.')
     # spawn them and wait until they end.
-    wait_greenlets(g1.spawn(),g2.spawn())
+    wait_greenlets( server_greenlet.spawn(),
+                    client_greenlet.spawn(),
+                    planner_greenlet.spawn())
     print('**out**')
 
 if __name__ == "__main__":

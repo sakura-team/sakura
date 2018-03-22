@@ -5,8 +5,8 @@ from sakura.daemon.db.query import SQLQuery
 
 class SQLStreamIterator:
     def __init__(self, stream, chunk_size, offset):
-        self.cursor = stream.open_cursor(offset)
         self.chunk_size = chunk_size
+        self.cursor = stream.open_cursor(offset)
         if self.chunk_size == None:
             self.chunk_size = self.cursor.arraysize
         self.dtype = stream.get_dtype()
@@ -25,11 +25,10 @@ class SQLStreamIterator:
         return NumpyChunk.create(chunk_data, self.dtype)
     def release(self):
         if not self.released:
-            print('cursor released')
             self.cursor.close()
+            print('cursor released')
             self.released = True
     def __del__(self):
-        print('SQLStreamIterator.__del__')
         self.release()
 
 class SQLStream(OutputStreamBase):

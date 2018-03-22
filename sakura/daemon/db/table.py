@@ -8,6 +8,12 @@ class DBTable:
         self.columns = []
         self.primary_key = []
         self.foreign_keys = []
+        self._stream = None
+    @property
+    def stream(self):
+        if self._stream is None:
+            self._stream = SQLTableStream(self.name, self)
+        return self._stream
     def add_column(self, *col_info, **params):
         col = DBColumn(self.name, *col_info, **params)
         self.columns.append(col)
@@ -16,8 +22,7 @@ class DBTable:
                     primary_key = self.primary_key,
                     foreign_keys = self.foreign_keys)
     def get_range(self, row_start, row_end):
-        stream = SQLTableStream(self.name, self)
-        return stream.get_range(row_start, row_end)
+        return self.stream.get_range(row_start, row_end)
     def add_rows(self, rows):
         value_wrappers = tuple(col.value_wrapper for col in self.columns)
         db_conn = self.db.connect()

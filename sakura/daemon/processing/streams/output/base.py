@@ -3,6 +3,12 @@ from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.cache import Cache
 from sakura.daemon.processing.column import Column
+from time import time
+
+# We measure the delay <d> it took to compute iterator
+# values, and ensure iterator is kept in cache for
+# at least a delay <d>*<factor>.
+CACHE_VALUE_FACTOR = 10.0
 
 class OutputStreamBase(Registry):
     def __init__(self, label):
@@ -19,9 +25,10 @@ class OutputStreamBase(Registry):
                     columns = self.columns,
                     length = self.length)
     def get_range(self, row_start, row_end, columns=None, filters=()):
+        startup_time = time()
         chunk_len = row_end-row_start
         # try to reuse the last iterator
-        it = self.range_iter_cache.get(row_start, row_end, columns, filters)
+        it, compute_delay = self.range_iter_cache.get(key=(row_start, row_end, columns, filters))
         in_cache = it is not None
         # otherwise, create a new iterator
         if not in_cache:
@@ -31,6 +38,7 @@ class OutputStreamBase(Registry):
             for condition in filters:
                 stream = stream.filter(condition)
             it = stream.chunks(chunk_len, row_start)
+            compute_delay = 0
         # read next chunk and return it
         for chunk in it:
             if chunk.size < chunk_len:
@@ -40,8 +48,12 @@ class OutputStreamBase(Registry):
             else:
                 # update info about last iterator
                 new_row_start = row_start + chunk.size
-                self.range_iter_cache.save(it,
-                    new_row_start, new_row_start + chunk_len, columns, filters)
+                compute_delay += time()- startup_time
+                expiry_delay = compute_delay * CACHE_VALUE_FACTOR
+                self.range_iter_cache.save(it, expiry_delay,
+                    key=(new_row_start, new_row_start + chunk_len, columns, filters),
+                    context_info=compute_delay
+                )
             return chunk
         # if we are here, stream has ended, forget about iterator and
         # return empty chunk
