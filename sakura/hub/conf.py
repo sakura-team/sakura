@@ -14,6 +14,7 @@ def load_conf():
                 type=str,
                 default='workflow')
     defaults = dict(
-        work_dir = '/var/lib/sakura'
+        work_dir = '/var/lib/sakura',
+        mode = 'prod'
     )
     return merge_args_and_conf(parser, defaults)

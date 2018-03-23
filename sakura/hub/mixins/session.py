@@ -1,4 +1,5 @@
 import time
+import sakura.hub.conf as conf
 
 class SessionMixin:
     UNUSED_DELAY = 360
@@ -37,7 +38,11 @@ class SessionMixin:
     @classmethod
     def new_session(cls, context):
         timeout = time.time() + SessionMixin.UNUSED_DELAY
-        session = cls(timeout = timeout)
+        # auto login if debug mode
+        user = None
+        if conf.mode == 'debug' and hasattr(conf.debug, 'autologin'):
+            user = context.users.get(login = conf.debug.autologin)
+        session = cls(timeout = timeout, user = user)
         context.db.commit()
         return session
     @classmethod
