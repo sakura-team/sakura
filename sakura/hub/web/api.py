@@ -141,13 +141,7 @@ class GuiToHubAPI(object):
         self.context.databases[database_id].update_attributes(self.context, **kwargs)
 
     def list_expected_columns_tags(self, datastore_id):
-        # il y a les tags standards auxquels on ajoute
-        # les tags deja rencontres sur ce datastore
-        return (
-            ("statistics", ("qualitative", "quantitative", "textual")),
-            ("processing", ("sorted_asc", "sorted_desc", "unique")),
-            ("others", ("longitude", "latitude"))
-        )
+        return self.context.datastores[datastore_id].list_expected_columns_tags()
 
     def get_table_info(self, table_id):
         return self.context.tables[table_id]

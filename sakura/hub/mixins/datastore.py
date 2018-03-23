@@ -1,4 +1,5 @@
 from sakura.hub.tools import DaemonDataException
+from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
 
 DATASTORE_USER_ERROR = """\
 %(driver_label)s datastore at %(host)s refers to nonexistent Sakura user "%(login)s".
@@ -12,6 +13,15 @@ class DatastoreMixin:
     @property
     def remote_instance(self):
         return self.daemon.api.datastores[(self.host, self.driver_label)]
+    def list_expected_columns_tags(self):
+        # list tags already seen on this datastore
+        datastore_tags = set()
+        for db in self.databases:
+            for tbl in db.tables:
+                for col in tbl.columns:
+                    datastore_tags |= set(col.user_tags)
+        datastore_tags = tuple(sorted(datastore_tags))
+        return STANDARD_COLUMN_TAGS + (("others", datastore_tags),)
     def pack(self):
         result = dict(
             daemon_id = self.daemon.id,

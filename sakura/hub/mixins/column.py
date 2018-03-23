@@ -1,3 +1,8 @@
+STANDARD_COLUMN_TAGS = (
+    ("statistics", ("qualitative", "quantitative", "textual")),
+    ("processing", ("sorted_asc", "sorted_desc", "unique"))
+)
+
 class ColumnMixin:
     def pack(self):
         # TODO: we should not expose daemon tags here, they

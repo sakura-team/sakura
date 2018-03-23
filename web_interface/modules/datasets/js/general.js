@@ -125,8 +125,7 @@ function recover_datasets() {
         $('#datasets_open_creation_button').attr('onclick', 'datasets_open_creation('+database_id+');');
         
         //Ask for the existing tags
-        var datastore_id = 0;   // TODO
-        sakura.common.ws_request('list_expected_columns_tags', [datastore_id], {}, function (tags_list) {
+        sakura.common.ws_request('list_expected_columns_tags', [database_infos.datastore_id], {}, function (tags_list) {
             columns_tags_list = tags_list;
         });
     });
