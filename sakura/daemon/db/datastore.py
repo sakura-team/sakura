@@ -33,7 +33,7 @@ class DataStoreProber:
 
 class DataStore:
     def __init__(self, host, datastore_admin, sakura_admin,
-                 driver_label, adapter_label):
+                 driver_label, adapter_label, access_scope):
         self.host = host
         self.datastore_admin = datastore_admin
         self.sakura_admin = sakura_admin
@@ -43,6 +43,7 @@ class DataStore:
         self._databases = None    # not probed yet
         self._online = None       # not probed yet
         self.adapter = adapters.get(adapter_label)
+        self.access_scope = access_scope
     def admin_connect(self, db_name = None):
         info = dict(
             host = self.host,
@@ -81,7 +82,8 @@ class DataStore:
             host = self.host,
             driver_label = self.driver_label,
             admin = self.sakura_admin,
-            online = self.online
+            online = self.online,
+            access_scope = self.access_scope
         )
         if self.online:
             databases_overview = tuple(

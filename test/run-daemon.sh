@@ -50,6 +50,7 @@ EOF
 #               "password": "<dbms-admin-password>"
 #           },
 #           "sakura-admin": "<sakura-username>",
+#           "access-scope": "<public|restricted|private>",
 #           "driver": "postgresql"
 #       }
 #   ]

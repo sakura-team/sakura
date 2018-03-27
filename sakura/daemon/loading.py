@@ -35,7 +35,8 @@ def load_datastores():
             datastore_admin = ds_conf['datastore-admin'],
             sakura_admin = ds_conf['sakura-admin'],
             driver_label = ds_conf['driver'],
-            adapter_label = ds_conf.get('adapter', 'native')
+            adapter_label = ds_conf.get('adapter', 'native'),
+            access_scope = ds_conf.get('access-scope', 'private')
         )
         ds.refresh()
         datastores.append(ds)

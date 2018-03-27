@@ -89,6 +89,7 @@ def define_schema(db):
         host = Required(str)
         driver_label = Required(str)
         admin = Optional(User, reverse = 'ds_admin_of')
+        access_scope = Required(int)  # see sakura/hub/access.py
         users_rw = Set(User, reverse = 'ds_rw')
         users_ro = Set(User, reverse = 'ds_ro')
         databases = Set('Database')

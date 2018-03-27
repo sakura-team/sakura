@@ -1,5 +1,6 @@
 from sakura.hub.tools import DaemonDataException
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
+from sakura.hub.access import ACCESS_SCOPES
 
 DATASTORE_USER_ERROR = """\
 %(driver_label)s datastore at %(host)s refers to nonexistent Sakura user "%(login)s".
@@ -29,7 +30,8 @@ class DatastoreMixin:
             online = self.online and self.daemon.connected,
             host = self.host,
             driver_label = self.driver_label,
-            admin = self.admin.login
+            admin = self.admin.login,
+            access_scope = ACCESS_SCOPES(self.access_scope).name
         )
         if self.online:
             result.update(
@@ -54,12 +56,17 @@ class DatastoreMixin:
             else:
                 self.users_ro.add(u)
     @classmethod
-    def create_or_update(cls, context, daemon, host, driver_label, online, admin, **kwargs):
+    def create_or_update(cls, context, daemon, host, driver_label, online,
+                                    admin, access_scope, **kwargs):
+        access_scope = getattr(ACCESS_SCOPES, access_scope).value
         datastore = cls.get(daemon = daemon, host = host, driver_label = driver_label)
         if datastore is None:
-            datastore = cls(daemon = daemon, host = host, driver_label = driver_label, online = online)
+            # new datastore attached to daemon
+            datastore = cls(daemon = daemon, host = host, driver_label = driver_label,
+                            online = online, access_scope = access_scope)
         else:
             datastore.online = online
+            datastore.access_scope = access_scope
         admin_user = context.users.get(login = admin)
         if admin_user == None:
             raise DaemonDataException(DATASTORE_ADMIN_ERROR % dict(
