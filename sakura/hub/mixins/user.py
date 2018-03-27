@@ -2,6 +2,7 @@
 """User registration or login related"""
 import os, hashlib, binascii, re, base64, smtplib, random, bottle
 from sakura.hub.myemail import sendmail
+from sakura.common.errors import APIRequestError
 
 RECOVERY_MAIL_SUBJECT = "Password recovery"
 RECOVERY_MAIL_CONTENT = '''
@@ -35,9 +36,9 @@ class UserMixin:
     def new_user(cls, context, login, email, password, **user_info):
         # print (type(cls))
         if cls.get(login = login) is not None:
-            raise ValueError('Login name "%s" already exists!' % login)
+            raise APIRequestError('Login name "%s" already exists!' % login)
         if cls.get(email = email) is not None:
-            raise ValueError('Email "%s" already exists!' % email)
+            raise APIRequestError('Email "%s" already exists!' % email)
         # all checks for existing user completed here, proceeding to new user registration
         salt, hashed_password = cls.hash_password(password)
         cls(login = login, email = email, password_salt = salt, password_hash = hashed_password, **user_info)
@@ -52,7 +53,7 @@ class UserMixin:
         if user is None:
             user = cls.get(login = login_or_email)
         if user is None:
-            raise ValueError('Login and/or email "%s" is unknown.' % login_or_email)
+            raise APIRequestError('Login and/or email "%s" is unknown.' % login_or_email)
         return user
 
     @classmethod
@@ -65,7 +66,7 @@ class UserMixin:
         # recalculate the hash from this password to match it agains the db entry
         salt, hashed_password = self.hash_password(password, self.password_salt)
         if self.password_hash != hashed_password:
-            raise ValueError(err_msg)
+            raise APIRequestError(err_msg)
 
     @classmethod
     def recover_password(cls, context, login_or_email):
@@ -88,14 +89,14 @@ class UserMixin:
             try:
                 secret = int(curr_passwd_or_rec_token[4:])
             except:
-                raise ValueError('Recovery token is invalid.')
+                raise APIRequestError('Recovery token is invalid.')
             login = context.pw_recovery_secrets.get_obj(secret)
             if login is None:
-                raise ValueError('Recovery token is invalid (possibly expired).')
+                raise APIRequestError('Recovery token is invalid (possibly expired).')
             # we have a valid recovery token
             user = cls.get(login = login)
             if login_or_email not in (user.login, user.email):
-                raise ValueError('Recovery token does not match login or email entry.')
+                raise APIRequestError('Recovery token does not match login or email entry.')
         if user is None:
             user = cls.from_credentials(context, login_or_email, curr_passwd_or_rec_token)
         # all is ok, update password

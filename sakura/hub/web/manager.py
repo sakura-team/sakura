@@ -1,5 +1,6 @@
 import collections
 from sakura.common.io import LocalAPIHandler, compactjson
+from sakura.common.errors import APIRequestError
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
 
@@ -29,7 +30,7 @@ class ResultWrapper:
         return (True, result)
     @staticmethod
     def on_exception(exc):
-        if isinstance(exc, ValueError):
+        if isinstance(exc, APIRequestError):
             return (False, str(exc))
         else:
             raise exc
