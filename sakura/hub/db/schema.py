@@ -100,7 +100,7 @@ def define_schema(db):
         tags = Optional(Json, default = [])
         rights = Required(int)  # see DatabaseMixin.DB_RIGHTS
         metadata = Optional(Json, default = {})
-        owner = Optional(User, reverse = 'db_owner_of')
+        owner = Required(User, reverse = 'db_owner_of')
         users_rw = Set(User, reverse = 'db_rw')
         users_ro = Set(User, reverse = 'db_ro')
         contacts = Set(User, reverse = 'db_contact_of')

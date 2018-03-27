@@ -86,18 +86,25 @@ class DatabaseMixin:
                 self.name,
                 self.owner.login)
     @classmethod
-    def create_or_update(cls, context, datastore, name, rights=None, **kwargs):
+    def create_or_update(cls, context, datastore, name,
+                         rights=None, owner=None, **kwargs):
         database = cls.get(datastore = datastore, name = name)
         if database is None:
-            # if rights not specified (unknown database detected on a daemon),
-            # default to private
+            # unknown database detected on a daemon
+            # if rights not specified, default to private
             if rights is None:
                 rights = 'private'
+            # if owner not specified, set it to datastore's admin
+            if owner is None:
+                owner = datastore.admin
+            else:
+                owner = context.users.get(login = owner)
             database = cls( datastore = datastore,
                             name = name,
-                            rights = getattr(DB_RIGHTS, rights).value)
+                            rights = getattr(ACCESS_SCOPES, rights).value,
+                            owner = owner)
         else:
-            kwargs.update(rights = rights)
+            kwargs.update(rights = rights, owner = owner)
         database.update_attributes(context, **kwargs)
         return database
     @classmethod
