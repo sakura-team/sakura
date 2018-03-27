@@ -98,7 +98,7 @@ def define_schema(db):
         name = Required(str)
         creation_date = Optional(epoch)
         tags = Optional(Json, default = [])
-        rights = Required(int)  # see DatabaseMixin.DB_RIGHTS
+        access_scope = Required(int)  # see sakura/hub/access.py
         metadata = Optional(Json, default = {})
         owner = Required(User, reverse = 'db_owner_of')
         users_rw = Set(User, reverse = 'db_rw')

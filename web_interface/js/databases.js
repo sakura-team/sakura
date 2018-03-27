@@ -76,11 +76,11 @@ function new_database() {
     var short_d     = $('#database_shortdescription_input').val();
     var ds_id       = parseInt($('#database_datastore_input').val());
     
-    var rights      = 'restricted';
-    $('[id^="database_creation_rights_radio"]').each( function() {
+    var access_scope      = 'restricted';
+    $('[id^="database_creation_access_scope_radio"]').each( function() {
         if (this.checked) {
             var tab = this.id.split('_');
-            rights = tab[tab.length - 1];
+            access_scope = tab[tab.length - 1];
         }
     });
     
@@ -110,7 +110,7 @@ function new_database() {
     /*console.log("Name:", name);
     console.log("Short:", short_d);
     console.log("Datastore:", ds_id);
-    console.log("Rights:", rights);
+    console.log("Access scope:", access_scope);
     console.log("Agent type:", agent_type);
     console.log("Topic:", topic);
     console.log("Data type:", data_type);
@@ -120,7 +120,7 @@ function new_database() {
     sakura.common.ws_request('new_database', 
                                 [ds_id, name], 
                                 {   'short_desc': short_d, 
-                                    'rights': rights,
+                                    'access_scope': access_scope,
                                     'agent_type': agent_type,
                                     'topic': topic,
                                     'data_type': data_type,
