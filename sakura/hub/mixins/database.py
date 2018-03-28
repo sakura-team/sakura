@@ -1,5 +1,4 @@
 import time
-from sakura.common.tools import greenlet_env
 from enum import Enum
 from sakura.hub.access import ACCESS_SCOPES
 
@@ -112,7 +111,7 @@ class DatabaseMixin:
         return cls.create_or_update(context, datastore, **db)
     @classmethod
     def create_db(cls, context, datastore, name, access_scope, creation_date = None, **kwargs):
-        greenlet_env.user = 'etienne'    # TODO: handle this properly
+        user = 'etienne'    # TODO: handle this properly
         if creation_date is None:
             creation_date = time.time()
         # register in central db
@@ -120,7 +119,7 @@ class DatabaseMixin:
                         datastore = datastore,
                         name = name,
                         access_scope = access_scope,
-                        owner = greenlet_env.user,
+                        owner = user,
                         creation_date = creation_date,
                         **kwargs)
         # request daemon to create db on the remote datastore

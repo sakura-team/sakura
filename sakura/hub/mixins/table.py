@@ -1,5 +1,4 @@
 import time
-from sakura.common.tools import greenlet_env
 
 class TableMixin:
     @property
@@ -20,8 +19,8 @@ class TableMixin:
             foreign_keys = tuple(self.foreign_keys)
         )
     def create_on_datastore(self, context):
-        greenlet_env.user = 'etienne'               # TODO: handle this properly
-        greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
+        user = 'etienne'               # TODO: handle this properly
+        password = 'sakura_etienne'    # TODO: handle this properly
         # adapt foreign keys because daemon need table names, not IDs
         fk = []
         for fk_info in self.foreign_keys:
@@ -42,15 +41,15 @@ class TableMixin:
         # delete instance in local db
         self.delete()
     def get_range(self, row_start, row_end):
-        greenlet_env.user = 'etienne'               # TODO: handle this properly
-        greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
+        user = 'etienne'               # TODO: handle this properly
+        password = 'sakura_etienne'    # TODO: handle this properly
         return self.remote_instance.get_range(
                 row_start,
                 row_end
         )
     def add_rows(self, data):
-        greenlet_env.user = 'etienne'               # TODO: handle this properly
-        greenlet_env.password = 'sakura_etienne'    # TODO: handle this properly
+        user = 'etienne'               # TODO: handle this properly
+        password = 'sakura_etienne'    # TODO: handle this properly
         return self.remote_instance.add_rows(
                 data
         )

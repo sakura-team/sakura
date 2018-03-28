@@ -1,18 +1,7 @@
 class GuiToHubAPI(object):
-    def __init__(self, context, session):
+    def __init__(self, context):
         self.context = context
         self.project_id = 0     # for now
-        self.session_id = session.id
-
-    # We cannot simply keep the session object we got
-    # at __init__() call, because it is a pony db object
-    # thus its scope is limited to a db session.
-    # And for each call, we get a different db session.
-    # Thus we use a property below, in order to get
-    # an object valid for the current db session.
-    @property
-    def session(self):
-        return self.context.sessions[self.session_id]
 
     ########################################
     # Daemons
@@ -180,10 +169,10 @@ class GuiToHubAPI(object):
     # Session management
     ####################
     def renew_session(self):
-        return self.session.renew()
+        return self.context.session.renew()
 
     def generate_session_secret(self):
-        return self.context.session_secrets.generate_secret(self.session)
+        return self.context.session_secrets.generate_secret(self.context.session)
 
     # User management
     #################
@@ -191,11 +180,11 @@ class GuiToHubAPI(object):
         return self.context.users.new_user(self.context, **user_info)
 
     def login(self, login_or_email, password):
-        self.session.user = self.context.users.from_credentials(self.context, login_or_email, password)
-        return self.session.user.login
+        self.context.session.user = self.context.users.from_credentials(self.context, login_or_email, password)
+        return self.context.session.user.login
 
     def logout(self):
-        self.session.user = None
+        self.context.session.user = None
 
     def recover_password(self, login_or_email):
         self.context.users.recover_password(self.context, login_or_email)

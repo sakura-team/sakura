@@ -1,9 +1,5 @@
 import sys, gevent
-from gevent.local import local
 from gevent.queue import Queue
-
-# object storing greenlet-local data
-greenlet_env = local()
 
 class StdoutProxy(object):
     def __init__(self, stdout):

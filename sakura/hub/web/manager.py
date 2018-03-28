@@ -1,8 +1,10 @@
 import collections
+from contextlib import contextmanager
 from sakura.common.io import LocalAPIHandler, compactjson
 from sakura.common.errors import APIRequestError
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
+from sakura.hub.context import greenlet_env
 
 # caution: the object should be sent all at once,
 # otherwise it will be received as several messages
@@ -35,14 +37,29 @@ class ResultWrapper:
         else:
             raise exc
 
+def get_web_session_wrapper(session_id):
+    @contextmanager
+    def web_session_wrapper():
+        # record session id --
+        # We cannot simply record the session object itself,
+        # because it is a pony db object
+        # thus its scope is limited to a db session.
+        # And for each call, we get a different db session.
+        greenlet_env.session_id = session_id
+        # call db session wrapper
+        with db_session_wrapper():
+            yield
+    return web_session_wrapper
+
 def rpc_manager(context, wsock, session):
     print('New GUI RPC connection.')
     # make wsock a file-like object
     f = FileWSock(wsock)
     # manage api requests
-    local_api = GuiToHubAPI(context, session)
+    local_api = GuiToHubAPI(context)
+    web_session_wrapper = get_web_session_wrapper(session.id)
     handler = LocalAPIHandler(f, compactjson, local_api,
-                session_wrapper = db_session_wrapper,
+                session_wrapper = web_session_wrapper,
                 result_wrapper = ResultWrapper)
     session.num_ws += 1
     handler.loop()

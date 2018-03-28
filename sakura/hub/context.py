@@ -1,7 +1,11 @@
 import bottle
+from gevent.local import local
 from sakura.common.bottle import PicklableFileRequest
 from sakura.hub.db import instanciate_db
 from sakura.hub.secrets import SecretsRegistry
+
+# object storing greenlet-local data
+greenlet_env = local()
 
 class HubContext(object):
     SESSION_SECRETS_LIFETIME = 5
@@ -24,6 +28,9 @@ class HubContext(object):
                         HubContext.SESSION_SECRETS_LIFETIME)
         self.pw_recovery_secrets = SecretsRegistry(
                         HubContext.PW_RECOVERY_SECRETS_LIFETIME)
+    @property
+    def session(self):
+        return self.sessions[greenlet_env.session_id]
     def new_session(self):
         return self.sessions.new_session(self)
     def get_session(self, session_secret):
