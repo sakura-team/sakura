@@ -1,3 +1,5 @@
+from sakura.hub.context import get_context
+
 STANDARD_COLUMN_TAGS = (
     ("statistics", ("qualitative", "quantitative", "textual")),
     ("processing", ("sorted_asc", "sorted_desc", "unique"))
@@ -22,13 +24,13 @@ class ColumnMixin:
             column.set(**kwargs)
         return column
     @classmethod
-    def restore_column(cls, context, table, col_id, col_name, col_type, daemon_tags):
+    def restore_column(cls, table, col_id, col_name, col_type, daemon_tags):
         return cls.create_or_update(table, col_id,
                                     col_name = col_name,
                                     col_type = col_type,
                                     daemon_tags = daemon_tags)
     @classmethod
-    def create_column(cls, context, table, col_id, col_name, col_type, user_tags):
+    def create_column(cls, table, col_id, col_name, col_type, user_tags):
         return cls.create_or_update(table, col_id,
                                     col_name = col_name,
                                     col_type = col_type,

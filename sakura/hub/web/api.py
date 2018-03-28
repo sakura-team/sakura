@@ -19,7 +19,7 @@ class GuiToHubAPI(object):
     
     # instantiate an operator and return the instance info
     def create_operator_instance(self, cls_id):
-        return self.context.op_instances.create_instance(self.context, cls_id)
+        return self.context.op_instances.create_instance(cls_id)
     
     # delete operator instance and links involved
     def delete_operator_instance(self, op_id):
@@ -116,18 +116,17 @@ class GuiToHubAPI(object):
         return self.context.databases
     
     def get_database_info(self, database_id):
-        return self.context.databases[database_id].get_full_info(self.context)
+        return self.context.databases[database_id].get_full_info()
 
     def new_database(self, datastore_id, name, **kwargs):
         # optional arguments of kwargs: short_desc, creation_date, tags, contacts
         # returns the database_id
         datastore = self.context.datastores[datastore_id]
-        return self.context.databases.create_db(
-                        self.context, datastore, name, **kwargs)
+        return self.databases.create_db(datastore, name, **kwargs)
 
     def update_database_info(self, database_id, **kwargs):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
-        self.context.databases[database_id].update_attributes(self.context, **kwargs)
+        self.context.databases[database_id].update_attributes(**kwargs)
 
     def list_expected_columns_tags(self, datastore_id):
         return self.context.datastores[datastore_id].list_expected_columns_tags()
@@ -140,11 +139,8 @@ class GuiToHubAPI(object):
         # returns the table_id
         database = self.context.databases[database_id]
         return self.context.tables.create_table(
-                        self.context, database, name, columns, **kwargs)
-    
-    def delete_table(self, table_id):
-        return None
-    
+                        database, name, columns, **kwargs)
+
     def update_table_info(self, table_id, **kwargs):
         # optional arguments of kwargs: name, description, creation_date
         self.context.tables[table_id].set(**kwargs)
@@ -172,23 +168,23 @@ class GuiToHubAPI(object):
         return self.context.session.renew()
 
     def generate_session_secret(self):
-        return self.context.session_secrets.generate_secret(self.context.session)
+        return self.context.generate_session_secret()
 
     # User management
     #################
     def new_user(self, **user_info):
-        return self.context.users.new_user(self.context, **user_info)
+        return self.context.users.new_user(**user_info)
 
     def login(self, login_or_email, password):
-        self.context.session.user = self.context.users.from_credentials(self.context, login_or_email, password)
+        self.context.session.user = self.context.users.from_credentials(login_or_email, password)
         return self.context.session.user.login
 
     def logout(self):
         self.context.session.user = None
 
     def recover_password(self, login_or_email):
-        self.context.users.recover_password(self.context, login_or_email)
+        self.context.users.recover_password(login_or_email)
 
     def change_password(self, login_or_email, current_password_or_rec_token, new_password):
-        self.context.users.change_password(self.context,
+        self.context.users.change_password(
                 login_or_email, current_password_or_rec_token, new_password)

@@ -19,7 +19,7 @@ class OpClassMixin:
             op_cls.set(**kwargs)
         return op_cls
     @classmethod
-    def restore_op_class(cls, context, daemon, **cls_info):
+    def restore_op_class(cls, daemon, **cls_info):
         op_cls = cls.create_or_update(daemon, **cls_info)
         # re-instantiate related instances on daemon
         for op in op_cls.op_instances:

@@ -2,6 +2,7 @@
 """User registration or login related"""
 import os, hashlib, binascii, re, base64, smtplib, random, bottle
 from sakura.hub.myemail import sendmail
+from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestError
 
 RECOVERY_MAIL_SUBJECT = "Password recovery"
@@ -33,7 +34,7 @@ class UserMixin:
         return salt, binascii.hexlify(dk)
 
     @classmethod
-    def new_user(cls, context, login, email, password, **user_info):
+    def new_user(cls, login, email, password, **user_info):
         # print (type(cls))
         if cls.get(login = login) is not None:
             raise APIRequestError('Login name "%s" already exists!' % login)
@@ -42,7 +43,7 @@ class UserMixin:
         # all checks for existing user completed here, proceeding to new user registration
         salt, hashed_password = cls.hash_password(password)
         cls(login = login, email = email, password_salt = salt, password_hash = hashed_password, **user_info)
-        context.db.commit()
+        get_context().db.commit()
         return True
 
     @classmethod
@@ -57,7 +58,7 @@ class UserMixin:
         return user
 
     @classmethod
-    def from_credentials(cls, context, login_or_email, password, err_msg = 'Invalid password.'):
+    def from_credentials(cls, login_or_email, password, err_msg = 'Invalid password.'):
         user = cls.from_login_or_email(login_or_email)
         user.check_password(password, err_msg)
         return user
@@ -69,28 +70,27 @@ class UserMixin:
             raise APIRequestError(err_msg)
 
     @classmethod
-    def recover_password(cls, context, login_or_email):
+    def recover_password(cls, login_or_email):
         user = cls.from_login_or_email(login_or_email)
-        secret = context.pw_recovery_secrets.generate_secret(user.login)
+        secret = get_context().pw_recovery_secrets.generate_secret(user.login)
         rec_token = 'rec-' + str(secret)
         content = RECOVERY_MAIL_CONTENT % dict(
                 firstname = user.first_name,
                 lastname = user.last_name,
                 login = user.login,
                 rec_token = rec_token,
-                delay = context.PW_RECOVERY_SECRETS_LIFETIME / 60)
+                delay = get_context().PW_RECOVERY_SECRETS_LIFETIME / 60)
         sendmail(user.email, RECOVERY_MAIL_SUBJECT, content)
 
     @classmethod
-    def change_password(cls, context,
-                login_or_email, curr_passwd_or_rec_token, new_password):
+    def change_password(cls, login_or_email, curr_passwd_or_rec_token, new_password):
         user = None
         if curr_passwd_or_rec_token.startswith('rec-'):
             try:
                 secret = int(curr_passwd_or_rec_token[4:])
             except:
                 raise APIRequestError('Recovery token is invalid.')
-            login = context.pw_recovery_secrets.get_obj(secret)
+            login = get_context().pw_recovery_secrets.get_obj(secret)
             if login is None:
                 raise APIRequestError('Recovery token is invalid (possibly expired).')
             # we have a valid recovery token
@@ -98,6 +98,6 @@ class UserMixin:
             if login_or_email not in (user.login, user.email):
                 raise APIRequestError('Recovery token does not match login or email entry.')
         if user is None:
-            user = cls.from_credentials(context, login_or_email, curr_passwd_or_rec_token)
+            user = cls.from_credentials(login_or_email, curr_passwd_or_rec_token)
         # all is ok, update password
         user.password_salt, user.password_hash = cls.hash_password(new_password)

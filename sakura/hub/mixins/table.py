@@ -1,4 +1,5 @@
 import time
+from sakura.hub.context import get_context
 
 class TableMixin:
     @property
@@ -18,9 +19,10 @@ class TableMixin:
             primary_key = self.primary_key,
             foreign_keys = tuple(self.foreign_keys)
         )
-    def create_on_datastore(self, context):
+    def create_on_datastore(self):
         user = 'etienne'               # TODO: handle this properly
         password = 'sakura_etienne'    # TODO: handle this properly
+        context = get_context()
         # adapt foreign keys because daemon need table names, not IDs
         fk = []
         for fk_info in self.foreign_keys:
@@ -62,17 +64,17 @@ class TableMixin:
             table.set(**kwargs)
         return table
     @classmethod
-    def restore_table(cls, context, database, columns, **tbl):
+    def restore_table(cls, database, columns, **tbl):
         table = cls.create_or_update(database, **tbl)
         table.columns = set(
-                context.columns.restore_column(context, table, col_id, *col) \
+                get_context().columns.restore_column(table, col_id, *col) \
                         for col_id, col in enumerate(columns))
         return table
-    def update_foreign_keys(self, context, foreign_keys):
+    def update_foreign_keys(self, foreign_keys):
         self.foreign_keys = []
         for fk_info in foreign_keys:
             # daemon sends remote table name, we need its ID
-            remote_table = context.tables.get(database = self.database,
+            remote_table = get_context().tables.get(database = self.database,
                                                 name = fk_info['remote_table'])
             self.foreign_keys.append(dict(
                 local_columns = fk_info['local_columns'],
@@ -80,8 +82,9 @@ class TableMixin:
                 remote_table_id = remote_table.id
             ))
     @classmethod
-    def create_table(cls, context, database, name, columns,
+    def create_table(cls, database, name, columns,
                             creation_date = None, **kwargs):
+        context = get_context()
         if creation_date is None:
             creation_date = time.time()
         # register in central db
@@ -90,11 +93,11 @@ class TableMixin:
                         creation_date = creation_date)
         cols = []
         for col_id, col_info in enumerate(columns):
-            col = context.columns.create_column(context, new_table, col_id, *col_info)
+            col = context.columns.create_column(new_table, col_id, *col_info)
             cols.append(col)
         new_table.set(columns = cols, **kwargs)
         # request daemon to create table on the remote datastore
-        new_table.create_on_datastore(context)
+        new_table.create_on_datastore()
         # return table_id
         context.db.commit()
         return new_table.id

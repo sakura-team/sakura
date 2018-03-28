@@ -1,3 +1,5 @@
+from sakura.hub.context import get_context
+
 class OpInstanceMixin:
     INSTANCIATED = set()
     @property
@@ -37,9 +39,9 @@ class OpInstanceMixin:
         self.instanciated = False
         self.daemon_api.delete_operator_instance(self.id)
     @classmethod
-    def create_instance(cls, context, op_cls_id):
+    def create_instance(cls, op_cls_id):
         op = cls(op_class = op_cls_id)      # create in local db
-        context.db.commit()                 # refresh op id
+        get_context().db.commit()           # refresh op id
         return op.instanciate_on_daemon()   # create remotely
     def delete_instance(self):
         # delete connected links

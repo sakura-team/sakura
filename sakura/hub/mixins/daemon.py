@@ -1,3 +1,5 @@
+from sakura.hub.context import get_context
+
 class DaemonMixin:
     APIS = {}
 
@@ -27,7 +29,8 @@ class DaemonMixin:
         return daemon
 
     @classmethod
-    def restore_daemon(cls, context, api, name, datastores, op_classes, **kwargs):
+    def restore_daemon(cls, api, name, datastores, op_classes, **kwargs):
+        context = get_context()
         # create or update existing daemon of db
         daemon = cls.create_or_update(name, **kwargs)
         daemon.connected = True
@@ -36,7 +39,7 @@ class DaemonMixin:
         # save api
         daemon.api = api
         # restore datastores and related components (databases, tables, columns)
-        daemon.datastores = set(context.datastores.restore_datastore(context, daemon, **ds) for ds in datastores)
+        daemon.datastores = set(context.datastores.restore_datastore(daemon, **ds) for ds in datastores)
         # restore op classes and re-instanciate related objects (instances, links, parameters)
-        daemon.op_classes = set(context.op_classes.restore_op_class(context, daemon, **cls) for cls in op_classes)
+        daemon.op_classes = set(context.op_classes.restore_op_class(daemon, **cls) for cls in op_classes)
         return daemon

@@ -1,6 +1,7 @@
 from sakura.hub.tools import DaemonDataException
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
 from sakura.hub.access import ACCESS_SCOPES
+from sakura.hub.context import get_context
 
 DATASTORE_USER_ERROR = """\
 %(driver_label)s datastore at %(host)s refers to nonexistent Sakura user "%(login)s".
@@ -39,12 +40,12 @@ class DatastoreMixin:
                 users_ro = tuple(u.login for u in self.users_ro)
             )
         return result
-    def update_online_attributes(self, context, users, **kwargs):
+    def update_online_attributes(self, users, **kwargs):
         # update users
         self.users_rw.clear()
         self.users_ro.clear()
         for login, createdb_grant in users:
-            u = context.users.get(login = login)
+            u = get_context().users.get(login = login)
             if u == None:
                 raise DaemonDataException(DATASTORE_USER_ERROR % dict(
                     host = self.host,
@@ -56,7 +57,7 @@ class DatastoreMixin:
             else:
                 self.users_ro.add(u)
     @classmethod
-    def create_or_update(cls, context, daemon, host, driver_label, online,
+    def create_or_update(cls, daemon, host, driver_label, online,
                                     admin, access_scope, **kwargs):
         access_scope = getattr(ACCESS_SCOPES, access_scope).value
         datastore = cls.get(daemon = daemon, host = host, driver_label = driver_label)
@@ -67,7 +68,7 @@ class DatastoreMixin:
         else:
             datastore.online = online
             datastore.access_scope = access_scope
-        admin_user = context.users.get(login = admin)
+        admin_user = get_context().users.get(login = admin)
         if admin_user == None:
             raise DaemonDataException(DATASTORE_ADMIN_ERROR % dict(
                 host = host,
@@ -76,13 +77,13 @@ class DatastoreMixin:
             ))
         datastore.admin = admin_user
         if online:
-            datastore.update_online_attributes(context, **kwargs)
+            datastore.update_online_attributes(**kwargs)
         return datastore
     @classmethod
-    def restore_datastore(cls, context, daemon, **ds):
-        datastore = cls.create_or_update(context, daemon, **ds)
+    def restore_datastore(cls, daemon, **ds):
+        datastore = cls.create_or_update(daemon, **ds)
         if datastore.online:
             # if online, restore related databases
-            datastore.databases = set(context.databases.restore_database(context, datastore, **db) \
+            datastore.databases = set(get_context().databases.restore_database(datastore, **db) \
                                         for db in ds['databases'])
         return datastore

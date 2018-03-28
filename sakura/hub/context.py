@@ -1,17 +1,20 @@
 import bottle
 from gevent.local import local
 from sakura.common.bottle import PicklableFileRequest
-from sakura.hub.db import instanciate_db
 from sakura.hub.secrets import SecretsRegistry
 
 # object storing greenlet-local data
 greenlet_env = local()
 
+def get_context():
+    return HubContext._instance
+
 class HubContext(object):
+    _instance = None
     SESSION_SECRETS_LIFETIME = 5
     PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
-    def __init__(self):
-        self.db = instanciate_db()
+    def __init__(self, db):
+        self.db = db
         self.daemons = self.db.Daemon
         self.projects = self.db.Project
         self.users = self.db.User
@@ -28,6 +31,7 @@ class HubContext(object):
                         HubContext.SESSION_SECRETS_LIFETIME)
         self.pw_recovery_secrets = SecretsRegistry(
                         HubContext.PW_RECOVERY_SECRETS_LIFETIME)
+        HubContext._instance = self
     @property
     def session(self):
         return self.sessions[greenlet_env.session_id]
@@ -36,7 +40,7 @@ class HubContext(object):
     def get_session(self, session_secret):
         return self.session_secrets.get_obj(session_secret)
     def on_daemon_connect(self, daemon_info, api):
-        daemon = self.daemons.restore_daemon(self, api = api, **daemon_info)
+        daemon = self.daemons.restore_daemon(api = api, **daemon_info)
         return daemon.id
     def on_daemon_disconnect(self, daemon_id):
         self.daemons[daemon_id].connected = False
@@ -60,3 +64,5 @@ class HubContext(object):
             return bottle.HTTPResponse(*resp[1:])
         else:
             return bottle.HTTPError(*resp[1:])
+    def generate_session_secret(self):
+        return self.session_secrets.generate_secret(self.session)

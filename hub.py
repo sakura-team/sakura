@@ -6,6 +6,7 @@ from sakura.hub.context import HubContext
 from sakura.hub.web.greenlet import web_greenlet
 from sakura.hub.daemons.greenlet import daemons_greenlet
 from sakura.hub.cleanup import cleanup_greenlet
+from sakura.hub.db import instanciate_db
 from sakura.common.tools import set_unbuffered_stdout, \
                                 wait_greenlets
 import sakura.hub.conf as conf
@@ -13,8 +14,10 @@ import sakura.hub.conf as conf
 CURDIR = os.path.dirname(os.path.abspath(__file__))
 
 def run(webapp_path):
+    # create hub db
+    db = instanciate_db()
     # create shared context
-    context = HubContext()
+    context = HubContext(db)
     # run greenlets and wait until they end.
     g1 = Greenlet.spawn(daemons_greenlet, context)
     g2 = Greenlet.spawn(web_greenlet, context, webapp_path)

@@ -1,6 +1,7 @@
 import time
 from enum import Enum
 from sakura.hub.access import ACCESS_SCOPES
+from sakura.hub.context import get_context
 
 class DatabaseMixin:
     @property
@@ -25,15 +26,16 @@ class DatabaseMixin:
         )
         result.update(**self.metadata)
         return result
-    def get_full_info(self, context):
+    def get_full_info(self):
         # start with general metadata
         result = self.pack()
         # if online, explore tables
         if self.online:
-            self.update_tables(context)
+            self.update_tables()
             result['tables'] = tuple(t.pack() for t in self.tables)
         return result
-    def update_tables(self, context):
+    def update_tables(self):
+        context = get_context()
         # ask daemon
         info_from_daemon = self.remote_instance.pack()
         # update tables (except foreign keys - a referenced table
@@ -42,7 +44,7 @@ class DatabaseMixin:
         for tbl_info in info_from_daemon['tables']:
             info = dict(tbl_info)
             del info['foreign_keys']
-            tables.add(context.tables.restore_table(context, self, **info)
+            tables.add(context.tables.restore_table(self, **info)
         )
         self.tables = tables
         context.db.commit() # make sure db id's are set
@@ -52,11 +54,12 @@ class DatabaseMixin:
                 database = self,
                 name = tbl_info['name']
             )
-            table.update_foreign_keys(context, tbl_info['foreign_keys'])
-    def update_attributes(self, context,
+            table.update_foreign_keys(tbl_info['foreign_keys'])
+    def update_attributes(self,
                 users = None, contacts = None, creation_date = None,
                 tags = None, access_scope = None, owner = None,
                 **metadata):
+        context = get_context()
         # update users
         if users is not None:
             self.users_rw = context.users.from_logins(
@@ -85,7 +88,7 @@ class DatabaseMixin:
                 self.name,
                 self.owner.login)
     @classmethod
-    def create_or_update(cls, context, datastore, name,
+    def create_or_update(cls, datastore, name,
                          access_scope=None, owner=None, **kwargs):
         database = cls.get(datastore = datastore, name = name)
         if database is None:
@@ -97,25 +100,25 @@ class DatabaseMixin:
             if owner is None:
                 owner = datastore.admin
             else:
-                owner = context.users.get(login = owner)
+                owner = get_context().users.get(login = owner)
             database = cls( datastore = datastore,
                             name = name,
                             access_scope = getattr(ACCESS_SCOPES, access_scope).value,
                             owner = owner)
         else:
             kwargs.update(access_scope = access_scope, owner = owner)
-        database.update_attributes(context, **kwargs)
+        database.update_attributes(**kwargs)
         return database
     @classmethod
-    def restore_database(cls, context, datastore, **db):
-        return cls.create_or_update(context, datastore, **db)
+    def restore_database(cls, datastore, **db):
+        return cls.create_or_update(datastore, **db)
     @classmethod
-    def create_db(cls, context, datastore, name, access_scope, creation_date = None, **kwargs):
+    def create_db(cls, datastore, name, access_scope, creation_date = None, **kwargs):
         user = 'etienne'    # TODO: handle this properly
         if creation_date is None:
             creation_date = time.time()
         # register in central db
-        new_db = cls.create_or_update(context,
+        new_db = cls.create_or_update(
                         datastore = datastore,
                         name = name,
                         access_scope = access_scope,
@@ -125,6 +128,6 @@ class DatabaseMixin:
         # request daemon to create db on the remote datastore
         new_db.create_on_datastore()
         # return database_id
-        context.db.commit()
+        get_context().db.commit()
         return new_db.id
 
