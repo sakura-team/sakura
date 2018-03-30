@@ -109,27 +109,35 @@ class GuiToHubAPI(object):
 
     ########################################
     # Databases
+    @property
+    def datastores(self):
+        return self.context.datastores.filter_for_web_user()
+
+    @property
+    def databases(self):
+        return self.context.databases.filter_for_web_user()
+
     def list_datastores(self):
-        return self.context.datastores
-    
+        return self.datastores
+
     def list_databases(self):
-        return self.context.databases
-    
+        return self.databases
+
     def get_database_info(self, database_id):
-        return self.context.databases[database_id].get_full_info()
+        return self.databases[database_id].get_full_info()
 
     def new_database(self, datastore_id, name, **kwargs):
         # optional arguments of kwargs: short_desc, creation_date, tags, contacts
         # returns the database_id
-        datastore = self.context.datastores[datastore_id]
+        datastore = self.datastores[datastore_id]
         return self.databases.create_db(datastore, name, **kwargs)
 
     def update_database_info(self, database_id, **kwargs):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
-        self.context.databases[database_id].update_attributes(**kwargs)
+        self.databases[database_id].update_attributes(**kwargs)
 
     def list_expected_columns_tags(self, datastore_id):
-        return self.context.datastores[datastore_id].list_expected_columns_tags()
+        return self.datastores[datastore_id].list_expected_columns_tags()
 
     def get_table_info(self, table_id):
         return self.context.tables[table_id]
@@ -137,7 +145,7 @@ class GuiToHubAPI(object):
     def new_table(self, database_id, name, columns, **kwargs):
         # optional arguments of kwargs: short_desc, creation_date
         # returns the table_id
-        database = self.context.databases[database_id]
+        database = self.databases[database_id]
         return self.context.tables.create_table(
                         database, name, columns, **kwargs)
 

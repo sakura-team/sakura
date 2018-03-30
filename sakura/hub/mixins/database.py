@@ -1,7 +1,9 @@
 import time
 from enum import Enum
-from sakura.hub.access import ACCESS_SCOPES
+from sakura.common.errors import APIObjectDeniedError
 from sakura.hub.context import get_context
+from sakura.hub.access import ACCESS_SCOPES, GRANT_LEVELS,  \
+                              get_grant_level_generic, FilteredView
 
 class DatabaseMixin:
     @property
@@ -22,7 +24,8 @@ class DatabaseMixin:
             owner = None if self.owner is None else self.owner.login,
             users_rw = tuple(u.login for u in self.users_rw),
             users_ro = tuple(u.login for u in self.users_ro),
-            online = self.online
+            online = self.online,
+            grant_level = self.get_grant_level().name
         )
         result.update(**self.metadata)
         return result
@@ -114,7 +117,10 @@ class DatabaseMixin:
         return cls.create_or_update(datastore, **db)
     @classmethod
     def create_db(cls, datastore, name, access_scope, creation_date = None, **kwargs):
-        user = 'etienne'    # TODO: handle this properly
+        if get_grant_level_generic(datastore).value < GRANT_LEVELS.write.value:
+            raise APIObjectDeniedError('%s is not allowed to create a database on this datastore.' % \
+                    ('An anonymous user' if user is None else 'User ' + user.login))
+        context = get_context()
         if creation_date is None:
             creation_date = time.time()
         # register in central db
@@ -122,12 +128,20 @@ class DatabaseMixin:
                         datastore = datastore,
                         name = name,
                         access_scope = access_scope,
-                        owner = user,
+                        owner = context.session.user.login,
                         creation_date = creation_date,
                         **kwargs)
         # request daemon to create db on the remote datastore
         new_db.create_on_datastore()
         # return database_id
-        get_context().db.commit()
+        context.db.commit()
         return new_db.id
-
+    @classmethod
+    def filter_for_web_user(cls):
+        return FilteredView(cls)
+    def get_grant_level(self):
+        # user must be granted access to the datastore, first
+        if get_grant_level_generic(self.datastore).value < GRANT_LEVELS.read.value:
+            return GRANT_LEVELS.hide
+        # ok, let's check grant on this database object
+        return get_grant_level_generic(self)

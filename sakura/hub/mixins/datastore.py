@@ -1,7 +1,8 @@
 from sakura.hub.tools import DaemonDataException
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
-from sakura.hub.access import ACCESS_SCOPES
 from sakura.hub.context import get_context
+from sakura.hub.access import ACCESS_SCOPES, \
+                              get_grant_level_generic, FilteredView
 
 DATASTORE_USER_ERROR = """\
 %(driver_label)s datastore at %(host)s refers to nonexistent Sakura user "%(login)s".
@@ -15,6 +16,11 @@ class DatastoreMixin:
     @property
     def remote_instance(self):
         return self.daemon.api.datastores[(self.host, self.driver_label)]
+    @property
+    def owner(self):
+        # access grant calculation requires an 'owner' attribute
+        # 'admin' serves this purpose.
+        return self.admin
     def list_expected_columns_tags(self):
         # list tags already seen on this datastore
         datastore_tags = set()
@@ -32,7 +38,8 @@ class DatastoreMixin:
             host = self.host,
             driver_label = self.driver_label,
             admin = self.admin.login,
-            access_scope = ACCESS_SCOPES(self.access_scope).name
+            access_scope = ACCESS_SCOPES(self.access_scope).name,
+            grant_level = self.get_grant_level().name
         )
         if self.online:
             result.update(
@@ -87,3 +94,8 @@ class DatastoreMixin:
             datastore.databases = set(get_context().databases.restore_database(datastore, **db) \
                                         for db in ds['databases'])
         return datastore
+    @classmethod
+    def filter_for_web_user(cls):
+        return FilteredView(cls)
+    def get_grant_level(self):
+        return get_grant_level_generic(self)
