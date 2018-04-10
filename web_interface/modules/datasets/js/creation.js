@@ -191,7 +191,7 @@ function datasets_on_file_selected(f) {
             header: true,
             skipEmptyLines: true,
             preview: 10,
-            step: function(line) {
+            chunk: function(line) {
                 datasets_creation_csv_file.lines.push(line.data);
                 if (datasets_creation_csv_file.headers.length == 0)
                     datasets_creation_csv_file.headers = line.meta.fields;
@@ -212,7 +212,6 @@ function datasets_on_file_selected(f) {
                         var col_name    = $('#datasets_creation_col_name_temp');
                         col_name.attr('id', 'datasets_creation_col_name_ff_'+index);
                         col_name.attr('disabled', true);
-                        
                         
                         var select = new_row.find('select');
                         var type_select = $(select[0]);

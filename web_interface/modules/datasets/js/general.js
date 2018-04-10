@@ -190,7 +190,7 @@ function this_col_is_a_date(col) {
 
 
 function datasets_delete(dataset_id) {
-    var yes = datasets_asking('toto', 'titi', 'datasets_delete_yes('+dataset_id+')', '');
+    var yes = datasets_asking('Delete a Dataset', 'Are you sure you want to definitely delete this dataset ??', 'datasets_delete_yes('+dataset_id+')', '');
 }
 
 function datasets_delete_yes(ds_id) {
