@@ -57,7 +57,7 @@ class PlannerGreenlet:
             timeout = None
             if len(self.planned_events) > 0:
                 fire_time = self.planned_events[0][0]
-                timeout = time() - fire_time
+                timeout = fire_time - time()
             try:
                 repeat_delay, event = self.request_queue.get(block=True, timeout=timeout)
                 self.schedule(repeat_delay, event)
