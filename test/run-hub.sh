@@ -34,6 +34,7 @@ trap on_exit EXIT
 # if there is no central db yet
 if [ ! -f "$HOME/.sakura/hub.db" ]
 then
+    mkdir -p "$HOME/.sakura"
     # and a custom db skeleton is provided
     # in the 'test' directory
     if [ -f "test/hub.db" ]
