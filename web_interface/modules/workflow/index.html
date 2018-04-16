@@ -2,7 +2,7 @@
 <!--Started on: October 10th, 2016-->
 
 <!doctype html>
-    <head> 
+    <head>
     <meta charset="UTF-8" />
     <script src="/webcache/cdnjs/jquery/2.2.4/jquery.min.js"></script>
     <script src="/webcache/cdnjs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -13,11 +13,11 @@
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
     <link href="css/main.css" rel="stylesheet">
     </head>
-    
+
     <body>
-        <div class="container theme-showcase" role="main" style="padding: 0px;">
-            <div class="container" width="100%" style="padding: 0px;">
-                    <div class="col-md-12" >
+        <div class="container theme-showcase" role="main" style="padding: 0px; width:100%">
+            <div class="container" width="100%" style="padding: 0px; text-align: right; width: 100%">
+                    <!--<div class="col-md-12" >
                         <ul class="nav nav-pills">
                             <li>
                                 <a class="dropdown-toggle" id="dp_menu_project" data-toggle="dropdown" style="cursor: pointer;">Project</a>
@@ -32,12 +32,16 @@
                             </li>
                         </ul>
                     </div>
+                  -->
+                  <button type="button" class="btn btn-default btn-xs" onclick="new_project();">
+                      <i class="glyphicon glyphicon-trash" style="cursor: pointer;"></i>
+                  </button>
             </div>
             <table width="100%">
                 <tr>
                     <td width="250px">
                         <div id="sakura_left_div" class="sakura_left_tab">
-                            <div class="panel-group" name="op_left_accordion" id="op_left_accordion">                            
+                            <div class="panel-group" name="op_left_accordion" id="op_left_accordion">
                             <button title="Create a new panel of operators" type="button" class="btn btn-primary btn-xs" style="width: 182px; margin-left: 1px; margin-top: 1px; padding: 5px;" id="select_op_add_button" onclick="select_op_new_modal();"><span class="glyphicon glyphicon-plus" style="cursor: pointer;"></span></button>
                             </div>
                         </div>
@@ -47,28 +51,28 @@
                 </tr>
             </table>
         </div>
-        
+
         <!-- Context menus -->
         <div id="sakura_main_div_contextMenu" class="dropdown clearfix" style="visibility: hidden; position: absolute;">
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
-                <li><a tabindex="-1" href="#" onclick="context_new_project();">New Project</a></li>
+                <li><a tabindex="-1" href="#" onclick="context_new_project();">Clear All</a></li>
                 <li><a tabindex="-1" href="#" onclick="context_new_comment();">Add Comment</a></li>
             </ul>
         </div>
-        
+
         <div id="sakura_operator_contextMenu" class="dropdown clearfix">
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
                 <li><a tabindex="-1" href="#">Delete</a></li>
             </ul>
         </div>
-        
+
         <div id="sakura_link_contextMenu" class="dropdown clearfix">
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
                 <li><a tabindex="-1" href="#">Delete</a></li>
             </ul>
         </div>
-        
-        
+
+
         <div class="modal fade" id="modal_op_selector" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -99,7 +103,7 @@
                                                 <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
                                             </td>
                                         </tr>
-                                        
+
                                         <tr>
                                             <td colspan="2">
                                                 <hr>

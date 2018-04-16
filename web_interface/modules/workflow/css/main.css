@@ -12,7 +12,7 @@ body {
 }
 
 .sakura_main {
-    height: 600px;
+    height: 800px;
     width: 100%;
     position:relative;          /*Critical !! for containing operators*/
     border-top: 1px solid grey;
@@ -29,7 +29,7 @@ body {
 
 .sakura_left_tab {
     width: 200px;
-    height:600px;
+    height:800px;
     overflow-y:scroll;
     padding:0px;
     margin:0px;
@@ -69,7 +69,7 @@ body {
 
 .sakura_comment {
     position: absolute;
-    overflow: auto; 
+    overflow: auto;
     resize: both;
     z-index: 4;
 }
@@ -77,9 +77,8 @@ body {
 .full_width{
     width: 100%;
  }
- 
- 
+
+
  .sakura_endPoint {
     z-index: 3;
  }
-
