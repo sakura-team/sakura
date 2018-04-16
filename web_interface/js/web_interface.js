@@ -27,9 +27,7 @@ function recursiveReplace(node, init_text, new_text) {
 
 
 function fill_database_metadata(db_id) {
-    console.log("DB_info: ask 1");
     sakura.common.ws_request('get_database_info', [db_id], {}, function(db_info) {
-        console.log(db_info);
         $('#web_interface_database_metadata').empty();
         $('#web_interface_database_metadata').load('divs/templates/datas_metadata.html', function() {
 
@@ -58,15 +56,15 @@ function fill_database_metadata(db_id) {
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", '..');
 
             //Rights
-            if (db_info.rights)
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
+            if (db_info.grant_level)
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_grant_", db_info.grant_level);
             else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", '..');
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_grant_", '..');
 
             //Creation date
             if (db_info.creation_date) {
                 var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", date);
+                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db__date_", date);
             }
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", '..');
@@ -77,7 +75,7 @@ function fill_database_metadata(db_id) {
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", '..');
 
-            //Agent Type
+            //Licence
             if (db_info.licence)
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", db_info.licence);
             else
@@ -99,16 +97,54 @@ function fill_database_metadata(db_id) {
 }
 
 
-function fill_dataflow_metadata(ana_id) {
-    sakura.common.ws_request('get_dataflow_info', [ana_id], {}, function(ana_info) {
-        //Name
-        $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + ana_info.name + '</em>&nbsp;&nbsp;');
+function fill_dataflow_metadata(dataflow_id) {
+    sakura.common.ws_request('get_dataflow_info', [dataflow_id], {}, function(df_info) {
+        $('#web_interface_dataflow_metadata').empty();
+        $('#web_interface_dataflow_metadata').load('divs/templates/dataflows_metadata.html', function() {//Name
+            console.log(df_info);
 
-        //Description
-        if (ana_info.short_desc)
-            $($('#Dataflow_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + ana_info.short_desc + '</font>&nbsp;&nbsp;');
-        else
-            $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+            $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + df_info.name + '</em>&nbsp;&nbsp;');
+
+            //Description
+            if (df_info.short_desc)
+                $($('#Dataflow_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + df_info.short_desc + '</font>&nbsp;&nbsp;');
+            else
+                $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+
+            var md_div = $('#idDivDataflowstmpDataflowMeta')[0];
+            ///////MetaData
+            //Owner
+            if (df_info.owner && df_info.owner != 'null')
+                recursiveReplace(md_div, "_df_owner_", df_info.owner);
+            else
+                recursiveReplace(md_div, "_df_owner_", '..');
+
+            //Creation date
+            if (df_info.creation_date) {
+                var date = moment.unix(df_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
+                recursiveReplace(md_div, "_df_date_", date);
+            }
+            else
+                recursiveReplace(md_div, "_df_date_", '..');
+
+            //Rights
+            if (df_info.grant_level)
+                recursiveReplace(md_div, "_df_grant_", df_info.grant_level);
+            else
+                recursiveReplace(md_div, "_df_grant_", '..');
+
+            //Licence
+            if (df_info.licence)
+                recursiveReplace(md_div, "_df_licence_", df_info.licence);
+            else
+                recursiveReplace(md_div, "_df_licence_", '..');
+
+            //Domain Topic
+            if (df_info.topic)
+                recursiveReplace(md_div, "_df_topic_", df_info.topic);
+            else
+                recursiveReplace(md_div, "_df_topic_", '..');
+        });
     });
 }
 

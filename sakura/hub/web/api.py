@@ -165,7 +165,14 @@ class GuiToHubAPI(object):
     ########################################
     # Dataflow
     def get_dataflow_info(self, dataflow_id):
-        return {'name': 'texting name', 'short_desc': 'testing short description'}
+        return {'name': "Dataflow Test",
+                'dataflow_id': 0,
+                'owner': "mike",
+                'creation_date': 1,
+                'grant_level': "own",
+                'topic':    "Anova",
+                'licence': "Public access",
+                'short_desc': "This is a very short description for testing" }
 
     def list_dataflows(self):
         return None
