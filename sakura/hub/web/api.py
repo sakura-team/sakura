@@ -188,6 +188,10 @@ class GuiToHubAPI(object):
                     'tags': []
                     }]
 
+    def new_dataflow(self, name, **kwargs):
+        print(kwargs)
+        return 0
+
     # Session management
     ####################
     def renew_session(self):

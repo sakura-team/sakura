@@ -1,21 +1,13 @@
 <!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
 <!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...-->
 
-<div style="display:none;" id="idDivDataflows" class="classMainDiv">
-    <!--<div style="float:right;">
-        <img  width="80px" height="80px" src="media/Share_icon_BLACK-01.svg.png" alt="CC-BY-3.0 Wikipedia Gears"></img>
-        <br />
-        <br />
-        <button type="button" onclick="showDiv(event,'Dataflows/tmpDataflow/Work');" class="btn btn-primary">Try it</button>
-    </div>
-    -->
+<div style="display:none; width: 100%;" id="idDivDataflows" class="classMainDiv">
+
     <h2>Dataflows</h2>
     Work out your data.
-    <br />
 
-    <br />
     <div class="row">
-        <div class="col-md-10">
+        <div>
             <div class="panel panel-default panel-table">
                 <div class="panel-heading">
                     <div class="row">
@@ -25,7 +17,7 @@
                     </div>
                 </div>
                 <div class="panel-body">
-                    <table id="idTableDataflowsToFullfill" class="table table-striped table-bordered table-list">
+                    <table id="idTableDataflowsToFullfill" class="table table-striped table-bordered table-list" style="margin-bottom: 0px;">
                         <thead>
                         </thead>
                         <tbody>
@@ -36,25 +28,23 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class="pull-left">
+                        &nbsp;
+                        <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#create_dataflow_modal" onclick="dataflow_update_creation_modal();">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        </a>
+                    </div>
                 </div>
-                <div class="panel-footer">
+                <!--<div class="panel-footer">
                     <div class="row">
                         <div class="col col-xs-offset-3 col-xs-6">
                             <nav aria-label="Page navigation" class="text-center">
-                                <ul class="pagination" id="idDivPaginationDataflows">
+                                <ul class="pagination" id="dataflows_pagination">
                                 </ul>
                             </nav>
                         </div>
-                        <div class="col col-xs-3">
-                            <div class="pull-right">
-                                <a class="btn btn-primary" data-toggle="modal" data-target="#createModal">
-                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                    New Dataflow Process
-                                </a>
-                            </div>
-                        </div>
                     </div>
-                </div>
+                </div>-->
             </div>
         </div>
     </div>

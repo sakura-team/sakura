@@ -5,7 +5,7 @@
             <div class="modal-header">
             <table width=100%>
                 <tr>
-                    <td> 
+                    <td>
                         <h3>Data Creation</h3>
                     <td align="right">
                         <table>
@@ -21,28 +21,28 @@
             <div class="modal-body">
                 <div class="panel panel-default" style="margin-bottom: 0px;">
                     <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px;">
-                        <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 1</h4>
+                        <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 1<font color=red>*</font></h4>
                     </div>
-                    <div id="database_creation_div_step1" class="panel-body" style="padding-top:5px; padding-bottom: 5px;"> 
+                    <div id="database_creation_div_step1" class="panel-body" style="padding-top:5px; padding-bottom: 5px;">
                         <label>DataStore <font color=red>*</font></label>
                         <select class="selectpicker" name="database_datastore_input" id="database_datastore_input" onchange="database_datastore_on_change();" data-width="100%" data-live-search="true"/></select>
                     </div>
                 </div>
-            
+
             <div class="panel panel-default" style="margin-bottom: 0px; margin-top: 5px;">
                 <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px; cursor: pointer;" data-toggle="collapse" data-target="#database_creation_div_step2">
                     <table width=100%>
                         <tr>
                             <td>
-                                <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 2</h4>
+                                <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 2<font color=red>*</font></h4>
                             <td align="right">
                                 &nbsp;&nbsp;<label class="glyphicon glyphicon-chevron-down" />
                     </table>
                 </div>
-                <div id="database_creation_div_step2" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;"> 
+                <div id="database_creation_div_step2" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;">
                     <div id="database_div_name_input" class="form-group control-group has-error">
                         <label>Name <font color=red>*</font></label>
-                        <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name" onkeyup="database_creation_check_name();"/>                        
+                        <input class="form-control" id="database_name_input" name="database_name_input" placeholder="Enter a name" onkeyup="database_creation_check_name();"/>
                     </div>
                     <div id="database_div_shortdescription_input" class="form-group control-group has-error">
                         <label>Short Description <font color=red>*</font></label>
@@ -69,7 +69,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="panel panel-default" style="margin-bottom: 0px; margin-top: 5px;">
                 <div class="panel-heading" style="cursor: pointer; padding-top: 1px; padding-bottom: 1px;" data-toggle="collapse" data-target="#database_creation_div_step3">
                     <table width=100%>
@@ -80,14 +80,14 @@
                                 &nbsp;&nbsp;<label class="glyphicon glyphicon-chevron-down" />
                     </table>
                 </div>
-                <div id="database_creation_div_step3" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;"> 
-                    
+                <div id="database_creation_div_step3" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;">
+
                     <div class="form-group control-group">
-                        <label>Agent Type</label> 
+                        <label>Agent Type</label>
                         <input class="form-control" id="database_agent_type_input" name="database_agent_type_input" placeholder="Who/What produced this data"/>
                     </div>
                     <div class="form-group control-group">
-                        <label>Topic</label> 
+                        <label>Topic</label>
                         <input class="form-control" id="database_topic_input" name="database_agent_type_input" placeholder="Main topic of this database? (e.g Health or Social Media)"/>
                     </div>
                     <div class="form-group control-group">
@@ -102,52 +102,52 @@
                                     <input type='radio' id="database_data_type_input_mixed" name="database_data_type_radio" style="margin-top: 0px;"/>
                                     Mixed
                         </table>
-                            
-                        <label style="margin-bottom: 0px;">Licence (<a href="https://creativecommons.org/"> CC versionL 4.0</a> )</label> 
+
+                        <label style="margin-bottom: 0px;">Licence (<a href="https://creativecommons.org/"> CC versionL 4.0</a> )</label>
                         <table style="margin-left: 20px;">
                             <tr>
                                 <td><input type='radio' checked id="database_data_licence_Public" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;Public Domain 
+                                <td>&nbsp;&nbsp;Public Domain
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign" href="https://creativecommons.org/share-your-work/licensing-types-examples/public-domain/pdm/" target="_blank" rel="noopener noreferrer"></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC-0" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC-0 
+                                <td>&nbsp;&nbsp;CC-0
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer"></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_PPDDL" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;PDDL 
+                                <td>&nbsp;&nbsp;PDDL
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="http://opendatacommons.org/licenses/pddl/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC-BY" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC-BY 
+                                <td>&nbsp;&nbsp;CC-BY
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_ODC-BY" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;ODC-BY 
+                                <td>&nbsp;&nbsp;ODC-BY
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="http://opendatacommons.org/licenses/by/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC-BY-SA" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC-BY-SA 
+                                <td>&nbsp;&nbsp;CC-BY-SA
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_ODC-ODbL" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;ODC-ODbL 
+                                <td>&nbsp;&nbsp;ODC-ODbL
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="http://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC_BY-NC" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC BY-NC 
+                                <td>&nbsp;&nbsp;CC BY-NC
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC_BY-ND" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC BY-ND 
+                                <td>&nbsp;&nbsp;CC BY-ND
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nd/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC_BY-NC-SA" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC BY-NC-SA 
+                                <td>&nbsp;&nbsp;CC BY-NC-SA
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_CC_BY-NC-ND" name="database_licence_radio" style="margin-top: 0px;"/>
-                                <td>&nbsp;&nbsp;CC BY-NC-ND 
+                                <td>&nbsp;&nbsp;CC BY-NC-ND
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
                                 <td><input type='radio' id="database_data_licence_Other" name="database_licence_radio" style="margin-top: 0px;"/>
@@ -156,7 +156,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" disabled id="database_submit_button" onclick="new_database();">Submit</button>
                 <button type="button" class="btn" id="database_close_button" onclick="database_close_modal('create_database_modal');">Close</button>
@@ -186,4 +186,3 @@
         </div>
     </div>
 </div>
-
