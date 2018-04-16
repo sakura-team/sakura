@@ -4,7 +4,7 @@
 function buildListStub(idDiv,result,elt) {
 
     var eltAncetre=elt.split("/")[0];
-    
+
     //Head of the list, according to the selected columns
     var thead = $('#'+idDiv).find('thead');
     var tbody = $('#'+idDiv).find('tbody');
@@ -13,13 +13,13 @@ function buildListStub(idDiv,result,elt) {
     var new_row_head = $(thead[0].insertRow());
     var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
     var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
-    
+
     new_row_head.append('<th>Name</th>');
     list_cols_gui.forEach( function (lelt) {
     if (document.getElementById("cbColSelect"+lelt).checked)
         new_row_head.append('<th>'+lelt+'</th>');
     });
-    
+
     //Last col for the wrench
     var last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
     var cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
@@ -27,10 +27,10 @@ function buildListStub(idDiv,result,elt) {
         + '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></a>'
         + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>');
     new_row_head.append(cell);
-        
+
     //Body of the list
     result.forEach( function (row) {
-        
+
         var new_row = $(tbody[0].insertRow());
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
         //adding link
@@ -39,13 +39,13 @@ function buildListStub(idDiv,result,elt) {
             cell.append($('<a>',{   text: row.name,
                                     href: 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id,
                                     onclick: 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");'
-                                }) 
+                                })
                         );
         else
             cell.append(row.name);
-        
+
         new_row.append(cell);
-        
+
         list_cols_gui.forEach( function (lelt, index) {
             if (document.getElementById("cbColSelect"+lelt).checked) {
                 if (lelt == 'Date' && row[list_cols_hub[index]] instanceof Date) {
@@ -62,7 +62,7 @@ function buildListStub(idDiv,result,elt) {
         last_cell.colSpan = 2;
     });
     tbody[0].id = 'idTBodyList'+eltAncetre;
-    
+
 }
 
 
@@ -80,7 +80,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             databases.sort(databases_sort);
             var index = 0;
             n = databases.length;
-            
+
             databases.forEach( function(db) {
                 result_info = {'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
                                        'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
@@ -112,7 +112,7 @@ function listRequestStub(idDiv, n, elt, bd) {
                                 'date': op.date,
                                 'owner': op.owner,
                                 'modif': op.modification_date};
-                
+
                 //Display of undefined fields
                 Object.keys(result_info).forEach( function(key) {
                     if (!result_info[key]) {
@@ -168,7 +168,7 @@ function listRequestStubForRestart(idDiv) {
         + "</td></tr>";
     i=i+1;
     result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Analyses/tmpAnalysis';
+    elt='Dataflows/tmpDataflow';
     s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
         + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Share_icon_BLACK-01.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
         + "<td>"+result[i].shortDesc+"</td>"
@@ -188,7 +188,7 @@ function listRequestStubForRestart(idDiv) {
         + "</td></tr>";
     s = s + '<a href="javascript:listRequestStubForRestart(\''+idDiv+'\')" class="executeOnShow"> </a></div>';
     document.getElementById(idDiv).innerHTML = s;
-    
+
     return ;
 }
 
@@ -225,7 +225,7 @@ function buildEltStub(idDiv,result,elt) {
         imageElt = "Octicons-gear.svg.png";
         imageEltInverse = "Octicons-gear_inverse.svg.png";
     }
-    else if (elt=="Analysis") {
+    else if (elt=="Dataflow") {
         imageElt = "Share_icon_BLACK-01.svg.png";
         imageEltInverse = "Share_icon_BLACK-01_inverse.svg.png";
     }
@@ -233,7 +233,7 @@ function buildEltStub(idDiv,result,elt) {
         imageElt = "Article_icon_cropped.svg.png";
         imageEltInverse = "Article_icon_cropped_inverse.svg.png";
     }
-    
+
     // MAJ tabs
     /*var tmpCompleteDir ='';
     if (isUrlWithId(window.location.toString())) {
@@ -274,33 +274,33 @@ function buildEltStub(idDiv,result,elt) {
             }
         }
     }*/
-    
+
     /*
     //////////////////////////MIKE START
     if (isUrlWithId(window.location.toString())) {
         idElt = getIdFromUrl(window.location.toString());
-        
+
         if (idDiv.indexOf('Datas') != -1) {
             tmpCompleteDir = 'Datas/Data-'+idElt
         }
-        else if (idDiv.indexOf('Analyses') != -1) {
-            tmpCompleteDir = 'Analyses/Analysis-'+idElt
+        else if (idDiv.indexOf('Dataflows') != -1) {
+            tmpCompleteDir = 'Dataflows/Dataflow-'+idElt
         }
-        
+
         var container = $('#'+idDiv);
         var childs = $(container[0].parentNode)[0].children;
         if (childs.length > 1) {
             childs[0].remove();
         }
-        
+
         console.log(container[0].id);
         container.empty();
-    
+
         var title = $('<h3>', {html: elt+' '+result.name + '&nbsp;&nbsp;'});
         title.append($('<img>', {  src: 'media/'+imageElt,
                                 style: 'width: 40px; height: 40px; margin-right: 30px;'
                                 }));
-                            
+
         var button_main     = $('<button>', {   html: '<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>',
                                                 class: 'btn btn-ms',
                                                 style: 'border-color: #AAAAAA;',
@@ -316,7 +316,7 @@ function buildEltStub(idDiv,result,elt) {
                                                 title: 'History of modifications',
                                                 //onclick: 'showDiv(event, "'+tmpCompleteDir+'/Historic");',
                                                 disabled: true});
-        
+
         title.append(button_main);
         title.append(button_work);
         title.append(button_history);
@@ -324,16 +324,16 @@ function buildEltStub(idDiv,result,elt) {
     }
     //////////////////////////MIKE END
     */
-    
+
     /*s = s + '<div class="col-md-12" id="studyPageContentMain">'
         + '<div class="row well">'
         + '<h4 class="">'+elt+' information</h4>'
         + '<dl class="dl-horizontal col-md-6">';
-    
+
     //Informations
-    for(i=0;i<result.info.length;i++) { 
+    for(i=0;i<result.info.length;i++) {
         s = s + '<dt class="description-terms-align-left">'+result.info[i].name+'</dt><dd class="editableDescriptionField">'+result.info[i].value;
-        if ((result.info[i].name!="Name") && (result.info[i].name!="Project-id") && (result.info[i].name!="Data-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Analysis-id")&& (result.info[i].name!="Result-id")) {
+        if ((result.info[i].name!="Name") && (result.info[i].name!="Project-id") && (result.info[i].name!="Data-id")&& (result.info[i].name!="Operator-id")&& (result.info[i].name!="Dataflow-id")&& (result.info[i].name!="Result-id")) {
             s = s +'<span class="editZoneContextualMenu"></span>';
         }
         s = s +'</dd>';
@@ -349,9 +349,9 @@ function buildEltStub(idDiv,result,elt) {
     }
 
     if (result.process.length>0) {
-        s = s + '<dt class="description-terms-align-left">Analyses processes</dt><dd>';
+        s = s + '<dt class="description-terms-align-left">Dataflows processes</dt><dd>';
         for(i=0;i<result.process.length;i++) {
-            s = s + "<a onclick=\"showDiv(event,'Analyses/tmpAnalysis');\" href=\"http://sakura.imag.fr/Analyses/tmpAnalysis\">"+result.process[i].name+"</a>, ";
+            s = s + "<a onclick=\"showDiv(event,'Dataflows/tmpDataflow');\" href=\"http://sakura.imag.fr/Dataflows/tmpDataflow\">"+result.process[i].name+"</a>, ";
         }
         s = s + '</dd>';
     }
@@ -371,7 +371,7 @@ function buildEltStub(idDiv,result,elt) {
         +   '<li class="list-group-item"><strong>Volumetric indicator:</strong> <span class="label label-primary pull-right">5</span></li>'
         +   '<li class="list-group-item"><strong>Contact:</strong> <span class="label label-primary pull-right">'+result.userName+'@mail.uni</span></li>'
         + '</ul></div>';
-    
+
     //Description
     s = s + '<div id="descriptionModalAbout'+elt+'" class="modal fade" role="dialog"><div class="modal-dialog">'
         + '<div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button>'
@@ -399,24 +399,24 @@ function buildEltStub(idDiv,result,elt) {
     }
 
     //Comments
-    s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3>' 
+    s = s +'<hr style="border-bottom:5px solid;" /><br /><h3>Comments • '+result.comments.length+'</h3>'
         + '<span class="glyphicon glyphicon-user"></span><form class="form-inline" role="form"><label>Add your Comment: </label><div class="form-group">'
         + '<textarea class="form-control" rows="1" id="comment'+elt+'">Your comments</textarea></div>'
         + '<div class="form-group"><button onclick="addComment(this,event,\'comment'+elt+'\');" class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></div></form><hr />'
         + '<ul class="commentList">';
-        
+
     for(i=0;i<result.comments.length;i++) {
         s = s + '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
             + '<div class="commentText"><p class="">'+result.comments[i].comment+'</p> '
             + '<span class="date sub-text">'+result.comments[i].name+' on '+result.comments[i].date+'</span></div></li><br />';
         }
     s = s + '<a href="javascript:eltRequestStub(\''+idDiv+'\',\''+elt+'\',false)" class="executeOnShow"> </a></div>'; //TODO : relance l'affichage aleatoire, à supprimer quand on aura la version avec bd
-    
+
     document.getElementById(idDiv).innerHTML = document.getElementById(idDiv).innerHTML + s;
-    
+
     editorAbout = CKEDITOR.replace( "editor1"+elt);
-    editorAbout.on( "change", function( evt ) { 
-        sDesc =  editorAbout.getData(); 
+    editorAbout.on( "change", function( evt ) {
+        sDesc =  editorAbout.getData();
         document.getElementById("processShownAboutArea"+elt).innerHTML = sDesc;
     });
     */
@@ -429,7 +429,7 @@ function eltRequestStub(idDiv, elt, bd) {
         sakura.common.ws_request('get_database_info', [+idElt], {}, function(db_info) {
             var result = {'name': db_info.name, "userName":db_info.owner,
             "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
-            "datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]}; 
+            "datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]};
             buildEltStub(idDiv,result,elt);
         });
     }
@@ -459,7 +459,7 @@ function eltRequestStub(idDiv, elt, bd) {
             buildEltStub(idDiv,result,elt);
         });
     }
-    else { 
+    else {
         result = eltStubAlea(elt); // objet {"name":_,"userName":_,"description":_, "info":[...],"datas":[...], "process":[...], "results":[...], "comments":[...],"fileSystem":[...]} détail : {  "name":eltName,"userName":userName,"info":infos, "datas":datas, "process":procs, "results":results, "comments":comments,"fileSystem":fs,"description":desc}
         buildEltStub(idDiv,result,elt);
     }

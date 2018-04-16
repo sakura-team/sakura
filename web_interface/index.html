@@ -1,8 +1,8 @@
 <!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
-<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
+<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...-->
 
 <!doctype html>
-    <head> 
+    <head>
     <meta charset="UTF-8" />
     <script src="js/w3data.js"></script>
     <script src="/webcache/cdnjs/jquery/3.1.1/jquery.min.js"></script>
@@ -11,13 +11,13 @@
     <script src="/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js"></script>
     <script src="/webcache/cdnjs/moment.js/2.19.3/moment.min.js"></script>
     <script src="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-    
+
     <link href="css/web_interface.css" rel="stylesheet">
     <link href="css/parsley.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
-    
+
     <script>
         window.onpopstate = function(event) {
             if (event.state)
@@ -71,8 +71,8 @@
                         <a disabled style="cursor: not-allowed;">Operators</a>
                         <!--<a onclick="showDiv(event,'Operators');" href="http://sakura.imag.fr/Operators" style="cursor: pointer;">Operators</a>-->
                     </li>
-                    <li id="idNavBarAnalyses">
-                        <a onclick="showDiv(event,'Analyses');" href="http://sakura.imag.fr/Analyses" style="cursor: pointer;">Analyses</a>
+                    <li id="idNavBarDataflows">
+                        <a onclick="showDiv(event,'Dataflows');" href="http://sakura.imag.fr/Dataflows" style="cursor: pointer;">Dataflows</a>
                     </li>
                     <li id="idNavBarResults">
                         <a disabled style="cursor: not-allowed;">Results</a>
@@ -83,44 +83,44 @@
                     <li id="idNavBarDocumentation"><a onclick="showDiv(event,'Documentation');" href="http://sakura.imag.fr/Documentation" style="cursor: pointer;">Help</a></li>
                     <li><a href="http://panteda.imag.fr/" targer="_blank">About &nbsp;</a></li>
                 </ul>
-            </nav>  
+            </nav>
 
             <ol id="breadcrumbtrail" class="breadcrumb" style="margin-bottom:0px; padding-top: 0px; padding-bottom: 0px; background-color: rgb(250, 250, 250); font-size: 12px;">
                 <li><a onclick="showDiv(event,'');" href="http://sakura.imag.fr" title="Sakura">Sakura</a></li>
                 <li class="active">Home</li>
             </ol>
-            
+
             <div class="container-fluid" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
                 <div w3-include-html="divs/home/helloYou.html"></div>
-                
+
                 <div w3-include-html="divs/projects/index.html"></div>
                 <div w3-include-html="divs/projects/main.html"></div>
                 <div w3-include-html="divs/projects/work.html"></div>
                 <div w3-include-html="divs/projects/historic.html"></div>
-                
+
                 <div w3-include-html="divs/databases/index.html"></div>
                 <div w3-include-html="divs/databases/main.html"></div>
                 <div w3-include-html="divs/databases/meta.html"></div>
                 <div w3-include-html="divs/databases/work.html"></div>
                 <div w3-include-html="divs/databases/historic.html"></div>
-                
+
                 <div w3-include-html="divs/operators/index.html"></div>
                 <div w3-include-html="divs/operators/main.html"></div>
                 <div w3-include-html="divs/operators/work.html"></div>
                 <div w3-include-html="divs/operators/historic.html"></div>
-                
-                <div w3-include-html="divs/analyses/index.html"></div>
-                <div w3-include-html="divs/analyses/main.html"></div>
-                <div w3-include-html="divs/analyses/meta.html"></div>
-                <div w3-include-html="divs/analyses/work.html"></div>
-                <div w3-include-html="divs/analyses/historic.html"></div>                
-                
+
+                <div w3-include-html="divs/Dataflows/index.html"></div>
+                <div w3-include-html="divs/Dataflows/main.html"></div>
+                <div w3-include-html="divs/Dataflows/meta.html"></div>
+                <div w3-include-html="divs/Dataflows/work.html"></div>
+                <div w3-include-html="divs/Dataflows/historic.html"></div>
+
                 <div w3-include-html="divs/results/index.html"></div>
                 <div w3-include-html="divs/results/main.html"></div>
                 <div w3-include-html="divs/results/work.html"></div>
                 <div w3-include-html="divs/results/historic.html"></div>
-                
+
                 <div w3-include-html="divs/documentation/index.html"></div>
                 <!-- rms-dev:"signIn/index.html must precede "documentation/cgu.html" for correct stacked modal behavior for CGU-->
                 <div w3-include-html="divs/signIn/index.html"></div>
@@ -128,14 +128,14 @@
                 <div w3-include-html="divs/create/index.html"></div>
                 <div w3-include-html="divs/create/databases.html"></div>
                 <div w3-include-html="divs/colSelect/index.html"></div>
-            </div>          
+            </div>
 
             <!--<div class="container" id="divfooter" style="margin-top:50px">
                 <p align="center" class="text-muted">Page maintained by the LIG, viewed <span class="label label-primary">127</span> since January 2017, last updated on Oct 2017.</p>
             </div>
             -->
         </div>
-        
+
         <script src="js/sakura-common.js"></script>
         <script src="js/alea.js"></script>
         <script src="js/stubs.js"></script>
@@ -145,6 +145,6 @@
         <script src="js/signIn.js"></script>
         <script src="js/web_interface.js"></script>
         <script src="js/databases.js"></script>
-        
+
     </body>
 </html>

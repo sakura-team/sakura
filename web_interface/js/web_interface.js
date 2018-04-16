@@ -1,7 +1,7 @@
 /// LIG March 2017
 
 ////////////GLOBALS
-var web_interface_current_id = -1;
+var web_interface_current_id = -1; //database_id
 
 
 ////////////FUNCTIONS
@@ -31,16 +31,16 @@ function fill_database_metadata(db_id) {
         console.log(db_info);
         $('#web_interface_database_metadata').empty();
         $('#web_interface_database_metadata').load('divs/templates/datas_metadata.html', function() {
-            
+
             //Name
             $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-            
+
             //Description
             if (db_info.short_desc)
                 $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
             else
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-            
+
             ///////MetaData
             //Datastore Host
             sakura.common.ws_request('list_datastores', [], {}, function(lds) {
@@ -49,19 +49,19 @@ function fill_database_metadata(db_id) {
                     recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
                 });
             });
-            
+
             //Owner
             if (db_info.owner && db_info.owner != 'null')
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", '..');
-            
+
             //Rights
             if (db_info.rights)
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", db_info.rights);
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_rights_", '..');
-            
+
             //Creation date
             if (db_info.creation_date) {
                 var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
@@ -69,25 +69,25 @@ function fill_database_metadata(db_id) {
             }
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", '..');
-            
+
             //Agent Type
             if (db_info.agent_type)
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", db_info.agent_type);
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", '..');
-            
+
             //Agent Type
             if (db_info.licence)
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", db_info.licence);
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", '..');
-            
+
             //Domain Topic
             if (db_info.topic)
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", db_info.topic);
             else
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", '..');
-            
+
             //Data Type
             if (db_info.data_type)
                 recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", db_info.data_type);
@@ -98,25 +98,25 @@ function fill_database_metadata(db_id) {
 }
 
 
-function fill_analysis_metadata(ana_id) {
-    sakura.common.ws_request('get_analysis_info', [ana_id], {}, function(ana_info) {
+function fill_dataflow_metadata(ana_id) {
+    sakura.common.ws_request('get_dataflow_info', [ana_id], {}, function(ana_info) {
         //Name
-        $($('#analysis_main_name')[0]).html('&nbsp;&nbsp;<em>' + ana_info.name + '</em>&nbsp;&nbsp;');
-        
+        $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + ana_info.name + '</em>&nbsp;&nbsp;');
+
         //Description
         if (ana_info.short_desc)
-            $($('#analysis_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + ana_info.short_desc + '</font>&nbsp;&nbsp;');
+            $($('#Dataflow_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + ana_info.short_desc + '</font>&nbsp;&nbsp;');
         else
-            $($('#analysis_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+            $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
     });
 }
 
 
 function showDiv(event, dir, div_id) {
-    
+
     //todo : déplacer les event.preventDefault() ici ?
     //save mode ?
-    
+
     //Commented for know, just for clarifying the code and avoiding bag behaviors
     /*
     if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
@@ -124,11 +124,11 @@ function showDiv(event, dir, div_id) {
         if (res) {
             document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
             plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
-            
+
             for(i=0;i<plusFieldButtons.length;i++) {
                 plusFieldButtons[i].style.display='none';
             }
-            
+
             sav=confirm("Save modification (or abort)?");
             if (sav) {
                 //alert("Save");
@@ -142,7 +142,7 @@ function showDiv(event, dir, div_id) {
             return;
         }
     }*/
-    
+
     //set url
     if (event instanceof PopStateEvent) {
         // rien dans l'history
@@ -150,14 +150,14 @@ function showDiv(event, dir, div_id) {
     else {
         var stateObj = { where: dir };
         try {  //try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
-            history.pushState(stateObj, "page", "#"+dir); 
-        } 
-        catch (e) { 
+            history.pushState(stateObj, "page", "#"+dir);
+        }
+        catch (e) {
             tmp=0;
         }
     }
-    
-    
+
+
     //normalize dir
     if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1)) {
         document.pageElt = +dir.split("?")[1].match(/page=(-?\d+)/)[1];
@@ -165,28 +165,28 @@ function showDiv(event, dir, div_id) {
     else {
         document.pageElt = 1;
     }
-    
+
     dir = dir.split("?")[0];
-    
+
     if (dir=="") {
         dir="Home";
     }
     else if (dir.match("tmp") || isUrlWithId(dir)) {
         if (!(dir.match("Work") || dir.match("Historic") || dir.match("Main")))  {
-            if (dir[dir.length -1] == '/') 
+            if (dir[dir.length -1] == '/')
                 dir = dir + "Main";
             else
                 dir = dir + "/Main";
         }
     }
     var dirs = dir.split("/");
-    
+
     //show div
     mainDivs = document.getElementsByClassName('classMainDiv');
     for(i=0;i<mainDivs.length;i++) {
         mainDivs[i].style.display='none';
     }
-    
+
     var idDir = "idDiv";
     dirs.forEach(function (tmpLocDir) {
         if (isUrlWithId(tmpLocDir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
@@ -196,19 +196,19 @@ function showDiv(event, dir, div_id) {
             idDir += tmpLocDir;
         }
     });
-    
-    
-    
+
+
+
     if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
     }
     else {
         document.getElementById("idEditModeWidget").style.display='none';
     }
-    
+
     document.getElementById(idDir).style.display='inline';
-    
-    
+
+
     //activate navbar
     var d = document.getElementById("navbar_ul");
     for (var i=0; i< d.children.length; i++) {
@@ -218,7 +218,7 @@ function showDiv(event, dir, div_id) {
     if (navBarElt) {
         navBarElt.className = "active";
     }
-    
+
     //set breadcrumb
     var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"http://sakura.imag.fr\" title=\"Sakura\">Sakura</a></li>";
     var tmpDir = "";
@@ -227,12 +227,12 @@ function showDiv(event, dir, div_id) {
         bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\"http://sakura.imag.fr/"+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
         tmpDir = tmpDir + "/";
     }
-    
+
     bct = bct + "<li class='active'>"+dirs[i]+"</li>";
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
-    
-    if (window.location.toString().indexOf('tmpData') == -1 || window.location.toString().indexOf('tmpAnalysis')) {
+
+    if (window.location.toString().indexOf('tmpData') == -1 && window.location.toString().indexOf('tmpDataflow') == -1) {
         var tab = window.location.toString().split("/");
          if (tab.length == 5) {
             tab = tab[tab.length-1].split("-");
@@ -241,9 +241,9 @@ function showDiv(event, dir, div_id) {
             tab = tab[tab.length-2].split("-");
         }
         web_interface_current_id = parseInt(tab[tab.length -1]);
-        console.log("web_interface_current_id", web_interface_current_id);
+        console.log("-- web_interface_current_id", web_interface_current_id);
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////////
     //DATA
     if (div_id == 'idDatasMainToFullfill') {
@@ -253,9 +253,9 @@ function showDiv(event, dir, div_id) {
             $('#databases_buttons_main').addClass("btn-primary");
             $('#databases_buttons_work').removeClass("btn-primary");
             $('#databases_buttons_historic').removeClass("btn-primary");
-            
+
             fill_database_metadata(web_interface_current_id);
-            
+
             document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         }
         else if (dir.indexOf('Work') != -1) {
@@ -272,29 +272,29 @@ function showDiv(event, dir, div_id) {
         }
     }
     else if (dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
-        
+
         document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         $('#databases_buttons_main').addClass("btn-primary");
         $('#databases_buttons_work').removeClass("btn-primary");
         $('#databases_buttons_historic').removeClass("btn-primary");
-        
+
         $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
         $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
         $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'idDatasMainToFullfill');");
-        
+
         fill_database_metadata(web_interface_current_id);
     }
     else if (dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
-        
+
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
         $('#databases_buttons_main').removeClass("btn-primary");
         $('#databases_buttons_work').addClass("btn-primary");
         $('#databases_buttons_historic').removeClass("btn-primary");
-        
+
         $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
         $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
         $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'idDatasMainToFullfill');");
-        
+
         sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(db_info) {
             $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
             if (db_info.short_desc)
@@ -303,75 +303,74 @@ function showDiv(event, dir, div_id) {
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
         });
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////////
-    //ANALYSIS
+    //Dataflow
     console.log(div_id, dir);
-    if (div_id == 'idAnalysisMainToFullfill') {
-        document.getElementById('idDivAnalysestmpAnalysisMain').style.display='inline';
+    if (div_id == 'idDataflowMainToFullfill') {
+      console.log("HERE");
+      document.getElementById('idDivDataflowstmpDataflowMain').style.display='inline';
         if (dir.indexOf('Main') != -1) {
             console.log("META");
-            $('#analysis_buttons_main').addClass("btn-primary");
-            $('#analysis_buttons_work').removeClass("btn-primary");
-            $('#analysis_buttons_historic').removeClass("btn-primary");
-            
-            fill_analysis_metadata(web_interface_current_id);
-            
-            document.getElementById('idDivAnalysestmpAnalysisMeta').style.display='inline';
+            $('#Dataflow_buttons_main').addClass("btn-primary");
+            $('#Dataflow_buttons_work').removeClass("btn-primary");
+            $('#Dataflow_buttons_historic').removeClass("btn-primary");
+
+            document.getElementById('idDivDataflowstmpDataflowMeta').style.display='inline';
         }
         else if (dir.indexOf('Work') != -1) {
             console.log("WORK");
-            $('#analysis_buttons_main').removeClass("btn-primary");
-            $('#analysis_buttons_work').addClass("btn-primary");
-            $('#analysis_buttons_historic').removeClass("btn-primary");
+            $('#Dataflow_buttons_main').removeClass("btn-primary");
+            $('#Dataflow_buttons_work').addClass("btn-primary");
+            $('#Dataflow_buttons_historic').removeClass("btn-primary");
         }
         else if (dir.indexOf('Historic') != -1) {
             console.log("HISTORY");
-            $('#analysis_buttons_main').removeClass("btn-primary");
-            $('#analysis_buttons_work').removeClass("btn-primary");
-            $('#analysis_buttons_historic').addClass("btn-primary");
+            $('#Dataflow_buttons_main').removeClass("btn-primary");
+            $('#Dataflow_buttons_work').removeClass("btn-primary");
+            $('#Dataflow_buttons_historic').addClass("btn-primary");
         }
-        
-        fill_analysis_metadata(web_interface_current_id);
+
+        fill_dataflow_metadata(0);
     }
-    else if (dir.indexOf("Analysis") != -1 && dir != 'Analyses' && dir.indexOf("Main") != -1) {
-        
-        document.getElementById('idDivAnalysestmpAnalysisMeta').style.display='inline';
-        $('#analysis_buttons_main').addClass("btn-primary");
-        $('#analysis_buttons_work').removeClass("btn-primary");
-        $('#analysis_buttons_historic').removeClass("btn-primary");
-        
-        $('#analysis_buttons_main').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/', 'idAnalysisMainToFullfill');");
-        $('#analysis_buttons_work').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/Work', 'idAnalysisMainToFullfill');");
-        $('#analysis_buttons_historic').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/Historic', 'idAnalysisMainToFullfill');");
-        
-        $('#web_interface_analysis_metadata').empty();
-        $('#web_interface_analysis_metadata').load('divs/templates/analysis_metadata.html');
-        
-        fill_analysis_metadata(web_interface_current_id);
+    else if (dir.indexOf("Dataflow") != -1 && dir != 'Dataflows' && dir.indexOf("Main") != -1) {
+
+        document.getElementById('idDivDataflowstmpDataflowMeta').style.display='inline';
+        $('#Dataflow_buttons_main').addClass("btn-primary");
+        $('#Dataflow_buttons_work').removeClass("btn-primary");
+        $('#Dataflow_buttons_historic').removeClass("btn-primary");
+
+        $('#Dataflow_buttons_main').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/', 'idDataflowMainToFullfill');");
+        $('#Dataflow_buttons_work').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/Work', 'idDataflowMainToFullfill');");
+        $('#Dataflow_buttons_historic').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/Historic', 'idDataflowMainToFullfill');");
+
+        $('#web_interface_Dataflow_metadata').empty();
+        $('#web_interface_Dataflow_metadata').load('divs/templates/Dataflow_metadata.html');
+
+        fill_dataflow_metadata(0);
     }
-    else if (dir.indexOf("Work") != -1 && dir != 'Analyses' && dir.indexOf("Analyses") != -1) {
-        
-        document.getElementById('idDivAnalysestmpAnalysisMain').style.display='inline';
-        $('#analysis_buttons_main').removeClass("btn-primary");
-        $('#analysis_buttons_work').addClass("btn-primary");
-        $('#analysis_buttons_historic').removeClass("btn-primary");
-        
-        $('#analysis_buttons_main').attr('onclick', "showDiv(event, 'Analyses/Analysis-"+web_interface_current_id+"/', 'idAnalysisMainToFullfill');");
-        $('#analysis_buttons_work').attr('onclick', "showDiv(event, 'Analyses/analysis-"+web_interface_current_id+"/Work', 'idAnalysisMainToFullfill');");
-        $('#analysis_buttons_historic').attr('onclick', "showDiv(event, 'Analysis/analysis-"+web_interface_current_id+"/Historic', 'idAnalysisMainToFullfill');");
-        
-        sakura.common.ws_request('get_analysis_info', [web_interface_current_id], {}, function(info) {
-            $($('#analysis_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
+    else if (dir.indexOf("Work") != -1 && dir != 'Dataflows' && dir.indexOf("Dataflows") != -1) {
+
+        document.getElementById('idDivDataflowstmpDataflowMain').style.display='inline';
+        $('#Dataflow_buttons_main').removeClass("btn-primary");
+        $('#Dataflow_buttons_work').addClass("btn-primary");
+        $('#Dataflow_buttons_historic').removeClass("btn-primary");
+
+        $('#Dataflow_buttons_main').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/', 'idDataflowMainToFullfill');");
+        $('#Dataflow_buttons_work').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/Work', 'idDataflowMainToFullfill');");
+        $('#Dataflow_buttons_historic').attr('onclick', "showDiv(event, 'Dataflow/Dataflow-"+web_interface_current_id+"/Historic', 'idDataflowMainToFullfill');");
+
+        sakura.common.ws_request('get_dataflow_info', [0], {}, function(info) {
+            $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
             if (info.short_desc)
-                $($('#analysis_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
+                $($('#Dataflow_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
             else
-                $($('#analysis_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+                $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
         });
     }
-    
+
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
-    
+
     for(i=0;i<actionsOnShow.length;i++) {
         if (actionsOnShow[i].nodeName == "IFRAME") {
             var aos = actionsOnShow[i];
@@ -379,10 +378,12 @@ function showDiv(event, dir, div_id) {
             sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
                 if (aos.id == 'iframe_datasets') {
                     //idElt = getIdFromUrl(window.location.toString());
+                    console.log("HERE_228");
                     aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_id+"&session-secret="+ss;
                 }
                 else if (aos.id == 'iframe_workflow') {
-                    aos.src = "/modules/workflow/index.html?session-secret="+ss;
+                  console.log("HERE_220");
+                  aos.src = "/modules/workflow/index.html?session-secret="+ss;
                 }
             });
         }
@@ -392,7 +393,7 @@ function showDiv(event, dir, div_id) {
             }
         }
     }
-    
+
     if (event)
         event.preventDefault();
 }
@@ -425,7 +426,7 @@ function editModeSubmitControl(event) {
     for(i=0;i<plusFieldButtons.length;i++) {
         plusFieldButtons[i].style.display='';
     }
-} 
+}
 
 
 function addFile(fileSystem,event) {
@@ -493,7 +494,7 @@ function addField(field,event) {
 function addComment(field,event,idComment) {
     var comment = document.getElementById(idComment).value;
     document.getElementById(idComment).value = "Your comments";
-    document.getElementById("commentAnalysis").parentElement.parentElement.nextSibling.nextSibling.firstChild.insertAdjacentHTML("beforebegin",
+    document.getElementById("commentDataflow").parentElement.parentElement.nextSibling.nextSibling.firstChild.insertAdjacentHTML("beforebegin",
                 '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
                 + '<div class="commentText"><p class="">'+comment+'</p> '
                 + '<span class="date sub-text">you just now</span></div></li>');
@@ -509,7 +510,7 @@ function saveModeSubmitControl(event) {
     else {
         alert("Abort (not yet impemented)");
     }
-    
+
     menuSpans=document.getElementsByClassName('editZoneContextualMenu');
     for(i=0;i<menuSpans.length;i++) {
         menuSpans[i].innerHTML='';
@@ -577,5 +578,3 @@ function showDivCGU(event) {
     showDiv(event,"CGU");
 //    return; //dismisses the modal box, of course !
 }
-
-
