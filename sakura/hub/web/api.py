@@ -178,7 +178,7 @@ class GuiToHubAPI(object):
         return [{   'name': "dataflow 0",
                     'dataflow_id': 0,
                     'short_desc': "This is the first dataflow",
-                    'owner': "mike"
+                    'owner': "mike",
                     'tags': []
                     },
                 {   'name': "dataflow 1",
