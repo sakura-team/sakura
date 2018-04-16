@@ -27,6 +27,7 @@ function recursiveReplace(node, init_text, new_text) {
 
 
 function fill_database_metadata(db_id) {
+    console.log("DB_info: ask 1");
     sakura.common.ws_request('get_database_info', [db_id], {}, function(db_info) {
         console.log(db_info);
         $('#web_interface_database_metadata').empty();
@@ -254,6 +255,7 @@ function showDiv(event, dir, div_id) {
             $('#databases_buttons_work').removeClass("btn-primary");
             $('#databases_buttons_historic').removeClass("btn-primary");
 
+            console.log("This fill");
             fill_database_metadata(web_interface_current_id);
 
             document.getElementById('idDivDatastmpDataMeta').style.display='inline';
@@ -271,7 +273,7 @@ function showDiv(event, dir, div_id) {
             $('#databases_buttons_historic').addClass("btn-primary");
         }
     }
-    else if (dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
+    else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
 
         document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         $('#databases_buttons_main').addClass("btn-primary");
@@ -284,7 +286,7 @@ function showDiv(event, dir, div_id) {
 
         fill_database_metadata(web_interface_current_id);
     }
-    else if (dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
+    else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
 
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
         $('#databases_buttons_main').removeClass("btn-primary");
@@ -308,7 +310,6 @@ function showDiv(event, dir, div_id) {
     //Dataflow
     console.log(div_id, dir);
     if (div_id == 'idDataflowMainToFullfill') {
-      console.log("HERE");
       document.getElementById('idDivDataflowstmpDataflowMain').style.display='inline';
         if (dir.indexOf('Main') != -1) {
             console.log("META");
@@ -369,6 +370,7 @@ function showDiv(event, dir, div_id) {
         });
     }
 
+
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
 
     for(i=0;i<actionsOnShow.length;i++) {
@@ -378,11 +380,9 @@ function showDiv(event, dir, div_id) {
             sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
                 if (aos.id == 'iframe_datasets') {
                     //idElt = getIdFromUrl(window.location.toString());
-                    console.log("HERE_228");
                     aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_id+"&session-secret="+ss;
                 }
                 else if (aos.id == 'iframe_workflow') {
-                  console.log("HERE_220");
                   aos.src = "/modules/workflow/index.html?session-secret="+ss;
                 }
             });

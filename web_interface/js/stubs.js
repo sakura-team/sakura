@@ -426,6 +426,7 @@ function buildEltStub(idDiv,result,elt) {
 function eltRequestStub(idDiv, elt, bd) {
     if (elt == 'Data') {
         idElt = getIdFromUrl(window.location.toString());
+        console.log("DB_info: ask 3");
         sakura.common.ws_request('get_database_info', [+idElt], {}, function(db_info) {
             var result = {'name': db_info.name, "userName":db_info.owner,
             "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
