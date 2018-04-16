@@ -175,7 +175,18 @@ class GuiToHubAPI(object):
                 'short_desc': "This is a very short description for testing" }
 
     def list_dataflows(self):
-        return None
+        return [{   'name': "dataflow 0",
+                    'dataflow_id': 0,
+                    'short_desc': "This is the first dataflow",
+                    'owner': "mike"
+                    'tags': []
+                    },
+                {   'name': "dataflow 1",
+                    'dataflow_id': 1,
+                    'short_desc': "This is the second dataflow",
+                    'owner': "george de la jungle",
+                    'tags': []
+                    }]
 
     # Session management
     ####################

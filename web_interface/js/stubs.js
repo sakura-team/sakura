@@ -70,6 +70,10 @@ function databases_sort(a, b) {
     return a.name > b.name ? 1 : -1;
 }
 
+function dataflows_sort(a, b) {
+    return a.name > b.name ? 1 : -1;
+}
+
 
 function listRequestStub(idDiv, n, elt, bd) {
 
@@ -99,6 +103,28 @@ function listRequestStub(idDiv, n, elt, bd) {
             });
         });
     }
+    //Here is for Dataflows
+    else if (elt == 'Dataflows/tmpDataflow') {
+        sakura.common.ws_request('list_dataflows', [], {}, function (dataflows) {
+            var result = new Array();
+            dataflows.sort(dataflows_sort);
+            var index = 0;
+            n = dataflows.length;
+
+            dataflows.forEach( function(df) {
+                result_info = { 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
+                                'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
+                                'tags': df.tags, 'owner': df.owner };
+
+                result.push(result_info);
+                if (result.length == n) {
+                    result.sort(dataflows_sort);
+                    buildListStub(idDiv,result,elt);
+                }
+            });
+        });
+    }
+    //Operators
     else if (elt == 'Operators/tmpOperator') {
         sakura.common.ws_request('list_operators_classes', [], {}, function (operators) {
             var result = new Array();
@@ -426,7 +452,6 @@ function buildEltStub(idDiv,result,elt) {
 function eltRequestStub(idDiv, elt, bd) {
     if (elt == 'Data') {
         idElt = getIdFromUrl(window.location.toString());
-        console.log("DB_info: ask 3");
         sakura.common.ws_request('get_database_info', [+idElt], {}, function(db_info) {
             var result = {'name': db_info.name, "userName":db_info.owner,
             "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
