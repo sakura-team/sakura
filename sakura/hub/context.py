@@ -16,7 +16,7 @@ class HubContext(object):
     def __init__(self, db):
         self.db = db
         self.daemons = self.db.Daemon
-        self.projects = self.db.Project
+        self.dataflows = self.db.Dataflow
         self.users = self.db.User
         self.sessions = self.db.Session
         self.op_classes = self.db.OpClass

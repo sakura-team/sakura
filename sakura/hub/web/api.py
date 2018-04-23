@@ -1,7 +1,7 @@
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
-        self.project_id = 0     # for now
+        self.dataflow_id = 0     # for now
 
     ########################################
     # Daemons
@@ -95,11 +95,19 @@ class GuiToHubAPI(object):
     def get_operator_instance_gui_data(self, op_id):
         return self.context.op_instances[op_id].gui_data
 
-    def set_project_gui_data(self, project_gui_data):
-        self.context.projects.set_gui_data(self.project_id, project_gui_data)
+    # TODO: drop this when GUI is updated to call set_dataflow_gui_data
+    def set_project_gui_data(self, dataflow_gui_data):
+        self.set_dataflow_gui_data(dataflow_gui_data)
 
+    # TODO: drop this when GUI is updated to call get_dataflow_gui_data
     def get_project_gui_data(self):
-        return self.context.projects.get_gui_data(self.project_id)
+        return self.get_dataflow_gui_data()
+
+    def set_dataflow_gui_data(self, dataflow_gui_data):
+        self.context.dataflows.set_gui_data(self.dataflow_id, dataflow_gui_data)
+
+    def get_dataflow_gui_data(self):
+        return self.context.dataflows.get_gui_data(self.dataflow_id)
 
     def set_link_gui_data(self, link_id, gui_data):
         self.context.links[link_id].gui_data = gui_data

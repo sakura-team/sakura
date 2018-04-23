@@ -1,6 +1,6 @@
 from pony.orm import Required, Optional, Set, Json, \
                      composite_key as UNIQUE, PrimaryKey
-from sakura.hub.mixins.project import ProjectMixin
+from sakura.hub.mixins.dataflow import DataflowMixin
 from sakura.hub.mixins.daemon import DaemonMixin
 from sakura.hub.mixins.datastore import DatastoreMixin
 from sakura.hub.mixins.database import DatabaseMixin
@@ -43,7 +43,7 @@ def define_schema(db):
         user = Optional(User)
         timeout = Required(epoch)
 
-    class Project(db.Entity, ProjectMixin):
+    class Dataflow(db.Entity, DataflowMixin):
         gui_data = Optional(str)
         op_instances = Set('OpInstance')
 
@@ -63,7 +63,7 @@ def define_schema(db):
         UNIQUE(daemon, name)
 
     class OpInstance(db.Entity, OpInstanceMixin):
-        project = Optional(Project) # TODO: should be required
+        dataflow = Optional(Dataflow) # TODO: should be required
         op_class = Required(OpClass)
         gui_data = Optional(str)
         uplinks = Set('Link')
