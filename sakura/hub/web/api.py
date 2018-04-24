@@ -13,6 +13,9 @@ class GuiToHubAPI(object):
     def list_operators_classes(self):
         return self.context.op_classes
 
+    def get_operator_class_info(self, cls_id):
+        return self.context.op_classes[cls_id]
+
     # instantiate an operator and return the instance info
     def create_operator_instance(self, dataflow_id, cls_id):
         return self.dataflows[dataflow_id].create_operator_instance(cls_id)
