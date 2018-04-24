@@ -1,7 +1,6 @@
 class GuiToHubAPI(object):
     def __init__(self, context):
         self.context = context
-        self.dataflow_id = 0     # for now
 
     ########################################
     # Daemons
@@ -14,12 +13,9 @@ class GuiToHubAPI(object):
     def list_operators_classes(self):
         return self.context.op_classes
 
-    def list_operators_instance_ids(self):
-        return tuple(op.id for op in self.context.op_instances.select())
-
     # instantiate an operator and return the instance info
-    def create_operator_instance(self, cls_id):
-        return self.context.op_instances.create_instance(cls_id)
+    def create_operator_instance(self, dataflow_id, cls_id):
+        return self.dataflows[dataflow_id].create_operator_instance(cls_id)
 
     # delete operator instance and links involved
     def delete_operator_instance(self, op_id):
@@ -95,20 +91,6 @@ class GuiToHubAPI(object):
     def get_operator_instance_gui_data(self, op_id):
         return self.context.op_instances[op_id].gui_data
 
-    # TODO: drop this when GUI is updated to call set_dataflow_gui_data
-    def set_project_gui_data(self, dataflow_gui_data):
-        self.set_dataflow_gui_data(dataflow_gui_data)
-
-    # TODO: drop this when GUI is updated to call get_dataflow_gui_data
-    def get_project_gui_data(self):
-        return self.get_dataflow_gui_data()
-
-    def set_dataflow_gui_data(self, dataflow_gui_data):
-        self.context.dataflows.set_gui_data(self.dataflow_id, dataflow_gui_data)
-
-    def get_dataflow_gui_data(self):
-        return self.context.dataflows.get_gui_data(self.dataflow_id)
-
     def set_link_gui_data(self, link_id, gui_data):
         self.context.links[link_id].gui_data = gui_data
 
@@ -172,33 +154,27 @@ class GuiToHubAPI(object):
 
     ########################################
     # Dataflow
+    @property
+    def dataflows(self):
+        return self.context.dataflows.filter_for_web_user()
+
     def get_dataflow_info(self, dataflow_id):
-        return {'name': "Dataflow Test",
-                'dataflow_id': 0,
-                'owner': "mike",
-                'creation_date': 1,
-                'grant_level': "own",
-                'topic':    "Anova",
-                'licence': "Public access",
-                'short_desc': "This is a very short description for testing" }
+        return self.dataflows[dataflow_id].get_full_info()
 
     def list_dataflows(self):
-        return [{   'name': "dataflow 0",
-                    'dataflow_id': 0,
-                    'short_desc': "This is the first dataflow",
-                    'owner': "mike",
-                    'tags': []
-                    },
-                {   'name': "dataflow 1",
-                    'dataflow_id': 1,
-                    'short_desc': "This is the second dataflow",
-                    'owner': "george de la jungle",
-                    'tags': []
-                    }]
+        return self.dataflows
 
     def new_dataflow(self, name, **kwargs):
-        print(kwargs)
-        return 0
+        return self.dataflows.create_dataflow(name, **kwargs)
+
+    def update_dataflow_info(self, dataflow_id, **kwargs):
+        self.dataflows[dataflow_id].update_attributes(**kwargs)
+
+    def set_dataflow_gui_data(self, dataflow_id, gui_data):
+        self.dataflows[dataflow_id].gui_data = gui_data
+
+    def get_dataflow_gui_data(self, dataflow_id):
+        return self.dataflows[dataflow_id].gui_data
 
     # Session management
     ####################

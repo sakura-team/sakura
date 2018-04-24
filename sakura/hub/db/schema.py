@@ -37,6 +37,9 @@ def define_schema(db):
         db_ro = Set('Database')
         db_owner_of = Set('Database')
         db_contact_of = Set('Database')
+        df_owner_of = Set('Dataflow')
+        df_rw = Set('Dataflow')
+        df_ro = Set('Dataflow')
         sessions = Set('Session')
 
     class Session(db.Entity, SessionMixin):
@@ -45,6 +48,11 @@ def define_schema(db):
 
     class Dataflow(db.Entity, DataflowMixin):
         gui_data = Optional(str)
+        metadata = Optional(Json, default = {})
+        owner = Required(User, reverse = 'df_owner_of')
+        access_scope = Required(int)  # see sakura/hub/access.py
+        users_rw = Set(User, reverse = 'df_rw')
+        users_ro = Set(User, reverse = 'df_ro')
         op_instances = Set('OpInstance')
 
     class Daemon(db.Entity, DaemonMixin):
@@ -63,7 +71,7 @@ def define_schema(db):
         UNIQUE(daemon, name)
 
     class OpInstance(db.Entity, OpInstanceMixin):
-        dataflow = Optional(Dataflow) # TODO: should be required
+        dataflow = Required(Dataflow)
         op_class = Required(OpClass)
         gui_data = Optional(str)
         uplinks = Set('Link')
