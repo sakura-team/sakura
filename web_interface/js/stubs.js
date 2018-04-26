@@ -63,6 +63,15 @@ function buildListStub(idDiv,result,elt) {
     });
     tbody[0].id = 'idTBodyList'+eltAncetre;
 
+    if (result.length == 0) {
+        var new_row = $(tbody[0].insertRow());
+        var msg = "There is no accessible database.";
+        if (idDiv.indexOf("Dataflows") != -1)
+            msg = "There is no accessible dataflow.";
+        new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
+    }
+
+
 }
 
 
@@ -101,6 +110,10 @@ function listRequestStub(idDiv, n, elt, bd) {
                     buildListStub(idDiv,result,elt);
                 }
             });
+
+            if (n == 0) {
+                buildListStub(idDiv,result,elt);
+            }
         });
     }
     //Here is for Dataflows
@@ -122,6 +135,10 @@ function listRequestStub(idDiv, n, elt, bd) {
                     buildListStub(idDiv,result,elt);
                 }
             });
+
+            if (n == 0) {
+                buildListStub(idDiv,result,elt);
+            }
         });
     }
     //Operators
