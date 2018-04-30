@@ -43,15 +43,15 @@ function index_in_array_of_tuples(arr, col, e) {
 
 function tuple_in_array_of_tuples(arr, tuple) {
     for (var i = 0; i< arr.length; i++) {
-        
+
         var is_the_one = true;
         for (var j = 0; j< tuple.length; j++)
             if (arr[i][j] != tuple[j])
                 is_the_one = false;
-        
+
         if (is_the_one)
             return i;
-    } 
+    }
     return -1;
 }
 

@@ -8,26 +8,26 @@ var nb_cols_in_displayed_table = 4
 
 //This function ask about all the operators, and then update the "operators selection" modal
 function select_op_new_modal() {
-    
+
     //cleaning
     $('#select_op_tags_select').empty();
     $('#select_op_names_select').empty();
     document.getElementById('select_op_panel_title').value = '';
-    
+
     $("#select_op_make_button").removeClass('btn btn-secondary').addClass('btn btn-primary');
-    $("#select_op_update_button").hide();    
-    
+    $("#select_op_update_button").hide();
+
     //Before opening the modal, we have to ask about the existing operators, and then make the tags list
     sakura.common.ws_request('list_operators_classes', [], {}, function (result) {
         var tags_list = [];
         var sostl = document.getElementById('select_op_tags_select');
         var sosnl = document.getElementById('select_op_names_select');
-        
+
         var div = document.getElementById('select_op_panel');
         while(div.firstChild){
             div.removeChild(div.firstChild);
         }
-        
+
         global_ops_cl = JSON.parse(JSON.stringify(result));
         global_ops_cl.forEach( function (op) {
             op['tags'].forEach( function (tag) {
@@ -44,7 +44,7 @@ function select_op_new_modal() {
             option.setAttribute("data-subtext", op['daemon']);
             sosnl.add(option);
         });
-            
+
         $('#select_op_tags_select').selectpicker('refresh');
         $('#select_op_names_select').selectpicker('refresh');
         $('#modal_op_selector').modal();
@@ -55,25 +55,25 @@ function select_op_new_modal() {
 function select_op_reopen_modal(id) {
     panel = panel_from_id(id);
     panel_focus_id = id;
-    
+
     $('#select_op_tags_select').empty();
     $('#select_op_names_select').empty();
     document.getElementById('select_op_panel_title').value = '';
-    
+
     $("#select_op_make_button").removeClass('btn btn-primary').addClass('btn btn-secondary');
     $("#select_op_update_button").show();
-    
+
     //Before opening the modal, we have to ask about the existing operators, and then make the tags list
     sakura.common.ws_request('list_operators_classes', [], {}, function (result) {
         var tags_list = [];
         var sostl = document.getElementById('select_op_tags_select');
         var sosnl = document.getElementById('select_op_names_select');
-        
+
         var div = document.getElementById('select_op_panel');
         while(div.firstChild){
             div.removeChild(div.firstChild);
         }
-        
+
         global_ops_cl = JSON.parse(JSON.stringify(result));
         global_ops_cl.forEach( function (op) {
             op['tags'].forEach( function (tag) {
@@ -90,45 +90,45 @@ function select_op_reopen_modal(id) {
             option.setAttribute("data-subtext", op['daemon']);
             sosnl.add(option);
         });
-        
+
         document.getElementById('select_op_panel_title').value = panel.title;
         for (var i=0; i< panel.names.length; i++)
             document.getElementById("select_op_names_select").options[i].selected = panel.names[i];
         for (var i=0; i< panel.tags.length; i++)
             document.getElementById("select_op_tags_select").options[i].selected = panel.tags[i];
-        
+
         select_op_on_change();
-        
+
         //Cleaning
         while(div.firstChild){
             div.removeChild(div.firstChild);
         }
-        
+
         var divs = [];
         panel.selected_ops.forEach( function(op) {
             divs.push(select_op_new_operator(op, true));
         });
-        
+
         var pdiv = document.getElementById('select_op_panel');
         pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, divs));
-        
+
         $('#select_op_tags_select').selectpicker('refresh');
         $('#select_op_names_select').selectpicker('refresh');
-        
+
         $('#modal_op_selector').modal();
     });
 }
 
 
 function select_op_make_table(nb_cols, divs) {
-    
+
     //table creation
     var tbl = document.createElement('table');
     var tbdy = document.createElement('tbody');
     var nb_rows = Math.ceil(divs.length/nb_cols);
-    
+
     tbl.style.width = '100%';
-    
+
     var index = 0;
     for (var i=0; i< nb_rows; i++) {
         var tr = document.createElement('tr');
@@ -157,15 +157,15 @@ function select_op_make_table(nb_cols, divs) {
 
 
 function select_op_on_change() {
-    
+
     var ops_to = document.getElementById("select_op_tags_select").options;
     var ops_no = document.getElementById("select_op_names_select").options;
-    
+
     //cleaning
     var pdiv = document.getElementById('select_op_panel');
     select_op_selected = []
     select_op_divs = []
-    
+
     //tags
     for (var o=0; o<ops_to.length; o++) {
         if (ops_to[o].selected) {
@@ -177,7 +177,7 @@ function select_op_on_change() {
             });
         }
     }
-    
+
     //names
     for (var o=0; o<ops_no.length; o++) {
         if (ops_no[o].selected && select_op_selected.indexOf(parseInt(ops_no[o].value)) == -1) {
@@ -185,7 +185,7 @@ function select_op_on_change() {
             select_op_selected.push(parseInt(ops_no[o].value));
         }
     }
-    
+
     //Cleaning
     while(pdiv.firstChild){
         pdiv.removeChild(pdiv.firstChild);
@@ -218,13 +218,13 @@ function select_op_new_operator(id, removable) {
                             <td align="center">'+cl.svg+ ' \
                         <tr>';
     }
-    
+
     var l = cl.name.length;
     var fname = cl.name;
     if (l > 7) {
         fname = cl.name.substring(0,7)+'.';
     }
-    
+
     s += '<td align="center"> <font size="1">'+fname+'</font>';
     s += '</table>';
     if (!removable)
@@ -238,20 +238,20 @@ function select_op_new_operator(id, removable) {
 
 
 function select_op_delete_op(id) {
-    
+
     var index = select_op_selected.indexOf(parseInt(id));
-    
+
     select_op_selected.splice(index, 1);
     select_op_divs.splice(index, 1);
-    
+
     var pdiv = document.getElementById('select_op_panel');
-    
+
     //Cleaning div
     while(pdiv.firstChild){
         pdiv.removeChild(pdiv.firstChild);
     }
     pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_divs));
-    
+
     //Cleaning name selection
     var options = document.getElementById("select_op_names_select").options;
     for (var i=0; i<options.length;i++) {
@@ -267,11 +267,11 @@ function select_op_delete_op(id) {
 
 
 function select_op_add_panel() {
-    
+
     var title = document.getElementById('select_op_panel_title').value;
-    
+
     //Here we manage a panel title by default
-    if (title == '') { 
+    if (title == '') {
         title  = "Panel 0";
         var cpt = 0;
         global_op_panels.forEach( function (p) {
@@ -282,46 +282,46 @@ function select_op_add_panel() {
         title = "Panel "+cpt;
         });
     }
-    
+
     var divs = []
     select_op_selected.forEach( function(item) {
         divs.push(select_op_new_operator(item, false));
     });
-    
+
     var tbl = select_op_make_table(nb_cols_in_displayed_table, divs);
     var tmp_el = document.createElement("div");
     tmp_el.appendChild(tbl);
-    
+
     var acc_id = global_op_panels.length;
     global_op_panels.forEach( function (op) {
         if (op['id'] == acc_id)
             acc_id ++;
     });
-    
+
     var names = []
     var options = document.getElementById("select_op_names_select").options;
     for (var i=0; i<options.length;i++) {
         names.push(options[i].selected);
     }
-    
+
     var tags = []
     options = document.getElementById("select_op_tags_select").options;
     for (var i=0; i<options.length;i++) {
         tags.push(options[i].selected);
     }
-    
+
     var panel = {'id': acc_id, 'title': title, 'selected_ops': select_op_selected, gui: {'opened': true}, 'names': names, 'tags': tags}
     panel.id = "accordion_"+acc_id;
-    
+
     global_op_panels.push(panel);
-    
+
     select_op_create_accordion(panel, tmp_el.innerHTML);
-    
+
     //update global variable
     $('#modal_op_selector').modal('hide');
-    
+
     //Send the the current global var to the hub
-    save_project()
+    save_dataflow()
 }
 
 
@@ -332,10 +332,10 @@ function select_op_update_panel() {
 
 
 function change_chevron(a, panel_id) {
-    
+
     var panel = panel_from_id(panel_id);
     var span_class = a.find('span').attr('class');
-    
+
     if (span_class == "glyphicon glyphicon-chevron-up") {
         a.find('span').removeClass('glyphicon glyphicon-chevron-up').addClass('glyphicon glyphicon-chevron-down');
         panel.gui.opened = false;
@@ -344,13 +344,13 @@ function change_chevron(a, panel_id) {
         a.find('span').removeClass('glyphicon glyphicon-chevron-down').addClass('glyphicon glyphicon-chevron-up');
         panel.gui.opened = true;
     }
-    
-    save_project();
+
+    save_dataflow();
 }
 
 
 function select_op_create_accordion(panel, ops) {
-    
+
     var wrapper= document.createElement('div');
     load_from_template(
                     wrapper,
@@ -361,9 +361,9 @@ function select_op_create_accordion(panel, ops) {
                         $(modal).find("#panel_"+panel.id+"_body").html(ops);
                         var acc_div = document.getElementById('op_left_accordion');
                         var butt = document.getElementById('select_op_add_button');
-                        
+
                         acc_div.insertBefore(wrapper.firstChild, butt);
-                        
+
                         if (!panel.gui.opened)
                             $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
                     });
@@ -374,11 +374,11 @@ function select_op_delete_accordion(id) {
     var panel = panel_from_id(id);
     var acc = document.getElementById(panel.id);
     document.getElementById('op_left_accordion').removeChild(acc);
-    
+
     var index = panel_index_from_id(panel.id);
     global_op_panels.splice(index,1);
-    
-    save_project();
+
+    save_dataflow();
 }
 
 

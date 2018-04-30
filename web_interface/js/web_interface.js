@@ -101,7 +101,7 @@ function fill_dataflow_metadata(dataflow_id) {
     sakura.common.ws_request('get_dataflow_info', [dataflow_id], {}, function(df_info) {
         $('#web_interface_dataflow_metadata').empty();
         $('#web_interface_dataflow_metadata').load('divs/templates/dataflows_metadata.html', function() {//Name
-            
+
             $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + df_info.name + '</em>&nbsp;&nbsp;');
 
             //Description
@@ -408,7 +408,7 @@ function showDiv(event, dir, div_id) {
                     aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_id+"&session-secret="+ss;
                 }
                 else if (aos.id == 'iframe_workflow') {
-                  aos.src = "/modules/workflow/index.html?session-secret="+ss;
+                  aos.src = "/modules/workflow/index.html?dataflow_id="+web_interface_current_id+"&session-secret="+ss;
                 }
             });
         }

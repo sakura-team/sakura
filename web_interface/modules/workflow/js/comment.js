@@ -19,7 +19,7 @@ function new_comment() {
             found = true;
         }
     }
-    
+
     load_from_template(
                     wrapper,
                     "comment.html",
@@ -30,17 +30,17 @@ function new_comment() {
                         com.style.top   = ''+(cursorY - main_div.offsetTop)+'px';
                         com.setAttribute("draggable", "true");
                         main_div.appendChild(com);
-                        
+
                         $('#comment_'+com.id+'_title').blur( function (e) {
-                            save_project()
+                            save_dataflow()
                         });
                         $('#comment_'+com.id+'_body').blur( function (e) {
-                            save_project()
+                            save_dataflow()
                         });
-                        
+
                         global_coms.push({  'id': id,
                                             'div': com});
-                        save_project();
+                        save_dataflow();
                     }
     );
 }
@@ -50,7 +50,7 @@ function comment_from(com) {
     var wrapper = document.createElement('div');
     var body = com.body.replace(/<br>/g, '\n');
     var title = com.title.replace(/<br>/g, '\n');
-    
+
     load_from_template(
                     wrapper,
                     "comment.html",
@@ -62,22 +62,22 @@ function comment_from(com) {
                         ncom.style.width     = com.width;
                         ncom.style.height    = com.height;
                         ncom.setAttribute("draggable", "true");
-                        
+
                         main_div.appendChild(ncom);
-                        
+
                         $('#comment_'+com.id+'_title').blur( function (e) {
-                            save_project()
+                            save_dataflow()
                         });
                         $('#comment_'+com.id+'_body').blur( function (e) {
-                            save_project()
+                            save_dataflow()
                         });
-                        
+
                         global_coms.push({  'id': parseInt(com.id),
                                             'div': ncom});
-                        
+
                         //This is for capturing resizing event
                         $('#comment_'+com.id).on('click', function(){
-                            save_project()
+                            save_dataflow()
                         });
                     }
     );
@@ -99,7 +99,7 @@ function get_comment_info(com) {
 function remove_comment(id) {
     main_div.removeChild(comment_from_id(id).div);
     global_coms.splice(index_from_comment_id(id), 1);
-    save_project();
+    save_dataflow();
 }
 
 
@@ -115,5 +115,3 @@ function comment_from_id(id) {
         return e.id === id;
     });
 }
-
-
