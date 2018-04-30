@@ -92,7 +92,6 @@ function current_dataflow() {
             }
             else {
                 df_info.op_instances.forEach( function(opi) {
-                    console.log(opi);
                     //Then ask for the infos
                     sakura.common.ws_request('get_operator_instance_info', [opi.op_id], {}, function (info) {
                         //Then aks for the gui
@@ -112,7 +111,6 @@ function current_dataflow() {
 
     //Finally, the panels and the comments
     sakura.common.ws_request('get_dataflow_gui_data', [current_dataflow_id], {}, function (result) {
-        console.log("GUI DATA RESULT", result);
 
         if (!result)
             return

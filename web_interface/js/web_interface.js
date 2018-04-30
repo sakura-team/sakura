@@ -50,48 +50,27 @@ function fill_database_metadata(db_id) {
             });
 
             //Owner
+            var owner = '..';
             if (db_info.owner && db_info.owner != 'null')
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", db_info.owner);
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_owner_", '..');
+                owner =  db_info.owner;
 
-            //Rights
-            if (db_info.grant_level)
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_grant_", db_info.grant_level);
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_grant_", '..');
+            var date = "..";
+            if (db_info.creation_date)
+                date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
 
-            //Creation date
-            if (db_info.creation_date) {
-                var date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db__date_", date);
-            }
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_date_", '..');
-
-            //Agent Type
-            if (db_info.agent_type)
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", db_info.agent_type);
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_agent_type_", '..');
-
-            //Licence
-            if (db_info.licence)
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", db_info.licence);
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_licence_", '..');
-
-            //Domain Topic
-            if (db_info.topic)
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", db_info.topic);
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_topic_", '..');
-
-            //Data Type
-            if (db_info.data_type)
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", db_info.data_type);
-            else
-                recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_data_type_", '..');
+            [   {name: "_db_date_", value: date},
+                {name: "_db_owner_", value: owner},
+                {name: "_db_grant_", value: db_info.grant_level},
+                {name: "_db_agent_type_", value: db_info.agent_type},
+                {name: "_db_licence_", value: db_info.licence},
+                {name: "_db_topic_", value: db_info.topic},
+                {name: "_db_data_type_", value: db_info.data_type}
+                ].forEach( function (elt){
+                    if (elt.value)
+                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
+                    else
+                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
+                      });
         });
     });
 }
