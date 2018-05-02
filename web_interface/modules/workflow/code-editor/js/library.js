@@ -172,7 +172,7 @@ function print_dir(entries, treeHtmlString, currentPath = "")
 * Generate the menu on the right click on a tree element depending on if it's a dir or a file
 */
 function generateRigthClickMenu(menuMode){
-    (debug?console.log("\n________________________________________\n\tgenerateRigthClickMenu"):null);
+/*    (debug?console.log("\n________________________________________\n\tgenerateRigthClickMenu"):null);
     $("#RightClickMenu").remove();
     var strRight;
     switch (menuMode){
@@ -201,6 +201,7 @@ function generateRigthClickMenu(menuMode){
 
     (debug?console.log("mode :" + menuMode + "\n" + strRight):null);
     (debug?console.log("________________________________________\n"):null);
+    */
 }
 
 /**

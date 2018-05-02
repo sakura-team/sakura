@@ -111,7 +111,7 @@ function init(){
     });
 
     /*click on context menu*/
-    $(document).on("click",".RightClickMenuElement",function(){
+    /*$(document).on("click",".RightClickMenuElement",function(){
         //type on request
         var menuId = $(this)[0].id;
         switch(menuId){
@@ -136,7 +136,7 @@ function init(){
                 });
                 break;
         }
-    });
+    });*/
 
     //POPUP
     /*forbidden characters in names*/
