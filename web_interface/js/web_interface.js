@@ -40,7 +40,7 @@ function fill_database_metadata(db_id) {
             else
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
 
-            ///////MetaData
+            //MetaData
             //Datastore Host
             sakura.common.ws_request('list_datastores', [], {}, function(lds) {
                 lds.forEach( function(ds) {
@@ -54,6 +54,7 @@ function fill_database_metadata(db_id) {
             if (db_info.owner && db_info.owner != 'null')
                 owner =  db_info.owner;
 
+            //Creation date
             var date = "..";
             if (db_info.creation_date)
                 date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
@@ -72,6 +73,10 @@ function fill_database_metadata(db_id) {
                         recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
                       });
         });
+
+
+        //Now filling the markdownarea field
+        //$('#web_interface_database_markdownarea').html("toto");
     });
 }
 
@@ -79,8 +84,9 @@ function fill_database_metadata(db_id) {
 function fill_dataflow_metadata(dataflow_id) {
     sakura.common.ws_request('get_dataflow_info', [dataflow_id], {}, function(df_info) {
         $('#web_interface_dataflow_metadata').empty();
-        $('#web_interface_dataflow_metadata').load('divs/templates/dataflows_metadata.html', function() {//Name
+        $('#web_interface_dataflow_metadata').load('divs/templates/dataflows_metadata.html', function() {
 
+            //Name
             $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + df_info.name + '</em>&nbsp;&nbsp;');
 
             //Description
@@ -89,39 +95,26 @@ function fill_dataflow_metadata(dataflow_id) {
             else
                 $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
 
-            var md_div = $('#idDivDataflowstmpDataflowMeta')[0];
-            ///////MetaData
-            //Owner
+            //MetaData
+            var owner = '..';
             if (df_info.owner && df_info.owner != 'null')
-                recursiveReplace(md_div, "_df_owner_", df_info.owner);
-            else
-                recursiveReplace(md_div, "_df_owner_", '..');
+                owner =  df_info.owner;
 
-            //Creation date
-            if (df_info.creation_date) {
-                var date = moment.unix(df_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
-                recursiveReplace(md_div, "_df_date_", date);
-            }
-            else
-                recursiveReplace(md_div, "_df_date_", '..');
+            var date = "..";
+            if (df_info.creation_date)
+                date = moment.unix(df_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
 
-            //Rights
-            if (df_info.grant_level)
-                recursiveReplace(md_div, "_df_grant_", df_info.grant_level);
-            else
-                recursiveReplace(md_div, "_df_grant_", '..');
-
-            //Licence
-            if (df_info.licence)
-                recursiveReplace(md_div, "_df_licence_", df_info.licence);
-            else
-                recursiveReplace(md_div, "_df_licence_", '..');
-
-            //Domain Topic
-            if (df_info.topic)
-                recursiveReplace(md_div, "_df_topic_", df_info.topic);
-            else
-                recursiveReplace(md_div, "_df_topic_", '..');
+            [   {name: "_df_date_", value: date},
+                {name: "_df_owner_", value: owner},
+                {name: "_df_grant_", value: df_info.grant_level},
+                {name: "_df_licence_", value: df_info.licence},
+                {name: "_df_topic_", value: df_info.topic},
+                ].forEach( function (elt){
+                    if (elt.value)
+                        recursiveReplace($('#idDivDataflowstmpDataflowMeta')[0], elt.name, elt.value);
+                    else
+                        recursiveReplace($('#idDivDataflowstmpDataflowMeta')[0], elt.name, '..');
+                      });
         });
     });
 }
