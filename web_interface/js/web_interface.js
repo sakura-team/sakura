@@ -78,7 +78,35 @@ function fill_database_metadata(db_id) {
 
 
         //Now filling the markdownarea field
-        db_simplemde = new SimpleMDE({ hideIcons: ['side-by-side'], element: document.getElementById("web_interface_database_markdownarea") });
+        db_simplemde = new SimpleMDE({  hideIcons: ['side-by-side'],
+                                        element: document.getElementById("web_interface_database_markdownarea"),
+                                        toolbar: ["bold",
+                                                  "italic",
+                                                  "heading",
+                                                  "|",
+                                                  "quote",
+                                                  "unordered-list",
+                                                  "ordered-list",
+                                                  "|",
+                                                  "link",
+                                                  "image",
+                                                  "|",
+                                                  {
+                                              			name: "preview",
+                                              			action: function () {
+                                                        if (!db_simplemde.isPreviewActive()) {
+                                                            database_save_large_description(web_interface_current_id);
+                                                        }
+                                                        db_simplemde.togglePreview();
+                                                      },
+                                              			className: "fa fa-eye no-disable active",
+                                              			title: "Toggle Preview (Cmd-P)",
+                                              		},
+                                                  "fullscreen",
+                                                  "|",
+                                                  "guide"
+                                                ],
+                                      });
         var info = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
         if (db_info.large_desc)
           info = db_info.large_desc;
@@ -90,7 +118,7 @@ function fill_database_metadata(db_id) {
 
         $('<a>', {title: 'Save description',
                   class: 'glyphicon glyphicon-floppy-disk',
-                  onclick: 'database_save_large_description();',
+                  onclick: 'database_save_large_description('+web_interface_current_id+');',
                   style: ''
                 }).appendTo(db_simplemde.gui.toolbar);
 
