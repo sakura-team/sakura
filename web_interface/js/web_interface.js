@@ -76,7 +76,13 @@ function fill_database_metadata(db_id) {
 
 
         //Now filling the markdownarea field
-        //$('#web_interface_database_markdownarea').html("toto");
+        var simplemde = new SimpleMDE({ element: document.getElementById("web_interface_database_markdownarea") });
+        var info = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
+        if (db_info.large_desc)
+          info = db_info.large_desc;
+        simplemde.value(info);
+
+        simplemde.togglePreview();
     });
 }
 
