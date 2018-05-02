@@ -117,10 +117,8 @@ class GuiToHubAPI(object):
         return self.databases
 
     def get_database_info(self, database_id):
-        p = self.databases[database_id].get_full_info()
-        p['large_desc'] = '### Generic Title From Hub\n\n* Now we should implement the saving'
-        return p
-
+        return self.databases[database_id].get_full_info()
+        
     def new_database(self, datastore_id, name, **kwargs):
         # optional arguments of kwargs: short_desc, creation_date, tags, contacts
         # returns the database_id

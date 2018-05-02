@@ -45,10 +45,10 @@ function database_creation_check_mandatory() {
 
 
 function database_update_creation_modal() {
-    
+
     //submit button: back to initial display
     $("#database_submit_button").html('Submit');
-    
+
     //first we ask the hub the datastore
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
         database_datastores = result;
@@ -67,15 +67,15 @@ function database_update_creation_modal() {
 
 function new_database() {
     var name = $('#database_name_input').val();
-    
+
     if ((name.replace(/ /g,"")).length == 0) {
         alert("Empty name!! We cannot create data without a name.");
         return ;
     }
-    
+
     var short_d     = $('#database_shortdescription_input').val();
     var ds_id       = parseInt($('#database_datastore_input').val());
-    
+
     var access_scope      = 'restricted';
     $('[id^="database_creation_access_scope_radio"]').each( function() {
         if (this.checked) {
@@ -83,11 +83,11 @@ function new_database() {
             access_scope = tab[tab.length - 1];
         }
     });
-    
+
     var agent_type  = $('#database_agent_type_input').val();
     var topic= $('#database_topic_input').val();
     //var licence     = $('#database_licence_input').val();
-    
+
     var data_type   = '';
     $('[id^="database_data_type_input"]').each( function() {
         if (this.checked) {
@@ -95,7 +95,7 @@ function new_database() {
             data_type = tab[tab.length-1];
         }
     });
-    
+
     var licence = "Public";
     $('[id^="database_data_licence"]').each( function() {
         if (this.checked) {
@@ -103,10 +103,10 @@ function new_database() {
             licence = tab[tab.length-1];
         }
     });
-    
-    
+
+
     $("#database_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    
+
     /*console.log("Name:", name);
     console.log("Short:", short_d);
     console.log("Datastore:", ds_id);
@@ -116,15 +116,15 @@ function new_database() {
     console.log("Data type:", data_type);
     console.log("Licence:", licence);
     */
-    
-    sakura.common.ws_request('new_database', 
-                                [ds_id, name], 
-                                {   'short_desc': short_d, 
+
+    sakura.common.ws_request('new_database',
+                                [ds_id, name],
+                                {   'short_desc': short_d,
                                     'access_scope': access_scope,
                                     'agent_type': agent_type,
                                     'topic': topic,
                                     'data_type': data_type,
-                                    'licence': licence  }, 
+                                    'licence': licence  },
                                 function(result) {
         //result = new database id
         if (result < 0) {
@@ -154,7 +154,14 @@ function database_datastore_on_change() {
                 new_b_row.append(line);
             }
         });
-        
+
         $('#databases_other_datastores_modal').modal('show');
     }
+}
+
+function database_save_large_description() {
+    sakura.common.ws_request('update_database_info', [web_interface_current_id], {'large_desc': db_simplemde.value()}, function(result) {
+        console.log('Done');
+    });
+    db_simplemde.togglePreview();
 }

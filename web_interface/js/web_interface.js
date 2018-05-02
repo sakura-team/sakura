@@ -1,8 +1,8 @@
 /// LIG March 2017
 
 ////////////GLOBALS
-var web_interface_current_id = -1; //database_id
-
+var web_interface_current_id = -1;  //database or dataflow id
+var db_simplemde  = null;           //large description textarea
 
 ////////////FUNCTIONS
 function not_yet(s = '') {
@@ -30,6 +30,8 @@ function fill_database_metadata(db_id) {
     sakura.common.ws_request('get_database_info', [db_id], {}, function(db_info) {
         $('#web_interface_database_metadata').empty();
         $('#web_interface_database_metadata').load('divs/templates/datas_metadata.html', function() {
+
+            console.log(db_info);
 
             //Name
             $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
@@ -76,13 +78,24 @@ function fill_database_metadata(db_id) {
 
 
         //Now filling the markdownarea field
-        var simplemde = new SimpleMDE({ element: document.getElementById("web_interface_database_markdownarea") });
+        db_simplemde = new SimpleMDE({ hideIcons: ['side-by-side'], element: document.getElementById("web_interface_database_markdownarea") });
         var info = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
         if (db_info.large_desc)
           info = db_info.large_desc;
-        simplemde.value(info);
+        db_simplemde.value(info);
 
-        simplemde.togglePreview();
+        $('<i>', {  class: 'separator',
+                    text: '|'
+                  }).appendTo(db_simplemde.gui.toolbar);
+
+        $('<a>', {title: 'Save description',
+                  class: 'glyphicon glyphicon-floppy-disk',
+                  onclick: 'database_save_large_description();',
+                  style: ''
+                }).appendTo(db_simplemde.gui.toolbar);
+
+
+        db_simplemde.togglePreview();
     });
 }
 
