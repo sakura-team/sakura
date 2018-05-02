@@ -2,7 +2,7 @@
 
 ////////////GLOBALS
 var web_interface_current_id = -1;  //database or dataflow id
-var db_simplemde  = null;           //large description textarea
+var simplemde  = null;           //large description textarea
 
 ////////////FUNCTIONS
 function not_yet(s = '') {
@@ -78,52 +78,10 @@ function fill_database_metadata(db_id) {
 
 
         //Now filling the markdownarea field
-        db_simplemde = new SimpleMDE({  hideIcons: ['side-by-side'],
-                                        element: document.getElementById("web_interface_database_markdownarea"),
-                                        toolbar: ["bold",
-                                                  "italic",
-                                                  "heading",
-                                                  "|",
-                                                  "quote",
-                                                  "unordered-list",
-                                                  "ordered-list",
-                                                  "|",
-                                                  "link",
-                                                  "image",
-                                                  "|",
-                                                  {
-                                              			name: "preview",
-                                              			action: function () {
-                                                        if (!db_simplemde.isPreviewActive()) {
-                                                            database_save_large_description(web_interface_current_id);
-                                                        }
-                                                        db_simplemde.togglePreview();
-                                                      },
-                                              			className: "fa fa-eye no-disable active",
-                                              			title: "Toggle Preview (Cmd-P)",
-                                              		},
-                                                  "fullscreen",
-                                                  "|",
-                                                  "guide"
-                                                ],
-                                      });
-        var info = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
+        var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
         if (db_info.large_desc)
-          info = db_info.large_desc;
-        db_simplemde.value(info);
-
-        $('<i>', {  class: 'separator',
-                    text: '|'
-                  }).appendTo(db_simplemde.gui.toolbar);
-
-        $('<a>', {title: 'Save description',
-                  class: 'glyphicon glyphicon-floppy-disk',
-                  onclick: 'database_save_large_description('+web_interface_current_id+');',
-                  style: ''
-                }).appendTo(db_simplemde.gui.toolbar);
-
-
-        db_simplemde.togglePreview();
+            l_desc = db_info.large_desc;
+        web_interface_create_large_description_area('db', 'web_interface_database_markdownarea', l_desc);
     });
 }
 
@@ -163,8 +121,63 @@ function fill_dataflow_metadata(dataflow_id) {
                         recursiveReplace($('#idDivDataflowstmpDataflowMeta')[0], elt.name, '..');
                       });
         });
+
+        //Now filling the markdownarea field
+        var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
+        if (df_info.large_desc)
+            l_desc = df_info.large_desc;
+        web_interface_create_large_description_area('df', 'web_interface_dataflow_markdownarea', l_desc);
     });
 }
+
+function web_interface_create_large_description_area(datatype, area_id, description) {
+
+    //Erasing previous one
+    if (simplemde)
+        simplemde.toTextArea();
+        simplemde = null;
+
+    simplemde = new SimpleMDE({  hideIcons: ['side-by-side'],
+                                    element: document.getElementById(area_id),
+                                    toolbar: [{
+                                                name: "preview",
+                                                action: function () {
+                                                    if (!simplemde.isPreviewActive()) {
+                                                        web_interface_save_large_description(datatype, web_interface_current_id, simplemde);
+                                                    }
+                                                    simplemde.togglePreview();
+                                                  },
+                                                className: "fa fa-eye no-disable active",
+                                                title: "Toggle Preview (Cmd-P)",
+                                              },
+                                              "fullscreen","|","bold","italic","heading","|","quote",
+                                              "unordered-list","ordered-list","|","link","image","|",
+                                              "guide", "|",
+                                              {
+                                                name: "save",
+                                                action: function () {
+                                                    web_interface_save_large_description(datatype, web_interface_current_id, simplemde);
+                                                  },
+                                                className: "glyphicon glyphicon-floppy-disk",
+                                                title: "Save description",
+                                              }
+                                            ],
+                                  });
+
+    simplemde.value(description);
+    simplemde.togglePreview();
+}
+
+function web_interface_save_large_description(data_type, id, smde) {
+    if (data_type == 'db')
+        sakura.common.ws_request('update_database_info', [id], {'large_desc': smde.value()}, function(result) {
+        });
+    else if (data_type == 'df')
+        sakura.common.ws_request('update_dataflow_info', [id], {'large_desc': smde.value()}, function(result) {
+        });
+    smde.togglePreview();
+}
+
 
 
 function showDiv(event, dir, div_id) {

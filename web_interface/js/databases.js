@@ -158,9 +158,3 @@ function database_datastore_on_change() {
         $('#databases_other_datastores_modal').modal('show');
     }
 }
-
-function database_save_large_description() {
-    sakura.common.ws_request('update_database_info', [web_interface_current_id], {'large_desc': db_simplemde.value()}, function(result) {
-    });
-    db_simplemde.togglePreview();
-}
