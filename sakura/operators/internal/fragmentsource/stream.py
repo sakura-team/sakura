@@ -26,6 +26,8 @@ class FragmentSourceStream(OutputStreamBase):
                     offset + chunk_size,
                     columns=self.src_col_indexes,
                     filters=self.filters)
+            if chunk.size == 0:
+                break
             yield chunk
             if chunk.size < chunk_size:
                 break

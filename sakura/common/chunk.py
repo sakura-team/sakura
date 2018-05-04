@@ -18,7 +18,7 @@ class NumpyChunk(np.ma.MaskedArray):
                     for col_name in self.dtype.names)
     @staticmethod
     def empty(dtype):
-        return np.ma.masked_array(np.empty(0, dtype))
+        return np.ma.masked_array(np.empty(0, dtype)).view(NumpyChunk)
     @staticmethod
     def create(chunk_data, dtype):
         row_list = list(tuple(row) for row in chunk_data)
