@@ -71,9 +71,6 @@ class GuiToHubAPI(object):
 
     ########################################
     # Links
-    def list_link_ids(self):
-        return tuple(l.id for l in self.context.links.select())
-
     def get_link_info(self, link_id):
         return self.context.links[link_id]
 

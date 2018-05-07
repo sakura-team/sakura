@@ -20,6 +20,11 @@ class DataflowMixin:
         result = self.pack()
         # add operator instances
         result['op_instances'] = tuple(op.pack() for op in self.op_instances)
+        # add links
+        df_links = set(l \
+                for op in self.op_instances \
+                for l in set(op.uplinks) | set(op.downlinks))
+        result['links'] = tuple(link.pack() for link in df_links)
         return result
     def update_attributes(self,
                 users = None, access_scope = None, owner = None,
