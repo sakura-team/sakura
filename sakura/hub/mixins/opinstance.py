@@ -29,7 +29,8 @@ class OpInstanceMixin:
         res = dict(
             op_id = self.id,
             cls_id = self.op_class.id,
-            online = self.instanciated
+            online = self.instanciated,
+            gui_data = self.gui_data
         )
         if self.instanciated:
            res.update(**self.remote_instance.pack())
