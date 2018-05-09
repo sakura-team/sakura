@@ -5,64 +5,47 @@
 var global_dataflow_jsFlag = true;
 var current_dataflow_id = null;
 
-//This function is apart, because of the asynchronous aspect of ws
-//links can only be recovered after recovering all operator instances
-function get_dataflow_links() {
+//This function is apart because of the asynchronous aspect of ws.
+//Links can only be recovered after recovering all operator instances
+function create_dataflow_links(df_links) {
 
     //Cleaning the gui from current links
     remove_all_links();
 
-    //Recovering the links from hub
-    sakura.common.ws_request('list_link_ids', [], {}, function (ids) {
-        var igs = []
-        ids.forEach( function (id) {
-            sakura.common.ws_request('get_link_info', [id], {}, function(info) {
-                //Then aks for the gui
-                sakura.common.ws_request('get_link_gui_data', [id], {}, function (gui) {
+    //Creating the links
+    df_links.forEach( function (link) {
+        var lgui = eval("("+link.gui_data+")");
+        if (! link_exist(link.src_id, link.dst_id)) {
+            var src_inst = instance_from_id(link.src_id);
+            var dst_inst = instance_from_id(link.dst_id);
 
-                    igs.push({'info': info, 'gui': gui});
+            //jsPlumb creation
+            global_dataflow_jsFlag = false;
+            js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
+            global_dataflow_jsFlag = true;
 
-                    if (igs.length == ids.length ) {
-                        igs.forEach ( function(ig) {
-                            var info = ig.info;
-                            var lgui = eval("("+ig.gui+")");
-
-                            if (! link_exist(info.src_id, info.dst_id)) {
-                                var src_inst = instance_from_id(info.src_id);
-                                var dst_inst = instance_from_id(info.dst_id);
-
-                                //jsPlumb creation
-                                global_dataflow_jsFlag = false;
-                                js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
-                                global_dataflow_jsFlag = true;
-
-                                //our creation
-                                create_link_from_hub(js_link.id, info.link_id, info.src_id, info.dst_id, info.src_out_id, info.dst_in_id, lgui);
-                            }
-                            else {
-                                var link = link_from_instances(info.src_id, info.dst_id);
-                                var interval_id = null;
-                                var check_modal = function () {
-                                    if (link.modal) {
-                                        link.params.push({  'out_id': info.src_out_id,
-                                                            'in_id': info.dst_in_id,
-                                                            'hub_id': info.link_id,
-                                                            'top':    lgui.top,
-                                                            'left':   lgui.left,
-                                                            'line':  lgui.line});
-                                        $("#svg_modal_link_"+link.id+'_out_'+info.src_out_id).html(svg_round_square_crossed(""));
-                                        $("#svg_modal_link_"+link.id+'_in_'+info.dst_in_id).html(svg_round_square_crossed(""));
-                                        copy_link_line(link, info.src_out_id, info.dst_in_id, lgui);
-                                        clearInterval(interval_id);
-                                    }
-                                }
-                                interval_id = setInterval(check_modal, 500);
-                            }
-                        });
-                    }
-                });
-            });
-        });
+            //our creation
+            create_link_from_hub(js_link.id, link.link_id, link.src_id, link.dst_id, link.src_out_id, link.dst_in_id, lgui);
+        }
+        else {
+            var link = link_from_instances(link.src_id, link.dst_id);
+            var interval_id = null;
+            var check_modal = function () {
+                if (link.modal) {
+                    link.params.push({  'out_id': link.src_out_id,
+                                        'in_id': link.dst_in_id,
+                                        'hub_id': link.link_id,
+                                        'top':    lgui.top,
+                                        'left':   lgui.left,
+                                        'line':  lgui.line});
+                    $("#svg_modal_link_"+link.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
+                    $("#svg_modal_link_"+link.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
+                    copy_link_line(link, link.src_out_id, link.dst_in_id, lgui);
+                    clearInterval(interval_id);
+                }
+            }
+            interval_id = setInterval(check_modal, 500);
+        }
     });
 }
 
@@ -85,27 +68,11 @@ function current_dataflow() {
         global_ops_cl = JSON.parse(JSON.stringify(result));
         //Then we ask for the instance ids
         sakura.common.ws_request('get_dataflow_info', [current_dataflow_id], {}, function (df_info) {
-
-            var nb_ops = df_info.op_instances.length;
-            if (nb_ops == 0) {
-                starting = 0;
-            }
-            else {
-                df_info.op_instances.forEach( function(opi) {
-                    //Then ask for the infos
-                    sakura.common.ws_request('get_operator_instance_info', [opi.op_id], {}, function (info) {
-                        //Then aks for the gui
-                        sakura.common.ws_request('get_operator_instance_gui_data', [opi.op_id], {}, function (gui) {
-                            var jgui = eval("("+gui+")");
-                            create_operator_instance_from_hub(jgui.x, jgui.y, info.cls_id, info);
-                            starting++;
-                            if (nb_ops == starting) {
-                                get_dataflow_links();
-                            }
-                        });
-                    });
-                });
-            }
+            df_info.op_instances.forEach( function(opi) {
+                var jgui = eval("("+opi.gui_data+")");
+                create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
+            });
+            create_dataflow_links(df_info.links);
         });
     });
 
@@ -152,11 +119,6 @@ function current_dataflow() {
         });
 
     });
-}
-
-
-function load_dataflow() {
-    not_yet();
 }
 
 
