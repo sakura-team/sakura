@@ -178,6 +178,12 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
         d.removeChild(d.firstChild);
     }
 
+    var sp = $('<span>', {class:"glyphicon glyphicon-refresh glyphicon-refresh-animate"});
+    var p = $('<p>', {align: "center"});
+    p.append(sp);
+    p.append(' Working, please wait... ')
+    $(d).append(p);
+
     //infos
     sakura.common.ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
         sakura.common.ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
