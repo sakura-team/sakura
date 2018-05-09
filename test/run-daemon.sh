@@ -20,7 +20,7 @@ trap on_exit EXIT
 mkdir -p $TMPDIR/operators
 for operator in $operators
 do
-    ln -s $PWD/sakura/operators/public/$operator $TMPDIR/operators/$operator
+    ln -s $PWD/sakura/operators/$operator $TMPDIR/operators/$operator
 done
 
 CUSTOM_DATASTORES_CONF="$PWD/test/daemon${daemon_index}-datastores.conf"

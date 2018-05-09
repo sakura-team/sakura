@@ -1,6 +1,6 @@
-import collections
+import collections, json, numpy as np
 from contextlib import contextmanager
-from sakura.common.io import LocalAPIHandler, compactjson
+from sakura.common.io import LocalAPIHandler, pack
 from sakura.common.errors import APIRequestError
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
@@ -29,7 +29,7 @@ class FileWSock(object):
 class ResultWrapper:
     @staticmethod
     def on_success(result):
-        return (True, result)
+        return (True, pack(result))
     @staticmethod
     def on_exception(exc):
         if isinstance(exc, APIRequestError):
@@ -51,6 +51,33 @@ def get_web_session_wrapper(session_id):
             yield
     return web_session_wrapper
 
+def gui_fallback_handler(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return { k: gui_fallback_handler(v) for k, v in obj.items() }
+    elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
+        return tuple(gui_fallback_handler(o) for o in obj.select())
+    elif hasattr(obj, 'pack'):
+        return gui_fallback_handler(obj.pack())
+    elif hasattr(obj, '_asdict'):
+        return gui_fallback_handler(obj._asdict())
+    elif isinstance(obj, list) or isinstance(obj, tuple) or \
+                hasattr(obj, '__iter__'):
+        return tuple(gui_fallback_handler(o) for o in obj)
+    else:
+        return obj
+
+class GUISerializationProtocol:
+    def load(self, f):
+        return json.load(f)
+    def dump(self, obj, f):
+        return json.dump(obj, f,
+                separators=(',', ':'),
+                default=gui_fallback_handler)
+
+gui_protocol = GUISerializationProtocol()
+
 def rpc_manager(context, wsock, session):
     print('New GUI RPC connection.')
     # make wsock a file-like object
@@ -58,7 +85,7 @@ def rpc_manager(context, wsock, session):
     # manage api requests
     local_api = GuiToHubAPI(context)
     web_session_wrapper = get_web_session_wrapper(session.id)
-    handler = LocalAPIHandler(f, compactjson, local_api,
+    handler = LocalAPIHandler(f, gui_protocol, local_api,
                 session_wrapper = web_session_wrapper,
                 result_wrapper = ResultWrapper)
     session.num_ws += 1

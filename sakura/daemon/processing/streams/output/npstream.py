@@ -19,11 +19,11 @@ class NumpyArrayStream(OutputStreamBase):
             yield self.array[offset:offset+chunk_size].view(NumpyChunk)
             offset += chunk_size
     def __select_columns__(self, *col_indexes):
-        col_labels = list(self.columns[col_index].label for col_index in col_indexes)
+        col_labels = list(self.columns[col_index]._label for col_index in col_indexes)
         filtered_array = self.array[col_labels]
         return NumpyArrayStream(self.label, filtered_array)
     def __filter__(self, col_index, comp_op, other):
-        col_label = self.columns[col_index].label
+        col_label = self.columns[col_index]._label
         # we generate a condition of the form:
         # self.array[<col_label>] <comp_op> <other>
         # for example:

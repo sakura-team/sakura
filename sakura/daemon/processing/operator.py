@@ -1,6 +1,6 @@
 import inspect
 from pathlib import Path
-from sakura.common.tools import SimpleAttrContainer
+from sakura.common.io import pack
 from sakura.daemon.processing.stream import InputStream
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.tools import Registry
@@ -38,7 +38,7 @@ class Operator(Registry):
                 return False
         return True
     def descriptor(op_cls):
-        return SimpleAttrContainer(
+        return dict(
                 name = op_cls.NAME,
                 short_desc = op_cls.SHORT_DESC,
                 tags = op_cls.TAGS,
@@ -46,7 +46,7 @@ class Operator(Registry):
     def get_num_parameters(self):
         return len(self.parameters)
     def pack(self):
-        return dict(
+        return pack(dict(
             op_id = self.op_id,
             cls_name = self.NAME,
             parameters = self.parameters,
@@ -54,7 +54,7 @@ class Operator(Registry):
             outputs = self.output_streams,
             internal_streams = self.internal_streams,
             tabs = self.tabs
-        )
+        ))
     def auto_fill_parameters(self, permissive = False, stream = None):
         if permissive:
             ignored_exception = ParameterException

@@ -84,21 +84,23 @@ class ColumnSelectionParameter(ComboParameter):
     def is_linked_to_stream(self, stream):
         return self.stream == stream
     def matching_columns(self):
-        for idx, column in enumerate(self.stream.columns):
-            if self.condition(column):
-                yield column
+        for col_idx, column_info in enumerate(self.stream.get_columns_info()):
+            if self.condition(*column_info):
+                yield (col_idx,) + column_info
     def get_possible_values(self):
         if not self.stream.connected():
             raise ParameterException(Issue.InputNotConnected)
-        return list('%s (of %s)' % (column.label, self.stream.label) \
-                    for column in self.matching_columns())
-    def set_value(self, idx):
+        return list('%s (of %s)' % (col_label, self.stream.label) \
+                    for col_idx, col_label, col_type, col_tags in \
+                        self.matching_columns())
+    def set_value(self, poss_idx):
         if not self.stream.connected():
             raise ParameterException(Issue.InputNotConnected)
         # raw_value is the index of the column in the possible values
-        self.raw_value = idx
-        # value is the selected column
-        self.value = tuple(self.matching_columns())[idx]
+        self.raw_value = poss_idx
+        # value is the index of the column in the stream
+        col_idx = tuple(self.matching_columns())[poss_idx][0]
+        self.value = col_idx
     def unset_value(self):
         self.raw_value = None
         self.value = None
@@ -108,16 +110,16 @@ class ColumnSelectionParameter(ComboParameter):
 def TagBasedColumnSelection(stream, tag):
     class CustomParameterClass(ColumnSelectionParameter):
         def __init__(self, label):
-            def condition(column):
-                return tag in column.tags
+            def condition(col_label, col_type, col_tags):
+                return tag in col_tags
             ColumnSelectionParameter.__init__(self, label, stream, condition)
     return CustomParameterClass
 
 def TypeBasedColumnSelection(stream, cls):
     class CustomParameterClass(ColumnSelectionParameter):
         def __init__(self, label):
-            def condition(column):
-                return np.issubdtype(column.type, cls)
+            def condition(col_label, col_type, col_tags):
+                return np.issubdtype(col_type, cls)
             ColumnSelectionParameter.__init__(self, label, stream, condition)
     return CustomParameterClass
 

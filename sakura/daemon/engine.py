@@ -1,6 +1,5 @@
 import sakura.daemon.conf as conf
 from sakura.daemon.processing.operator import Operator
-from sakura.operators.internal.fragmentsource.operator import FragmentSourceOperator
 from sakura.daemon.processing.parameter import ParameterException
 
 class DaemonEngine(object):
@@ -22,7 +21,7 @@ class DaemonEngine(object):
             Operator.descriptor(op_cls) for op_cls in self.op_classes.values()
         )
         return dict(name=conf.daemon_desc,
-                    datastores=self.datastores.values(),
+                    datastores=tuple(ds.pack() for ds in self.datastores.values()),
                     op_classes=op_classes_desc)
     def create_operator_instance(self, cls_name, op_id):
         op_cls = self.op_classes[cls_name]
@@ -41,15 +40,8 @@ class DaemonEngine(object):
                             auto_fill_params = True):
         if self.is_foreign_operator(src_op_id):
             # the source is a remote operator.
-            # we replace this source operator by an internal FragmentSourceOperator
-            # that will pull data from the hub and feed its unique output stream.
             src_label = 'remote(op_id=%d,out%d)' % (src_op_id, src_out_id)
-            src_op = FragmentSourceOperator(self.hub, src_op_id, src_out_id)
-            src_op.construct()
-            self.fragment_sources[(dst_op_id, dst_in_id)] = src_op
-            # since src_op has been replaced (see above),
-            # we will connect (src_op,0) -> (dst_op,dst_in_id)
-            src_out_id = 0
+            src_op = self.hub.context.op_instances[src_op_id]
         else:
             src_op = self.op_instances[src_op_id]
             src_label = '%s op_id=%d out%d' % (src_op.NAME, src_op_id, src_out_id)
@@ -66,7 +58,8 @@ class DaemonEngine(object):
         dst_input_stream = dst_op.input_streams[dst_in_id]
         dst_op.unselect_parameters(stream = dst_input_stream)
         dst_input_stream.disconnect()
-        if self.is_foreign_operator(src_op_id):
+        #if self.is_foreign_operator(src_op_id):
+        if False:
             # discard the fragment source operator
             del self.fragment_sources[(dst_op_id, dst_in_id)]
         print("disconnected [...] -> %s op_id=%d in%d" % \

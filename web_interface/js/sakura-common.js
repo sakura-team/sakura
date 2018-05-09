@@ -80,6 +80,7 @@ sakura.common.ws.default_error_callback = function (msg) {
 }
 
 sakura.common.ws.onmessage = function (evt) {
+    IO_TRANSFERED = 0;
     // parse the message
     var json = JSON.parse(evt.data);
     var req_idx = json[0];
@@ -90,18 +91,24 @@ sakura.common.ws.onmessage = function (evt) {
     delete sakura.common.ws.running_requests[req_idx];
     // we have the response, thus this websocket is free again
     sakura.common.ws.free_ws.push(req.ws);
-    // call the callback that was given with the request
-    if (response[0])
+    // verify that the result could be transfered
+    if (response[0] != IO_TRANSFERED)
     {
-        req.callback(response[1]);
+        console.error('Bug: result of ws_request() was held!');
+        return;
     }
-    else
-    {
+    response = response[1]
+    if (!response[0])
+    {   // backend returned an error, pass it to error_callback
         req.error_callback(response[1]);
+        return;
     }
+    // call the callback that was given with the request
+    req.callback(response[1]);
 }
 
 sakura.common.ws.send = function (func_name, args, kwargs, callback, error_callback) {
+    IO_FUNC = 0;
     if (typeof error_callback === 'undefined')
     {
         error_callback = sakura.common.ws.default_error_callback;
@@ -118,7 +125,7 @@ sakura.common.ws.send = function (func_name, args, kwargs, callback, error_callb
         'error_callback': error_callback
     };
     // prepare the message and send it
-    var msg = JSON.stringify([ req_idx, [func_name], args, kwargs ]);
+    var msg = JSON.stringify([ req_idx, [ IO_FUNC, [func_name], args, kwargs ]]);
     console.log('ws_request sent: ' + msg);
     ws.send(msg);
 }

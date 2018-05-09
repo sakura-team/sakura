@@ -5,7 +5,7 @@ from gevent import Greenlet
 from gevent.queue import Queue, Empty
 from time import time
 from sakura.common.io import LocalAPIHandler, \
-                    RemoteAPIForwarder, make_serializable
+                    RemoteAPIForwarder
 from sakura.daemon.tools import connect_to_hub
 
 class DaemonGreenlet:
@@ -15,7 +15,7 @@ class DaemonGreenlet:
         return Greenlet.spawn(self.run)
     def write_request(self, sock_file, req):
         daemon_info = self.engine.get_daemon_info_serializable()
-        pickle.dump((req, make_serializable(daemon_info)), sock_file)
+        pickle.dump((req, daemon_info), sock_file)
         sock_file.flush()
 
 class RPCServerGreenlet(DaemonGreenlet):

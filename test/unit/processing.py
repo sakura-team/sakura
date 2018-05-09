@@ -2,8 +2,8 @@
 import os, sys
 os.environ['UNIT_TEST'] = 'yes'
 sys.path.insert(0, '.')
-from sakura.operators.public.datasample.operator import DataSampleOperator
-from sakura.operators.public.mean.operator import MeanOperator
+from sakura.operators.datasample.operator import DataSampleOperator
+from sakura.operators.mean.operator import MeanOperator
 
 print("""
 Expected results:

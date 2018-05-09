@@ -162,7 +162,7 @@ class GuiToHubAPI(object):
         return self.dataflows[dataflow_id].get_full_info()
 
     def list_dataflows(self):
-        return self.dataflows
+        return self.dataflows.pack()
 
     def new_dataflow(self, name, **kwargs):
         return self.dataflows.create_dataflow(name, **kwargs)
@@ -202,3 +202,6 @@ class GuiToHubAPI(object):
     def change_password(self, login_or_email, current_password_or_rec_token, new_password):
         self.context.users.change_password(
                 login_or_email, current_password_or_rec_token, new_password)
+
+    def test(self):
+        import pdb; pdb.set_trace()

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from sakura.daemon.db.table import DBTable
+from sakura.common.io import pack
 
 class DBProber:
     def __init__(self, db):
@@ -50,18 +51,18 @@ class Database:
         prober = DBProber(self)
         self._tables = prober.probe()
     def pack(self):
-        return dict(
+        return pack(dict(
             name = self.db_name,
             owner = self.owner,
             tables = self.tables.values(),
-            users = self.users,
+            users = dict(self.users),
             **self.metadata
-        )
+        ))
     def overview(self):
         return dict(
             name = self.db_name,
             owner = self.owner,
-            users = self.users
+            users = dict(self.users)
         )
     def create_table(self, table_name, columns, primary_key, foreign_keys):
         db_conn = self.connect()

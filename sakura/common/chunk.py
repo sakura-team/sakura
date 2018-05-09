@@ -4,18 +4,26 @@ import numpy as np
 # as a result we do not have to deal with
 # the complexity of ndarray subclass initialization.
 
-def NumpyChunkColumn(col_name):
-    class NumpyChunkColumn(np.ma.MaskedArray):
-        @property
-        def name(self):
-            return col_name
-    return NumpyChunkColumn
+class NumpyChunkColumn(np.ma.MaskedArray):
+    @property
+    def name(self):
+        return self.col_name
+    def __get_state__(self):
+        return (np.ma.MaskedArray.__get_state__(self), self.col_name)
+    def __set_state__(self, st):
+        ma_st, col_name = st
+        self.col_name = col_name
+        return np.ma.MaskedArray.__set_state__(self, ma_st)
 
 class NumpyChunk(np.ma.MaskedArray):
+    def get_column(self, col_name):
+        col = self[col_name].view(NumpyChunkColumn)
+        col.col_name = col_name
+        return col
     @property
     def columns(self):
-        return tuple(self[col_name].view(NumpyChunkColumn(col_name))
-                    for col_name in self.dtype.names)
+        return tuple(self.get_column(col_name)
+                     for col_name in self.dtype.names)
     @staticmethod
     def empty(dtype):
         return np.ma.masked_array(np.empty(0, dtype)).view(NumpyChunk)

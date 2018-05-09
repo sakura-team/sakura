@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import itertools, numpy as np
+import itertools, numpy as np, operator
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import TagBasedColumnSelection
 from .heatmap import HeatMap
@@ -24,17 +24,17 @@ class MapOperator(Operator):
 
     def filtered_stream(self, westlng, eastlng, southlat, northlat, **args):
         # get columns selected in combo parameters
-        lng_column, lat_column = \
+        lng_column_idx, lat_column_idx = \
             self.lng_column_param.value, self.lat_column_param.value
         # filter input stream as much as possible:
         # - select useful columns only
         # - restrict to visible area
         stream = self.input_stream
-        stream = stream.select_columns(lng_column, lat_column)
-        stream = stream.filter(lng_column >= westlng)
-        stream = stream.filter(lng_column <= eastlng)
-        stream = stream.filter(lat_column >= southlat)
-        stream = stream.filter(lat_column <= northlat)
+        stream = stream.select_columns(lng_column_idx, lat_column_idx)
+        stream = stream.filter_column(0, operator.__ge__, westlng)
+        stream = stream.filter_column(0, operator.__le__, eastlng)
+        stream = stream.filter_column(1, operator.__ge__, southlat)
+        stream = stream.filter_column(1, operator.__le__, northlat)
         return stream
 
     def handle_event(self, event):

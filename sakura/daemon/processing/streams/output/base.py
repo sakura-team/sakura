@@ -1,4 +1,5 @@
 import numpy as np
+from sakura.common.io import pack
 from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.cache import Cache
@@ -21,9 +22,11 @@ class OutputStreamBase(Registry):
                     col_label, col_type, tuple(col_tags),
                     self, len(self.columns))
     def pack(self):
-        return dict(label = self.label,
+        return pack(dict(label = self.label,
                     columns = self.columns,
-                    length = self.length)
+                    length = self.length))
+    def get_columns_info(self):
+        return tuple((col._label, np.dtype(col._type), col._tags) for col in self.columns)
     def get_range(self, row_start, row_end, columns=None, filters=()):
         startup_time = time()
         chunk_len = row_end-row_start
@@ -66,22 +69,12 @@ class OutputStreamBase(Registry):
         # verify that at least 1 column is specified
         if len(columns) == 0:
             return self
-        # column objects or indices are accepted
-        if isinstance(columns[0], int):
-            col_indexes = tuple(columns)
-        else:
-            col_indexes = tuple(col.index for col in columns)
+        col_indexes = tuple(columns)
         # if all columns are selected in the same order, return self...
         if col_indexes == tuple(range(len(self.columns))):
             return self
         # compute a substream
         return self.__select_columns__(*col_indexes)
-    def filter(self, cond):
-        col, comp_op, other = cond
-        # column object or index are accepted
-        if isinstance(col, int):
-            col_index = col
-        else:
-            col_index = col.index
+    def filter_column(self, col_index, comp_op, other):
         # compute a substream
         return self.__filter__(col_index, comp_op, other)

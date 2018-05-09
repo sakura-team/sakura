@@ -14,17 +14,17 @@ class InputStream(object):
     def columns(self):
         return self.columns
     def pack(self):
-        info = dict(label = self.label)
+        info = {}
         if self.connected():
             info.update(
                 connected = True,
-                columns = self.columns,
-                length = self.source_stream.length
+                **self.source_stream.pack()
             )
         else:
             info.update(
                 connected = False
             )
+        info.update(label = self.label)
         return info
     def get_range(self, *args, **kwargs):
         # redirect call to the connected output stream

@@ -2,7 +2,7 @@
 
 import json, code, sys, readline, os.path, atexit, time
 sys.path.insert(0, '.')
-from sakura.common.io import AttrCallAggregator
+from sakura.common.io import AttrCallAggregator, RemoteAPIForwarder
 from websocket import create_connection
 
 if len(sys.argv) < 2:
@@ -25,22 +25,6 @@ except IOError:
     # Existing history file can't be read.
     pass
 atexit.register(readline.write_history_file, histfile)
-
-# the real GUI sends a callback id, which is echo-ed by
-# the hub together with the result.
-# we do not need it here, we always set it to 0.
-def get_gui_api(f, protocol):
-    def remote_api_handler(path, args, kwargs):
-        protocol.dump((0, path, args, kwargs), f)
-        f.flush()
-        response = protocol.load(f)[1]
-        if response[0] == False:
-            print('ERROR: ' + response[1])
-            return None
-        else:
-            return response[1]
-    remote_api = AttrCallAggregator(remote_api_handler)
-    return remote_api
 
 class FileWSock(object):
     def __init__(self, url):
@@ -97,7 +81,7 @@ class FileWSock(object):
 
 
 f = FileWSock(ws_path)
-remote_api = get_gui_api(f, json)
+remote_api = RemoteAPIForwarder(f, json)
 
 # read-eval-loop
 code.interact(  banner='Entering interpreter prompt. Use "remote_api" variable to interact with the web api.',

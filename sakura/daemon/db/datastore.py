@@ -1,6 +1,7 @@
 from sakura.daemon.db import drivers
 from sakura.daemon.db import adapters
 from sakura.daemon.db.database import Database
+from sakura.common.io import pack
 
 class DataStoreProber:
     def __init__(self, datastore):
@@ -93,7 +94,7 @@ class DataStore:
                 users = self.users,
                 databases = databases_overview
             )
-        return res
+        return pack(res)
     def __getitem__(self, database_label):
         if not self.online:
             raise AttributeError('Sorry, datastore is down.')

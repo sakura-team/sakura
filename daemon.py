@@ -25,13 +25,14 @@ def run():
     planner_greenlet = PlannerGreenlet()
 
     # prepare greenlets
-    try:
+    #try:
+    if True:
         server_greenlet.prepare()
         client_greenlet.prepare()
         Cache.plan_cleanup(planner_greenlet)
-    except Exception as e:
-        sys.stderr.write('ERROR: %s\nAborting.\n' % str(e))
-        sys.exit()
+    #except Exception as e:
+    #    sys.stderr.write('ERROR: %s\nAborting.\n' % str(e))
+    #    sys.exit()
 
     print('Started.')
     # spawn them and wait until they end.
