@@ -81,7 +81,7 @@ function fill_database_metadata(db_id) {
         var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
         if (db_info.large_desc)
             l_desc = db_info.large_desc;
-        web_interface_create_large_description_area('db', 'web_interface_database_markdownarea', l_desc);
+        web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc);
     });
 }
 
@@ -126,8 +126,34 @@ function fill_dataflow_metadata(dataflow_id) {
         var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
         if (df_info.large_desc)
             l_desc = df_info.large_desc;
-        web_interface_create_large_description_area('df', 'web_interface_dataflow_markdownarea', l_desc);
+        web_interface_create_large_description_area('dataflow', 'web_interface_dataflow_markdownarea', l_desc);
     });
+}
+
+function get_edit_toolbar(datatype, web_interface_current_id) {
+    return [{
+                name: "preview",
+                action: function () {
+                    if (!simplemde.isPreviewActive()) {
+                        web_interface_save_large_description(datatype, web_interface_current_id);
+                    }
+                    simplemde.togglePreview();
+                  },
+                className: "fa fa-eye no-disable active",
+                title: "Toggle Preview (Cmd-P)",
+              },
+              "fullscreen","|","bold","italic","heading","|","quote",
+              "unordered-list","ordered-list","|","link","image","|",
+              "guide", "|",
+              {
+                name: "save",
+                action: function () {
+                    web_interface_save_large_description(datatype, web_interface_current_id);
+                  },
+                className: "glyphicon glyphicon-floppy-disk",
+                title: "Save description",
+              }
+            ]
 }
 
 function web_interface_create_large_description_area(datatype, area_id, description) {
@@ -139,43 +165,17 @@ function web_interface_create_large_description_area(datatype, area_id, descript
 
     simplemde = new SimpleMDE({  hideIcons: ['side-by-side'],
                                     element: document.getElementById(area_id),
-                                    toolbar: [{
-                                                name: "preview",
-                                                action: function () {
-                                                    if (!simplemde.isPreviewActive()) {
-                                                        web_interface_save_large_description(datatype, web_interface_current_id, simplemde);
-                                                    }
-                                                    simplemde.togglePreview();
-                                                  },
-                                                className: "fa fa-eye no-disable active",
-                                                title: "Toggle Preview (Cmd-P)",
-                                              },
-                                              "fullscreen","|","bold","italic","heading","|","quote",
-                                              "unordered-list","ordered-list","|","link","image","|",
-                                              "guide", "|",
-                                              {
-                                                name: "save",
-                                                action: function () {
-                                                    web_interface_save_large_description(datatype, web_interface_current_id, simplemde);
-                                                  },
-                                                className: "glyphicon glyphicon-floppy-disk",
-                                                title: "Save description",
-                                              }
-                                            ],
+                                    toolbar: get_edit_toolbar(datatype, web_interface_current_id)
                                   });
 
     simplemde.value(description);
     simplemde.togglePreview();
 }
 
-function web_interface_save_large_description(data_type, id, smde) {
-    if (data_type == 'db')
-        sakura.common.ws_request('update_database_info', [id], {'large_desc': smde.value()}, function(result) {
-        });
-    else if (data_type == 'df')
-        sakura.common.ws_request('update_dataflow_info', [id], {'large_desc': smde.value()}, function(result) {
-        });
-    smde.togglePreview();
+function web_interface_save_large_description(data_type, id) {
+    sakura.common.ws_request('update_'+data_type+'_info', [id], {'large_desc': simplemde.value()}, function(result) {
+        console.log("Done");
+    });
 }
 
 
