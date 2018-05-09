@@ -46,7 +46,7 @@ function datasets_asking(header_str, body_str, func_yes, func_no) {
     var b = $('#datasets_asking_body');
     var b_yes = $('#datasets_asking_button_yes');
     var b_no = $('#datasets_asking_button_no');
-    
+
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     b_yes.attr('onclick', func_yes);
@@ -66,21 +66,21 @@ function datasets_extension_check(f_name, ext) {
 
 }
 function recover_datasets() {
-    
+
     var searchParams = new URLSearchParams(window.location.search);
     var database_id = null;
     if (searchParams.has('database_id')) {
         database_id = searchParams.get('database_id')
     }
-    
+
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
-            
+
         //Sorting tables by name
         result.tables.sort(datasets_sort_func);
-        
+
         //Saving the db infos
         database_infos = result;
-        
+
         $('#datasets_name').html(result.name);
         if (result.short_desc) {
             $('#datasets_description').html(result.short_desc);
@@ -88,8 +88,8 @@ function recover_datasets() {
         else {
             $('#datasets_description').html('<font color="lightgrey">No short description</font>');
         }
-        
-        
+
+
         //Filling dataset
         var body = $('#table_of_datasets').find('tbody');
         body.empty();
@@ -99,14 +99,14 @@ function recover_datasets() {
             new_row.load('templates/dataset.html', function () {
                 var tds = new_row.find('td');
                 var spans = $(tds[2]).find('span');
-                
+
                 $(tds[0]).empty();
                 $(tds[0]).append($('<a>',{  text: dataset.name,
                                             style: "cursor: pointer;",
                                             onclick: "datasets_visu_dataset("+dataset_id+");"
                                             })
                                 );
-                
+
                 $(tds[1]).empty();
                 if (dataset.short_desc)
                     $(tds[1]).append(dataset.short_desc);
@@ -121,9 +121,9 @@ function recover_datasets() {
             });
             body.append(new_row);
         });
-        
+
         $('#datasets_open_creation_button').attr('onclick', 'datasets_open_creation('+database_id+');');
-        
+
         //Ask for the existing tags
         sakura.common.ws_request('list_expected_columns_tags', [database_infos.datastore_id], {}, function (tags_list) {
             columns_tags_list = tags_list;
@@ -134,11 +134,14 @@ function recover_datasets() {
 
 function datasets_send_file(dataset_id, f, dates, modal) {
     var first_chunk = true;
+    var f_size = f.size;
+
     Papa.parse(f, {
         comments: true,
         header: false,
         skipEmptyLines: true,
         chunk: function(chunk) {
+            console.log("Reading Progress: ", parseInt(chunk.meta.cursor/f.size) * 100, '%');
             if (first_chunk) {
                 chunk.data.splice(0, 1);
                 first_chunk = false;
@@ -149,7 +152,7 @@ function datasets_send_file(dataset_id, f, dates, modal) {
                     line[date.column_id] = moment(d, date.format).unix();
                 });
             });
-            
+
             sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data], {}, function(result) {
                 if (result) {
                     console.log("Issue in sending file");
@@ -199,9 +202,8 @@ function datasets_delete_yes(ds_id) {
             console.log("Issue in deleting dataset");
         else
             console.log("Dataset deleted");
-        
+
         //refresh datasets list
         recover_datasets();
     });
 }
-
