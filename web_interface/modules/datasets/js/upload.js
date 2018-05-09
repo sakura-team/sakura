@@ -17,9 +17,9 @@ function datasets_open_upload_modal(dataset_id) {
     var thead       = $('#datasets_upload_preview_table').find('thead');
     thead.empty();
     tbody.empty();
-    
+
     $('#datasets_upload_select_file')[0].value = '';
-    
+
     sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
             console.log(result);
             var thead = $('#datasets_upload_expected_columns_table').find('thead');
@@ -28,7 +28,7 @@ function datasets_open_upload_modal(dataset_id) {
             tbody.empty()
             var new_row_head = $(thead[0].insertRow());
             var new_row_body = $(tbody[0].insertRow());
-            
+
         result.columns.forEach( function (col) {
             new_row_head.append('<th>'+col[0]+'</th>');
             if (col[1] != '<U0')
@@ -41,10 +41,10 @@ function datasets_open_upload_modal(dataset_id) {
         });
         datasets_upload_expected_columns = result.columns;
     });
-    
+
     $('#datasets_upload_button').html('Upload data');
     $('#datasets_upload_button').prop("disabled",true);
-    
+
     $('#datasets_upload_modal').modal();
 }
 
@@ -52,19 +52,19 @@ function datasets_upload_on_file_selected(f, dataset_id) {
     if (!datasets_extension_check(f.value, 'csv')) {
         return;
     }
-    
+
     var nb_lines        = 0
     var nb_preview_rows = 10;
     datasets_upload_lines = [];
     datasets_upload_headers = [];
-    
+
     //We parse the 10 first lines only
     Papa.parse(f.files[0], {
             comments: true,
             header: true,
             skipEmptyLines: true,
             preview: nb_preview_rows,
-            step: function(line) {
+            chunk: function(line) {
                 datasets_upload_headers = Object.keys(line.data[0]);
                 datasets_upload_lines.push(Object.values(line.data[0]));
             },
@@ -96,11 +96,11 @@ function datasets_upload_fill_table() {
     var thead       = $('#datasets_upload_preview_table').find('thead');
     thead.empty();
     tbody.empty();
-    
+
     var bg_color    = '';
     if (datasets_upload_headers.length != datasets_upload_expected_columns.length)
         bg_color = 'bg-danger';
-    
+
     if (datasets_upload_headers.length != datasets_upload_expected_columns.length) {
         bg_color = 'bg-danger';
         datasets_alert("Columns number",'This file has a wrong number of columns, that does not match the table header');
@@ -112,8 +112,8 @@ function datasets_upload_fill_table() {
     else {
         $('#datasets_upload_button').prop("disabled",false);
     }
-    
-    
+
+
     //Filling Headers
     var new_row_head = $(thead[0].insertRow());
     datasets_upload_headers.forEach( function(elt, index) {
@@ -132,7 +132,7 @@ function datasets_upload_fill_table() {
                                     +');"><span class="glyphicon glyphicon-pencil"></span></button></th>');
         }
     });
-    
+
     //Filling Rows
     datasets_upload_lines.forEach( function (line) {
         var new_row = $(tbody[0].insertRow(-1));
@@ -153,7 +153,7 @@ function datasets_upload_fill_table() {
             }
         });
     });
-    
+
     if (!datasets_upload_table_full) {
         var new_row = $(tbody[0].insertRow(-1));
         new_row.append("<td class='"+bg_color+"' colspan="+datasets_upload_headers.length+">...</td>");
@@ -162,20 +162,20 @@ function datasets_upload_fill_table() {
 
 function datasets_upload(dataset_id) {
     var f = $('#datasets_upload_select_file')[0].files[0];
-    
+
     if (datasets_upload_checked_columns.indexOf(null) != -1) {
         datasets_alert("Date format", "At least one date format is missing (red column)!!!");
         return;
     }
-    
+
     $('#datasets_upload_button').html('Uploading <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
-    
+
     var date_formats = []
     datasets_upload_checked_columns.forEach( function(date, index) {
         if (date != 'none')
             date_formats.push({'column_id': index, 'format': date});
     });
-    
+
     datasets_send_file(dataset_id, f, date_formats, $('#datasets_upload_modal'));
 }
 
@@ -197,16 +197,16 @@ function datasets_upload_data_format_modal(col) {
                                     $(div.children[5]),
                                     $(div.children[5].children[0])
                                     );
-        
+
         //check at each input change
-        $(div.children[1].children[0]).on('keyup', {'date': datasets_upload_lines[0][col], 
+        $(div.children[1].children[0]).on('keyup', {'date': datasets_upload_lines[0][col],
                                                     'format_div': $(div.children[1]),
                                                     'format_input': $(div.children[1].children[0]),
                                                     'result_div': $(div.children[5]),
                                                     'result_input': $(div.children[5].children[0])
                                                     }, function(event) {
-                                                    
-                datasets_check_date_format( event.data.date, 
+
+                datasets_check_date_format( event.data.date,
                                             event.data.format_div,
                                             event.data.format_input,
                                             event.data.result_div,

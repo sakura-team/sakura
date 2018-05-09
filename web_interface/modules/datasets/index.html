@@ -2,7 +2,7 @@
 <!--Started on: August, 21th, 2017-->
 
 <!doctype html>
-    <head> 
+    <head>
     <meta charset="UTF-8" />
     <script src="/webcache/cdnjs/jquery/3.1.1/jquery.min.js"></script>
     <script src="/webcache/cdnjs/moment.js/2.19.3/moment.min.js"></script>        <!--Managing dates-->
@@ -12,16 +12,16 @@
     <script src="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
     <script src="/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js"></script>           <!--Managing csv files-->
     <script src="/js/sakura-common.js"></script>
-    
+
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
     </head>
-    
+
     <body onload="recover_datasets();">
-        
+
         <!-- MAIN TABLE-->
         <div class="container" id="datasets_container">
             <!--<h3 id='datasets_name'>Database Name</h3>
@@ -39,7 +39,7 @@
                 <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
             </button>
         </div>
-        
+
         <!--CREATION MODAL-->
         <div class="modal fade" id="datasets_creation_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 100%">
             <div class="modal-dialog modal-lg" role="document" style='width: 90%'>
@@ -73,7 +73,7 @@
                                     </div>
                                 </div>
                             </div>
-                        
+
                         <ul class="nav nav-pills">
                             <li class="active"><a data-toggle="pill" href="#datasets_creation_fs_pan" onclick="datasets_creation_change_pan('fs')">From Scratch</a></li>
                             <li><a data-toggle="pill" href="#datasets_creation_ff_pan" onclick="datasets_creation_change_pan('ff')">From File</a></li>
@@ -114,7 +114,7 @@
                                                                 &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-chevron-down"/>
                                                     </table>
                                                 </div>
-                                                <div id="datasets_creation_fs_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">                                                    
+                                                <div id="datasets_creation_fs_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">
                                                     <table class="table" sytle="width: 100%; border: none;" style="margin-bottom: 0px;">
                                                         <tr>
                                                             <td class="col-md-1" style="border-top: none; padding-top: 1px;">
@@ -137,7 +137,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div id="datasets_creation_ff_pan" class="tab-pane fade in">
                                         <div class="tab-content">
                                             <div class="panel panel-default">
@@ -171,7 +171,7 @@
                                                                 &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-chevron-down"/>
                                                     </table>
                                                 </div>
-                                                <div id="datasets_creation_ff_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">                                                    
+                                                <div id="datasets_creation_ff_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">
                                                     <table class="table" sytle="width: 100%; border: none;" style="margin-bottom: 0px;">
                                                         <tr>
                                                             <td class="col-md-1" style="border-top: none; padding-top: 1px;">
@@ -205,8 +205,8 @@
                 </div>
             </div>
         </div>
-        
-        
+
+
         <!-- SEPARATOR MODAL -->
         <!--<div id="datasets_csv_separator_modal" class="modal fade" role="dialog">
             <div class="modal-dialog">
@@ -225,7 +225,7 @@
             </div>
         </div>
         -->
-        
+
         <!-- FOREIGN KEY MODAL -->
         <div id="datasets_creation_fkey_modal" role="dialog" class="modal fade abs-modal">
             <div class="modal-dialog">
@@ -253,7 +253,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- DATASET VISU MODAL -->
         <div id="datasets_visu_dataset_modal" class="modal fade" style="width: 100%" role="document">
             <div class="modal-dialog modal-lg" role="document" style="width: 100%;">
@@ -264,14 +264,34 @@
                     <div class="modal-body">
                         <nav aria-label="..." align="center">
                             <ul class="pagination" style="margin-bottom: 0px; margin-top: 0px;">
-                                <li class="page-item disabled" id ="datasets_visu_table_previous_top">
-                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_previous();">
-                                        <span class="glyphicon glyphicon-chevron-left"></span>
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_top_3">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next(-10);">
+                                        <span class="glyphicon glyphicon-fast-backward"></span>
                                     </a>
                                 </li>
-                                <li class="page-item" id ="datasets_visu_table_next_top">
-                                    <a class="page-link" onclick="datasets_visu_table_next();">
-                                        <span class="glyphicon glyphicon-chevron-right"></span>
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_top_2">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next(-3);">
+                                        <span class="glyphicon glyphicon-backward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_top_1">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next(-1);">
+                                        <span class="glyphicon glyphicon-step-backward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_top_1">
+                                    <a class="page-link" onclick="datasets_visu_table_next(1);">
+                                        <span class="glyphicon glyphicon-step-forward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_top_2">
+                                    <a class="page-link" onclick="datasets_visu_table_next(3);">
+                                        <span class="glyphicon glyphicon-forward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_top_3">
+                                    <a class="page-link" onclick="datasets_visu_table_next(10);">
+                                        <span class="glyphicon glyphicon-fast-forward"></span>
                                     </a>
                                 </li>
                             </ul>
@@ -284,14 +304,33 @@
                         </table>
                         <nav aria-label="..." align="center">
                             <ul class="pagination" style="margin-bottom: 0px; margin-top: 5px;">
-                                <li class="page-item disabled" id ="datasets_visu_table_previous_bottom">
-                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_previous();">
-                                        <span class="glyphicon glyphicon-chevron-left"></span>
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_bottom_3">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next(-10);">
+                                        <span class="glyphicon glyphicon-fast-backward"></span>
                                     </a>
                                 </li>
-                                <li class="page-item" id ="datasets_visu_table_next_bottom">
-                                    <a class="page-link" onclick="datasets_visu_table_next();">
-                                        <span class="glyphicon glyphicon-chevron-right"></span>
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_bottom_2">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next(-3);">
+                                        <span class="glyphicon glyphicon-fast-backward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled" id ="datasets_visu_table_previous_bottom_1">
+                                    <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next(-1);">
+                                        <span class="glyphicon glyphicon-step-backward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_bottom_1">
+                                    <a class="page-link" onclick="datasets_visu_table_next(1);">
+                                        <span class="glyphicon glyphicon-step-forward"></span>
+                                    </a>
+                                </li>
+                                <li class="page-item" id ="datasets_visu_table_next_bottom_2">
+                                    <a class="page-link" onclick="datasets_visu_table_next(3);">
+                                        <span class="glyphicon glyphicon-forward"></span>
+                                    </a>
+                                </li><li class="page-item" id ="datasets_visu_table_next_bottom_3">
+                                    <a class="page-link" onclick="datasets_visu_table_next(10);">
+                                        <span class="glyphicon glyphicon-fast-forward"></span>
                                     </a>
                                 </li>
                             </ul>
@@ -303,7 +342,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- UPLOAD MODAL -->
         <div id="datasets_upload_modal" class="modal fade" style="width: 100%" role="document">
             <div class="modal-dialog modal-lg" role="document" style="width: 100%;">
@@ -323,14 +362,14 @@
                                 </table>
                             </div>
                         </div>
-                        
+
                         <div class="panel">
                             <h4>Select a file</h4>
                             <div class="form-group">
                                 <input id="datasets_upload_select_file" type="file" onchange="datasets_upload_on_file_selected();">
                             </div>
                         </div>
-                        
+
                         <div class="panel">
                             <div class="form-group">
                                 <table class="table table-condensed table-striped" id="datasets_upload_preview_table">
@@ -350,8 +389,8 @@
                 </div>
             </div>
         </div>
-        
-        
+
+
         <!-- DATE FORMAT MODAL -->
         <div id="datasets_date_format_modal" class="modal fade" style="" role="document">
             <div class="modal-dialog modal-lg" role="document" style="">
@@ -368,7 +407,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- ALERT MODAL -->
         <div id="datasets_alert_modal" class="modal fade" role="dialog">
             <div class="modal-dialog modal-md" role="dialog">
@@ -385,7 +424,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- ASKING MODAL -->
         <div id="datasets_asking_modal" class="modal fade" role="dialog">
             <div class="modal-dialog modal-md" role="dialog">
@@ -403,7 +442,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- INFO MODAL -->
         <div id="datasets_info_modal" class="modal fade" role="dialog">
             <div class="modal-dialog modal-md" role="dialog">
@@ -420,7 +459,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- NEW TAG MODAL -->
         <div id="datasets_new_tag_modal" class="modal fade" role="dialog">
             <div class="modal-dialog modal-md" role="dialog">
@@ -440,7 +479,7 @@
                 </div>
             </div>
         </div>
-        
+
         <script src="js/general.js"></script>
         <script src="js/visu_table.js"></script>
         <script src="js/creation.js"></script>
