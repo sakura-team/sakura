@@ -110,6 +110,14 @@ function init(){
         return false;
     });
 
+    ////////////////////////READ ONLY
+    editor.setOptions({
+        readOnly: true,
+        highlightActiveLine: false,
+        highlightGutterLine: false
+    })
+    editor.renderer.$cursorLayer.element.style.opacity=0
+
     /*click on context menu*/
     /*$(document).on("click",".RightClickMenuElement",function(){
         //type on request
@@ -137,6 +145,7 @@ function init(){
                 break;
         }
     });*/
+    /////////////////////////
 
     //POPUP
     /*forbidden characters in names*/
@@ -189,10 +198,13 @@ function init(){
       }
     });
 
+    ////////////////////////READ ONLY
+
     /**
     * On modification in the editor
     */
-    $('.ace_text-input').bind('input', function() {
+
+    /*$('.ace_text-input').bind('input', function() {
         list.getActiveTab().modified = true;
         updateModifiedTab();
     });
@@ -203,11 +215,12 @@ function init(){
             updateModifiedTab();
         }
     });
+    */
 
-    /**
+    /*
     * Drag N Drop on tab
     */
-    $( function() {
+    /*$( function() {
         var oldPos, newPos;
         $( "#tabList" ).sortable({
             start: function (event, ui) {
@@ -224,7 +237,9 @@ function init(){
         });
         $( "ul, li" ).disableSelection();
 
-    });
+    });*/
+    ////////////////////////READ ONLY
+
 
 }
 
