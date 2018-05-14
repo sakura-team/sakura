@@ -43,7 +43,12 @@ function datasets_open_upload_modal(dataset_id) {
     });
 
     $('#datasets_upload_button').html('Upload data');
+    $('#datasets_upload_button').removeClass("btn-success");
+    $('#datasets_upload_button').addClass("btn-primary");
     $('#datasets_upload_button').prop("disabled",true);
+    $('#datasets_cancel_upload_button').prop("disabled", false);
+
+    $('#datasets_upload_div_progress_bar').hide();
 
     $('#datasets_upload_modal').modal();
 }
@@ -168,7 +173,10 @@ function datasets_upload(dataset_id) {
         return;
     }
 
-    $('#datasets_upload_button').html('Uploading <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+    $('#datasets_upload_div_progress_bar').show();
+    $('#datasets_cancel_upload_button').prop("disabled", true);
+    $('#datasets_upload_button').html('Uploading ...');
+    $('#datasets_upload_button').addClass('btn-success');
 
     var date_formats = []
     datasets_upload_checked_columns.forEach( function(date, index) {

@@ -5,6 +5,7 @@
 var database_infos = null;
 var columns_tags_list = null;
 var mouse = {x: 0, y: 0};
+var chunk_size = 100000;
 
 function not_yet() {
     alert("not yet implemented");
@@ -136,15 +137,15 @@ function datasets_send_file(dataset_id, f, dates, modal) {
     var first_chunk     = true;
     var f_size          = f.size;
     var sent_data_size  = 0;
+    var date            = new Date();
 
-    Papa.LocalChunkSize = 100000;
+    Papa.LocalChunkSize = chunk_size;
+
     Papa.parse(f, {
         comments: true,
         header: false,
         skipEmptyLines: true,
         chunk: function(chunk, parser) {
-            console.log(Papa.LocalChunkSize, chunk.meta.cursor, f.size);
-            console.log("Reading Progress: ", parseInt(chunk.meta.cursor/f.size * 100), '%');
             if (first_chunk) {
                 chunk.data.splice(0, 1);
                 first_chunk = false;
@@ -156,7 +157,6 @@ function datasets_send_file(dataset_id, f, dates, modal) {
                 });
             });
 
-
             if (chunk.data.length) {
                 parser.pause();
                 sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data], {}, function(result) {
@@ -165,14 +165,24 @@ function datasets_send_file(dataset_id, f, dates, modal) {
                     }
                     else {
                         sent_data_size += Papa.LocalChunkSize;
-                        console.log("Sending Progress: ", parseInt(sent_data_size/f.size * 100), '%');
+                        var perc = parseInt(sent_data_size/f.size * 100);
+                        $('#datasets_upload_button').removeClass("btn-primary");
+                        $('#datasets_upload_button').addClass("btn-success");
+                        $('#datasets_upload_button').html('Uploading ...'+ perc + '%');
+                        $('#datasets_upload_progress_bar').css("width", ""+perc+"%");
+                        $('#datasets_upload_progress_bar').css("aria-valuenow", ""+perc);
+
                         parser.resume();
                     }
                 });
             }
         },
         complete: function() {
-            datasets_info('Sending File', 'Done !!');
+            //datasets_info('Sending File', 'Done !!');
+            var ndate = new Date();
+            var s = parseInt((ndate.getTime() - date.getTime())/1000);
+            var m = parseInt(s/60);
+            console.log("Uploading time: "+m+"min:"+s+"s");
             modal.modal('hide');
         },
         error: function (error) {

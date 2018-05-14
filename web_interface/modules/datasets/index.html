@@ -380,9 +380,12 @@
                                 </table>
                             </div>
                         </div>
+                        <div class="progress" id="datasets_upload_div_progress_bar">
+                            <div id="datasets_upload_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" id="datasets_cancel_upload_button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="button" id="datasets_upload_button" class="btn btn-primary" onclick="datasets_upload();">Upload data</button>
                     </div>
 
