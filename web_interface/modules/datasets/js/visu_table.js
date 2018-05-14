@@ -118,7 +118,6 @@ function datasets_visu_table_next(speed) {
     var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == current_dataset_id; })[0];
 
     var row_start   = $('#datasets_visu_table_of_rows').data('row_start');
-    //var nb_rows     = $('#datasets_visu_table_of_rows').data('nb_rows');
 
     row_start += speed*nb_rows;
     if (row_start < 0)

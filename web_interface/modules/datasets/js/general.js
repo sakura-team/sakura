@@ -133,15 +133,18 @@ function recover_datasets() {
 
 
 function datasets_send_file(dataset_id, f, dates, modal) {
-    var first_chunk = true;
-    var f_size = f.size;
+    var first_chunk     = true;
+    var f_size          = f.size;
+    var sent_data_size  = 0;
 
+    Papa.LocalChunkSize = 10000;
     Papa.parse(f, {
         comments: true,
         header: false,
         skipEmptyLines: true,
         chunk: function(chunk) {
-            console.log("Reading Progress: ", parseInt(chunk.meta.cursor/f.size) * 100, '%');
+            console.log(Papa.LocalChunkSize, chunk.meta.cursor);
+            console.log("Reading Progress: ", parseInt(chunk.meta.cursor/f.size * 100), '%');
             if (first_chunk) {
                 chunk.data.splice(0, 1);
                 first_chunk = false;
@@ -153,11 +156,17 @@ function datasets_send_file(dataset_id, f, dates, modal) {
                 });
             });
 
+            console.log(chunk.data);
             sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data], {}, function(result) {
                 if (result) {
                     console.log("Issue in sending file");
                 }
+                else {
+                    sent_data_size += Papa.LocalChunkSize;
+                    console.log("Sending Progress: ", parseInt(sent_data_size/f.size * 100), '%');
+                }
             });
+
         },
         complete: function() {
             datasets_info('Sending File', 'Done !!');
@@ -202,7 +211,6 @@ function datasets_delete_yes(ds_id) {
             console.log("Issue in deleting dataset");
         else
             console.log("Dataset deleted");
-
         //refresh datasets list
         recover_datasets();
     });
