@@ -133,7 +133,7 @@ function recover_datasets() {
 }
 
 
-function datasets_send_file(dataset_id, f, dates, modal) {
+function datasets_send_file(dataset_id, f, dates, modal, from_what) {
     var first_chunk     = true;
     var f_size          = f.size;
     var sent_data_size  = 0;
@@ -166,11 +166,11 @@ function datasets_send_file(dataset_id, f, dates, modal) {
                     else {
                         sent_data_size += Papa.LocalChunkSize;
                         var perc = parseInt(sent_data_size/f.size * 100);
-                        $('#datasets_upload_button').removeClass("btn-primary");
-                        $('#datasets_upload_button').addClass("btn-success");
-                        $('#datasets_upload_button').html('Uploading ...'+ perc + '%');
-                        $('#datasets_upload_progress_bar').css("width", ""+perc+"%");
-                        $('#datasets_upload_progress_bar').css("aria-valuenow", ""+perc);
+                        $('#datasets_'+from_what+'_button').removeClass("btn-primary");
+                        $('#datasets_'+from_what+'_button').addClass("btn-success");
+                        $('#datasets_'+from_what+'_button').html('Uploading ...'+ perc + '%');
+                        $('#datasets_'+from_what+'_progress_bar').css("width", ""+perc+"%");
+                        $('#datasets_'+from_what+'_progress_bar').css("aria-valuenow", ""+perc);
 
                         parser.resume();
                     }
@@ -184,6 +184,7 @@ function datasets_send_file(dataset_id, f, dates, modal) {
             var m = parseInt(s/60);
             console.log("Uploading time: "+m+"min:"+s+"s");
             modal.modal('hide');
+            recover_datasets();
         },
         error: function (error) {
             datasets_alert("Parsing error:", error);

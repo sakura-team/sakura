@@ -175,6 +175,7 @@ function datasets_upload(dataset_id) {
 
     $('#datasets_upload_div_progress_bar').show();
     $('#datasets_cancel_upload_button').prop("disabled", true);
+    $('#datasets_upload_button').prop("disabled", true);
     $('#datasets_upload_button').html('Uploading ...');
     $('#datasets_upload_button').addClass('btn-success');
 
@@ -184,7 +185,7 @@ function datasets_upload(dataset_id) {
             date_formats.push({'column_id': index, 'format': date});
     });
 
-    datasets_send_file(dataset_id, f, date_formats, $('#datasets_upload_modal'));
+    datasets_send_file(dataset_id, f, date_formats, $('#datasets_upload_modal'), 'upload');
 }
 
 
