@@ -75,9 +75,14 @@ class GUISerializationProtocol:
     def load(self, f):
         return json.load(f)
     def dump(self, obj, f):
-        return json.dump(obj, f,
+        # dump() function causes performance issues
+        # because it performs many small writes on f.
+        # So we json-encode in a string (dumps)
+        # and then write this whole string at once.
+        obj_json = json.dumps(obj,
                 separators=(',', ':'),
                 default=gui_fallback_handler)
+        return f.write(obj_json)
 
 gui_protocol = GUISerializationProtocol()
 
