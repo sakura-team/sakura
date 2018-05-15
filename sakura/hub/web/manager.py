@@ -65,8 +65,11 @@ def gui_fallback_handler(obj):
     elif isinstance(obj, list) or isinstance(obj, tuple) or \
                 hasattr(obj, '__iter__'):
         return tuple(gui_fallback_handler(o) for o in obj)
+    elif hasattr(obj, 'item'):
+        return obj.item()   # convert numpy scalar to native
     else:
-        return obj
+        raise Exception('Dont know how to serialize "' + repr(obj) + \
+                    '" class=' + repr(obj.__class__))
 
 class GUISerializationProtocol:
     def load(self, f):
