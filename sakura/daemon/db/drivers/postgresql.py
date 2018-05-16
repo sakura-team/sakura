@@ -285,7 +285,7 @@ class PostgreSQLDBDriver:
                 col_type = TYPES_SAKURA_TO_PG[col_type]
             )
             columns_sql.append(col_sql)
-        if len(primary_key) > 1:
+        if len(primary_key) > 0:
             constraint_sql = SQL_PK % dict(
                 pk_cols = identifier_list_to_sql(primary_key))
             columns_sql.append(constraint_sql)
