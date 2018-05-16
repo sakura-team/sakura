@@ -119,11 +119,10 @@ def define_schema(db):
     class DBTable(db.Entity, TableMixin):
         database = Required(Database)
         name = Required(str)
-        short_desc = Optional(str)
-        creation_date = Optional(epoch)
         columns = Set('DBColumn')
         primary_key = Required(Json, default = [])
         foreign_keys = Required(Json, default = [])
+        metadata = Optional(Json, default = {})
         UNIQUE(database, name)
 
     class DBColumn(db.Entity, ColumnMixin):

@@ -13,15 +13,12 @@ class TableMixin:
             table_id = self.id,
             database_id = self.database.id,
             name = self.name,
-            short_desc = self.short_desc,
-            creation_date = self.creation_date,
             columns = tuple(c.pack() for c in self.ordered_columns),
             primary_key = self.primary_key,
-            foreign_keys = tuple(self.foreign_keys)
+            foreign_keys = tuple(self.foreign_keys),
+            **self.metadata
         )
     def create_on_datastore(self):
-        user = 'etienne'               # TODO: handle this properly
-        password = 'sakura_etienne'    # TODO: handle this properly
         context = get_context()
         # adapt foreign keys because daemon need table names, not IDs
         fk = []
@@ -43,25 +40,29 @@ class TableMixin:
         # delete instance in local db
         self.delete()
     def get_range(self, row_start, row_end):
-        user = 'etienne'               # TODO: handle this properly
-        password = 'sakura_etienne'    # TODO: handle this properly
         return self.remote_instance.get_range(
                 row_start,
                 row_end
         )
     def add_rows(self, data):
-        user = 'etienne'               # TODO: handle this properly
-        password = 'sakura_etienne'    # TODO: handle this properly
         return self.remote_instance.add_rows(
                 data
         )
+    def update_attributes(self, **kwargs):
+        if 'primary_key' in kwargs:
+            self.primary_key = kwargs.pop('primary_key')
+        if 'foreign_keys' in kwargs:
+            self.foreign_keys = kwargs.pop('foreign_keys')
+        # update metadata
+        metadata = dict(self.metadata)
+        metadata.update(**kwargs)
+        self.metadata = metadata
     @classmethod
     def create_or_update(cls, database, name, **kwargs):
         table = cls.get(database = database, name = name)
         if table is None:
-            table = cls(database = database, name = name, **kwargs)
-        else:
-            table.set(**kwargs)
+            table = cls(database = database, name = name)
+        table.update_attributes(**kwargs)
         return table
     @classmethod
     def restore_table(cls, database, columns, **tbl):
@@ -89,16 +90,18 @@ class TableMixin:
             creation_date = time.time()
         # register in central db
         new_table = cls(database = database,
-                        name = name,
-                        creation_date = creation_date)
+                        name = name)
         cols = []
         for col_id, col_info in enumerate(columns):
             col = context.columns.create_column(new_table, col_id, *col_info)
             cols.append(col)
-        new_table.set(columns = cols, **kwargs)
+        new_table.columns = cols
+        new_table.update_attributes(creation_date = creation_date,
+                                    **kwargs)
+        context.db.commit()
+        table_id = new_table.id
         # request daemon to create table on the remote datastore
         new_table.create_on_datastore()
         # return table_id
-        context.db.commit()
-        return new_table.id
+        return table_id
 

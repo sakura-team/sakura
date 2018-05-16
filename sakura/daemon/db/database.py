@@ -19,6 +19,7 @@ class DBProber:
         self.driver.collect_table_columns(self.db_conn, self, table_name)
         self.driver.collect_table_primary_key(self.db_conn, self, table_name)
         self.driver.collect_table_foreign_keys(self.db_conn, self, table_name)
+        self.driver.collect_table_count_estimate(self.db_conn, self, table_name)
     def register_column(self, table_name, *col_info, **params):
         #print("----------- found column " + str(col_info))
         self.tables[table_name].add_column(*col_info, **params)
@@ -26,6 +27,8 @@ class DBProber:
         self.tables[table_name].register_primary_key(pk_col_names)
     def register_foreign_key(self, table_name, **fk_info):
         self.tables[table_name].register_foreign_key(**fk_info)
+    def register_count_estimate(self, table_name, count_estimate):
+        self.tables[table_name].register_count_estimate(count_estimate)
 
 class Database:
     def __init__(self, dbms, db_name, **metadata):

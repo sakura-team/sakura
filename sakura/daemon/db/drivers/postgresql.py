@@ -174,6 +174,10 @@ CREATE TABLE "%(table_name)s" (%(columns_sql)s);
 
 SQL_DROP_TABLE = '''DROP TABLE "%(table_name)s"'''
 
+SQL_ESTIMATE_ROWS_COUNT = '''
+SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='%(table_name)s';
+'''
+
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 
 def identifier_list_to_sql(l):
@@ -265,6 +269,15 @@ class PostgreSQLDBDriver:
                 col_meta = analyse_col_meta(col_comment)
                 register_column(metadata_collector,
                     table_name, col_name, col_pgtype, col_meta)
+    @staticmethod
+    def collect_table_count_estimate(db_conn, metadata_collector, table_name):
+        sql = SQL_ESTIMATE_ROWS_COUNT % dict(table_name = table_name)
+        with db_conn.cursor() as cursor:
+            cursor.execute(sql)
+            count_estimate = cursor.fetchone()[0]
+            metadata_collector.register_count_estimate(
+                    table_name,
+                    count_estimate)
     @staticmethod
     def create_db(admin_db_conn, db_name, db_owner):
         # CREATE DATABASE requires to set autocommit, and
