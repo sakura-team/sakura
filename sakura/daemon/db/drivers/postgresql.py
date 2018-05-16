@@ -306,9 +306,12 @@ class PostgreSQLDBDriver:
         db_conn.commit()
     @staticmethod
     def delete_table(db_conn, table_name):
-        with db_conn.cursor() as cursor:
-            cursor.execute(SQL_DROP_TABLE % dict(table_name = table_name))
-        db_conn.commit()
+        try:
+            with db_conn.cursor() as cursor:
+                cursor.execute(SQL_DROP_TABLE % dict(table_name = table_name))
+            db_conn.commit()
+        except psycopg2.Error as e:
+            raise APIRequestError(e.pgerror)
     @staticmethod
     def add_rows(db_conn, table_name, value_wrappers, rows):
         try:
