@@ -2,9 +2,10 @@ import pickle
 import gevent.pool
 from sakura.hub.db import db_session_wrapper
 from sakura.common.io import RemoteAPIForwarder, \
-                                LocalAPIHandler
+         LocalAPIHandler, api_request_result_interpreter
 from sakura.hub.daemons.api import DaemonToHubAPI
 from sakura.hub.tools import DaemonDataException
+from sakura.common.errors import APIRequestError
 
 def dump_to_sock_file(sock_file, **kwargs):
     pickle.dump(kwargs, sock_file)
@@ -12,7 +13,7 @@ def dump_to_sock_file(sock_file, **kwargs):
 
 def rpc_client_manager(daemon_info, context, sock_file):
     print('new rpc connection hub (client) -> %s (server).' % daemon_info['name'])
-    remote_api = RemoteAPIForwarder(sock_file, pickle)
+    remote_api = RemoteAPIForwarder(sock_file, pickle, api_request_result_interpreter)
     try:
         with db_session_wrapper():
             daemon_id = context.on_daemon_connect(daemon_info, remote_api)

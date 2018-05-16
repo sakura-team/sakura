@@ -5,7 +5,7 @@ from gevent import Greenlet
 from gevent.queue import Queue, Empty
 from time import time
 from sakura.common.io import LocalAPIHandler, \
-                    RemoteAPIForwarder
+                RemoteAPIForwarder, APIStatusResultWrapper
 from sakura.daemon.tools import connect_to_hub
 
 class DaemonGreenlet:
@@ -26,7 +26,9 @@ class RPCServerGreenlet(DaemonGreenlet):
         self.write_request(sock_file, b'RPC_SERVER')
         # handle this RPC API
         pool = gevent.pool.Group()
-        self.handler = LocalAPIHandler(sock_file, pickle, self.engine, pool)
+        self.handler = LocalAPIHandler(
+                sock_file, pickle, self.engine, pool,
+                result_wrapper = APIStatusResultWrapper)
     def run(self):
         self.handler.loop()
 

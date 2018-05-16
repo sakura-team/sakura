@@ -3,6 +3,7 @@ import numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
+from sakura.common.errors import APIRequestError
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 #DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
@@ -36,6 +37,25 @@ class VoidResultWrapper:
     @staticmethod
     def on_exception(exc):
         raise exc
+
+class APIStatusResultWrapper:
+    @staticmethod
+    def on_success(result):
+        return (True, pack(result))
+    @staticmethod
+    def on_exception(exc):
+        if isinstance(exc, APIRequestError):
+            # something wrong in the API request
+            return (False, str(exc))
+        else:
+            # unexpected issue
+            raise exc
+
+def api_request_result_interpreter(res):
+    if res[0]:
+        return res[1]
+    else:
+        raise APIRequestError(res[1])
 
 # obtain a serializable description of an object
 def pack(obj):
@@ -144,17 +164,23 @@ class LocalAPIHandler(object):
 # call, prepend a '_' to its name: for example, api_handler.my._attr
 # will be recognised as a remote attribute and handled correctly.
 
+void_result_interpreter = lambda x: x
+
 class AttrCallAggregator(object):
-    def __init__(self, request_cb, path = (), delete_callback = None):
+    def __init__(self, request_cb, path = (),
+                        delete_callback = None,
+                        result_interpreter = void_result_interpreter):
         self.path = path
         self.request = request_cb
         self.delete_callback = delete_callback
+        self.result_interpreter = result_interpreter
     def __getattr__(self, attr):
         path = self.path + (attr,)
         if attr.startswith('_'):
             return self.__io_request__(IO_ATTR, path)
         else:
-            return AttrCallAggregator(self.request, path)
+            return AttrCallAggregator(self.request, path,
+                                    result_interpreter = self.result_interpreter)
     def __str__(self):
         path = self.path + ('__str__',)
         return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {})[1] + ')'
@@ -170,7 +196,8 @@ class AttrCallAggregator(object):
     def __delete_held__(self, remote_held_id):
         self.request(IO_FUNC, ('__delete_held__',), (remote_held_id,), {})
     def __getitem__(self, index):
-        return AttrCallAggregator(self.request, self.path + ((index,),))
+        return AttrCallAggregator(self.request, self.path + ((index,),),
+                                    result_interpreter = self.result_interpreter)
     def __call__(self, *args, **kwargs):
         return self.__io_request__(IO_FUNC, self.path, args, kwargs)
     def __len__(self):
@@ -185,13 +212,14 @@ class AttrCallAggregator(object):
             raise StopIteration
         if res[0] == IO_TRANSFERED:
             # result was transfered, return it
-            return res[1]
+            return self.result_interpreter(res[1])
         else:      # IO_HELD
             # result was held remotely (not transferable)
             remote_held_id = res[1]
             remote_held_path = ('__held_objects__', (remote_held_id,))
             return AttrCallAggregator(self.request, remote_held_path,
-                    delete_callback=lambda : self.__delete_held__(remote_held_id))
+                    delete_callback=lambda : self.__delete_held__(remote_held_id),
+                    result_interpreter = self.result_interpreter)
 
 IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype) + \
                    tuple(getattr(builtins, t) for t in ( \
@@ -241,8 +269,8 @@ class AttrCallRunner(object):
         del self.__held_objects__[held_id]
 
 class RemoteAPIForwarder(AttrCallAggregator):
-    def __init__(self, f, protocol):
-        super().__init__(self.request)
+    def __init__(self, f, protocol, result_interpreter=void_result_interpreter):
+        super().__init__(self.request, result_interpreter=result_interpreter)
         self.f = f
         self.protocol = protocol
         self.reqs = {}

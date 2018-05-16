@@ -1,7 +1,7 @@
 import collections, json, numpy as np
 from contextlib import contextmanager
-from sakura.common.io import LocalAPIHandler, pack
-from sakura.common.errors import APIRequestError
+from sakura.common.io import LocalAPIHandler, pack, \
+                             APIStatusResultWrapper
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.context import greenlet_env
@@ -25,17 +25,6 @@ class FileWSock(object):
     def flush(self):
         self.wsock.send(self.msg)
         self.msg = ''
-
-class ResultWrapper:
-    @staticmethod
-    def on_success(result):
-        return (True, pack(result))
-    @staticmethod
-    def on_exception(exc):
-        if isinstance(exc, APIRequestError):
-            return (False, str(exc))
-        else:
-            raise exc
 
 def get_web_session_wrapper(session_id):
     @contextmanager
@@ -95,7 +84,7 @@ def rpc_manager(context, wsock, session):
     web_session_wrapper = get_web_session_wrapper(session.id)
     handler = LocalAPIHandler(f, gui_protocol, local_api,
                 session_wrapper = web_session_wrapper,
-                result_wrapper = ResultWrapper)
+                result_wrapper = APIStatusResultWrapper)
     session.num_ws += 1
     handler.loop()
     session.num_ws -= 1
