@@ -1,6 +1,7 @@
 import psycopg2, uuid, numpy as np
 from collections import defaultdict
 from psycopg2.extras import DictCursor
+from sakura.common.errors import APIRequestError
 
 TYPES_SAKURA_TO_PG = {
     'int8':     'smallint',
@@ -310,15 +311,18 @@ class PostgreSQLDBDriver:
         db_conn.commit()
     @staticmethod
     def add_rows(db_conn, table_name, value_wrappers, rows):
-        if len(rows) == 0:
-            return  # nothing to do
-        tuple_pattern = '(' + ','.join(value_wrappers) + ')'
-        with db_conn.cursor() as cursor:
-            args_str = b','.join(cursor.mogrify(tuple_pattern, row) for row in rows)
-            cursor.mogrify('"%s"' % table_name)
-            cursor.execute(b"INSERT INTO " + cursor.mogrify('"%s"' % table_name) + \
-                           b" VALUES " + args_str)
-        db_conn.commit()
+        try:
+            if len(rows) == 0:
+                return  # nothing to do
+            tuple_pattern = '(' + ','.join(value_wrappers) + ')'
+            with db_conn.cursor() as cursor:
+                args_str = b','.join(cursor.mogrify(tuple_pattern, row) for row in rows)
+                cursor.mogrify('"%s"' % table_name)
+                cursor.execute(b"INSERT INTO " + cursor.mogrify('"%s"' % table_name) + \
+                               b" VALUES " + args_str)
+            db_conn.commit()
+        except psycopg2.Error as e:
+            raise APIRequestError(e.pgerror)
 
 DRIVER = PostgreSQLDBDriver
 
