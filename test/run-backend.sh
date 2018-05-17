@@ -54,7 +54,7 @@ prefix_out DAEMON0 test/run-daemon.sh 0 datasample spacetime
 sleep 0.2
 prefix_out DAEMON1 test/run-daemon.sh 1 mean map
 sleep 0.2
-prefix_out DAEMON2 test/run-daemon.sh 2 rscript
+prefix_out DAEMON2 test/run-daemon.sh 2 plot rscript
 
 # wait for sub processes
 wait
