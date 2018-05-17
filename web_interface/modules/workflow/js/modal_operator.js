@@ -4,6 +4,7 @@
 
 var max_rows = 10;
 var current_nb_rows = max_rows;
+var current_instance_info = null;
 
 
 function create_op_modal(main_div, id, cl_id, tabs) {
@@ -49,8 +50,10 @@ function fill_all(id) {
 
 
 function fill_tabs(id) {
+    console.log("OP ID", id);
     var op_hub_id = parseInt(id.split("_")[2]);
     sakura.common.ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
+        current_instance_info = instance_info;
         var index = 0;
         instance_info.tabs.forEach( function(tab) {
             var iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
@@ -116,6 +119,12 @@ function params_onChange(op_id, param_index, select_id) {
                 console.log(result2);
             else
                 fill_in_out('output', op_id);
+                var index = 0;
+                current_instance_info.tabs.forEach( function(tab) {
+                    var iframe = document.getElementById('modal_'+op_id+'_tab_tab_'+index);
+                    iframe.src = iframe.src;
+                    index += 1;
+                });
         });
     });
 }
