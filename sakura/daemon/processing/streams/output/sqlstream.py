@@ -26,7 +26,6 @@ class SQLStreamIterator:
     def release(self):
         if not self.released:
             self.cursor.close()
-            print('cursor released')
             self.released = True
     def __del__(self):
         self.release()

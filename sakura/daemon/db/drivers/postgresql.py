@@ -183,6 +183,23 @@ DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 def identifier_list_to_sql(l):
     return "(" + ', '.join('"%s"' % name for name in l) + ")"
 
+class PostgreSQLServerCursor(psycopg2.extensions.cursor):
+    def close(self):
+        psycopg2.extensions.cursor.close(self)
+        # server-side cursors, even closed, may still lock
+        # the tables that were fetched. committing ensures
+        # tables are no longer locked.
+        self.connection.commit()
+        print('cursor ' + self.name + ' released')
+    def __del__(self):
+        # ensures cursor is closed when deleting
+        if not self.closed:
+            self.close()
+        # let's ensure possible evolutions of psycopg2 will
+        # not break this.
+        if hasattr(psycopg2.extensions.cursor, '__del__'):
+            psycopg2.extensions.cursor.__del__(self)
+
 class PostgreSQLDBDriver:
     NAME = 'postgresql'
     @staticmethod
@@ -198,7 +215,9 @@ class PostgreSQLDBDriver:
     @staticmethod
     def open_server_cursor(db_conn):
         cursor_name = str(uuid.uuid4()) # unique name
-        cursor = db_conn.cursor(name = cursor_name)
+        print("opening server cursor", cursor_name)
+        cursor = db_conn.cursor(name = cursor_name,
+                                cursor_factory=PostgreSQLServerCursor)
         # arraysize: default number of rows when using fetchmany()
         # itersize: default number of rows fetched from the backend
         #           at each network roundtrip (psycopg2-specific)
