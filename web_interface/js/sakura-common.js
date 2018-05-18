@@ -81,30 +81,28 @@ sakura.common.ws.default_error_callback = function (msg) {
 
 sakura.common.ws.onmessage = function (evt) {
     IO_TRANSFERED = 0;
+    IO_REQUEST_ERROR = 2;
     // parse the message
     var json = JSON.parse(evt.data);
     var req_idx = json[0];
     sakura.common.debug('ws_request ' + req_idx + ' got answer');
-    var response = json[1];
     var req = sakura.common.ws.running_requests[req_idx];
     // sakura.common.ws.running_requests[req_idx] will no longer be needed
     delete sakura.common.ws.running_requests[req_idx];
     // we have the response, thus this websocket is free again
     sakura.common.ws.free_ws.push(req.ws);
-    // verify that the result could be transfered
-    if (response[0] != IO_TRANSFERED)
-    {
-        console.error('Bug: result of ws_request() was held!');
+    if (json[1] == IO_TRANSFERED)
+    {   // all ok, and result could be transfered
+        // call the callback that was given with the request
+        req.callback(json[2]);
         return;
     }
-    response = response[1]
-    if (!response[0])
+    if (json[1] == IO_REQUEST_ERROR)
     {   // backend returned an error, pass it to error_callback
-        req.error_callback(response[1]);
+        req.error_callback(json[2]);
         return;
     }
-    // call the callback that was given with the request
-    req.callback(response[1]);
+    console.error('Bug: result of ws_request() got unknown status: ' + json[1]);
 }
 
 sakura.common.ws.send = function (func_name, args, kwargs, callback, error_callback) {

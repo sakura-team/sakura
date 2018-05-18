@@ -3,3 +3,6 @@ class APIRequestError(ValueError):
 
 class APIObjectDeniedError(APIRequestError):
     pass
+
+class IOHoldException(Exception):
+    pass

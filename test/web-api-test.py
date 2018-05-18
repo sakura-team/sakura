@@ -2,7 +2,7 @@
 
 import json, code, sys, readline, os.path, atexit, time
 sys.path.insert(0, '.')
-from sakura.common.io import AttrCallAggregator, RemoteAPIForwarder
+from sakura.common.io import RemoteAPIForwarder
 from websocket import create_connection
 
 if len(sys.argv) < 2:

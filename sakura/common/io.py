@@ -1,9 +1,9 @@
 import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
-import numpy as np
+import pickle, numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
-from sakura.common.errors import APIRequestError
+from sakura.common.errors import APIRequestError, IOHoldException
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 #DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
@@ -14,6 +14,8 @@ IO_ATTR = 1
 
 IO_TRANSFERED = 0
 IO_HELD = 1
+IO_REQUEST_ERROR = 2
+IO_STOP_ITERATION = 3
 
 def print_debug(*args):
     if DEBUG_LEVEL == 0:
@@ -25,37 +27,6 @@ def print_debug(*args):
         OUT.write('...\n')
         OUT.truncate()
     sys.stdout.write(OUT.getvalue())
-
-@contextlib.contextmanager
-def void_context_manager():
-    yield
-
-class VoidResultWrapper:
-    @staticmethod
-    def on_success(result):
-        return result
-    @staticmethod
-    def on_exception(exc):
-        raise exc
-
-class APIStatusResultWrapper:
-    @staticmethod
-    def on_success(result):
-        return (True, pack(result))
-    @staticmethod
-    def on_exception(exc):
-        if isinstance(exc, APIRequestError):
-            # something wrong in the API request
-            return (False, str(exc))
-        else:
-            # unexpected issue
-            raise exc
-
-def api_request_result_interpreter(res):
-    if res[0]:
-        return res[1]
-    else:
-        raise APIRequestError(res[1])
 
 # obtain a serializable description of an object
 def pack(obj):
@@ -78,14 +49,17 @@ def pack(obj):
     # object is probably a native type
     return obj
 
+@contextlib.contextmanager
+def void_context_manager():
+    yield
+
 class LocalAPIHandler(object):
     def __init__(self, f, protocol, local_api,
                 greenlets_pool = None,
-                session_wrapper = void_context_manager,
-                result_wrapper = VoidResultWrapper):
+                session_wrapper = void_context_manager):
         self.f = f
         self.protocol = protocol
-        self.api_runner = AttrCallRunner(local_api, result_wrapper)
+        self.api_runner = AttrCallRunner(local_api)
         self.session_wrapper = session_wrapper
         if greenlets_pool == None:
             self.pool = None
@@ -120,11 +94,25 @@ class LocalAPIHandler(object):
         return True
     def handle_request_base(self, req_id, req):
         with self.session_wrapper():
-            res = self.api_runner.do(req)
+            # run request
             try:
-                #expanded_res = make_serializable(res)
-                self.protocol.dump((req_id, res), self.f)
-                print_debug("sent response", req_id, res)
+                res = self.api_runner.do(req)
+                out = (IO_TRANSFERED, res)
+            except StopIteration:
+                out = (IO_STOP_ITERATION,)
+            except APIRequestError as e:
+                out = (IO_REQUEST_ERROR, str(e))
+            # send response
+            try:
+                self.protocol.dump((req_id,) + out, self.f)
+                self.f.flush()
+                print_debug("sent response", (req_id,) + out)
+            except IOHoldException:
+                # object will be held locally
+                held_id = self.api_runner.hold(res)
+                # notify remote end
+                out = (IO_HELD, held_id)
+                self.protocol.dump((req_id,) + out, self.f)
                 self.f.flush()
             except BaseException as e:
                 print('could not send response:', e)
@@ -168,25 +156,22 @@ void_result_interpreter = lambda x: x
 
 class AttrCallAggregator(object):
     def __init__(self, request_cb, path = (),
-                        delete_callback = None,
-                        result_interpreter = void_result_interpreter):
+                        delete_callback = None):
         self.path = path
         self.request = request_cb
         self.delete_callback = delete_callback
-        self.result_interpreter = result_interpreter
     def __getattr__(self, attr):
         path = self.path + (attr,)
         if attr.startswith('_'):
             return self.__io_request__(IO_ATTR, path)
         else:
-            return AttrCallAggregator(self.request, path,
-                                    result_interpreter = self.result_interpreter)
+            return AttrCallAggregator(self.request, path)
     def __str__(self):
         path = self.path + ('__str__',)
-        return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {})[1] + ')'
+        return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {}) + ')'
     def __repr__(self):
         path = self.path + ('__repr__',)
-        return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {})[1] + ')'
+        return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {}) + ')'
     def __iter__(self):
         path = self.path + ('__iter__',)
         return self.__io_request__(IO_FUNC, path, (), {})
@@ -196,8 +181,7 @@ class AttrCallAggregator(object):
     def __delete_held__(self, remote_held_id):
         self.request(IO_FUNC, ('__delete_held__',), (remote_held_id,), {})
     def __getitem__(self, index):
-        return AttrCallAggregator(self.request, self.path + ((index,),),
-                                    result_interpreter = self.result_interpreter)
+        return AttrCallAggregator(self.request, self.path + ((index,),))
     def __call__(self, *args, **kwargs):
         return self.__io_request__(IO_FUNC, self.path, args, kwargs)
     def __len__(self):
@@ -208,69 +192,54 @@ class AttrCallAggregator(object):
             self.delete_callback()
     def __io_request__(self, *req):
         res = self.request(*req)
-        if res == StopIteration:
-            raise StopIteration
         if res[0] == IO_TRANSFERED:
             # result was transfered, return it
-            return self.result_interpreter(res[1])
-        else:      # IO_HELD
+            return res[1]
+        if res[0] == IO_STOP_ITERATION:
+            raise StopIteration
+        if res[0] == IO_REQUEST_ERROR:
+            raise APIRequestError(res[1])
+        if res[0] == IO_HELD:
             # result was held remotely (not transferable)
             remote_held_id = res[1]
             remote_held_path = ('__held_objects__', (remote_held_id,))
             return AttrCallAggregator(self.request, remote_held_path,
-                    delete_callback=lambda : self.__delete_held__(remote_held_id),
-                    result_interpreter = self.result_interpreter)
-
-IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype) + \
-                   tuple(getattr(builtins, t) for t in ( \
-                        'bytearray', 'bytes', 'dict', 'frozenset', 'list',
-                        'set', 'str', 'tuple', 'BaseException', 'type'))
+                    delete_callback=lambda : self.__delete_held__(remote_held_id))
 
 class AttrCallRunner(object):
-    def __init__(self, handler, result_wrapper):
+    def __init__(self, handler):
         self.handler = handler
         self.__held_ids__ = itertools.count()
         self.__held_objects__ = {}
-        self.result_wrapper = result_wrapper
+    def hold(self, obj):
+        # hold obj locally and return its id.
+        print_debug('held:', obj)
+        held_id = self.__held_ids__.__next__()
+        self.__held_objects__[held_id] = obj
+        return held_id
     def do(self, req):
-        try:
-            req_type, path = req[:2]
-            if path[0] in ('__held_objects__', '__delete_held__'):
-                # management of held objects
-                obj = self
-            else:
-                obj = self.handler
-            for attr in path:
-                if isinstance(attr, str):
-                    obj = getattr(obj, attr)
-                else:
-                    obj = obj[attr[0]]  # getitem
-            if req_type == IO_ATTR:
-                res = obj
-            elif req_type == IO_FUNC:
-                args, kwargs = req[2:4]
-                res = obj(*args, **kwargs)
-            res = self.result_wrapper.on_success(res)
-        except StopIteration:
-            return StopIteration
-        except BaseException as e:
-            print(e)
-            res = self.result_wrapper.on_exception(e)
-        if isinstance(res, IO_TRANSFERABLES):
-            return IO_TRANSFERED, res
+        req_type, path = req[:2]
+        if path[0] in ('__held_objects__', '__delete_held__'):
+            # management of held objects
+            obj = self
         else:
-            # res probably cannot be serialized,
-            # hold it locally and return its id.
-            print_debug('held:', res)
-            held_id = self.__held_ids__.__next__()
-            self.__held_objects__[held_id] = res
-            return IO_HELD, held_id
+            obj = self.handler
+        for attr in path:
+            if isinstance(attr, str):
+                obj = getattr(obj, attr)
+            else:
+                obj = obj[attr[0]]  # getitem
+        if req_type == IO_ATTR:
+            return obj
+        elif req_type == IO_FUNC:
+            args, kwargs = req[2:4]
+            return obj(*args, **kwargs)
     def __delete_held__(self, held_id):
         del self.__held_objects__[held_id]
 
 class RemoteAPIForwarder(AttrCallAggregator):
-    def __init__(self, f, protocol, result_interpreter=void_result_interpreter):
-        super().__init__(self.request, result_interpreter=result_interpreter)
+    def __init__(self, f, protocol):
+        super().__init__(self.request)
         self.f = f
         self.protocol = protocol
         self.reqs = {}
@@ -290,8 +259,8 @@ class RemoteAPIForwarder(AttrCallAggregator):
         return async_res.get()
     def receive(self):
         try:
-            req_id, res = self.protocol.load(self.f)
-            print_debug("received response", req_id, res)
+            res_info = self.protocol.load(self.f)
+            print_debug("received response", res_info)
         except BaseException:
             if DEBUG_LEVEL == 0:
                 print('malformed result. closing.')
@@ -299,8 +268,9 @@ class RemoteAPIForwarder(AttrCallAggregator):
                 print('malformed result? Got exception:')
                 traceback.print_exc()
             return False
+        req_id = res_info[0]
         async_res = self.reqs[req_id]
-        async_res.set(res)
+        async_res.set(res_info[1:])
         del self.reqs[req_id]
         return True
     def loop(self):
@@ -308,3 +278,20 @@ class RemoteAPIForwarder(AttrCallAggregator):
         while self.receive():
             pass
 
+IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype) + \
+                   tuple(getattr(builtins, t) for t in ( \
+                        'bytearray', 'bytes', 'dict', 'frozenset', 'list',
+                        'set', 'str', 'tuple', 'BaseException', 'type'))
+
+class PickleLocalAPIProtocol:
+    @staticmethod
+    def load(f):
+        return pickle.load(f)
+    @staticmethod
+    def dump(res_info, f):
+        if res_info[1] == IO_TRANSFERED and \
+                not isinstance(res_info[2], IO_TRANSFERABLES):
+            # res probably should not be serialized,
+            # hold it locally.
+            raise IOHoldException
+        return pickle.dump(res_info, f)
