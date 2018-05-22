@@ -2,8 +2,10 @@
 //October, 16th, 2017
 
 var stop_downloading  = false;
+var datasets_download_chunk_size = 5000; //nb rows
 
-function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, results) {
+function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, results, nb_rows, p_bar) {
+
     sakura.common.ws_request('get_rows_from_table', [dataset_id, chunk_index*chunk_size, (chunk_index+1)*chunk_size], {}, function (result) {
         if (result.length > 0 && result.length == chunk_size) {
             if (!stop_downloading) {
@@ -13,8 +15,15 @@ function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, 
                 s =  parseInt((nd.getTime() - starting_date.getTime())/1000);
                 m = parseInt(s/60);
                 s = s - (m*60)
-                $('#datasets_progress_bar_modal_body').html("<p align=\"center\">"+(chunk_size*chunk_index+1)+" rows ; "+m+"min:"+s+"s</p>");
-                datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, results);
+                if (!nb_rows) {
+                    $('#datasets_progress_bar_modal_body').html("<p align=\"center\">"+(chunk_size*chunk_index+1)+" rows ; "+m+"min:"+s+"s</p>");
+                }
+                else {
+                  var perc = (chunk_size*chunk_index+1)/nb_rows*100;
+                  p_bar.css("width", ""+perc+"%");
+                  p_bar.css("aria-valuenow", ""+perc);
+                }
+                datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, results, nb_rows, p_bar);
             }
             else {
                 stop_downloading = false;
@@ -56,16 +65,38 @@ function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, 
 
 
 function datasets_download(dataset_id) {
-    file_text = "";
 
-    var results = [];
-    var chunk_size = 5000; //nb rows
-    var chunk_index = 0;
+    sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
 
-    $('#datasets_progress_bar_modal').modal();
-    $('#datasets_progress_bar_modal_header').html("<table width=\"100%\"><tr><td><h3>Downloading ...</h3><td align=\"right\"><span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span></table>");
-    $('#datasets_progress_bar_modal_body').html("<p align=\"center\">0 rows ; 0min:0s</p>");
-    datasets_download_ask_for_rows(dataset_id, new Date(), chunk_index, chunk_size, results);
+        var pb = null;
+        $('#datasets_progress_bar_modal').modal();
+        $('#datasets_progress_bar_modal_header').html("<table width=\"100%\"><tr><td><h3>Downloading ...</h3><td align=\"right\"><span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span></table>");
+
+        if (!result.count_estimate) {
+            $('#datasets_progress_bar_modal_body').html("<p align=\"center\">0 rows ; 0min:0s</p>");
+        }
+        else {
+            $('#datasets_progress_bar_modal_body').empty();
+
+            var pbdiv = $('<div></div>', {'id': "datasets_download_progress_bar_div",
+                              'class': "progress" });
+
+            pb = $('<div></div>', { 'id': "datasets_download_progress_bar",
+                                    'class': "progress-bar progress-bar-striped progress-bar-animated bg-success",
+                                    'role': "progressbar",
+                                    'style': "width: 0%;",
+                                    'aria-valuenow': "25",
+                                    'aria-valuemin': "0",
+                                    'aria-valuemax': "100"
+                                  });
+
+            pb.appendTo(pbdiv);
+            pbdiv.appendTo($('#datasets_progress_bar_modal_body'));
+        }
+
+        datasets_download_ask_for_rows(dataset_id, new Date(), 0, datasets_download_chunk_size, [], result.count_estimate, pb);
+
+    });
 }
 
 function datasets_stop_downloading() {
