@@ -169,7 +169,10 @@ function datasets_send_new(database_id) {
             if (from_what == 'ff') {
                 datasets_send_file(dataset_id, $('#datasets_file_from_HD')[0].files[0], dates, $("#datasets_creation_modal"), 'creation');
             }
-
+            else {
+                $('#datasets_creation_modal').modal('hide');
+                recover_datasets();
+            }
             datasets_creation_first_time = true;
         }
     });
