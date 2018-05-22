@@ -4,7 +4,7 @@ from sakura.hub.db import db_session_wrapper
 from sakura.common.io import LocalAPIHandler, \
                 RemoteAPIForwarder, PickleLocalAPIProtocol
 from sakura.hub.daemons.api import DaemonToHubAPI
-from sakura.hub.tools import DaemonDataException
+from sakura.hub.exceptions import DaemonDataError
 from sakura.common.errors import APIRequestError
 
 def dump_to_sock_file(sock_file, **kwargs):
@@ -17,7 +17,7 @@ def rpc_client_manager(daemon_info, context, sock_file):
     try:
         with db_session_wrapper():
             daemon_id = context.on_daemon_connect(daemon_info, remote_api)
-    except DaemonDataException as e:
+    except DaemonDataError as e:
         remote_api.fire_data_issue(str(e))
     remote_api.loop()
     with db_session_wrapper():

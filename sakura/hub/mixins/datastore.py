@@ -1,12 +1,13 @@
-from sakura.hub.tools import DaemonDataException
+from sakura.hub.exceptions import DaemonDataError, \
+                              DaemonDataExceptionIgnoreObject
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
 from sakura.hub.context import get_context
 from sakura.hub.access import ACCESS_SCOPES, \
                               get_grant_level_generic, FilteredView
 
-DATASTORE_USER_ERROR = """\
+DATASTORE_USER_WARNING = """\
 %(driver_label)s datastore at %(host)s refers to nonexistent Sakura user "%(login)s".
-This user must be created in Sakura first."""
+Sakura will ignore this user."""
 
 DATASTORE_ADMIN_ERROR = """\
 Daemon configuration says admin of %(driver_label)s datastore at %(host)s is nonexistent Sakura user "%(login)s".
@@ -54,11 +55,15 @@ class DatastoreMixin:
         for login, createdb_grant in users:
             u = get_context().users.get(login = login)
             if u == None:
-                raise DaemonDataException(DATASTORE_USER_ERROR % dict(
-                    host = self.host,
-                    driver_label = self.driver_label,
-                    login = login
-                ))
+                self.daemon.api.fire_data_issue(
+                    DATASTORE_USER_WARNING % dict(
+                        host = self.host,
+                        driver_label = self.driver_label,
+                        login = login
+                    ),
+                    should_fail = False    # just warn
+                )
+                continue
             if createdb_grant:
                 self.users_rw.add(u)
             else:
@@ -77,7 +82,7 @@ class DatastoreMixin:
             datastore.access_scope = access_scope
         admin_user = get_context().users.get(login = admin)
         if admin_user == None:
-            raise DaemonDataException(DATASTORE_ADMIN_ERROR % dict(
+            raise DaemonDataError(DATASTORE_ADMIN_ERROR % dict(
                 host = host,
                 driver_label = driver_label,
                 login = admin
@@ -91,8 +96,14 @@ class DatastoreMixin:
         datastore = cls.create_or_update(daemon, **ds)
         if datastore.online:
             # if online, restore related databases
-            datastore.databases = set(get_context().databases.restore_database(datastore, **db) \
-                                        for db in ds['databases'])
+            restored_dbs = set()
+            for db in ds['databases']:
+                try:
+                    restored_db = get_context().databases.restore_database(datastore, **db)
+                    restored_dbs.add(restored_db)
+                except DaemonDataExceptionIgnoreObject as e:
+                    daemon.api.fire_data_issue(str(e), should_fail=False)
+            datastore.databases = restored_dbs
         return datastore
     @classmethod
     def filter_for_web_user(cls):

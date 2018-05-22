@@ -1,9 +1,14 @@
 import time
 from enum import Enum
 from sakura.common.errors import APIObjectDeniedError
+from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
 from sakura.hub.access import ACCESS_SCOPES, GRANT_LEVELS,  \
                               get_grant_level_generic, FilteredView
+
+DATABASE_OWNER_WARNING = """\
+Owner of "%(dbname)s" database is nonexistent Sakura user "%(owner)s".
+Ignoring this database."""
 
 class DatabaseMixin:
     @property
@@ -101,13 +106,20 @@ class DatabaseMixin:
                 access_scope = 'private'
             # if owner not specified, set it to datastore's admin
             if owner is None:
-                owner = datastore.admin
+                u_owner = datastore.admin
             else:
-                owner = get_context().users.get(login = owner)
+                u_owner = get_context().users.get(login = owner)
+                if u_owner is None:
+                    raise DaemonDataExceptionIgnoreObject(
+                        DATABASE_OWNER_WARNING % dict(
+                            dbname = name,
+                            owner = owner
+                        )
+                    )
             database = cls( datastore = datastore,
                             name = name,
                             access_scope = getattr(ACCESS_SCOPES, access_scope).value,
-                            owner = owner)
+                            owner = u_owner)
         else:
             kwargs.update(access_scope = access_scope, owner = owner)
         database.update_attributes(**kwargs)

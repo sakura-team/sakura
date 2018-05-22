@@ -1,4 +1,4 @@
-import sakura.daemon.conf as conf
+import sys, sakura.daemon.conf as conf
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import ParameterException
 
@@ -12,8 +12,11 @@ class DaemonEngine(object):
         self.op_instances = {}
         self.hub = None
         self.fragment_sources = {}
-    def fire_data_issue(self, issue):
-        raise Exception(issue)
+    def fire_data_issue(self, issue, should_fail=True):
+        if should_fail:
+            raise Exception(issue)
+        else:
+            sys.stderr.write(issue + '\n')
     def register_hub_api(self, hub_api):
         self.hub = hub_api
     def get_daemon_info_serializable(self):
