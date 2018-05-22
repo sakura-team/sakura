@@ -68,6 +68,8 @@ class DataStore:
         if self._online is None:
             self.refresh()
         return self._online
+    def has_user(self, user):
+        return user in tuple(zip(*self.users))[0]
     def refresh(self):
         try:
             prober = DataStoreProber(self)
@@ -100,7 +102,10 @@ class DataStore:
             raise AttributeError('Sorry, datastore is down.')
         return self.databases[database_label]
     def create_db(self, db_name, owner):
+        db_owner = 'sakura_' + owner
         admin_conn = self.admin_connect()
-        self.driver.create_db(admin_conn, db_name, 'sakura_' + owner)
+        if not self.has_user(owner):
+            self.driver.create_user(admin_conn, db_owner)
+        self.driver.create_db(admin_conn, db_name, db_owner)
         admin_conn.close()
         self.refresh()

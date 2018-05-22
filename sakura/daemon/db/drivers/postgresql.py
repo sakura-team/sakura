@@ -156,6 +156,10 @@ SQL_GET_TABLE_PRIMARY_KEY = '''
       AND a.attnum = pk.attnum;
 '''
 
+SQL_CREATE_USER = '''
+CREATE ROLE "%(db_user)s";
+'''
+
 SQL_CREATE_DB = '''
 CREATE DATABASE "%(db_name)s" WITH OWNER "%(db_owner)s";
 '''
@@ -298,10 +302,15 @@ class PostgreSQLDBDriver:
                     table_name,
                     count_estimate)
     @staticmethod
+    def create_user(admin_db_conn, db_user):
+        with admin_db_conn.cursor() as cursor:
+            cursor.execute(SQL_CREATE_USER % dict(db_user = db_user))
+    @staticmethod
     def create_db(admin_db_conn, db_name, db_owner):
         # CREATE DATABASE requires to set autocommit, and
         # cannot be execute in a multiple-statements string
         saved_mode = admin_db_conn.autocommit
+        admin_db_conn.commit() # complete running transaction if any
         admin_db_conn.autocommit = True
         with admin_db_conn.cursor() as cursor:
             for sql in (SQL_CREATE_DB, SQL_GRANT_DB):
