@@ -311,36 +311,41 @@ function showDiv(event, dir, div_id) {
         web_interface_current_id = parseInt(tab[tab.length -1]);
     }
 
+    var li_main_data = $($('#databases_buttons_main')[0].parentElement);
+    var li_work_data = $($('#databases_buttons_work')[0].parentElement);
+    var li_history_data = $($('#databases_buttons_history')[0].parentElement);
     ////////////////////////////////////////////////////////////////////////////////
     //DATA
     if (div_id == 'idDatasMainToFullfill') {
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
+
+
         if (dir.indexOf('Main') != -1) {
-            $('#databases_buttons_main').addClass("btn-primary");
-            $('#databases_buttons_work').removeClass("btn-primary");
-            $('#databases_buttons_historic').removeClass("btn-primary");
+            li_main_data.addClass("active");
+            li_work_data.removeClass("active");
+            li_history_data.removeClass("active");
 
             fill_database_metadata(web_interface_current_id);
 
             document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         }
         else if (dir.indexOf('Work') != -1) {
-            $('#databases_buttons_main').removeClass("btn-primary");
-            $('#databases_buttons_work').addClass("btn-primary");
-            $('#databases_buttons_historic').removeClass("btn-primary");
+            li_main_data.removeClass("active");
+            li_work_data.addClass("active");
+            li_history_data.removeClass("active");
         }
         else if (dir.indexOf('Historic') != -1) {
-            $('#databases_buttons_main').removeClass("btn-primary");
-            $('#databases_buttons_work').removeClass("btn-primary");
-            $('#databases_buttons_historic').addClass("btn-primary");
+            li_main_data.removeClass("active");
+            li_work_data.removeClass("active");
+            li_history_data.addClass("active");
         }
     }
     else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
 
         document.getElementById('idDivDatastmpDataMeta').style.display='inline';
-        $('#databases_buttons_main').addClass("btn-primary");
-        $('#databases_buttons_work').removeClass("btn-primary");
-        $('#databases_buttons_historic').removeClass("btn-primary");
+        li_main_data.addClass("active");
+        li_work_data.removeClass("active");
+        li_history_data.removeClass("active");
 
         $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
         $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
@@ -351,9 +356,9 @@ function showDiv(event, dir, div_id) {
     else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
 
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
-        $('#databases_buttons_main').removeClass("btn-primary");
-        $('#databases_buttons_work').addClass("btn-primary");
-        $('#databases_buttons_historic').removeClass("btn-primary");
+        li_main_data.removeClass("active");
+        li_work_data.addClass("active");
+        li_history_data.removeClass("active");
 
         $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
         $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");

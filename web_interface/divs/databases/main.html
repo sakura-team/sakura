@@ -1,9 +1,9 @@
 <!--LIG, March 2017-->
 
 <div style="display:none;" id="idDivDatastmpDataMain" class="classMainDiv">
-    <table width='100%'>
-    <tr style="border-bottom: 1px solid lightgrey">
-        <td>
+    <table width="100%">
+    <tr>
+        <td class="block" style="width: 1%; white-space:nowrap; border-bottom: 1px solid lightgrey;">
             <table style="margin-bottom: 10px;">
                 <tr>
                     <td rowspan=2 style="vertical-align: bottom">
@@ -15,7 +15,27 @@
                         <h5 style="margin-bottom: 0px;" id='databases_db_main_short_desc'> Short Description &nbsp;</h5>
             </table>
         <td align="left" style="vertical-align: bottom;">
-            <table>
+            <ul class="nav nav-tabs">
+                <li class="active">
+                    <a href="" id='databases_buttons_main' onclick="showDiv(event, 'Datas/tmpData', 'idDatasMainToFullfill');" style="padding: 2px; padding-right: 10px; padding-left: 10px;">
+                        <h4 class="glyphicon glyphicon-list-alt" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h4>
+                        <font size=1>MetaData</font>
+                    </a>
+                </li>
+                <li>
+                    <a href="" id='databases_buttons_work' onclick="showDiv(event, 'Datas/tmpData/Work', 'idDatasMainToFullfill');" style="padding: 2px; padding-right: 10px; padding-left: 10px;">
+                        <h4 class="glyphicon glyphicon-wrench" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h4>
+                        <font size=1>Content</font>
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a id='databases_buttons_history' style="padding: 2px; padding-right: 10px; padding-left: 10px;">
+                        <h4 class="glyphicon glyphicon-time" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h4>
+                        <font size=1>History</font>
+                    </a>
+                </li>
+            </ul>
+            <!--<table>
                 <tr>
                     <td>
                         <button id='databases_buttons_main' class= "btn" style="border-color: #AAAAAA; padding-top: 4px; padding-bottom: 3px;" title="Meta-data" onclick="showDiv(event, 'Datas/tmpData', 'idDatasMainToFullfill');">
@@ -29,10 +49,10 @@
                         <button id='databases_buttons_historic' class= "btn" style="border-color: #AAAAAA; padding-top: 4px; padding-bottom: 3px;" disabled title="History of modifications" onclick="showDiv(event, 'Datas/tmpData/Historic', 'idDatasMainToFullfill');">
                             <h4 class="glyphicon glyphicon-time" style="margin-left: 10px; margin-right: 10px; margin-top: 0px; margin-bottom: 0px;"></h4>
                         </button>
-            </table>
-        
+            </table>-->
+
     </table>
-    
+
     <div id="idDatasMainToFullfill">
     </div>
 </div>
