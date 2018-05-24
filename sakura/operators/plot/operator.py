@@ -3,6 +3,7 @@ from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import NumericColumnSelection
 from sakura.daemon.processing.stream import ComputedStream
 
+from time import time
 import numpy as np
 
 class PlotOperator(Operator):
@@ -30,9 +31,15 @@ class PlotOperator(Operator):
             dp = []
             column_x = self.input.columns[self.input_column_param_x.value]
             column_y = self.input.columns[self.input_column_param_y.value]
+            #time_credit = 0.3
+            #deadline = time() + time_credit
+
             for chunk_x, chunk_y in zip(column_x.chunks(), column_y.chunks()):
                 for x, y in zip(chunk_x, chunk_y):
                     dp.append({'x': x, 'y': y})
+                #if time() > deadline:
+                #    break
+
             return {'dp': dp}
 
         return {'issue': 'Unknown event'}

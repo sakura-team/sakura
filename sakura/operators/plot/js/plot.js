@@ -1,13 +1,8 @@
 
 function update_plot(data) {
   var chart = new CanvasJS.Chart("plot_div", {
-       animationEnabled: true,
-       theme: "light1",
-       axisY:{
-           includeZero: false
-          },
        data: [{
-              type: "line",
+              type: "scatter",
               dataPoints: data.dp
            }]
   });
