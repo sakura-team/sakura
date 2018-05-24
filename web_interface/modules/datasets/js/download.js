@@ -4,12 +4,32 @@
 var stop_downloading  = false;
 var datasets_download_chunk_size = 5000; //nb rows
 
-function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, results, nb_rows, p_bar) {
+function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, data, nb_rows, p_bar) {
+
+    var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+
+    if (data.length == 0) {
+        var headers = []
+        dataset.columns.forEach( function(column) {
+            headers.push(column[0].toString());
+        });
+
+        data = 'data:text/plain;charset=utf-8,' +
+                encodeURIComponent(Papa.unparse({    delimiter: ",",
+                                    header: false,
+                                    data: headers
+                                    }) + "\n");
+    }
 
     sakura.common.ws_request('get_rows_from_table', [dataset_id, chunk_index*chunk_size, (chunk_index+1)*chunk_size], {}, function (result) {
         if (result.length > 0 && result.length == chunk_size) {
             if (!stop_downloading) {
-                results = results.concat(result);
+                data +=  encodeURIComponent(Papa.unparse({    delimiter: ",",
+                                            header: false,
+                                            data: result
+                                            }) + "\n");
+
+                //Filling modal
                 chunk_index += 1;
                 var nd = new Date();
                 s =  parseInt((nd.getTime() - starting_date.getTime())/1000);
@@ -23,7 +43,9 @@ function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, 
                   p_bar.css("width", ""+perc+"%");
                   p_bar.css("aria-valuenow", ""+perc);
                 }
-                datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, results, nb_rows, p_bar);
+
+                //Next request
+                datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, chunk_size, data, nb_rows, p_bar);
             }
             else {
                 stop_downloading = false;
@@ -32,31 +54,28 @@ function datasets_download_ask_for_rows(dataset_id, starting_date, chunk_index, 
         }
         else {
             var nd = new Date();
-            s =  parseInt((nd.getTime() - starting_date.getTime())/1000);
+            /*s = parseInt((nd.getTime() - starting_date.getTime())/1000);
             m = parseInt(s/60);
             s = s - (m*60)
             $('#datasets_progress_bar_modal_body').html("<p align=\"center\">"+(chunk_size*chunk_index+1)+" rows ; "+m+"min:"+s+"s</p>");
+            */
 
-            if (result.length > 0)
-                results = results.concat(result);
-            var headers = []
-            var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
-            dataset.columns.forEach( function(column) {
-                headers.push(column[0].toString());
-            });
-            var txt = Papa.unparse({    delimiter: ",",
-                                        header: true,
-                                        fields: headers,
-                                        data: results
-                                    });
+            if (result.length > 0) {
+                data += encodeURIComponent(Papa.unparse({    delimiter: ",",
+                                            header: false,
+                                            data: result
+                                            }));
+            }
+
             //Create a link from downloading the file
             var element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(txt));
+            element.setAttribute('href', data);
             element.setAttribute('download', dataset.name+'.csv');
             element.style.display = 'none';
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
+            console.log(element);
 
             $('#datasets_progress_bar_modal').modal("hide");
         }
