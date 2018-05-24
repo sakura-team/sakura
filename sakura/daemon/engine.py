@@ -7,7 +7,7 @@ class DaemonEngine(object):
         self.op_classes = op_classes
         self.datastores = {}
         for ds in datastores:
-            ds = ds.adapter.adapt(ds)
+            ds = ds.adapter.adapt(self, ds)
             self.datastores[(ds.host, ds.driver_label)] = ds
         self.op_instances = {}
         self.hub = None

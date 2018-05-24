@@ -2,7 +2,7 @@
 class NativeDatastoreAdapter:
     NAME = 'native'
     @staticmethod
-    def adapt(ds):
+    def adapt(engine, ds):
         return ds
 
 ADAPTER = NativeDatastoreAdapter
