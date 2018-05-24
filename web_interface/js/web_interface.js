@@ -2,6 +2,7 @@
 
 ////////////GLOBALS
 var web_interface_current_id = -1;  //database or dataflow id
+var web_interface_current_db_info = null;
 var simplemde  = null;           //large description textarea
 
 ////////////FUNCTIONS
@@ -28,8 +29,11 @@ function recursiveReplace(node, init_text, new_text) {
 
 function fill_database_metadata(db_id) {
     sakura.common.ws_request('get_database_info', [db_id], {}, function(db_info) {
-        $('#web_interface_database_metadata').empty();
-        $('#web_interface_database_metadata').load('divs/templates/datas_metadata.html', function() {
+
+        web_interface_current_db_info = db_info;
+
+        $('#web_interface_database_metadata1').empty();
+        $('#web_interface_database_metadata1').load('divs/templates/datas_metadata1.html', function() {
 
             console.log(db_info);
 
@@ -69,6 +73,29 @@ function fill_database_metadata(db_id) {
                 {name: "_db_topic_", value: db_info.topic},
                 {name: "_db_data_type_", value: db_info.data_type}
                 ].forEach( function (elt){
+                    if (elt.value)
+                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
+                    else
+                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
+                      });
+        });
+
+        $('#web_interface_database_metadata2').empty();
+        $('#web_interface_database_metadata2').load('divs/templates/datas_metadata2.html', function() {
+            //Owner
+            var owner = '..';
+            if (db_info.owner && db_info.owner != 'null')
+                owner =  db_info.owner;
+
+            var collabs = 'None ';
+            if (db_info.collaborators && db_info.collaborators != 'null')
+                collabs =  db_info.collaborators;
+
+            [   {name: "_db_owner_",          value: owner},
+                {name: "_db_grant_",          value: db_info.grant_level},
+                {name: "_db_collaborators_",  value: collabs}
+                ].forEach( function (elt){
+                    console.log(elt.name, elt.value);
                     if (elt.value)
                         recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
                     else
@@ -460,6 +487,17 @@ function showDiv(event, dir, div_id) {
         event.preventDefault();
 }
 
+function adding_collaborators_modal_update(object_type) {
+    if (object_type == 'database') {
+
+      $('#database_adding_collaborator_modal_header').empty();
+      $('#database_adding_collaborator_modal_header').html('<h3>Adding Collaborators</h3>');
+      console.log(web_interface_current_db_info.name);
+    }
+    else {
+        not_yet();
+    }
+}
 
 /* Divers */
 function isUrlWithId(url) {
