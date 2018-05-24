@@ -12,6 +12,7 @@ class DaemonEngine(object):
         self.op_instances = {}
         self.hub = None
         self.fragment_sources = {}
+        self.name = conf.daemon_desc
     def fire_data_issue(self, issue, should_fail=True):
         if should_fail:
             raise Exception(issue)
@@ -23,7 +24,7 @@ class DaemonEngine(object):
         op_classes_desc = list(
             Operator.descriptor(op_cls) for op_cls in self.op_classes.values()
         )
-        return dict(name=conf.daemon_desc,
+        return dict(name=self.name,
                     datastores=tuple(ds.pack() for ds in self.datastores.values()),
                     op_classes=op_classes_desc)
     def create_operator_instance(self, cls_name, op_id):

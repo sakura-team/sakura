@@ -14,8 +14,7 @@ class DaemonGreenlet:
     def spawn(self):
         return Greenlet.spawn(self.run)
     def write_request(self, sock_file, req):
-        daemon_info = self.engine.get_daemon_info_serializable()
-        pickle.dump((req, daemon_info), sock_file)
+        pickle.dump((req, self.engine.name), sock_file)
         sock_file.flush()
 
 class RPCServerGreenlet(DaemonGreenlet):

@@ -14,14 +14,14 @@ def daemons_greenlet(context):
     def handle(socket, address):
         sock_file = socket.makefile(mode='rwb')
         while True:
-            req, daemon_info = pickle.load(sock_file)
+            req, daemon_name = pickle.load(sock_file)
             if req == b'RPC_SERVER':
                 # if the remote end says 'server', we are client :)
-                rpc_client_manager(daemon_info, context, sock_file)
+                rpc_client_manager(context, daemon_name, sock_file)
                 break
             elif req == b'RPC_CLIENT':
                 # if the remote end says 'client', we are server :)
-                rpc_server_manager(daemon_info, context, sock_file)
+                rpc_server_manager(context, daemon_name, sock_file)
                 break
     server = StreamServer(('0.0.0.0', conf.hub_port), handle)
     server.start()

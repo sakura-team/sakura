@@ -11,21 +11,20 @@ def dump_to_sock_file(sock_file, **kwargs):
     pickle.dump(kwargs, sock_file)
     sock_file.flush()
 
-def rpc_client_manager(daemon_info, context, sock_file):
-    print('new rpc connection hub (client) -> %s (server).' % daemon_info['name'])
+def rpc_client_manager(context, daemon_name, sock_file):
+    print('new rpc connection hub (client) -> %s (server).' % daemon_name)
     remote_api = RemoteAPIForwarder(sock_file, pickle)
     try:
         with db_session_wrapper():
-            daemon_id = context.on_daemon_connect(daemon_info, remote_api)
+            daemon_id = context.on_daemon_connect(remote_api)
     except DaemonDataError as e:
         remote_api.fire_data_issue(str(e))
     remote_api.loop()
     with db_session_wrapper():
         context.on_daemon_disconnect(daemon_id)
-    print('rpc connection hub (client) -> %s (server) disconnected.' % daemon_info['name'])
+    print('rpc connection hub (client) -> %s (server) disconnected.' % daemon_name)
 
-def rpc_server_manager(daemon_info, context, sock_file):
-    daemon_name = daemon_info['name']
+def rpc_server_manager(context, daemon_name, sock_file):
     with db_session_wrapper():
         daemon_id = context.daemons.get(name = daemon_name).id
     print('new rpc connection hub (server) <- %s (client).' % daemon_name)

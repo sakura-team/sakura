@@ -39,7 +39,8 @@ class HubContext(object):
         return self.sessions.new_session(self)
     def get_session(self, session_secret):
         return self.session_secrets.get_obj(session_secret)
-    def on_daemon_connect(self, daemon_info, api):
+    def on_daemon_connect(self, api):
+        daemon_info = api.get_daemon_info_serializable()
         daemon = self.daemons.restore_daemon(api = api, **daemon_info)
         return daemon.id
     def on_daemon_disconnect(self, daemon_id):
