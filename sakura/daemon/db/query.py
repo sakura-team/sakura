@@ -14,6 +14,9 @@ COMP_OP_TO_SQL = {
     operator.ge: '>='
 }
 
+PRINT_SQL=False
+#PRINT_SQL=True
+
 class SQLQuery:
     def __init__(self, selected_cols, conditions):
         self.selected_cols = tuple(selected_cols)
@@ -42,7 +45,8 @@ class SQLQuery:
         return (sql_text, cond_vals)
     def execute(self, cursor):
         sql_text, values = self.to_sql()
-        print(sql_text, values)
+        if PRINT_SQL:
+            print(sql_text, values)
         cursor.execute(sql_text, values)
     def condition_to_sql(self, condition):
         db_column, comp_op, value = condition

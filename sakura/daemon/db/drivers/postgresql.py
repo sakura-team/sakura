@@ -3,6 +3,9 @@ from collections import defaultdict
 from psycopg2.extras import DictCursor
 from sakura.common.errors import APIRequestError
 
+DEBUG_CURSORS=False
+#DEBUG_CURSORS=True
+
 TYPES_SAKURA_TO_PG = {
     'int8':     'smallint',
     'int16':    'smallint',
@@ -194,7 +197,8 @@ class PostgreSQLServerCursor(psycopg2.extensions.cursor):
         # the tables that were fetched. committing ensures
         # tables are no longer locked.
         self.connection.commit()
-        print('cursor ' + self.name + ' released')
+        if DEBUG_CURSORS:
+            print('cursor ' + self.name + ' released')
     def __del__(self):
         # ensures cursor is closed when deleting
         if not self.closed:
@@ -219,7 +223,8 @@ class PostgreSQLDBDriver:
     @staticmethod
     def open_server_cursor(db_conn):
         cursor_name = str(uuid.uuid4()) # unique name
-        print("opening server cursor", cursor_name)
+        if DEBUG_CURSORS:
+            print("opening server cursor", cursor_name)
         cursor = db_conn.cursor(name = cursor_name,
                                 cursor_factory=PostgreSQLServerCursor)
         # arraysize: default number of rows when using fetchmany()
