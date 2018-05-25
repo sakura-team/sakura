@@ -6,11 +6,12 @@ from sakura.daemon.db.query import SQLQuery
 class SQLStreamIterator:
     def __init__(self, stream, chunk_size, offset):
         self.chunk_size = chunk_size
-        self.cursor = stream.open_cursor(offset)
-        if self.chunk_size == None:
-            self.chunk_size = self.cursor.arraysize
         self.dtype = stream.get_dtype()
         self.released = False
+        self.db_conn = stream.db.connect()
+        self.cursor = stream.open_cursor(self.db_conn, offset)
+        if self.chunk_size == None:
+            self.chunk_size = self.cursor.arraysize
     def __iter__(self):
         return self
     def __next__(self):
@@ -26,15 +27,15 @@ class SQLStreamIterator:
     def release(self):
         if not self.released:
             self.cursor.close()
+            self.db_conn.close()
             self.released = True
     def __del__(self):
         self.release()
 
 class SQLStream(OutputStreamBase):
-    def __init__(self, label, query, db_conn, db_driver):
+    def __init__(self, label, query, db):
         OutputStreamBase.__init__(self, label)
-        self.db_driver = db_driver
-        self.db_conn = db_conn
+        self.db = db
         self.query = query
         for col in query.selected_cols:
             self.add_column(col.col_name, col.np_dtype, col.tags)
@@ -45,18 +46,17 @@ class SQLStream(OutputStreamBase):
         return SQLStreamIterator(self, chunk_size, offset)
     def __select_columns__(self, *col_indexes):
         new_query = self.query.select_columns(*col_indexes)
-        return SQLStream(self.label, new_query, self.db_conn, self.db_driver)
+        return SQLStream(self.label, new_query, self.db)
     def __filter__(self, *cond_info):
         new_query = self.query.filter(*cond_info)
-        return SQLStream(self.label, new_query, self.db_conn, self.db_driver)
-    def open_cursor(self, offset=0):
+        return SQLStream(self.label, new_query, self.db)
+    def open_cursor(self, db_conn, offset=0):
         self.query.set_offset(offset)
-        cursor = self.db_driver.open_server_cursor(self.db_conn)
+        cursor = self.db.dbms.driver.open_server_cursor(db_conn)
         self.query.execute(cursor)
         return cursor
 
 class SQLTableStream(SQLStream):
     def __init__(self, label, db_table):
         query = SQLQuery(db_table.columns, ())
-        self.db_conn = db_table.db.connect()
-        SQLStream.__init__(self, label, query, self.db_conn, db_table.db.dbms.driver)
+        SQLStream.__init__(self, label, query, db_table.db)
