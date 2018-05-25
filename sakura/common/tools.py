@@ -56,18 +56,24 @@ class MonitoredFunc(object):
 def monitored(func):
     return MonitoredFunc(func)
 
+OverriddenObjectClasses = {}
+
 def override_object(obj, override):
-    # Favour methods of override over original object
-    # (thus the subclassing)
-    # Favour attributes of override over original object
-    # (thus the __getattr__ method)
-    class OverriddenObject(override.__class__, obj.__class__):
-        def __init__(self, obj, override):
-            self.override = override
-            self.obj = obj
-        def __getattr__(self, attr):
-            if hasattr(self.override, attr):
-                return getattr(self.override, attr)
-            else:
-                return getattr(self.obj, attr)
-    return OverriddenObject(obj, override)
+    bases = override.__class__, obj.__class__
+    if bases not in OverriddenObjectClasses:
+        # Favour methods of override over original object
+        # (thus the subclassing)
+        # Favour attributes of override over original object
+        # (thus the __getattr__ method)
+        class OverriddenObject(override.__class__, obj.__class__):
+            def __init__(self, obj, override):
+                self.override = override
+                self.obj = obj
+            def __getattr__(self, attr):
+                if hasattr(self.override, attr):
+                    return getattr(self.override, attr)
+                else:
+                    return getattr(self.obj, attr)
+        OverriddenObjectClasses[bases] = OverriddenObject
+    cls = OverriddenObjectClasses[bases]
+    return cls(obj, override)
