@@ -1,3 +1,4 @@
+import time
 from sakura.common.io import pack
 from sakura.common.tools import override_object
 
@@ -5,14 +6,41 @@ class UTTableOverride:
     def __init__(self, sakura_table_name):
         self.name = sakura_table_name
 
+METADATA_TRANSLATION = dict(
+    studydescription = 'short_desc',
+    studyagenttype = 'agent_type',
+    studytopic = 'topic'
+)
+
 class UTExperimentAsDB:
-    def __init__(self, ds, db_name, exp_name, owner, users):
+    def __init__(self, ds, exp_name, owner, users):
         self.ds = ds
         self.exp_name = exp_name
-        self.db_name = db_name
+        self.db_name = 'UT - ' + exp_name
         self.owner = owner
         self.users = users
         self._tables = None
+        self.metadata = {}
+        self.init_description_attrs()
+    def init_description_attrs(self):
+        description_tb_name = self.exp_name + 'description'
+        if description_tb_name not in self.ds.databases['undertracks'].tables:
+            return
+        description_tb = self.ds.databases['undertracks'].tables[description_tb_name]
+        description_row = tuple(description_tb.stream)[0]
+        #print("** " + self.exp_name)
+        #print(tuple((c.col_name, description_row[idx]) for idx, c in enumerate(description_tb.columns)))
+        for idx, c in enumerate(description_tb.columns):
+            val = description_row[idx]
+            if c.col_name == 'studyname':
+                self.db_name = 'UT - ' + val
+            elif c.col_name in METADATA_TRANSLATION:
+                field_name = METADATA_TRANSLATION[c.col_name]
+                self.metadata[field_name] = val
+            elif c.col_name == 'studyispublic':
+                self.metadata['access_scope'] = 'public' if val == 'on' else 'private'
+            elif c.col_name == 'studybeginingdate':
+                self.metadata['creation_date'] = int(time.mktime(time.strptime(val, '%d/%m/%Y')))
     @property
     def tables(self):
         if self._tables is None:
@@ -31,13 +59,15 @@ class UTExperimentAsDB:
             name = self.db_name,
             owner = self.owner,
             tables = self.tables.values(),
-            users = self.users
+            users = self.users,
+            **self.metadata
         ))
     def overview(self):
         return dict(
             name = self.db_name,
             owner = self.owner,
-            users = self.users
+            users = self.users,
+            **self.metadata
         )
 
 class UTDatastoreOverride:
@@ -65,14 +95,14 @@ class UTDatastoreOverride:
         for exp_name, owner_email, viewers in metadata_tb.stream.select_columns(0, 3, 6):
             owner_login = self.get_login_from_email(owner_email)
             users = self.parse_viewers(viewers)
-            yield 'UT - ' + exp_name, exp_name, owner_login, users
+            yield exp_name, owner_login, users
     @property
     def databases(self):
         if self._databases is None:
-            self._databases = {
-                db_name: UTExperimentAsDB(self.ds, db_name, exp_name, owner, users) \
-                    for db_name, exp_name, owner, users in self.ut_experiments()
-            }
+            self._databases = {}
+            for exp_name, owner, users in self.ut_experiments():
+                db = UTExperimentAsDB(self.ds, exp_name, owner, users)
+                self._databases[db.db_name] = db
         return self._databases
 
 class UTDatastoreAdapter:
