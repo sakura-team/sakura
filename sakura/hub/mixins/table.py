@@ -1,4 +1,4 @@
-import time
+import re, time, io, csv, bottle
 from sakura.hub.context import get_context
 
 class TableMixin:
@@ -104,4 +104,18 @@ class TableMixin:
         new_table.create_on_datastore()
         # return table_id
         return table_id
-
+    def stream_csv(self, transfer):
+        csv_file_name = re.sub(r'[^a-z0-9]', '-',
+                                self.name.lower()) + '.csv'
+        bottle.response.set_header('content-disposition',
+                        'attachment; filename="%s"' % csv_file_name)
+        # header line
+        yield ','.join(c.col_name for c in self.columns)
+        # data rows
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        for chunk in self.remote_instance.stream.chunks():
+            writer.writerows(chunk.tolist())
+            yield buf.getvalue()
+            buf.truncate(0)
+            buf.seek(0)

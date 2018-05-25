@@ -1,4 +1,4 @@
-import bottle, json
+import bottle, json, time
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
@@ -45,6 +45,14 @@ def web_greenlet(context, webapp_path):
             resp = context.serve_operator_file(op_id, filepath)
         print(' ->', resp.status_line)
         return resp
+
+    @app.route('/tables/<table_id:int>/export.csv')
+    def export_table_as_csv(table_id):
+        print('exporting table %d as csv' % table_id, end="")
+        startup = time.time()
+        with db_session_wrapper():
+            yield from context.tables[table_id].stream_csv()
+        print(' -> done (%ds)' % int(time.time()-startup))
 
     @app.route('/modules/workflow/tpl/<filepath:path>', method=['POST'])
     def serve_template(filepath):
