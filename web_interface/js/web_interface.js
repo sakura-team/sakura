@@ -91,7 +91,8 @@ function fill_database_metadata(db_id) {
             if (db_info.collaborators && db_info.collaborators != 'null')
                 collabs =  db_info.collaborators;
 
-            [   {name: "_db_owner_",          value: owner},
+            [   {name: "_db_access_",         value: db_info.access_scope},
+                {name: "_db_owner_",          value: owner},
                 {name: "_db_grant_",          value: db_info.grant_level},
                 {name: "_db_collaborators_",  value: collabs}
                 ].forEach( function (elt){
@@ -101,6 +102,27 @@ function fill_database_metadata(db_id) {
                     else
                         recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
                       });
+            $('#datas_metadata_readers').empty();
+            $('#datas_metadata_writers').empty();
+
+            if (db_info.access_scope == 'public')
+                $('#datas_metadata_readers').append($('<option>', {text: 'All'}));
+            else {
+                if (db_info.users_ro.length <= 1)
+                    $('#datas_metadata_readers').append($('<option>', {text: 'None'}));
+                else {
+                    db_info.users_ro.forEach( function(user) {
+                        $('#datas_metadata_readers').append($('<option>', {text: user}));
+                    });
+                }
+            }
+            if (db_info.users_rw.length <= 1)
+                $('#datas_metadata_writers').append($('<option>', {text: 'None'}));
+            else {
+                db_info.users_rw.forEach( function(user) {
+                    $('#datas_metadata_writers').append($('<option>', {text: user}));
+                });
+            }
         });
 
 
@@ -492,7 +514,7 @@ function adding_collaborators_modal_update(object_type) {
 
       $('#database_adding_collaborator_modal_header').empty();
       $('#database_adding_collaborator_modal_header').html('<h3>Adding Collaborators</h3>');
-      console.log(web_interface_current_db_info.name);
+      console.log(web_interface_current_db_info);
     }
     else {
         not_yet();
