@@ -7,18 +7,32 @@
     <dd class="editableDescriptionField">_db_grant_</dd>
     <dt class="description-terms-align-left">Collaborators:</dt>
     <dd class="editableDescriptionField">
-        <table class="table-sm">
+        <table class="table">
             <tr>
                 <td class="block" style="white-space:nowrap;">
-                    <label>Read &nbsp;&nbsp;</label>
-                    <select id="datas_metadata_readers"><option>None</option>
+                    <label>Readers &nbsp;&nbsp;</label>
+                <td style="white-space:nowrap;">
+                    <select class="selectpicker" id="datas_metadata_readers" data-style="btn-info">
+                        <option>No One</option>
+                    </select>
+                    &nbsp;&nbsp;
+                <td>
+                    <a class="btn btn-primary btn-xs" style="border-radius: 50%;" id="datas_metadata_adding_readers_button" onclick="adding_collaborators_modal_update('database', 'read');">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </a>
             <tr>
                 <td class="block" style="white-space:nowrap;">
-                    <label>Write &nbsp;&nbsp;</label>
-                    <select id="datas_metadata_writers"><option>None</option>
+                    <label>Writers &nbsp;&nbsp;</label>
+                <td style="white-space:nowrap;">
+                    <select class="selectpicker" id="datas_metadata_writers" data-style="btn-info">
+                        <option>No One</option>
+                    </select>
+                    &nbsp;&nbsp;
+                <td>
+                    <a class="btn btn-primary btn-xs" style="border-radius: 50%;" id="datas_metadata_adding_writers_button" onclick="adding_collaborators_modal_update('database', 'write');">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </a>
         </table>
-        <a class="btn btn-primary btn-xs" style="border-radius: 50%;" data-toggle="modal" data-target="#database_adding_collaborator_modal" onclick="adding_collaborators_modal_update('database');">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-        </a>
+
     </dd>
 </dl>

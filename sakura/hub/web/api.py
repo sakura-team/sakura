@@ -115,7 +115,7 @@ class GuiToHubAPI(object):
 
     def get_database_info(self, database_id):
         return self.databases[database_id].get_full_info()
-        
+
     def new_database(self, datastore_id, name, **kwargs):
         # optional arguments of kwargs: short_desc, creation_date, tags, contacts
         # returns the database_id
@@ -202,6 +202,15 @@ class GuiToHubAPI(object):
     def change_password(self, login_or_email, current_password_or_rec_token, new_password):
         self.context.users.change_password(
                 login_or_email, current_password_or_rec_token, new_password)
+
+    def list_all_users(self):
+        return ['mike', 'denis', 'etienne']
+
+    def add_collaborators(self, database_id, logins, access):
+        #logins: array of logins
+        #access: read or write, only one value that has to be applied to every login
+        print(database_id, logins, access)
+
 
     def test(self):
         import pdb; pdb.set_trace()

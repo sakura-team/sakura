@@ -10,8 +10,17 @@
                     <h3>Adding collaborators</h3>
                 </div>
                 <div class="modal-body" id=database_adding_collaborator_modal_body>
+                    <p align="center">
+                        Select one or several users you want to give access</script>':
+                    <p align="center">
+                        <label> Existing Users </label>
+                        <select class="selectpicker" multiple id="adding_collaborators_select" data-live-search="true" title="No one selected">
+                            <option>No One</option>
+                        </select>
                 </div>
-                <div class="modal-footer" id=database_adding_collaborator_modal_footer>
+                <div class="modal-footer">
+                    <button type="button" id="adding_collaborators_cancel_button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="adding_collaborators_send_button" class="btn btn-primary" onclick="adding_collaborators();">Give Access</button>
                 </div>
             </div>
         </div>
