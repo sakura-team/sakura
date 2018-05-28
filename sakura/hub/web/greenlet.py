@@ -48,10 +48,12 @@ def web_greenlet(context, webapp_path):
 
     @app.route('/tables/<table_id:int>/export.csv')
     def export_table_as_csv(table_id):
+        transfer_id = int(bottle.request.query.transfer)
         print('exporting table %d as csv' % table_id, end="")
         startup = time.time()
         with db_session_wrapper():
-            yield from context.tables[table_id].stream_csv()
+            transfer = context.transfers[transfer_id]
+            yield from context.tables[table_id].stream_csv(transfer)
         print(' -> done (%ds)' % int(time.time()-startup))
 
     @app.route('/modules/workflow/tpl/<filepath:path>', method=['POST'])

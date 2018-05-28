@@ -2,6 +2,7 @@ import bottle
 from gevent.local import local
 from sakura.common.bottle import PicklableFileRequest
 from sakura.hub.secrets import SecretsRegistry
+from sakura.hub.web.transfers import Transfer
 
 # object storing greenlet-local data
 greenlet_env = local()
@@ -31,6 +32,7 @@ class HubContext(object):
                         HubContext.SESSION_SECRETS_LIFETIME)
         self.pw_recovery_secrets = SecretsRegistry(
                         HubContext.PW_RECOVERY_SECRETS_LIFETIME)
+        self.transfers = {}
         HubContext._instance = self
     @property
     def session(self):
@@ -67,3 +69,13 @@ class HubContext(object):
             return bottle.HTTPError(*resp[1:])
     def generate_session_secret(self):
         return self.session_secrets.generate_secret(self.session)
+    def start_transfer(self):
+        transfer = Transfer()
+        self.transfers[transfer.transfer_id] = transfer
+        return transfer.transfer_id
+    def get_transfer_percent(self, transfer_id):
+        transfer = self.transfers[transfer_id]
+        percent = transfer.get_percent()
+        if percent == 100:
+            del self.transfers[transfer_id]
+        return percent

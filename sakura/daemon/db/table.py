@@ -35,3 +35,5 @@ class DBTable:
         self.foreign_keys.append(fk_info)
     def register_count_estimate(self, count_estimate):
         self.count_estimate = count_estimate
+    def get_count_estimate(self):
+        return self.count_estimate

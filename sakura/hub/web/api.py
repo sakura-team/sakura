@@ -209,5 +209,10 @@ class GuiToHubAPI(object):
     def update_database_grant(self, database_id, login, grant_level):
         print(database_id, login, grant_level)
 
-    def test(self):
-        import pdb; pdb.set_trace()
+    # Transfers management
+    ######################
+    def start_transfer(self):
+        return self.context.start_transfer() # return transfer_id
+
+    def get_transfer_percent(self, transfer_id):
+        return self.context.get_transfer_percent(transfer_id)

@@ -105,6 +105,8 @@ class TableMixin:
         # return table_id
         return table_id
     def stream_csv(self, transfer):
+        count_estimate = self.remote_instance.get_count_estimate()
+        count_transfered = 0
         csv_file_name = re.sub(r'[^a-z0-9]', '-',
                                 self.name.lower()) + '.csv'
         bottle.response.set_header('content-disposition',
@@ -119,3 +121,6 @@ class TableMixin:
             yield buf.getvalue()
             buf.truncate(0)
             buf.seek(0)
+            count_transfered += chunk.size
+            transfer.notify_estimate(count_transfered, count_estimate)
+        transfer.notify_done()
