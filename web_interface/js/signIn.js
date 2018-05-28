@@ -3,6 +3,9 @@
 //
 //
 //BEGIN: Refreshing the modal in case any parsley class attributes remain while user logins
+
+var current_login = null;
+
 function initiateSignInModal(event) {
   var $signUpForm = document.getElementById("signUpForm");
   for (i = 0; i < $signUpForm.length; i++) {
@@ -63,11 +66,11 @@ function registerUser(event = '') {
       let password = userAccountValues['password'];
       let hashed_sha256 = CryptoJS.SHA256(password);
       let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
-      userAccountValues['password'] = client_hashed;      
+      userAccountValues['password'] = client_hashed;
       // console.log(userAccountValues); //after password hashing
-      
+
       //begin request calls for websocket
-      sakura.common.ws_request('new_user', [], userAccountValues, 
+      sakura.common.ws_request('new_user', [], userAccountValues,
         function (wsResult) {
 	    	  // console.log("wsResult:"+wsResult);
 	    	  if (wsResult) {
@@ -79,9 +82,9 @@ function registerUser(event = '') {
 	    		  return;
 	    	  } else {
 	    		  console.log("Error callbacks in the new_user function need to be handled properly");
-	    		  return;}}, 
+	    		  return;}},
         function (error_message) {
-    	      alert(error_message);}); 
+    	      alert(error_message);});
     } else {
       console.log("Form validation failed");
     }
@@ -99,7 +102,7 @@ function signInSubmitControl(event) {
 		  let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
 		  userSignInValues.login_or_email = loginOrEmail;
 		  userSignInValues.password = client_hashed
-	      sakura.common.ws_request('login', [], userSignInValues, 
+	      sakura.common.ws_request('login', [], userSignInValues,
 	        function (wsResult) {
 		    	  // console.log("wsResult:"+wsResult);
 		    	  alert("Login successful");
@@ -109,8 +112,9 @@ function signInSubmitControl(event) {
 	    		  signInWidget = document.getElementsByName("signInWidget")[0];
 	    		  //secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
 	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
-	    		  //secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';    		  
-	    		  return;}, 
+	    		  //secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
+            current_login = wsResult;
+	    		  return;},
 	        function (error_message) {
 	    	      alert(error_message);});} // end checking empty fields
 	  else {

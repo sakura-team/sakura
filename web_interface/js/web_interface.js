@@ -42,7 +42,7 @@ function fill_database_metadata(db_id) {
 
             //Description
             if (db_info.short_desc)
-                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
+                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
             else
                 $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
 
@@ -152,7 +152,18 @@ function fill_database_metadata(db_id) {
         var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
         if (db_info.large_desc)
             l_desc = db_info.large_desc;
-        web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc);
+
+        ///////////////BAD BAD BAD BAD BAD FOR DEBUG //////////////
+        if (current_login == null)
+            current_login = 'etienne'
+        ///////////////BAD BAD BAD BAD BAD FOR DEBUG //////////////
+
+
+        //Large description can only been modified by writers
+        if (db_info.users_rw.indexOf(current_login) == -1)
+            web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc, false);
+        else
+            web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc, true);
     });
 }
 
@@ -227,17 +238,24 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
             ]
 }
 
-function web_interface_create_large_description_area(datatype, area_id, description) {
+function web_interface_create_large_description_area(datatype, area_id, description, toolbar) {
 
     //Erasing previous one
     if (simplemde)
         simplemde.toTextArea();
         simplemde = null;
 
-    simplemde = new SimpleMDE({  hideIcons: ['side-by-side'],
-                                    element: document.getElementById(area_id),
-                                    toolbar: get_edit_toolbar(datatype, web_interface_current_id)
+    if (toolbar)
+        simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
+                                      element: document.getElementById(area_id),
+                                      toolbar: get_edit_toolbar(datatype, web_interface_current_id)
+                                      });
+    else
+        simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
+                                  element: document.getElementById(area_id),
+                                  toolbar: false
                                   });
+
 
     simplemde.value(description);
     simplemde.togglePreview();
