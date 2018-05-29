@@ -204,13 +204,10 @@ class GuiToHubAPI(object):
                 login_or_email, current_password_or_rec_token, new_password)
 
     def list_all_users(self):
-        return ['mike', 'denis', 'etienne']
+        return ['mike', 'denis', 'etienne', 'mahfoud', 'ritesh', 'tuan', 'arthur', 'alphonse']
 
-    def add_collaborators(self, database_id, logins, access):
-        #logins: array of logins
-        #access: read or write, only one value that has to be applied to every login
-        print(database_id, logins, access)
-
+    def update_database_grant(self, database_id, login, grant_level):
+        print(database_id, login, grant_level)
 
     def test(self):
         import pdb; pdb.set_trace()

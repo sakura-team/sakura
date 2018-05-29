@@ -33,9 +33,7 @@ function fill_database_metadata(db_id) {
         web_interface_current_db_info = db_info;
 
         $('#web_interface_database_metadata1').empty();
-        $('#web_interface_database_metadata1').load('divs/templates/datas_metadata1.html', function() {
-
-            console.log(db_info);
+        $('#web_interface_database_metadata1').load('divs/templates/metadata1.html', function() {
 
             //Name
             $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
@@ -81,7 +79,7 @@ function fill_database_metadata(db_id) {
         });
 
         $('#web_interface_database_metadata2').empty();
-        $('#web_interface_database_metadata2').load('divs/templates/datas_metadata2.html', function() {
+        $('#web_interface_database_metadata2').load('divs/templates/metadata2.html', function() {
 
             //Owner
             var owner = '..';
@@ -97,53 +95,56 @@ function fill_database_metadata(db_id) {
                 {name: "_db_grant_",          value: db_info.grant_level},
                 {name: "_db_collaborators_",  value: collabs}
                 ].forEach( function (elt){
-                    console.log(elt.name, elt.value);
                     if (elt.value)
                         recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
                     else
                         recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
                       });
 
-            //Readers and writers display
-            $('#datas_metadata_readers').empty();
-            $('#datas_metadata_writers').empty();
-
-            if (db_info.access_scope == 'public') {
-                $('#datas_metadata_readers').append($('<option>', { text: 'Everybody (Public Data)'}));
-            }
-            else {
-                if (db_info.users_ro.length <= 1)
-                    $('#datas_metadata_readers').append($('<option>', {text: 'Nobody'}));
-                else {
-                    db_info.users_ro.forEach( function(user) {
-                        $('#datas_metadata_readers').append($('<option>', {text: user}));
-                    });
-                }
-            }
-
-            if (db_info.users_rw.length <= 1)
-                $('#datas_metadata_writers').append($('<option>', {text: 'Nobody'}));
-            else {
-                db_info.users_rw.forEach( function(user) {
-                    $('#datas_metadata_writers').append($('<option>', {text: user}));
-                });
-            }
-
-            $('#datas_metadata_readers').selectpicker('refresh');
-            $('#datas_metadata_writers').selectpicker('refresh');
-
-
-            //If no owner, cannot add readers or writers
             if (db_info.grant_level == 'own') {
-                $('#datas_metadata_adding_writers_button').show();
-                if (db_info.access_scope == 'public')
-                    $('#datas_metadata_adding_readers_button').hide();
-                else
-                  $('#datas_metadata_adding_readers_button').show();
-            }
-            else {
-                $('#datas_metadata_adding_writers_button').hide();
-                $('#datas_metadata_adding_readers_button').hide();
+                var collabs = db_info.users_ro;
+                db_info.users_rw.forEach( function (user) {
+                    if (collabs.indexOf(user) == -1)
+                        collabs.push(user);
+                });
+
+                var tbody = $('#web_interface_database_collaborators_table_body');
+                tbody.empty();
+
+                collabs.forEach( function(user) {
+                    var td2 = $('<td>')
+                    var sel = $('<select>', { class: "selectpicker"});
+                    sel.change( function() {
+                        change_collaborator_access('database', web_interface_current_id, user, $(this));
+                    });
+                    var op1 = $('<option>', { text: "Read"});
+                    var op2 = $('<option>', { text: "Write"});
+                    if (db_info.users_rw.indexOf(user) != -1)
+                        op2.attr("selected","selected");
+                    if (db_info.access_scope != 'public')
+                        sel.append(op1);
+                    sel.append(op2);
+                    td2.append(sel);
+                    sel.selectpicker('refresh');
+
+                    var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\'database\', '+web_interface_current_id+', \''+user+'\');"></span>'});
+                    var tr = $('<tr>');
+                    tr.append($('<td>', {html: user}),
+                              td2,
+                              td3);
+
+                    tbody.append(tr);
+                });
+
+                $('#web_interface_adding_collaborators_select option').remove();
+
+                sakura.common.ws_request('list_all_users', [], {}, function(result) {
+                    result.forEach( function(user) {
+                        $('#web_interface_adding_collaborators_select').append($('<option>', {text: user}));
+                    });
+                    $('#web_interface_adding_collaborators_select').selectpicker('refresh');
+                });
+
             }
         });
 
@@ -545,43 +546,56 @@ function showDiv(event, dir, div_id) {
         event.preventDefault();
 }
 
-function adding_collaborators_modal_update(object_type, access_type) {
+
+/* Collaborators Management*/
+function change_collaborator_access(object_type, id, login, sel) {
     if (object_type == 'database') {
-      $('#database_adding_collaborator_modal_header').empty();
-      var access = 'Reader(s)';
-      if (access_type == 'write')
-          access = 'Writer(s)';
-      $('#database_adding_collaborator_modal_header').html('<h3>Adding '+access+' on <b>'+web_interface_current_db_info.name+'</h3>');
-
-      $('#adding_collaborators_select').empty();
-      sakura.common.ws_request('list_all_users', [], {}, function(result) {
-          result.forEach( function(user) {
-              $('#adding_collaborators_select').append($('<option>', { text: user}));
-          });
-          $('#adding_collaborators_select').selectpicker('refresh');
-          $('#adding_collaborators_send_button').attr('onclick', 'adding_collaborators(\''+access_type+'\')')
-          $('#database_adding_collaborator_modal').modal();
-      });
-    }
-    else {
-        not_yet();
-    }
-}
-
-function adding_collaborators(access_type) {
-    var collabs = []
-    $('#adding_collaborators_select option').map( function (i, opt) {
-        if (opt.selected)
-            collabs.push(opt.value);
-      });
-    if (collabs.length > 0)
-        sakura.common.ws_request('add_collaborators', [web_interface_current_id, collabs, access_type[0]], {}, function(result) {
-            $('#database_adding_collaborator_modal').modal('hide');
+        sakura.common.ws_request('update_database_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {
             $('#databases_buttons_main').click();
         });
+    }
     else
-        $('#database_adding_collaborator_modal').modal('hide');
+        not_yet();
 }
+
+function delete_collaborator(object_type, id, login) {
+  if (object_type == 'database') {
+      sakura.common.ws_request('update_database_grant', [id, login, 'none'], {}, function(result) {
+          $('#databases_buttons_main').click();
+      });
+  }
+  else
+      not_yet();
+}
+
+function adding_collaborators() {
+    var opts = $('#web_interface_adding_collaborators_select option');
+    var nbs = 0;
+
+    opts.map( function (i, opt) {
+        if (opt.selected)
+          nbs += 1;
+    });
+
+    opts.map( function (i, opt) {
+        if (opt.selected) {
+            var index = i+1;
+            sakura.common.ws_request('update_database_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
+                if (index == nbs) {
+                    $('#web_interface_adding_collaborators_select option:selected').remove();
+                    $('#databases_buttons_main').click();
+                }
+            });
+        }
+
+    });
+}
+
+function cleaning_collaborators() {
+    $('#web_interface_adding_collaborators_select option:selected').remove();
+    $('#web_interface_adding_collaborators_select').selectpicker('refresh');
+}
+
 
 /* Divers */
 function isUrlWithId(url) {
