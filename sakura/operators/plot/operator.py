@@ -29,13 +29,13 @@ class PlotOperator(Operator):
 
         if event[0] == 'get_data':
             dp = []
-            column_x = self.input.columns[self.input_column_param_x.value]
-            column_y = self.input.columns[self.input_column_param_y.value]
+            column_x = self.input_column_param_x.value
+            column_y = self.input_column_param_y.value
             #time_credit = 0.3
             #deadline = time() + time_credit
-
-            for chunk_x, chunk_y in zip(column_x.chunks(), column_y.chunks()):
-                for x, y in zip(chunk_x, chunk_y):
+            stream = self.input.select_columns(column_x, column_y)
+            for chunk in stream.chunks():
+                for x, y in chunk:
                     dp.append({'x': x, 'y': y})
                 #if time() > deadline:
                 #    break
