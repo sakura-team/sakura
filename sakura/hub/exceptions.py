@@ -6,3 +6,6 @@ class DaemonDataError(DaemonDataException):
 
 class DaemonDataExceptionIgnoreObject(DaemonDataException):
     pass
+
+class TransferAborted(Exception):
+    pass

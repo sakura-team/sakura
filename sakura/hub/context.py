@@ -73,9 +73,15 @@ class HubContext(object):
         transfer = Transfer()
         self.transfers[transfer.transfer_id] = transfer
         return transfer.transfer_id
-    def get_transfer_percent(self, transfer_id):
-        transfer = self.transfers[transfer_id]
-        percent = transfer.get_percent()
-        if percent == 100:
+    def get_transfer_status(self, transfer_id):
+        status = self.transfers[transfer_id].get_status()
+        if status['status'] == 'done':
             del self.transfers[transfer_id]
-        return percent
+        return status
+    def abort_transfer(self, transfer_id):
+        status = self.transfers[transfer_id].get_status()
+        if status['status'] == 'done':
+            # transfer is already completed!
+            del self.transfers[transfer_id]
+        else:
+            self.transfers[transfer_id].abort()

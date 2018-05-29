@@ -214,5 +214,8 @@ class GuiToHubAPI(object):
     def start_transfer(self):
         return self.context.start_transfer() # return transfer_id
 
-    def get_transfer_percent(self, transfer_id):
-        return self.context.get_transfer_percent(transfer_id)
+    def get_transfer_status(self, transfer_id):
+        return self.context.get_transfer_status(transfer_id)
+
+    def abort_transfer(self, transfer_id):
+        return self.context.abort_transfer(transfer_id)

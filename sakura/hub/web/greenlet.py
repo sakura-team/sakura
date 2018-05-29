@@ -5,6 +5,7 @@ from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
 from sakura.hub.web.cache import webcache_serve
 from sakura.hub.db import db_session_wrapper
+from sakura.hub.exceptions import TransferAborted
 from sakura.common.tools import monitored
 from pathlib import Path
 from bottle import template
@@ -49,12 +50,15 @@ def web_greenlet(context, webapp_path):
     @app.route('/tables/<table_id:int>/export.csv')
     def export_table_as_csv(table_id):
         transfer_id = int(bottle.request.query.transfer)
-        print('exporting table %d as csv' % table_id, end="")
-        startup = time.time()
-        with db_session_wrapper():
-            transfer = context.transfers[transfer_id]
-            yield from context.tables[table_id].stream_csv(transfer)
-        print(' -> done (%ds)' % int(time.time()-startup))
+        try:
+            print('exporting table %d as csv' % table_id, end="")
+            startup = time.time()
+            with db_session_wrapper():
+                transfer = context.transfers[transfer_id]
+                yield from context.tables[table_id].stream_csv(transfer)
+            print(' -> done (%ds)' % int(time.time()-startup))
+        except TransferAborted:
+            print(' -> user-aborted!')
 
     @app.route('/modules/workflow/tpl/<filepath:path>', method=['POST'])
     def serve_template(filepath):
