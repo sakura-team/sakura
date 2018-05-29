@@ -27,37 +27,22 @@
     </div>
 
     <!--Information-->
-    <div class="row well">
-        <div class="col-md-4" id="web_interface_database_metadata1">
-            <!--
-            <ul class="list-group col-md-6" id="database_db_meta_quali">
-                <li class="list-group-item list-group-item-info">
-                    <strong>About <em>_db_name_</script></em> :</strong>
-                </li>
-                <li class="list-group-item">
-                    <strong>Qualitative indicator:</strong>
-                    <span class="label label-primary pull-right">5</span>
-                </li>
-                <li class="list-group-item">
-                    <strong>Volumetric indicator:</strong>
-                    <span class="label label-primary pull-right">5</span>
-                </li>
-                <li class="list-group-item">
-                    <strong>Contact:</strong>
-                    <span class="label label-primary pull-right">_user_name_@mail.uni</span>
-                </li>
-            </ul>
-            -->
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4 style="margin-bottom: 0px; margin-top: 0px;">General</h4></div>
+        <div class="panel-body" id="web_interface_database_metadata1"></div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 style="margin-bottom: 0px; margin-top: 0px; cursor: pointer;" data-toggle="collapse" href="#web_interface_database_metadata2">
+                Access
+            </h4>
         </div>
+        <div class="panel-body collapse" id="web_interface_database_metadata2"></div>
     </div>
-    <div class="row well">
-        <div class="col-md-4" id="web_interface_database_metadata2">
-        </div>
-    </div>
-    <div class="row well" style="padding: 0px; border: 0px;" id="web_interface_database_large_description">
-      <textarea id='web_interface_database_markdownarea'>
-      </textarea>
-    </div>
+
+    <textarea id='web_interface_database_markdownarea'>
+            </textarea>
     <!--
     <div id="descriptionModalAbout__elt__" class="modal fade" role="dialog">
         <div class="modal-dialog">
