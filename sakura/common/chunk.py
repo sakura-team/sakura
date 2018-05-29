@@ -48,4 +48,21 @@ class NumpyChunk(np.ma.MaskedArray):
             colmask = ~obj_chunk[colname].mask
             chunk[colname][colmask] = obj_chunk[colname][colmask]
         return chunk.view(NumpyChunk)
-
+    def __reduce__(self):
+        # workaround for numpy.ma.masked_array failing to deserialize
+        # when we have overlapping or out-of-order fields
+        # (i.e. when self.dtype shows itemsize and offsets info).
+        try:
+            # deserialization code tries to read this attribute,
+            # which fails in this specific case.
+            self.dtype.descr
+            # ok, no problem, use standard method:
+            return np.ma.MaskedArray.__reduce__(self)
+        except ValueError:
+            # error case detected.
+            # we will have to copy the array into one with ordered fields.
+            names = self.dtype.names
+            formats = tuple(self.dtype.fields[n][0] for n in names)
+            ordered_dt = np.dtype(dict(names=names, formats=formats))
+            ordered_array = np.ma.array(self, ordered_dt, mask=self.mask)
+            return np.ma.MaskedArray.__reduce__(ordered_array)

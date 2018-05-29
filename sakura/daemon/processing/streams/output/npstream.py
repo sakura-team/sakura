@@ -1,9 +1,21 @@
 import numpy as np
-from itertools import islice
+from itertools import islice, count
 from sakura.daemon.processing.streams.output.base import OutputStreamBase
 from sakura.common.chunk import NumpyChunk
 
 DEFAULT_CHUNK_SIZE = 100000
+
+def iter_uniq(names):
+    seen = set()
+    for name in names:
+        if name in seen:
+            for i in count(start=2):
+                alt_name = '%s(%d)' % (name, i)
+                if alt_name not in seen:
+                    name = alt_name
+                    break
+        seen.add(name)
+        yield name
 
 class NumpyArrayStream(OutputStreamBase):
     def __init__(self, label, array):
@@ -19,8 +31,21 @@ class NumpyArrayStream(OutputStreamBase):
             yield self.array[offset:offset+chunk_size].view(NumpyChunk)
             offset += chunk_size
     def __select_columns__(self, *col_indexes):
-        col_labels = list(self.columns[col_index]._label for col_index in col_indexes)
-        filtered_array = self.array[col_labels]
+        # caution: we may have strange requests here, such
+        # as building a stream with twice the same column
+        # (e.g. XY plot with default value of axis selection
+        # parameters)
+        dt = self.array.dtype
+        itemsize = dt.itemsize
+        names = tuple(dt.names[i] for i in col_indexes)
+        formats = [dt.fields[name][0] for name in names]
+        offsets = [dt.fields[name][1] for name in names]
+        names = tuple(iter_uniq(names))
+        newdt = np.dtype(dict(names=names,
+                              formats=formats,
+                              offsets=offsets,
+                              itemsize=itemsize))
+        filtered_array = self.array.view(newdt)
         return NumpyArrayStream(self.label, filtered_array)
     def __filter__(self, col_index, comp_op, other):
         col_label = self.columns[col_index]._label

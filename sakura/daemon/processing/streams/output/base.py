@@ -5,6 +5,7 @@ from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.cache import Cache
 from sakura.daemon.processing.column import Column
 from time import time
+from itertools import count
 
 # We measure the delay <d> it took to compute iterator
 # values, and ensure iterator is kept in cache for
@@ -18,6 +19,14 @@ class OutputStreamBase(Registry):
         self.length = None
         self.range_iter_cache = Cache(10)
     def add_column(self, col_label, col_type, col_tags=()):
+        existing_col_names = set(col._label for col in self.columns)
+        # avoid having twice the same column name
+        if col_label in existing_col_names:
+            for i in count(start=2):
+                alt_label = '%s(%d)' % (col_label, i)
+                if alt_label not in existing_col_names:
+                    col_label = alt_label
+                    break
         return self.register(self.columns, Column,
                     col_label, col_type, tuple(col_tags),
                     self, len(self.columns))
