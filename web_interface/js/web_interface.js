@@ -149,21 +149,17 @@ function fill_database_metadata(db_id) {
 
 
         //Now filling the markdownarea field
-        var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
+        var l_desc = '<span style="color:grey">*No description !';
         if (db_info.large_desc)
             l_desc = db_info.large_desc;
-
-        ///////////////BAD BAD BAD BAD BAD FOR DEBUG //////////////
-        if (current_login == null)
-            current_login = 'etienne'
-        ///////////////BAD BAD BAD BAD BAD FOR DEBUG //////////////
-
+        else {
+            if (l_desc, db_info.grant_level == 'own' || db_info.grant_level == 'write')
+                l_desc += ' Edit one by clicking on the eye';
+            l_desc += '*</span>';
+        }
 
         //Large description can only been modified by writers
-        if (db_info.users_rw.indexOf(current_login) == -1)
-            web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc, false);
-        else
-            web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc, true);
+        web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc, db_info.grant_level == 'own' || db_info.grant_level == 'write');
     });
 }
 
