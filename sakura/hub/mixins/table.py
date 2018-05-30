@@ -113,7 +113,7 @@ class TableMixin:
         bottle.response.set_header('content-disposition',
                         'attachment; filename="%s"' % csv_file_name)
         # header line
-        yield ','.join(c.col_name for c in self.columns)
+        yield ','.join(c.col_name for c in self.columns) + '\n'
         # data rows
         buf = io.StringIO()
         writer = csv.writer(buf)
