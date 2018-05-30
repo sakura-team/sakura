@@ -19,7 +19,6 @@ class Transfer:
             status = self.status
         )
     def notify_status(self, rows_done, rows_target, bytes_done):
-        import pdb; pdb.set_trace()
         if self.aborted:
             raise TransferAborted
         self.rows = rows_done
