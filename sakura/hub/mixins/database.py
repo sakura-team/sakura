@@ -127,3 +127,9 @@ class DatabaseMixin(BaseMixin):
             return GRANT_LEVELS.hide
         # ok, let's check grant on this database object
         return get_grant_level_generic(self)
+    def update_grant(self, login, grant_name):
+        if self.get_grant_level() < GRANT_LEVELS.own:
+            raise APIObjectDeniedError('Only owner can change database grants.')
+        self.datastore.remote_instance.update_database_grant(
+                    self.name, login, GRANT_LEVELS.value(grant_name))
+        self.refresh_metadata_from_daemon()

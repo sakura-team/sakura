@@ -98,9 +98,16 @@ class DataStore:
         return self.databases[database_label]
     def create_db(self, db_name, owner):
         db_owner = 'sakura_' + owner
-        admin_conn = self.admin_connect()
-        if not self.has_user(owner):
-            self.driver.create_user(admin_conn, db_owner)
-        self.driver.create_db(admin_conn, db_name, db_owner)
-        admin_conn.close()
+        with self.admin_connect() as admin_conn:
+            if not self.has_user(owner):
+                self.driver.create_user(admin_conn, db_owner)
+            self.driver.create_db(admin_conn, db_name, db_owner)
+        self.refresh()
+    def update_database_grant(self, db_name, login, grant_level):
+        db_user = 'sakura_' + login
+        with self.admin_connect() as admin_conn:
+            if not self.has_user(login):
+                self.driver.create_user(admin_conn, db_user)
+            self.driver.set_database_grant(
+                    admin_conn, db_name, db_user, grant_level)
         self.refresh()

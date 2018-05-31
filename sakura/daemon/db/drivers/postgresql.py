@@ -161,16 +161,24 @@ SQL_GET_TABLE_PRIMARY_KEY = '''
 '''
 
 SQL_CREATE_USER = '''
-CREATE ROLE "%(db_user)s";
+CREATE USER "%(db_user)s";
 '''
 
 SQL_CREATE_DB = '''
 CREATE DATABASE "%(db_name)s" WITH OWNER "%(db_owner)s";
 '''
 
-SQL_GRANT_DB = '''
+SQL_INIT_GRANT_DB = '''
 GRANT ALL ON DATABASE "%(db_name)s" TO "%(db_owner)s";
 REVOKE ALL ON DATABASE "%(db_name)s" FROM PUBLIC;
+'''
+
+SQL_REVOKE_DB = '''
+REVOKE ALL ON DATABASE "%(db_name)s" FROM "%(db_user)s";
+'''
+
+SQL_GRANT_DB = '''
+GRANT %(db_grants)s ON DATABASE "%(db_name)s" TO "%(db_user)s";
 '''
 
 SQL_DESC_COLUMN = '"%(col_name)s" %(col_type)s'
@@ -324,7 +332,7 @@ class PostgreSQLDBDriver:
         admin_db_conn.commit() # complete running transaction if any
         admin_db_conn.autocommit = True
         with admin_db_conn.cursor() as cursor:
-            for sql in (SQL_CREATE_DB, SQL_GRANT_DB):
+            for sql in (SQL_CREATE_DB, SQL_INIT_GRANT_DB):
                 cursor.execute(sql % dict(
                         db_name = db_name,
                         db_owner = db_owner))
@@ -378,6 +386,24 @@ class PostgreSQLDBDriver:
             db_conn.commit()
         except psycopg2.Error as e:
             raise APIRequestError(e.pgerror)
+    @staticmethod
+    def set_database_grant(admin_db_conn, db_name, db_user, grant):
+        with admin_db_conn.cursor() as cursor:
+            # start by removing existing grants for this user
+            cursor.execute(SQL_REVOKE_DB % dict(
+                    db_name = db_name,
+                    db_user = db_user))
+            # add needed grants
+            if grant >= GRANT_LEVELS.read:
+                db_grants = {
+                    GRANT_LEVELS.read: 'CONNECT',
+                    GRANT_LEVELS.write: 'CONNECT, CREATE, TEMPORARY'
+                }[grant]
+                cursor.execute(SQL_GRANT_DB % dict(
+                        db_name = db_name,
+                        db_user = db_user,
+                        db_grants = db_grants))
+        admin_db_conn.commit()
 
 DRIVER = PostgreSQLDBDriver
 

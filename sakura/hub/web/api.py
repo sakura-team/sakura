@@ -126,6 +126,9 @@ class GuiToHubAPI(object):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
         self.databases[database_id].update_attributes(**kwargs)
 
+    def update_database_grant(self, database_id, login, grant_level):
+        self.databases[database_id].update_grant(login, grant_level)
+
     def list_expected_columns_tags(self, datastore_id):
         return self.datastores[datastore_id].list_expected_columns_tags()
 
@@ -205,9 +208,6 @@ class GuiToHubAPI(object):
 
     def list_all_users(self):
         return tuple(u.login for u in self.context.users.select())
-
-    def update_database_grant(self, database_id, login, grant_level):
-        print(database_id, login, grant_level)
 
     # Transfers management
     ######################
