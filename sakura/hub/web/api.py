@@ -204,7 +204,7 @@ class GuiToHubAPI(object):
                 login_or_email, current_password_or_rec_token, new_password)
 
     def list_all_users(self):
-        return ['mike', 'denis', 'etienne', 'mahfoud', 'ritesh', 'tuan', 'arthur', 'alphonse']
+        return tuple(u.login for u in self.context.users.select())
 
     def update_database_grant(self, database_id, login, grant_level):
         print(database_id, login, grant_level)
