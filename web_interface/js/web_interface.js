@@ -557,7 +557,7 @@ function change_collaborator_access(object_type, id, login, sel) {
 
 function delete_collaborator(object_type, id, login) {
   if (object_type == 'database') {
-      sakura.common.ws_request('update_database_grant', [id, login, 'none'], {}, function(result) {
+      sakura.common.ws_request('update_database_grant', [id, login, 'hide'], {}, function(result) {
           $('#databases_buttons_main').click();
       });
   }
