@@ -102,16 +102,13 @@ function fill_database_metadata(db_id) {
                       });
 
             if (db_info.grant_level == 'own') {
-                var collabs = db_info.users_ro;
-                db_info.users_rw.forEach( function (user) {
-                    if (collabs.indexOf(user) == -1)
-                        collabs.push(user);
-                });
-
                 var tbody = $('#web_interface_database_collaborators_table_body');
                 tbody.empty();
 
-                collabs.forEach( function(user) {
+                for (let user in db_info.grants) {
+                    grant = db_info.grants[user];
+                    if (grant == 'own')
+                        continue;
                     var td2 = $('<td>')
                     var sel = $('<select>', { class: "selectpicker"});
                     sel.change( function() {
@@ -119,7 +116,7 @@ function fill_database_metadata(db_id) {
                     });
                     var op1 = $('<option>', { text: "Read"});
                     var op2 = $('<option>', { text: "Write"});
-                    if (db_info.users_rw.indexOf(user) != -1)
+                    if (grant == 'write')
                         op2.attr("selected","selected");
                     if (db_info.access_scope != 'public')
                         sel.append(op1);
@@ -134,7 +131,7 @@ function fill_database_metadata(db_id) {
                               td3);
 
                     tbody.append(tr);
-                });
+                }
 
                 $('#web_interface_adding_collaborators_select option').remove();
 

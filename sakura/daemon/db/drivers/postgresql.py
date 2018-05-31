@@ -2,6 +2,7 @@ import psycopg2, uuid, numpy as np
 from collections import defaultdict
 from psycopg2.extras import DictCursor
 from sakura.common.errors import APIRequestError
+from sakura.common.access import GRANT_LEVELS
 
 DEBUG_CURSORS=False
 #DEBUG_CURSORS=True
@@ -75,7 +76,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
             select_clause_wrapper, value_wrapper,
             tags, **params)
 
-SQL_GET_DS_USERS = '''\
+SQL_GET_DS_GRANTS = '''\
 SELECT  usename, usecreatedb FROM pg_user;
 '''
 
@@ -238,31 +239,36 @@ class PostgreSQLDBDriver:
             cursor.execute('''SELECT current_database();''')
             return cursor.fetchone()[0]
     @staticmethod
-    def collect_users(admin_db_conn, metadata_collector):
+    def collect_grants(admin_db_conn, metadata_collector):
         with admin_db_conn.cursor() as cursor:
-            cursor.execute(SQL_GET_DS_USERS)
+            cursor.execute(SQL_GET_DS_GRANTS)
             for row in cursor:
-                metadata_collector.register_user(
-                        row['usename'], row['usecreatedb'])
+                grant = GRANT_LEVELS.write if row['usecreatedb'] else GRANT_LEVELS.read
+                metadata_collector.register_datastore_grant(row['usename'], grant)
     @staticmethod
-    def collect_dbs(admin_db_conn, metadata_collector):
+    def collect_databases(admin_db_conn, metadata_collector):
         with admin_db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_DBS)
             for row in cursor:
                 dbname = row[0]
                 if dbname not in IGNORED_DATABASES:
-                    metadata_collector.register_db(dbname)
+                    metadata_collector.register_database(dbname)
     @staticmethod
-    def collect_db_grants(admin_db_conn, metadata_collector):
+    def collect_database_grants(admin_db_conn, metadata_collector):
         # we must tell metadata_visitor which user has READ, WRITE, OWNER
         # access to which database
         with admin_db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_DB_ACCESS_GRANTS)
             for dbuser, dbname, privtype in cursor:
-                privtype = { 'CONNECT': 'READ', 'CREATE': 'WRITE', 'OWNER': 'OWNER' }[privtype]
-                metadata_collector.register_grant(dbuser, dbname, privtype)
+                # convert to sakura access grants
+                grant = {   'CONNECT':  GRANT_LEVELS.read,
+                            'CREATE':   GRANT_LEVELS.write,
+                            'OWNER':    GRANT_LEVELS.own
+                }[privtype]
+                if dbname not in IGNORED_DATABASES:
+                    metadata_collector.register_database_grant(dbuser, dbname, grant)
     @staticmethod
-    def collect_db_tables(db_conn, metadata_collector):
+    def collect_database_tables(db_conn, metadata_collector):
         # db_conn must be connected to the targeted database
         with db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_DB_TABLES)

@@ -1,7 +1,9 @@
 from sakura.daemon.db import drivers
 from sakura.daemon.db import adapters
+from sakura.daemon.db.grants import register_grant
 from sakura.daemon.db.database import Database
 from sakura.common.io import pack
+from sakura.common.access import GRANT_LEVELS
 
 class DataStoreProber:
     def __init__(self, datastore):
@@ -10,27 +12,20 @@ class DataStoreProber:
     def probe(self):
         print("DS probing start: %s" % self.datastore.host)
         admin_conn = self.datastore.admin_connect()
-        self.users = []
+        self.grants = { self.datastore.sakura_admin: GRANT_LEVELS.own }
         self.databases = {}
-        self.driver.collect_users(admin_conn, self)
-        self.driver.collect_dbs(admin_conn, self)
-        self.driver.collect_db_grants(admin_conn, self)
+        self.driver.collect_grants(admin_conn, self)
+        self.driver.collect_databases(admin_conn, self)
+        self.driver.collect_database_grants(admin_conn, self)
         admin_conn.close()
-        return self.users, self.databases.values()
-    def register_user(self, db_user, createdb_grant):
-        user = self.as_sakura_user(db_user)
-        if user:
-            self.users.append((user, createdb_grant))
-    def register_db(self, db_name):
+        return self.grants, self.databases.values()
+    def register_datastore_grant(self, db_user, grant):
+        register_grant(self.grants, db_user, grant)
+    def register_database(self, db_name):
         print("DS probing: found database %s" % db_name)
         self.databases[db_name] = Database(self.datastore, db_name)
-    def as_sakura_user(self, db_user):
-        if db_user.startswith('sakura_'):
-            return db_user[7:]
-    def register_grant(self, db_user, db_name, privtype):
-        user = self.as_sakura_user(db_user)
-        if user:
-            self.databases[db_name].grant(user, privtype)
+    def register_database_grant(self, db_user, db_name, grant):
+        self.databases[db_name].register_grant(db_user, grant)
 
 class DataStore:
     def __init__(self, host, datastore_admin, sakura_admin,
@@ -40,7 +35,7 @@ class DataStore:
         self.sakura_admin = sakura_admin
         self.driver_label = driver_label
         self.driver = drivers.get(driver_label)
-        self._users = None        # not probed yet
+        self._grants = None        # not probed yet
         self._databases = None    # not probed yet
         self._online = None       # not probed yet
         self.adapter = adapters.get(adapter_label)
@@ -54,10 +49,10 @@ class DataStore:
             info.update(dbname = db_name)
         return self.driver.connect(**info)
     @property
-    def users(self):
-        if self._users is None:
+    def grants(self):
+        if self._grants is None:
             self.refresh()
-        return self._users
+        return self._grants
     @property
     def databases(self):
         if self._databases is None:
@@ -69,11 +64,11 @@ class DataStore:
             self.refresh()
         return self._online
     def has_user(self, user):
-        return user in tuple(zip(*self.users))[0]
+        return user in self.grants.keys()
     def refresh(self):
         try:
             prober = DataStoreProber(self)
-            self._users, databases = prober.probe()
+            self._grants, databases = prober.probe()
             self._databases = { d.db_name: d for d in databases }
             self._online = True
         except BaseException as exc:
@@ -84,16 +79,16 @@ class DataStore:
         res = dict(
             host = self.host,
             driver_label = self.driver_label,
-            admin = self.sakura_admin,
             online = self.online,
-            access_scope = self.access_scope
+            access_scope = self.access_scope,
+            admin = self.sakura_admin
         )
         if self.online:
             databases_overview = tuple(
                 database.overview() for database in self.databases.values()
             )
             res.update(
-                users = self.users,
+                grants = self.grants,
                 databases = databases_overview
             )
         return pack(res)

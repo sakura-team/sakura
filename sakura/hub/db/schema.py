@@ -12,6 +12,7 @@ from sakura.hub.mixins.link import LinkMixin
 from sakura.hub.mixins.param import OpParamMixin
 from sakura.hub.mixins.user import UserMixin
 from sakura.hub.mixins.session import SessionMixin
+from sakura.common.access import ACCESS_SCOPES
 
 epoch = float
 
@@ -30,16 +31,6 @@ def define_schema(db):
         institution = Optional(str)
         occupation = Optional(str)          # work profile related
         work_domain = Optional(str)         # research topic
-        ds_admin_of = Set('Datastore')
-        ds_rw = Set('Datastore')
-        ds_ro = Set('Datastore')
-        db_rw = Set('Database')
-        db_ro = Set('Database')
-        db_owner_of = Set('Database')
-        db_contact_of = Set('Database')
-        df_owner_of = Set('Dataflow')
-        df_rw = Set('Dataflow')
-        df_ro = Set('Dataflow')
         sessions = Set('Session')
 
     class Session(db.Entity, SessionMixin):
@@ -47,12 +38,10 @@ def define_schema(db):
         timeout = Required(epoch)
 
     class Dataflow(db.Entity, DataflowMixin):
+        access_scope = Required(int, default = ACCESS_SCOPES.private)
+        grants = Required(Json, default = {})
         gui_data = Optional(str)
         metadata = Optional(Json, default = {})
-        owner = Required(User, reverse = 'df_owner_of')
-        access_scope = Required(int)  # see sakura/hub/access.py
-        users_rw = Set(User, reverse = 'df_rw')
-        users_ro = Set(User, reverse = 'df_ro')
         op_instances = Set('OpInstance')
 
     class Daemon(db.Entity, DaemonMixin):
@@ -93,26 +82,20 @@ def define_schema(db):
 
     class Datastore(db.Entity, DatastoreMixin):
         daemon = Required(Daemon, reverse='datastores')
-        online = Required(bool)
+        online = Required(bool, default = False)
         host = Required(str)
         driver_label = Required(str)
-        admin = Optional(User, reverse = 'ds_admin_of')
-        access_scope = Required(int)  # see sakura/hub/access.py
-        users_rw = Set(User, reverse = 'ds_rw')
-        users_ro = Set(User, reverse = 'ds_ro')
+        access_scope = Required(int, default = ACCESS_SCOPES.private)
+        grants = Required(Json, default = {})
+        metadata = Optional(Json, default = {})
         databases = Set('Database')
 
     class Database(db.Entity, DatabaseMixin):
         datastore = Required(Datastore)
         name = Required(str)
-        creation_date = Optional(epoch)
-        tags = Optional(Json, default = [])
-        access_scope = Required(int)  # see sakura/hub/access.py
+        access_scope = Required(int, default = ACCESS_SCOPES.private)
+        grants = Required(Json, default = {})
         metadata = Optional(Json, default = {})
-        owner = Required(User, reverse = 'db_owner_of')
-        users_rw = Set(User, reverse = 'db_rw')
-        users_ro = Set(User, reverse = 'db_ro')
-        contacts = Set(User, reverse = 'db_contact_of')
         tables = Set('DBTable')
         UNIQUE(datastore, name)
 

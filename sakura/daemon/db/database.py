@@ -1,5 +1,6 @@
 from collections import defaultdict
 from sakura.daemon.db.table import DBTable
+from sakura.daemon.db.grants import register_grant
 from sakura.common.io import pack
 
 class DBProber:
@@ -10,7 +11,7 @@ class DBProber:
         print("DB probing startup: %s" % self.db.db_name)
         self.db_conn = self.db.connect()
         self.tables = {}
-        self.driver.collect_db_tables(self.db_conn, self)
+        self.driver.collect_database_tables(self.db_conn, self)
         self.db_conn.close()
         return self.tables
     def register_table(self, table_name, **metadata):
@@ -34,20 +35,16 @@ class Database:
     def __init__(self, dbms, db_name, **metadata):
         self.dbms = dbms
         self.db_name = db_name
-        self.owner = None
-        self.users = defaultdict(lambda: dict(READ=False, WRITE=False))
+        self.grants = {}
         self._tables = None
         self.metadata = metadata
+    def register_grant(self, db_user, grant):
+        register_grant(self.grants, db_user, grant)
     @property
     def tables(self):
         if self._tables is None:
             self.refresh_tables()
         return self._tables
-    def grant(self, user, privtype):
-        if privtype == 'OWNER':
-            self.owner = user
-        else:
-            self.users[user][privtype] = True
     def connect(self):
         return self.dbms.admin_connect(db_name = self.db_name)
     def refresh_tables(self):
@@ -56,16 +53,14 @@ class Database:
     def pack(self):
         return pack(dict(
             name = self.db_name,
-            owner = self.owner,
             tables = self.tables.values(),
-            users = dict(self.users),
+            grants = self.grants,
             **self.metadata
         ))
     def overview(self):
         return dict(
             name = self.db_name,
-            owner = self.owner,
-            users = dict(self.users)
+            grants = self.grants
         )
     def create_table(self, table_name, columns, primary_key, foreign_keys):
         db_conn = self.connect()

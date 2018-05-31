@@ -1,9 +1,10 @@
+from sakura.common.access import ACCESS_SCOPES
 from sakura.hub.exceptions import DaemonDataError, \
                               DaemonDataExceptionIgnoreObject
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
 from sakura.hub.context import get_context
-from sakura.hub.access import ACCESS_SCOPES, \
-                              get_grant_level_generic, FilteredView
+from sakura.hub.access import pack_gui_access_info
+from sakura.hub.mixins.bases import BaseMixin
 
 DATASTORE_USER_WARNING = """\
 %(driver_label)s datastore at %(host)s refers to nonexistent Sakura user "%(login)s".
@@ -13,15 +14,10 @@ DATASTORE_ADMIN_ERROR = """\
 Daemon configuration says admin of %(driver_label)s datastore at %(host)s is nonexistent Sakura user "%(login)s".
 This user must be created in Sakura first."""
 
-class DatastoreMixin:
+class DatastoreMixin(BaseMixin):
     @property
     def remote_instance(self):
         return self.daemon.api.datastores[(self.host, self.driver_label)]
-    @property
-    def owner(self):
-        # access grant calculation requires an 'owner' attribute
-        # 'admin' serves this purpose.
-        return self.admin
     def list_expected_columns_tags(self):
         # list tags already seen on this datastore
         datastore_tags = set()
@@ -32,81 +28,67 @@ class DatastoreMixin:
         datastore_tags = tuple(sorted(datastore_tags))
         return STANDARD_COLUMN_TAGS + (("others", datastore_tags),)
     def pack(self):
-        result = dict(
+        return dict(
             daemon_id = self.daemon.id,
             datastore_id = self.id,
             online = self.online and self.daemon.connected,
             host = self.host,
             driver_label = self.driver_label,
-            admin = self.admin.login,
-            access_scope = ACCESS_SCOPES(self.access_scope).name,
-            grant_level = self.get_grant_level().name
+            **self.metadata,
+            **pack_gui_access_info(self)
         )
-        if self.online:
-            result.update(
-                users_rw = tuple(u.login for u in self.users_rw),
-                users_ro = tuple(u.login for u in self.users_ro)
-            )
-        return result
-    def update_online_attributes(self, users, **kwargs):
-        # update users
-        self.users_rw.clear()
-        self.users_ro.clear()
-        for login, createdb_grant in users:
+    def restore_grants(self, grants):
+        cleaned_up_grants = {}
+        for login, grant in grants.items():
             u = get_context().users.get(login = login)
             if u == None:
-                self.daemon.api.fire_data_issue(
-                    DATASTORE_USER_WARNING % dict(
-                        host = self.host,
-                        driver_label = self.driver_label,
-                        login = login
-                    ),
-                    should_fail = False    # just warn
-                )
-                continue
-            if createdb_grant:
-                self.users_rw.add(u)
+                # sakura user reported by daemon does not exist
+                if grant == GRANT_LEVELS.own:
+                    # this is the datastore owner written in daemon's conf!
+                    raise DaemonDataError(DATASTORE_ADMIN_ERROR % dict(
+                        host = host,
+                        driver_label = driver_label,
+                        login = admin
+                    ))
+                else:
+                    # this is another wrong sakura user found inside the
+                    # datastore, just warn
+                    self.daemon.api.fire_data_issue(
+                        DATASTORE_USER_WARNING % dict(
+                            host = self.host,
+                            driver_label = self.driver_label,
+                            login = login
+                        ),
+                        should_fail = False    # just warn
+                    )
             else:
-                self.users_ro.add(u)
+                cleaned_up_grants[login] = grant
+        self.grants = cleaned_up_grants
+    def restore_databases(self, databases):
+        restored_dbs = set()
+        for db in databases:
+            try:
+                restored_db = get_context().databases.restore_database(self, **db)
+                restored_dbs.add(restored_db)
+            except DaemonDataExceptionIgnoreObject as e:
+                self.daemon.api.fire_data_issue(str(e), should_fail=False)
+        self.databases = restored_dbs
     @classmethod
-    def create_or_update(cls, daemon, host, driver_label, online,
-                                    admin, access_scope, **kwargs):
-        access_scope = getattr(ACCESS_SCOPES, access_scope).value
+    def create_or_update(cls, daemon, host, driver_label, **kwargs):
+        # create or update class
         datastore = cls.get(daemon = daemon, host = host, driver_label = driver_label)
         if datastore is None:
             # new datastore attached to daemon
-            datastore = cls(daemon = daemon, host = host, driver_label = driver_label,
-                            online = online, access_scope = access_scope)
-        else:
-            datastore.online = online
-            datastore.access_scope = access_scope
-        admin_user = get_context().users.get(login = admin)
-        if admin_user == None:
-            raise DaemonDataError(DATASTORE_ADMIN_ERROR % dict(
-                host = host,
-                driver_label = driver_label,
-                login = admin
-            ))
-        datastore.admin = admin_user
-        if online:
-            datastore.update_online_attributes(**kwargs)
+            datastore = cls(daemon = daemon,
+                        host = host, driver_label = driver_label)
+        datastore.update_attributes(**kwargs)
         return datastore
     @classmethod
-    def restore_datastore(cls, daemon, **ds):
-        datastore = cls.create_or_update(daemon, **ds)
+    def restore_datastore(cls, daemon, host, driver_label, grants, databases = None, **ds):
+        datastore = cls.create_or_update(daemon, host, driver_label, **ds)
+        # if online, restore grants and related databases
         if datastore.online:
-            # if online, restore related databases
-            restored_dbs = set()
-            for db in ds['databases']:
-                try:
-                    restored_db = get_context().databases.restore_database(datastore, **db)
-                    restored_dbs.add(restored_db)
-                except DaemonDataExceptionIgnoreObject as e:
-                    daemon.api.fire_data_issue(str(e), should_fail=False)
-            datastore.databases = restored_dbs
+            # restore grants reported by daemon
+            datastore.restore_grants(grants)
+            datastore.restore_databases(databases)
         return datastore
-    @classmethod
-    def filter_for_web_user(cls):
-        return FilteredView(cls)
-    def get_grant_level(self):
-        return get_grant_level_generic(self)

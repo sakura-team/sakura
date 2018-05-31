@@ -1,16 +1,18 @@
 import time
 from enum import Enum
+from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
 from sakura.common.errors import APIObjectDeniedError
 from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
-from sakura.hub.access import ACCESS_SCOPES, GRANT_LEVELS,  \
-                              get_grant_level_generic, FilteredView
+from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
+                              get_grant_level_generic, find_owner
+from sakura.hub.mixins.bases import BaseMixin
 
 DATABASE_OWNER_WARNING = """\
 Owner of "%(dbname)s" database is nonexistent Sakura user "%(owner)s".
 Ignoring this database."""
 
-class DatabaseMixin:
+class DatabaseMixin(BaseMixin):
     @property
     def online(self):
         return self.datastore.online and self.datastore.daemon.connected
@@ -19,18 +21,12 @@ class DatabaseMixin:
         return self.datastore.remote_instance.databases[self.name]
     def pack(self):
         result = dict(
-            tags = self.tags,
-            contacts = tuple(u.login for u in self.contacts),
             database_id = self.id,
             datastore_id = self.datastore.id,
             name = self.name,
-            creation_date = self.creation_date,
-            access_scope = ACCESS_SCOPES(self.access_scope).name,
-            owner = None if self.owner is None else self.owner.login,
-            users_rw = tuple(u.login for u in self.users_rw),
-            users_ro = tuple(u.login for u in self.users_ro),
             online = self.online,
-            grant_level = self.get_grant_level().name
+            **self.metadata,
+            **pack_gui_access_info(self)
         )
         result.update(**self.metadata)
         return result
@@ -39,10 +35,10 @@ class DatabaseMixin:
         result = self.pack()
         # if online, explore tables
         if self.online:
-            self.update_tables()
+            self.update_tables_from_daemon()
             result['tables'] = tuple(t.pack() for t in self.tables)
         return result
-    def update_tables(self):
+    def update_tables_from_daemon(self):
         context = get_context()
         # ask daemon
         info_from_daemon = self.remote_instance.pack()
@@ -63,51 +59,23 @@ class DatabaseMixin:
                 name = tbl_info['name']
             )
             table.update_foreign_keys(tbl_info['foreign_keys'])
-    def update_attributes(self,
-                users = None, contacts = None, creation_date = None,
-                tags = None, access_scope = None, owner = None,
-                **metadata):
-        context = get_context()
-        # update users
-        if users is not None:
-            self.users_rw = context.users.from_logins(
-                        u for u, grants in users.items() if grants['WRITE'])
-            self.users_ro = context.users.from_logins(
-                        u for u, grants in users.items() if grants['READ'])
-        # update contacts
-        if contacts is not None:
-            self.contacts = context.users.from_logins(contacts)
-        # update creation date
-        if creation_date is not None:
-            self.creation_date = creation_date
-        # update access scope
-        if access_scope is not None:
-            self.access_scope = getattr(ACCESS_SCOPES, access_scope).value
-        # update metadata
-        self.metadata.update(**metadata)
-        # update owner
-        if owner is not None:
-            self.owner = context.users.get(login = owner)
-        # update tags
-        if tags is not None:
-            self.tags = tags
     def create_on_datastore(self):
         self.datastore.remote_instance.create_db(
                 self.name,
-                self.owner.login)
+                self.owner)
     @classmethod
-    def create_or_update(cls, datastore, name,
-                         access_scope=None, owner=None, **kwargs):
+    def create_or_update(cls, datastore, name, **kwargs):
         database = cls.get(datastore = datastore, name = name)
         if database is None:
-            # unknown database detected on a daemon
-            # if access_scope not specified, default to private
-            if access_scope is None:
-                access_scope = 'private'
+            # new database detected on a daemon
             # if owner not specified, set it to datastore's admin
+            grants = kwargs.pop('grants', {})
+            owner = find_owner(grants)
             if owner is None:
-                u_owner = datastore.admin
+                owner = datastore.owner
+                grants[owner] = GRANT_LEVELS.own
             else:
+                # verify that owner specified by daemon really exists
                 u_owner = get_context().users.get(login = owner)
                 if u_owner is None:
                     raise DaemonDataExceptionIgnoreObject(
@@ -118,29 +86,34 @@ class DatabaseMixin:
                     )
             database = cls( datastore = datastore,
                             name = name,
-                            access_scope = getattr(ACCESS_SCOPES, access_scope).value,
-                            owner = u_owner)
-        else:
-            kwargs.update(access_scope = access_scope, owner = owner)
+                            grants = grants)
         database.update_attributes(**kwargs)
         return database
+    def refresh_metadata_from_daemon(self):
+        daemon_info = self.remote_instance.overview()
+        get_context().databases.restore_database(self.datastore, **daemon_info)
     @classmethod
     def restore_database(cls, datastore, **db):
         return cls.create_or_update(datastore, **db)
     @classmethod
-    def create_db(cls, datastore, name, access_scope, creation_date = None, **kwargs):
-        if get_grant_level_generic(datastore).value < GRANT_LEVELS.write.value:
-            raise APIObjectDeniedError('%s is not allowed to create a database on this datastore.' % \
-                    ('An anonymous user' if user is None else 'User ' + user.login))
+    def create_db(cls, datastore, name, creation_date = None, **kwargs):
         context = get_context()
+        current_user = context.session.user
+        if datastore.get_grant_level() < GRANT_LEVELS.write:
+            raise APIObjectDeniedError('%s is not allowed to create a database on this datastore.' % \
+                    ('An anonymous user' if current_user is None else 'User ' + current_user.login))
         if creation_date is None:
             creation_date = time.time()
+        # parse access info from gui
+        kwargs = parse_gui_access_info(**kwargs)
+        # owner is current user
+        grants = kwargs.pop('grants', {})
+        grants[current_user.login] = GRANT_LEVELS.own
         # register in central db
         new_db = cls.create_or_update(
                         datastore = datastore,
                         name = name,
-                        access_scope = access_scope,
-                        owner = context.session.user.login,
+                        grants = grants,
                         creation_date = creation_date,
                         **kwargs)
         # request daemon to create db on the remote datastore
@@ -148,12 +121,9 @@ class DatabaseMixin:
         # return database_id
         context.db.commit()
         return new_db.id
-    @classmethod
-    def filter_for_web_user(cls):
-        return FilteredView(cls)
     def get_grant_level(self):
         # user must be granted access to the datastore, first
-        if get_grant_level_generic(self.datastore).value < GRANT_LEVELS.read.value:
+        if self.datastore.get_grant_level() < GRANT_LEVELS.read:
             return GRANT_LEVELS.hide
         # ok, let's check grant on this database object
         return get_grant_level_generic(self)

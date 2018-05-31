@@ -77,3 +77,18 @@ def override_object(obj, override):
         OverriddenObjectClasses[bases] = OverriddenObject
     cls = OverriddenObjectClasses[bases]
     return cls(obj, override)
+
+class Enum:
+    def __init__(self, words):
+        self._words = words
+        for val, word in enumerate(words):
+            setattr(self, word, val)
+    def name(self, val):
+        return self._words[val]
+    def value(self, word):
+        return getattr(self, word)
+    def __len__(self):
+        return len(self._words)
+
+def make_enum(*words):
+    return Enum(words)

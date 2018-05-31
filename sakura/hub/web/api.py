@@ -165,7 +165,7 @@ class GuiToHubAPI(object):
         return self.dataflows.pack()
 
     def new_dataflow(self, name, **kwargs):
-        return self.dataflows.create_dataflow(name, **kwargs)
+        return self.dataflows.create_dataflow(name = name, **kwargs)
 
     def update_dataflow_info(self, dataflow_id, **kwargs):
         self.dataflows[dataflow_id].update_attributes(**kwargs)

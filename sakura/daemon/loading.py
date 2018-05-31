@@ -1,4 +1,5 @@
 import sys, os, importlib, inspect
+from sakura.common.access import ACCESS_SCOPES
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.db.datastore import DataStore
 import sakura.daemon.conf as conf
@@ -36,7 +37,8 @@ def load_datastores():
             sakura_admin = ds_conf['sakura-admin'],
             driver_label = ds_conf['driver'],
             adapter_label = ds_conf.get('adapter', 'native'),
-            access_scope = ds_conf.get('access-scope', 'private')
+            access_scope = ACCESS_SCOPES.value(
+                    ds_conf.get('access-scope', 'private'))
         )
         ds.refresh()
         datastores.append(ds)

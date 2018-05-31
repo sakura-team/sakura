@@ -73,6 +73,7 @@ class GUILocalAPIProtocol:
                 default=gui_fallback_handler)
             f.write(res_json)
         except BaseException as e:
+            print(e)
             raise Exception('Hub->GUI: Hub could not serialize object ' + \
                                 repr(res_info))
 
