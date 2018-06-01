@@ -1,7 +1,6 @@
 
 class DaemonToHubAPI(object):
-    def __init__(self, daemon_id, context):
-        self.daemon_id = daemon_id
+    def __init__(self, context):
         self.context = context
     def get_login_from_email(self, email):
         u = self.context.users.get(email=email)

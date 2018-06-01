@@ -25,11 +25,9 @@ def rpc_client_manager(context, daemon_name, sock_file):
     print('rpc connection hub (client) -> %s (server) disconnected.' % daemon_name)
 
 def rpc_server_manager(context, daemon_name, sock_file):
-    with db_session_wrapper():
-        daemon_id = context.daemons.get(name = daemon_name).id
     print('new rpc connection hub (server) <- %s (client).' % daemon_name)
     pool = gevent.pool.Group()
-    local_api = DaemonToHubAPI(daemon_id, context)
+    local_api = DaemonToHubAPI(context)
     handler = LocalAPIHandler(sock_file, PickleLocalAPIProtocol, local_api, pool,
                                 session_wrapper = db_session_wrapper)
     handler.loop()
