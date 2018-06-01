@@ -86,14 +86,9 @@ function fill_database_metadata(db_id) {
             if (db_info.owner && db_info.owner != 'null')
                 owner =  db_info.owner;
 
-            var collabs = 'None ';
-            if (db_info.collaborators && db_info.collaborators != 'null')
-                collabs =  db_info.collaborators;
-
             [   {name: "_db_access_",         value: db_info.access_scope},
                 {name: "_db_owner_",          value: owner},
                 {name: "_db_grant_",          value: db_info.grant_level},
-                {name: "_db_collaborators_",  value: collabs}
                 ].forEach( function (elt){
                     if (elt.value)
                         recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
@@ -126,16 +121,16 @@ function fill_database_metadata(db_id) {
 
                     var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\'database\', '+web_interface_current_id+', \''+user+'\');"></span>'});
                     var tr = $('<tr>');
-                    tr.append($('<td>', {html: user}),
-                              td2,
-                              td3);
-
+                    tr.append($('<td>', {html: user}), td2, td3);
                     tbody.append(tr);
                 }
 
                 $('#web_interface_adding_collaborators_select option').remove();
 
                 sakura.common.ws_request('list_all_users', [], {}, function(result) {
+                    for (let user in db_info.grants)
+                        result.splice(result.indexOf(user), 1);
+
                     result.forEach( function(user) {
                         $('#web_interface_adding_collaborators_select').append($('<option>', {text: user}));
                     });
@@ -394,41 +389,40 @@ function showDiv(event, dir, div_id) {
         web_interface_current_id = parseInt(tab[tab.length -1]);
     }
 
+    function change_class(elts, acts, _class) {
+        elts.forEach( function(elt, i) {
+            if (acts[i])
+                elt.addClass(_class);
+            else
+                elt.removeClass(_class);
+        });
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    //DATA
     var li_main_data = $($('#databases_buttons_main')[0].parentElement);
     var li_work_data = $($('#databases_buttons_work')[0].parentElement);
     var li_history_data = $($('#databases_buttons_history')[0].parentElement);
-    ////////////////////////////////////////////////////////////////////////////////
-    //DATA
+
     if (div_id == 'idDatasMainToFullfill') {
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
 
-
         if (dir.indexOf('Main') != -1) {
-            li_main_data.addClass("active");
-            li_work_data.removeClass("active");
-            li_history_data.removeClass("active");
-
+            change_class([li_main_data, li_work_data, li_history_data], [true, false, false], "active");
             fill_database_metadata(web_interface_current_id);
-
             document.getElementById('idDivDatastmpDataMeta').style.display='inline';
         }
         else if (dir.indexOf('Work') != -1) {
-            li_main_data.removeClass("active");
-            li_work_data.addClass("active");
-            li_history_data.removeClass("active");
+            change_class([li_main_data, li_work_data, li_history_data], [false, true, false], "active");
         }
         else if (dir.indexOf('Historic') != -1) {
-            li_main_data.removeClass("active");
-            li_work_data.removeClass("active");
-            li_history_data.addClass("active");
+            change_class([li_main_data, li_work_data, li_history_data], [false, false, true], "active");
         }
     }
     else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
 
         document.getElementById('idDivDatastmpDataMeta').style.display='inline';
-        li_main_data.addClass("active");
-        li_work_data.removeClass("active");
-        li_history_data.removeClass("active");
+        change_class([li_main_data, li_work_data, li_history_data], [true, false, false], "active");
 
         $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
         $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
@@ -439,9 +433,7 @@ function showDiv(event, dir, div_id) {
     else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
 
         document.getElementById('idDivDatastmpDataMain').style.display='inline';
-        li_main_data.removeClass("active");
-        li_work_data.addClass("active");
-        li_history_data.removeClass("active");
+        change_class([li_main_data, li_work_data, li_history_data], [false, true, false], "active");
 
         $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
         $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
