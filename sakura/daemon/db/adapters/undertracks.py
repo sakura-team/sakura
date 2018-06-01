@@ -1,6 +1,7 @@
 import time
 from sakura.common.io import pack
 from sakura.common.tools import override_object
+from sakura.common.access import GRANT_LEVELS, ACCESS_SCOPES
 
 class UTTableOverride:
     def __init__(self, sakura_table_name):
@@ -13,12 +14,11 @@ METADATA_TRANSLATION = dict(
 )
 
 class UTExperimentAsDB:
-    def __init__(self, ds, exp_name, owner, users):
+    def __init__(self, ds, exp_name, grants):
         self.ds = ds
         self.exp_name = exp_name
         self.db_name = 'UT - ' + exp_name
-        self.owner = owner
-        self.users = users
+        self.grants = grants
         self._tables = None
         self.metadata = {}
         self.init_description_attrs()
@@ -38,7 +38,7 @@ class UTExperimentAsDB:
                 field_name = METADATA_TRANSLATION[c.col_name]
                 self.metadata[field_name] = val
             elif c.col_name == 'studyispublic':
-                self.metadata['access_scope'] = 'public' if val == 'on' else 'private'
+                self.metadata['access_scope'] = ACCESS_SCOPES.public if val == 'on' else ACCESS_SCOPES.private
             elif c.col_name == 'studybeginingdate':
                 self.metadata['creation_date'] = int(time.mktime(time.strptime(val, '%d/%m/%Y')))
     @property
@@ -57,16 +57,14 @@ class UTExperimentAsDB:
     def pack(self):
         return pack(dict(
             name = self.db_name,
-            owner = self.owner,
             tables = self.tables.values(),
-            users = self.users,
+            grants = self.grants,
             **self.metadata
         ))
     def overview(self):
         return dict(
             name = self.db_name,
-            owner = self.owner,
-            users = self.users,
+            grants = self.grants,
             **self.metadata
         )
 
@@ -84,7 +82,7 @@ class UTDatastoreOverride:
             login = self.get_login_from_email(email.strip())
             if login is not None:
                 users.append(login)
-        return { user: dict(READ=True, WRITE=False) for user in users }
+        return { user: GRANT_LEVELS.read for user in users }
     def get_login_from_email(self, email):
         if email not in self.known_emails:
             self.known_emails[email] = \
@@ -93,15 +91,17 @@ class UTDatastoreOverride:
     def ut_experiments(self):
         metadata_tb = self.ds.databases['undertracks'].tables['metadata']
         for exp_name, owner_email, viewers in metadata_tb.stream.select_columns(0, 3, 6):
+            grants = self.parse_viewers(viewers)
             owner_login = self.get_login_from_email(owner_email)
-            users = self.parse_viewers(viewers)
-            yield exp_name, owner_login, users
+            if owner_login is not None:
+                grants[owner_login] = GRANT_LEVELS.own
+            yield exp_name, grants
     @property
     def databases(self):
         if self._databases is None:
             self._databases = {}
-            for exp_name, owner, users in self.ut_experiments():
-                db = UTExperimentAsDB(self.ds, exp_name, owner, users)
+            for exp_name, grants in self.ut_experiments():
+                db = UTExperimentAsDB(self.ds, exp_name, grants)
                 self._databases[db.db_name] = db
         return self._databases
 
