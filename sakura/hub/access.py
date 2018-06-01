@@ -18,8 +18,12 @@ def get_user_type(obj, user):
     return GRANT_TO_USER_TYPE[grant]
 
 def get_grant_level_generic(obj):
-    user = get_context().session.user
-    user_type = get_user_type(obj, user)
+    session = get_context().session
+    if session is None:
+        # we are processing a request coming from a daemon,
+        # return max grant
+        return GRANT_LEVELS.own
+    user_type = get_user_type(obj, session.user)
     grant_level = ACCESS_TABLE[user_type, obj.access_scope]
     return grant_level
 

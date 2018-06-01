@@ -1,10 +1,13 @@
 from sakura.hub.context import get_context
+from sakura.common.errors import APIRequestErrorOfflineDaemon
 
 class DaemonMixin:
     APIS = {}
 
     @property
     def api(self):
+        if not self.connected:
+            raise APIRequestErrorOfflineDaemon('Daemon is offline!')
         return DaemonMixin.APIS[self.name]
 
     @api.setter

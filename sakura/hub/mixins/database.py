@@ -1,7 +1,6 @@
 import time
 from enum import Enum
 from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
-from sakura.common.errors import APIObjectDeniedError
 from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
 from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
@@ -18,6 +17,8 @@ class DatabaseMixin(BaseMixin):
         return self.datastore.online and self.datastore.daemon.connected
     @property
     def remote_instance(self):
+        self.assert_grant_level(GRANT_LEVELS.read,
+                    'You are not allowed to read data from this database.')
         return self.datastore.remote_instance.databases[self.name]
     def pack(self):
         result = dict(
@@ -97,11 +98,10 @@ class DatabaseMixin(BaseMixin):
         return cls.create_or_update(datastore, **db)
     @classmethod
     def create_db(cls, datastore, name, creation_date = None, **kwargs):
+        datastore.assert_grant_level(GRANT_LEVELS.write,
+                    'You are not allowed to create a database on this datastore.')
         context = get_context()
         current_user = context.session.user
-        if datastore.get_grant_level() < GRANT_LEVELS.write:
-            raise APIObjectDeniedError('%s is not allowed to create a database on this datastore.' % \
-                    ('An anonymous user' if current_user is None else 'User ' + current_user.login))
         if creation_date is None:
             creation_date = time.time()
         # parse access info from gui
@@ -128,8 +128,8 @@ class DatabaseMixin(BaseMixin):
         # ok, let's check grant on this database object
         return get_grant_level_generic(self)
     def update_grant(self, login, grant_name):
-        if self.get_grant_level() < GRANT_LEVELS.own:
-            raise APIObjectDeniedError('Only owner can change database grants.')
+        self.assert_grant_level(GRANT_LEVELS.own,
+                        'Only owner can change database grants.')
         self.datastore.remote_instance.update_database_grant(
                     self.name, login, GRANT_LEVELS.value(grant_name))
         self.refresh_metadata_from_daemon()

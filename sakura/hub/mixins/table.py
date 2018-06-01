@@ -1,7 +1,15 @@
-import re, time, io, csv, bottle
+import re, time, io, csv
 from sakura.hub.context import get_context
+from sakura.common.access import GRANT_LEVELS
+from sakura.hub.mixins.bases import BaseMixin
 
-class TableMixin:
+class TableMixin(BaseMixin):
+    @property
+    def grants(self):
+        return self.database.grants
+    @property
+    def access_scope(self):
+        return self.database.access_scope
     @property
     def remote_instance(self):
         return self.database.remote_instance.tables[self.name]
@@ -45,18 +53,11 @@ class TableMixin:
                 row_end
         )
     def add_rows(self, data):
+        self.database.assert_grant_level(GRANT_LEVELS.write,
+                    'You are not allowed to write data to this database.')
         return self.remote_instance.add_rows(
                 data
         )
-    def update_attributes(self, **kwargs):
-        if 'primary_key' in kwargs:
-            self.primary_key = kwargs.pop('primary_key')
-        if 'foreign_keys' in kwargs:
-            self.foreign_keys = kwargs.pop('foreign_keys')
-        # update metadata
-        metadata = dict(self.metadata)
-        metadata.update(**kwargs)
-        self.metadata = metadata
     @classmethod
     def create_or_update(cls, database, name, **kwargs):
         table = cls.get(database = database, name = name)
@@ -85,6 +86,8 @@ class TableMixin:
     @classmethod
     def create_table(cls, database, name, columns,
                             creation_date = None, **kwargs):
+        database.assert_grant_level(GRANT_LEVELS.write,
+                        'You are not allowed to create tables on this database.')
         context = get_context()
         if creation_date is None:
             creation_date = time.time()
@@ -104,14 +107,15 @@ class TableMixin:
         new_table.create_on_datastore()
         # return table_id
         return table_id
-    def stream_csv(self, transfer):
+    def stream_csv(self, transfer, file_name_record_cb):
+        self.database.assert_grant_level(GRANT_LEVELS.read,
+                    'You are not allowed to read data from this database.')
         rows_estimate = self.remote_instance.get_count_estimate()
         rows_transfered = 0
         bytes_transfered = 0
         csv_file_name = re.sub(r'[^a-z0-9]', '-',
                                 self.name.lower()) + '.csv'
-        bottle.response.set_header('content-disposition',
-                        'attachment; filename="%s"' % csv_file_name)
+        file_name_record_cb(csv_file_name)
         # header line
         yield ','.join(c.col_name for c in self.columns) + '\n'
         # data rows

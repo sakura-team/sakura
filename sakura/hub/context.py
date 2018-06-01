@@ -36,6 +36,10 @@ class HubContext(object):
         HubContext._instance = self
     @property
     def session(self):
+        session_id = getattr(greenlet_env, 'session_id', None)
+        if session_id is None:
+            # we are processing a request coming from a daemon
+            return None
         return self.sessions[greenlet_env.session_id]
     def new_session(self):
         return self.sessions.new_session(self)
@@ -70,7 +74,7 @@ class HubContext(object):
     def generate_session_secret(self):
         return self.session_secrets.generate_secret(self.session)
     def start_transfer(self):
-        transfer = Transfer()
+        transfer = Transfer(self)
         self.transfers[transfer.transfer_id] = transfer
         return transfer.transfer_id
     def get_transfer_status(self, transfer_id):

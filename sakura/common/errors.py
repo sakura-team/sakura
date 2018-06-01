@@ -4,5 +4,11 @@ class APIRequestError(ValueError):
 class APIObjectDeniedError(APIRequestError):
     pass
 
+class APIRequestErrorOfflineDaemon(APIRequestError):
+    pass
+
+class APIRequestErrorOfflineDatastore(APIRequestError):
+    pass
+
 class IOHoldException(Exception):
     pass

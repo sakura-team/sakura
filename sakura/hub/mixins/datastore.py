@@ -1,4 +1,5 @@
-from sakura.common.access import ACCESS_SCOPES
+from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
+from sakura.common.errors import APIRequestErrorOfflineDatastore
 from sakura.hub.exceptions import DaemonDataError, \
                               DaemonDataExceptionIgnoreObject
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
@@ -35,6 +36,10 @@ class DatastoreMixin(BaseMixin):
 
     @property
     def remote_instance(self):
+        self.assert_grant_level(GRANT_LEVELS.read,
+                    'You are not allowed to explore this datastore.')
+        if not self.online:
+            raise APIRequestErrorOfflineDatastore('Datastore is offline!')
         return self.daemon.api.datastores[(self.host, self.driver_label)]
     def list_expected_columns_tags(self):
         # list tags already seen on this datastore
