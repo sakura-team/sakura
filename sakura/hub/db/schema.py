@@ -46,7 +46,6 @@ def define_schema(db):
 
     class Daemon(db.Entity, DaemonMixin):
         name = Required(str, unique=True)
-        connected = Required(bool, default = False)
         op_classes = Set('OpClass')
         datastores = Set('Datastore')
 
@@ -82,7 +81,6 @@ def define_schema(db):
 
     class Datastore(db.Entity, DatastoreMixin):
         daemon = Required(Daemon, reverse='datastores')
-        online = Required(bool, default = False)
         host = Required(str)
         driver_label = Required(str)
         access_scope = Required(int, default = ACCESS_SCOPES.private)

@@ -11,6 +11,17 @@ class DaemonMixin:
     def api(self, value):
         DaemonMixin.APIS[self.name] = value
 
+    # Property 'connected' is not stored in database.
+    # It should be 'volatile'.
+    # Each time the hub starts it considers all
+    # daemons are disconnected (which is obviously true).
+    @property
+    def connected(self):
+        return self.name in DaemonMixin.APIS
+
+    def disconnect(self):
+        del DaemonMixin.APIS[self.name]
+
     def pack(self):
         return dict(
             name = self.name,
@@ -33,7 +44,6 @@ class DaemonMixin:
         context = get_context()
         # create or update existing daemon of db
         daemon = cls.create_or_update(name, **kwargs)
-        daemon.connected = True
         # we will need an up-to-date daemon id
         context.db.commit()
         # save api

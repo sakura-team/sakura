@@ -46,7 +46,7 @@ class HubContext(object):
         daemon = self.daemons.restore_daemon(api = api, **daemon_info)
         return daemon.id
     def on_daemon_disconnect(self, daemon_id):
-        self.daemons[daemon_id].connected = False
+        self.daemons[daemon_id].disconnect()
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         src_op = self.op_instances[src_op_id]
         dst_op = self.op_instances[dst_op_id]

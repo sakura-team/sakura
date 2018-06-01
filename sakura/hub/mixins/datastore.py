@@ -15,6 +15,24 @@ Daemon configuration says admin of %(driver_label)s datastore at %(host)s is non
 This user must be created in Sakura first."""
 
 class DatastoreMixin(BaseMixin):
+    # Property online is not stored in database.
+    # It should be 'volatile'.
+    # Each time the hub starts, it should consider all datastores
+    # are offline, until daemons tell the contrary.
+    ONLINE_DATASTORES = set()
+
+    @property
+    def online(self):
+        return self.id in DatastoreMixin.ONLINE_DATASTORES
+
+    @online.setter
+    def online(self, value):
+        if value:   # set online
+            DatastoreMixin.ONLINE_DATASTORES.add(self.id)
+        else:       # set offline
+            if self.id in DatastoreMixin.ONLINE_DATASTORES:
+                DatastoreMixin.ONLINE_DATASTORES.remove(self.id)
+
     @property
     def remote_instance(self):
         return self.daemon.api.datastores[(self.host, self.driver_label)]
@@ -81,6 +99,7 @@ class DatastoreMixin(BaseMixin):
             # new datastore attached to daemon
             datastore = cls(daemon = daemon,
                         host = host, driver_label = driver_label)
+            get_context().db.commit() # get datastore.id
         datastore.update_attributes(**kwargs)
         return datastore
     @classmethod
