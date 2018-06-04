@@ -1,5 +1,6 @@
 from sakura.daemon.db.column import DBColumn
 from sakura.daemon.processing.stream import SQLTableStream
+from sakura.daemon.csv import stream_csv
 
 class DBTable:
     def __init__(self, db, table_name):
@@ -37,3 +38,8 @@ class DBTable:
         self.count_estimate = count_estimate
     def get_count_estimate(self):
         return self.count_estimate
+    def stream_csv(self, gzip_compression=False):
+        header_labels = tuple(col.col_name for col in self.columns)
+        stream = self.stream.chunks()
+        yield from stream_csv(
+                    header_labels, stream, gzip_compression)
