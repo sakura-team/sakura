@@ -4,6 +4,7 @@ from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.cache import Cache
 from sakura.daemon.processing.column import Column
+from sakura.daemon.csv import stream_csv
 from time import time
 from itertools import count
 
@@ -34,6 +35,10 @@ class OutputStreamBase(Registry):
         return pack(dict(label = self.label,
                     columns = self.columns,
                     length = self.length))
+    def get_label(self):
+        return self.label
+    def get_length(self):
+        return self.length
     def get_columns_info(self):
         return tuple((col._label, np.dtype(col._type), col._tags) for col in self.columns)
     def get_range(self, row_start, row_end, columns=None, filters=()):
@@ -87,3 +92,8 @@ class OutputStreamBase(Registry):
     def filter_column(self, col_index, comp_op, other):
         # compute a substream
         return self.__filter__(col_index, comp_op, other)
+    def stream_csv(self, gzip_compression=False):
+        header_labels = tuple(col._label for col in self.columns)
+        stream = self.chunks()
+        yield from stream_csv(
+                    header_labels, stream, gzip_compression)

@@ -4,7 +4,7 @@ from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
 from sakura.hub.web.cache import webcache_serve
-from sakura.hub.web.csv import export_table_as_csv
+from sakura.hub.web.csv import export_table_as_csv, export_stream_as_csv
 from sakura.hub.db import db_session_wrapper
 from sakura.common.tools import monitored
 from pathlib import Path
@@ -46,6 +46,26 @@ def web_greenlet(context, webapp_path):
             resp = context.serve_operator_file(op_id, filepath)
         print(' ->', resp.status_line)
         return resp
+
+    @app.route('/streams/<op_id:int>/input/<in_id:int>/export.csv')
+    def exp_in_stream_as_csv(op_id, in_id):
+        with db_session_wrapper():
+            yield from export_stream_as_csv(context, op_id, 0, in_id)
+
+    @app.route('/streams/<op_id:int>/input/<in_id:int>/export.csv.gz')
+    def exp_in_stream_as_csv_gz(op_id, in_id):
+        with db_session_wrapper():
+            yield from export_stream_as_csv(context, op_id, 0, in_id, True)
+
+    @app.route('/streams/<op_id:int>/output/<out_id:int>/export.csv')
+    def exp_out_stream_as_csv(op_id, out_id):
+        with db_session_wrapper():
+            yield from export_stream_as_csv(context, op_id, 1, out_id)
+
+    @app.route('/streams/<op_id:int>/output/<out_id:int>/export.csv.gz')
+    def exp_out_stream_as_csv_gz(op_id, out_id):
+        with db_session_wrapper():
+            yield from export_stream_as_csv(context, op_id, 1, out_id, True)
 
     @app.route('/tables/<table_id:int>/export.csv')
     def exp_table_as_csv(table_id):
