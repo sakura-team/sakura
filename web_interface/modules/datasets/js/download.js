@@ -63,7 +63,7 @@ function datasets_download_start_transfert(dataset_id, gzip) {
                                       });
 
 
-                pb_txt = $('<div></div>', {'text': '0 rows; 0 bytes'});
+                pb_txt = $('<div></div>', {'text': '0 rows/ 0 bytes'});
                 pb_txt.css('position', 'absolute');
                 pb_txt.css('text-align', 'center');
                 pb_txt.css('width', '100%');
@@ -105,7 +105,7 @@ function datasets_download_update_feedback(dataset, progress_bar, progress_bar_t
                 var o = datasets_Giga_Mega_Kilo(status.bytes, 'bytes');
                 var r = datasets_Giga_Mega_Kilo(status.rows, 'rows');
 
-                progress_bar_txt.html(r.val+' '+r.txt+'; '+o.val+' '+o.txt);
+                progress_bar_txt.html(r.val+' '+r.txt+'/ '+o.val+' '+o.txt);
             }
 
             setTimeout(function () {

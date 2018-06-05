@@ -54,7 +54,7 @@ function buildListStub(idDiv,result,elt) {
                     new_row.append('<td>'+d+'</td>');
                 }
                 else {
-                    new_row.append('<td>'+row[list_cols_hub[index]]+'</td>');
+                    new_row.append('<td>'+replace_undefined(row[list_cols_hub[index]])+'</td>');
                 }
             }
         });
@@ -83,6 +83,11 @@ function dataflows_sort(a, b) {
     return a.name > b.name ? 1 : -1;
 }
 
+function replace_undefined(val) {
+    if (val == undefined)
+        return '__';
+    return val;
+}
 
 function listRequestStub(idDiv, n, elt, bd) {
 
@@ -97,7 +102,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             databases.forEach( function(db) {
                 result_info = {'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
                                        'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
-                                       'tags': db.tags };
+                                       'tags': db.tags, 'modif': db.modification_date };
                 if (db.online) {
                     result_info['owner'] = db.owner;
                 }
