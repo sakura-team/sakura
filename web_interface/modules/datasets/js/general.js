@@ -42,12 +42,13 @@ function datasets_alert(header_str, body_str) {
 }
 
 
-function datasets_asking(header_str, body_str, func_yes, func_no) {
+function datasets_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     var h = $('#datasets_asking_header');
     var b = $('#datasets_asking_body');
     var b_yes = $('#datasets_asking_button_yes');
     var b_no = $('#datasets_asking_button_no');
 
+    h.css('background-color', rgba_color);
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     b_yes.attr('onclick', func_yes);
@@ -216,7 +217,11 @@ function this_col_is_a_date(col) {
 
 
 function datasets_delete(dataset_id) {
-    var yes = datasets_asking('Delete a Dataset', 'Are you sure you want to definitely delete this dataset ??', 'datasets_delete_yes('+dataset_id+')', '');
+    datasets_asking('Delete a Dataset',
+                    'Are you sure you want to definitely delete this dataset ??',
+                    'rgba(217,83,79)',
+                    'datasets_delete_yes('+dataset_id+')',
+                    '');
 }
 
 function datasets_delete_yes(ds_id) {
