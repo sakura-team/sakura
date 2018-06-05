@@ -97,46 +97,7 @@ function fill_database_metadata(db_id) {
                       });
 
             if (db_info.grant_level == 'own') {
-                var tbody = $('#web_interface_database_collaborators_table_body');
-                tbody.empty();
-
-                for (let user in db_info.grants) {
-                    grant = db_info.grants[user];
-                    if (grant == 'own')
-                        continue;
-                    var td2 = $('<td>')
-                    var sel = $('<select>', { class: "selectpicker"});
-                    sel.change( function() {
-                        change_collaborator_access('database', web_interface_current_id, user, $(this));
-                    });
-                    var op1 = $('<option>', { text: "Read"});
-                    var op2 = $('<option>', { text: "Write"});
-                    if (grant == 'write')
-                        op2.attr("selected","selected");
-                    if (db_info.access_scope != 'public')
-                        sel.append(op1);
-                    sel.append(op2);
-                    td2.append(sel);
-                    sel.selectpicker('refresh');
-
-                    var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\'database\', '+web_interface_current_id+', \''+user+'\');"></span>'});
-                    var tr = $('<tr>');
-                    tr.append($('<td>', {html: user}), td2, td3);
-                    tbody.append(tr);
-                }
-
-                $('#web_interface_adding_collaborators_select option').remove();
-
-                sakura.common.ws_request('list_all_users', [], {}, function(result) {
-                    for (let user in db_info.grants)
-                        result.splice(result.indexOf(user), 1);
-
-                    result.forEach( function(user) {
-                        $('#web_interface_adding_collaborators_select').append($('<option>', {text: user}));
-                    });
-                    $('#web_interface_adding_collaborators_select').selectpicker('refresh');
-                });
-
+                fill_collaborators_table_body('database', db_info);
             }
         });
 
@@ -537,10 +498,52 @@ function showDiv(event, dir, div_id) {
 
 
 /* Collaborators Management*/
+function fill_collaborators_table_body(obj_type, db_info) {
+    var tbody = $('#web_interface_'+obj_type+'_collaborators_table_body');
+    tbody.empty();
+
+    for (let user in db_info.grants) {
+        grant = db_info.grants[user];
+        if (grant == 'own')
+            continue;
+        var td2 = $('<td>')
+        var sel = $('<select>', { class: "selectpicker"});
+        sel.change( function() {
+            change_collaborator_access(obj_type, web_interface_current_id, user, $(this));
+        });
+        var op1 = $('<option>', { text: "Read"});
+        var op2 = $('<option>', { text: "Write"});
+        if (grant == 'write')
+            op2.attr("selected","selected");
+        if (db_info.access_scope != 'public')
+            sel.append(op1);
+        sel.append(op2);
+        td2.append(sel);
+        sel.selectpicker('refresh');
+
+        var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\'database\', '+web_interface_current_id+', \''+user+'\');"></span>'});
+        var tr = $('<tr>');
+        tr.append($('<td>', {html: user}), td2, td3);
+        tbody.append(tr);
+    }
+
+    $('#web_interface_adding_collaborators_select option').remove();
+
+    sakura.common.ws_request('list_all_users', [], {}, function(result) {
+        for (let user in db_info.grants)
+            result.splice(result.indexOf(user), 1);
+
+        result.forEach( function(user) {
+            $('#web_interface_adding_collaborators_select').append($('<option>', {text: user}));
+        });
+        $('#web_interface_adding_collaborators_select').selectpicker('refresh');
+    });
+
+}
+
 function change_collaborator_access(object_type, id, login, sel) {
     if (object_type == 'database') {
         sakura.common.ws_request('update_database_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {
-            $('#databases_buttons_main').click();
         });
     }
     else
@@ -550,7 +553,9 @@ function change_collaborator_access(object_type, id, login, sel) {
 function delete_collaborator(object_type, id, login) {
   if (object_type == 'database') {
       sakura.common.ws_request('update_database_grant', [id, login, 'hide'], {}, function(result) {
-          $('#databases_buttons_main').click();
+          sakura.common.ws_request('get_database_info', [id], {}, function(db_info) {
+              fill_collaborators_table_body(object_type, db_info);
+          });
       });
   }
   else
@@ -571,8 +576,9 @@ function adding_collaborators() {
             var index = i+1;
             sakura.common.ws_request('update_database_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
                 if (index == nbs) {
-                    $('#web_interface_adding_collaborators_select option:selected').remove();
-                    $('#databases_buttons_main').click();
+                    sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(db_info) {
+                        fill_collaborators_table_body('database', db_info);
+                    });
                 }
             });
         }
