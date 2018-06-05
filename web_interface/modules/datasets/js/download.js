@@ -7,8 +7,14 @@ var current_transfert_id  = null;
 
 function datasets_download(dataset_id) {
 
+    var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+
+    var txt = 'The size of the file is unkown for now.<br> However, do you want a compressed file (gzip) ?';
+    if (dataset.count_estimate)
+        txt = 'This dataset has ~'+dataset.count_estimate+' rows.<br> Do you want a compressed file (gzip) ? ';
+
     datasets_asking('File Format',
-                    'Do you want a compressed file (gzip) ?',
+                    txt,
                     'rgba(91,192,222)',
                     'datasets_download_start_transfert('+dataset_id+', true);',
                     'datasets_download_start_transfert('+dataset_id+',false);');
