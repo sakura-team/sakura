@@ -42,6 +42,7 @@ function datasets_download_start_transfert(dataset_id, gzip) {
         //Get first transfert status
         sakura.common.ws_request('get_transfer_status', [current_transfert_id], {}, function(status) {
             var pb = null;
+            var pb_txt = null;
             $('#datasets_progress_bar_modal_header').html("<table width=\"100%\"><tr><td><h3>Downloading ...</h3><td align=\"right\"><span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span></table>");
 
             if (status.percent == -1)
@@ -61,11 +62,19 @@ function datasets_download_start_transfert(dataset_id, gzip) {
                                         'aria-valuemax': "100"
                                       });
 
+
+                pb_txt = $('<div></div>', {'text': '0 rows; 0 bytes'});
+                pb_txt.css('position', 'absolute');
+                pb_txt.css('text-align', 'center');
+                pb_txt.css('width', '100%');
+
                 pb.appendTo(pbdiv);
+                pb_txt.appendTo(pbdiv)
                 pbdiv.appendTo($('#datasets_progress_bar_modal_body'));
             }
+
             $('#datasets_progress_bar_modal').modal();
-            datasets_download_update_feedback(dataset, pb, new Date());
+            datasets_download_update_feedback(dataset, pb, pb_txt, new Date());
         });
 
         element.click();
@@ -74,11 +83,12 @@ function datasets_download_start_transfert(dataset_id, gzip) {
     });
 }
 
-function datasets_download_update_feedback(dataset, progress_bar, init_date) {
+function datasets_download_update_feedback(dataset, progress_bar, progress_bar_txt, init_date) {
+
     sakura.common.ws_request('get_transfer_status', [current_transfert_id], {}, function(status) {
         if (status.status == 'waiting' && !stop_downloading) {
           setTimeout(function () {
-              datasets_download_update_feedback(dataset, progress_bar, init_date);
+              datasets_download_update_feedback(dataset, progress_bar, progress_bar_txt, init_date);
           }, timeout);
         }
         else if (status.status != 'done' && !stop_downloading) {
@@ -92,10 +102,14 @@ function datasets_download_update_feedback(dataset, progress_bar, init_date) {
             else {
                 progress_bar.css("width", ""+status.percent+"%");
                 progress_bar.css("aria-valuenow", ""+status.percent);
+                var o = datasets_Giga_Mega_Kilo(status.bytes, 'bytes');
+                var r = datasets_Giga_Mega_Kilo(status.rows, 'rows');
+
+                progress_bar_txt.html(r.val+' '+r.txt+'; '+o.val+' '+o.txt);
             }
 
             setTimeout(function () {
-                datasets_download_update_feedback(dataset, progress_bar, init_date);
+                datasets_download_update_feedback(dataset, progress_bar, progress_bar_txt, init_date);
             }, timeout);
         }
         else {
@@ -103,6 +117,25 @@ function datasets_download_update_feedback(dataset, progress_bar, init_date) {
         }
     });
 
+}
+
+function datasets_Giga_Mega_Kilo(val, txt) {
+  r = val;
+  r_txt = txt;
+
+  if (r >= 1000000000) {
+      r = parseInt(r/1000000000);
+      r_txt = 'G'+txt;
+  }
+  else if (r >= 1000000) {
+    r = parseInt(r/1000000);
+    r_txt = 'M'+txt;
+  }
+  else if (r >= 1000) {
+    r = parseInt(r/1000);
+    r_txt = 'K'+txt;
+  }
+    return {val: r, txt: r_txt};
 }
 
 function datasets_stop_downloading() {
