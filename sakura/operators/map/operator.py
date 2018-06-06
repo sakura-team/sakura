@@ -13,10 +13,10 @@ class MapOperator(Operator):
         # inputs
         self.input_stream = self.register_input('GPS data')
         # parameters
-        self.lng_column_param = self.register_parameter('input longitude',
-                TagBasedColumnSelection(self.input_stream, 'longitude'))
-        self.lat_column_param = self.register_parameter('input latitude',
-                TagBasedColumnSelection(self.input_stream, 'latitude'))
+        self.lng_column_param = self.register_parameter(
+                TagBasedColumnSelection('input longitude', self.input_stream, 'longitude'))
+        self.lat_column_param = self.register_parameter(
+                TagBasedColumnSelection('input latitude', self.input_stream, 'latitude'))
         # additional tabs
         self.register_tab('Map', 'map.html')
         # custom attributes

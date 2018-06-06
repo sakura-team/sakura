@@ -15,10 +15,10 @@ class PlotOperator(Operator):
         self.input = self.register_input('Table with X and Y column')
 
         # parameters
-        self.input_column_param_x = self.register_parameter('X (abscissa)',
-                NumericColumnSelection(self.input))
-        self.input_column_param_y = self.register_parameter('Y (ordinate)',
-                NumericColumnSelection(self.input))
+        self.input_column_param_x = self.register_parameter(
+                NumericColumnSelection('X (abscissa)', self.input))
+        self.input_column_param_y = self.register_parameter(
+                NumericColumnSelection('Y (ordinate)', self.input))
 
         # additional tabs
         self.register_tab('Plot', 'plot.html')

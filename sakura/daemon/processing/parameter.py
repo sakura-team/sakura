@@ -107,28 +107,24 @@ class ColumnSelectionParameter(ComboParameter):
     def get_value_serializable(self):
         return self.raw_value
 
-def TagBasedColumnSelection(stream, tag):
-    class CustomParameterClass(ColumnSelectionParameter):
-        def __init__(self, label):
-            def condition(col_label, col_type, col_tags):
-                return tag in col_tags
-            ColumnSelectionParameter.__init__(self, label, stream, condition)
-    return CustomParameterClass
+class TagBasedColumnSelection(ColumnSelectionParameter):
+    def __init__(self, label, stream, tag):
+        def condition(col_label, col_type, col_tags):
+            return tag in col_tags
+        ColumnSelectionParameter.__init__(self, label, stream, condition)
 
-def TypeBasedColumnSelection(stream, cls):
-    class CustomParameterClass(ColumnSelectionParameter):
-        def __init__(self, label):
-            def condition(col_label, col_type, col_tags):
-                return np.issubdtype(col_type, cls)
-            ColumnSelectionParameter.__init__(self, label, stream, condition)
-    return CustomParameterClass
+class TypeBasedColumnSelection(ColumnSelectionParameter):
+    def __init__(self, label, stream, cls):
+        def condition(col_label, col_type, col_tags):
+            return np.issubdtype(col_type, cls)
+        ColumnSelectionParameter.__init__(self, label, stream, condition)
+    @staticmethod
+    def adapt_to_cls(cls):
+        class AdaptedTypeBasedColumnSelection(TypeBasedColumnSelection):
+            def __init__(self, label, stream):
+                super().__init__(label, stream, cls)
+        return AdaptedTypeBasedColumnSelection
 
-def NumericColumnSelection(stream):
-    return TypeBasedColumnSelection(stream, np.number)
-
-def StrColumnSelection(stream):
-    return TypeBasedColumnSelection(stream, np.str)
-
-def FloatColumnSelection(stream):
-    return TypeBasedColumnSelection(stream, np.float)
-
+NumericColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.number)
+StrColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.str)
+FloatColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.float)

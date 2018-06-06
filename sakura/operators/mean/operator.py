@@ -18,8 +18,8 @@ class MeanOperator(Operator):
         output.length = 1
         
         # parameters
-        self.input_column_param = self.register_parameter('Input column',
-                NumericColumnSelection(self.input))
+        self.input_column_param = self.register_parameter(
+                NumericColumnSelection('Input column', self.input))
                 
     def compute(self):
         column_idx = self.input_column_param.value

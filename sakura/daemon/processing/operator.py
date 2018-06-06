@@ -3,32 +3,49 @@ from pathlib import Path
 from sakura.common.io import pack
 from sakura.daemon.processing.stream import InputStream
 from sakura.daemon.processing.tab import Tab
-from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.parameter import ParameterException
 from gevent.lock import Semaphore
 
-class Operator(Registry):
+class Operator:
     IGNORED_FILENAMES = ("__pycache__", ".DS_Store")
     def __init__(self, op_id):
         self.op_id = op_id
-        self.input_streams = []
-        self.output_streams = []
-        self.internal_streams = []
-        self.parameters = []
-        self.tabs = []
         operator_py_path = Path(inspect.getabsfile(self.__class__))
         self.root_dir = operator_py_path.parent
         self.event_lock = Semaphore()
+    # overridable dynamic properties
+    @property
+    def input_streams(self):
+        return getattr(self, '_input_streams', ())
+    @property
+    def output_streams(self):
+        return getattr(self, '_output_streams', ())
+    @property
+    def internal_streams(self):
+        return getattr(self, '_internal_streams', ())
+    @property
+    def parameters(self):
+        return getattr(self, '_parameters', ())
+    @property
+    def tabs(self):
+        return getattr(self, '_tabs', ())
+    # static properties
     def register_input(self, input_stream_label):
-        return self.register(self.input_streams, InputStream, input_stream_label)
+        return self.register('_input_streams', InputStream(input_stream_label))
     def register_output(self, output):
-        return self.register_instance(self.output_streams, output)
+        return self.register('_output_streams', output)
     def register_internal_stream(self, internal_stream):
-        return self.register_instance(self.internal_streams, internal_stream)
-    def register_parameter(self, param_label, cls):
-        return self.register(self.parameters, cls, param_label)
+        return self.register('_internal_streams', internal_stream)
+    def register_parameter(self, param):
+        return self.register('_parameters', param)
     def register_tab(self, tab_label, html_path):
-        return self.register(self.tabs, Tab, tab_label, html_path)
+        return self.register('_tabs', Tab(tab_label, html_path))
+    # other functions
+    def register(self, container_name, obj):
+        container = getattr(self, container_name, [])
+        container.append(obj)
+        setattr(self, container_name, container)
+        return obj
     def is_ready(self):
         for stream in self.input_streams:
             if not stream.connected():
