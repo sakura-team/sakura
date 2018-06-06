@@ -108,7 +108,8 @@ class DatastoreMixin(BaseMixin):
         datastore.update_attributes(**kwargs)
         return datastore
     @classmethod
-    def restore_datastore(cls, daemon, host, driver_label, grants, databases = None, **ds):
+    def restore_datastore(cls, daemon, host, driver_label,
+                            grants = None, databases = None, **ds):
         datastore = cls.create_or_update(daemon, host, driver_label, **ds)
         # if online, restore grants and related databases
         if datastore.online:
