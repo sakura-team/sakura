@@ -2,7 +2,7 @@ class OpParamMixin:
     @property
     def remote_param(self):
         return self.op.remote_instance.parameters[self.param_id]
-    def udpate_on_daemon(self):
+    def update_on_daemon(self):
         # if the operator has been modified, it may actually
         # have less parameters than before.
         num_params = self.op.remote_instance.get_num_parameters()
