@@ -127,9 +127,3 @@ class Operator(Registry):
         # (easier for the operator developer)
         with self.event_lock:
             return self.handle_event(event)
-
-class InternalOperator(Operator):
-    def __init__(self):
-        # internal operators do not need to record an operator id,
-        # let's call the base constructor with 0
-        super().__init__(0)
