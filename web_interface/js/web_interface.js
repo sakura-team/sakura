@@ -2,7 +2,8 @@
 
 ////////////GLOBALS
 var web_interface_current_id = -1;  //database or dataflow id
-var web_interface_current_db_info = null;
+var web_interface_current_obj_info = null;
+var web_interface_current_object_type = '';
 var simplemde  = null;           //large description textarea
 
 ////////////FUNCTIONS
@@ -26,94 +27,137 @@ function recursiveReplace(node, init_text, new_text) {
     }
 }
 
+function fill_work() {
+    var req = 'get_database_info';
 
-function fill_database_metadata(db_id) {
-    sakura.common.ws_request('get_database_info', [db_id], {}, function(db_info) {
+    if (web_interface_current_object_type == 'dataflows')
+        req = 'get_dataflow_info';
 
-        web_interface_current_db_info = db_info;
 
-        $('#web_interface_database_metadata1').empty();
-        $('#web_interface_database_metadata1').load('divs/templates/metadata1.html', function() {
+    sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
+
+        web_interface_current_obj_info = info;
+
+        $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
+        if (info.short_desc)
+            $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
+        else
+            $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+    });
+}
+
+
+function fill_metadata() {
+    var req = 'get_database_info';
+
+    if (web_interface_current_object_type == 'dataflows')
+        req = 'get_dataflow_info';
+
+
+    sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
+
+        web_interface_current_obj_info = info;
+        console.log(info);
+
+        $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
+        $('#web_interface_'+web_interface_current_object_type+'_metadata1').load('divs/templates/metadata_'+web_interface_current_object_type+'.html', function() {
 
             //Name
-            $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-
+            $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
             //Description
-            if (db_info.short_desc)
-                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
+            if (info.short_desc)
+                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
             else
-                $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-
-            //MetaData
-            //Datastore Host
-            sakura.common.ws_request('list_datastores', [], {}, function(lds) {
-                lds.forEach( function(ds) {
-                    if (ds.datastore_id == db_info.datastore_id)
-                    recursiveReplace($('#idDivDatastmpDataMeta')[0], "_db_datastore_", ds.host);
-                });
-            });
+                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
 
             //Owner
-            var owner = '..';
-            if (db_info.owner && db_info.owner != 'null')
-                owner =  db_info.owner;
+            var owner = '_';
+            if (info.owner && info.owner != 'null')
+                owner =  info.owner;
 
             //Creation date
-            var date = "..";
-            if (db_info.creation_date)
-                date = moment.unix(db_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
+            var date = "__";
+            if (info.creation_date)
+                date = moment.unix(info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
 
-            [   {name: "_db_date_", value: date},
-                {name: "_db_owner_", value: owner},
-                {name: "_db_grant_", value: db_info.grant_level},
-                {name: "_db_agent_type_", value: db_info.agent_type},
-                {name: "_db_licence_", value: db_info.licence},
-                {name: "_db_topic_", value: db_info.topic},
-                {name: "_db_data_type_", value: db_info.data_type}
-                ].forEach( function (elt){
-                    if (elt.value)
-                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
-                    else
-                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
-                      });
+            //All now
+            if (web_interface_current_object_type == 'datas') {
+
+                sakura.common.ws_request('list_datastores', [], {}, function(lds) {
+                    var dt_store = '__';
+                    lds.forEach( function(ds) {
+                        if (ds.datastore_id == info.datastore_id)
+                          dt_store = ds.host+'';
+                    });
+
+                    [   {name: "_db_date_", value: date},
+                        {name: "_db_datastore_", value: dt_store},
+                        {name: "_db_agent_type_", value: info.agent_type},
+                        {name: "_db_licence_", value: info.licence},
+                        {name: "_db_topic_", value: info.topic},
+                        {name: "_db_data_type_", value: info.data_type}
+                        ].forEach( function (elt){
+                        if (elt.value != undefined)
+                            recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
+                        else
+                            recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '__');
+                        });
+                });
+            }
+
+            else if (web_interface_current_object_type == 'dataflows') {
+                [     {name: "_db_date_", value: date},
+                      {name: "_db_licence_", value: info.licence},
+                      {name: "_db_topic_", value: info.topic},
+                      ].forEach( function (elt) {
+                          console.log(elt);
+                          if (elt.value != undefined && elt.value)
+                              recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
+                          else
+                              recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '__');
+                          });
+            }
         });
 
-        $('#web_interface_database_metadata2').empty();
-        $('#web_interface_database_metadata2').load('divs/templates/metadata2.html', function() {
+        $('#web_interface_'+web_interface_current_object_type+'_metadata2').empty();
+        $('#web_interface_'+web_interface_current_object_type+'_metadata2').load('divs/templates/metadata_access.html', function() {
 
             //Owner
             var owner = '..';
-            if (db_info.owner && db_info.owner != 'null')
-                owner =  db_info.owner;
+            if (info.owner && info.owner != 'null')
+                owner =  info.owner;
 
-            [   {name: "_db_access_",         value: db_info.access_scope},
+            [   {name: "_db_access_",         value: info.access_scope},
                 {name: "_db_owner_",          value: owner},
-                {name: "_db_grant_",          value: db_info.grant_level},
+                {name: "_db_grant_",          value: info.grant_level},
                 ].forEach( function (elt){
                     if (elt.value)
-                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, elt.value);
+                        recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
                     else
-                        recursiveReplace($('#idDivDatastmpDataMeta')[0], elt.name, '..');
+                        recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '..');
                       });
 
-            if (db_info.grant_level == 'own') {
-                fill_collaborators_table_body('database', db_info);
+            if (info.grant_level == 'own') {
+                fill_collaborators_table_body(info);
             }
         });
 
 
         //Now filling the markdownarea field
         var l_desc = '<span style="color:grey">*No description !';
-        if (db_info.large_desc)
-            l_desc = db_info.large_desc;
+        if (info.large_desc)
+            l_desc = info.large_desc;
         else {
-            if (l_desc, db_info.grant_level == 'own' || db_info.grant_level == 'write')
+            if (l_desc, info.grant_level == 'own' || info.grant_level == 'write')
                 l_desc += ' Edit one by clicking on the eye';
             l_desc += '*</span>';
         }
 
         //Large description can only been modified by writers
-        web_interface_create_large_description_area('database', 'web_interface_database_markdownarea', l_desc, db_info.grant_level == 'own' || db_info.grant_level == 'write');
+        web_interface_create_large_description_area(web_interface_current_object_type,
+                                                    'web_interface_'+web_interface_current_object_type+'_markdownarea',
+                                                    l_desc,
+                                                    info.grant_level == 'own' || info.grant_level == 'write');
     });
 }
 
@@ -221,35 +265,6 @@ function web_interface_save_large_description(data_type, id) {
 
 function showDiv(event, dir, div_id) {
 
-    //todo : déplacer les event.preventDefault() ici ?
-    //save mode ?
-
-    //Commented for know, just for clarifying the code and avoiding bag behaviors
-    /*
-    if (document.getElementById("idEditModeWidget").innerText.match("Save")) {
-        res=confirm("Leave edit mode?");
-        if (res) {
-            document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
-            plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
-
-            for(i=0;i<plusFieldButtons.length;i++) {
-                plusFieldButtons[i].style.display='none';
-            }
-
-            sav=confirm("Save modification (or abort)?");
-            if (sav) {
-                //alert("Save");
-            }
-            else {
-                alert("Abort  (not yet impemented)");
-            }
-        }
-        else {
-            event.preventDefault();
-            return;
-        }
-    }*/
-
     //set url
     if (event instanceof PopStateEvent) {
         // rien dans l'history
@@ -294,17 +309,18 @@ function showDiv(event, dir, div_id) {
         mainDivs[i].style.display='none';
     }
 
-    var idDir = "idDiv";
-    dirs.forEach(function (tmpLocDir) {
-        if (isUrlWithId(tmpLocDir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
-            idDir += tmpLocDir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");
+    var idDir = "web_interface";
+    dirs.forEach(function (dir) {
+        if (isUrlWithId(dir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
+            idDir += '_tmp';//dir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");
         }
         else {
-            idDir += tmpLocDir;
+            idDir += "_"+dir;
         }
     });
-
-
+    idDir = idDir.toLowerCase();
+    if (dirs.length == 1)
+        idDir += "_div";
 
     if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
@@ -312,7 +328,6 @@ function showDiv(event, dir, div_id) {
     else {
         document.getElementById("idEditModeWidget").style.display='none';
     }
-
     document.getElementById(idDir).style.display='inline';
 
 
@@ -360,115 +375,65 @@ function showDiv(event, dir, div_id) {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    //DATA
-    var li_main_data = $($('#databases_buttons_main')[0].parentElement);
-    var li_work_data = $($('#databases_buttons_work')[0].parentElement);
-    var li_history_data = $($('#databases_buttons_history')[0].parentElement);
+    var obj_type = '';
 
-    if (div_id == 'idDatasMainToFullfill') {
-        document.getElementById('idDivDatastmpDataMain').style.display='inline';
+    if (dir.indexOf("Datas") != -1)
+        web_interface_current_object_type = 'datas';
+    else if (dir.indexOf("Dataflows") != -1)
+        web_interface_current_object_type = 'dataflows';
+
+    var obj         = web_interface_current_object_type;
+    var obj_single  = web_interface_current_object_type.substring(0, web_interface_current_object_type.length - 1);
+
+    var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
+    var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
+    var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
+
+    if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
+        document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
         if (dir.indexOf('Main') != -1) {
-            change_class([li_main_data, li_work_data, li_history_data], [true, false, false], "active");
-            fill_database_metadata(web_interface_current_id);
-            document.getElementById('idDivDatastmpDataMeta').style.display='inline';
+            change_class([li_main, li_work, li_history], [true, false, false], "active");
+            fill_metadata();
+            document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
         }
-        else if (dir.indexOf('Work') != -1) {
-            change_class([li_main_data, li_work_data, li_history_data], [false, true, false], "active");
-        }
-        else if (dir.indexOf('Historic') != -1) {
-            change_class([li_main_data, li_work_data, li_history_data], [false, false, true], "active");
-        }
+        else if (dir.indexOf('Work') != -1)
+            change_class([li_main, li_work, li_history], [false, true, false], "active");
+
+        else if (dir.indexOf('Historic') != -1)
+            change_class([li_main, li_work, li_history], [false, false, true], "active");
     }
-    else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Data") != -1 && dir != 'Datas' && dir.indexOf("Main") != -1) {
+    else {
+        var div = '';
+        if (dir.indexOf("Main") != -1)
+            div = 'meta';
+        else if (dir.indexOf("Work") != -1)
+            div = 'work';
 
-        document.getElementById('idDivDatastmpDataMeta').style.display='inline';
-        change_class([li_main_data, li_work_data, li_history_data], [true, false, false], "active");
-
-        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
-        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
-        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'idDatasMainToFullfill');");
-
-        fill_database_metadata(web_interface_current_id);
-    }
-    else if (dir.indexOf("Dataflow") == -1 && dir.indexOf("Work") != -1 && dir != 'Datas' && dir.indexOf("Datas") != -1) {
-
-        document.getElementById('idDivDatastmpDataMain').style.display='inline';
-        change_class([li_main_data, li_work_data, li_history_data], [false, true, false], "active");
-
-        $('#databases_buttons_main').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/', 'idDatasMainToFullfill');");
-        $('#databases_buttons_work').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Work', 'idDatasMainToFullfill');");
-        $('#databases_buttons_historic').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'idDatasMainToFullfill');");
-
-        sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(db_info) {
-            $($('#databases_db_main_name')[0]).html('&nbsp;&nbsp;<em>' + db_info.name + '</em>&nbsp;&nbsp;');
-            if (db_info.short_desc)
-                $($('#databases_db_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + db_info.short_desc + '</font>&nbsp;&nbsp;');
-            else
-                $($('#databases_db_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-        });
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //Dataflow
-    if (div_id == 'idDataflowMainToFullfill') {
-      document.getElementById('idDivDataflowstmpDataflowMain').style.display='inline';
-        if (dir.indexOf('Main') != -1) {
-            $('#Dataflow_buttons_main').addClass("btn-primary");
-            $('#Dataflow_buttons_work').removeClass("btn-primary");
-            $('#Dataflow_buttons_historic').removeClass("btn-primary");
-
-            document.getElementById('idDivDataflowstmpDataflowMeta').style.display='inline';
+        if (div == 'meta') {
+            document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
+            change_class([li_main, li_work, li_history], [true, false, false], "active");
         }
-        else if (dir.indexOf('Work') != -1) {
-            $('#Dataflow_buttons_main').removeClass("btn-primary");
-            $('#Dataflow_buttons_work').addClass("btn-primary");
-            $('#Dataflow_buttons_historic').removeClass("btn-primary");
-        }
-        else if (dir.indexOf('Historic') != -1) {
-            $('#Dataflow_buttons_main').removeClass("btn-primary");
-            $('#Dataflow_buttons_work').removeClass("btn-primary");
-            $('#Dataflow_buttons_historic').addClass("btn-primary");
+        else if (div == 'work') {
+            document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
+            change_class([li_main, li_work, li_history], [false, true, false], "active");
         }
 
-        fill_dataflow_metadata(web_interface_current_id);
+        var n1 = 'Datas';
+        var n2 = 'Data';
+        if (web_interface_current_object_type == 'dataflows') {
+            n1 = 'Dataflows';
+            n2 = 'Dataflow';
+        }
+        $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
+        $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
+        //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");
+
+        if (div == 'meta')
+            fill_metadata();
+        else if (div == 'work')
+            fill_work();
     }
-    else if (dir.indexOf("Dataflow") != -1 && dir != 'Dataflows' && dir.indexOf("Main") != -1) {
-
-        document.getElementById('idDivDataflowstmpDataflowMeta').style.display='inline';
-        $('#Dataflow_buttons_main').addClass("btn-primary");
-        $('#Dataflow_buttons_work').removeClass("btn-primary");
-        $('#Dataflow_buttons_historic').removeClass("btn-primary");
-
-        $('#Dataflow_buttons_main').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/', 'idDataflowMainToFullfill');");
-        $('#Dataflow_buttons_work').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/Work', 'idDataflowMainToFullfill');");
-        $('#Dataflow_buttons_historic').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/Historic', 'idDataflowMainToFullfill');");
-
-        $('#web_interface_Dataflow_metadata').empty();
-        $('#web_interface_Dataflow_metadata').load('divs/templates/Dataflow_metadata.html');
-
-        fill_dataflow_metadata(web_interface_current_id);
-    }
-    else if (dir.indexOf("Work") != -1 && dir != 'Dataflows' && dir.indexOf("Dataflows") != -1) {
-
-        document.getElementById('idDivDataflowstmpDataflowMain').style.display='inline';
-        $('#Dataflow_buttons_main').removeClass("btn-primary");
-        $('#Dataflow_buttons_work').addClass("btn-primary");
-        $('#Dataflow_buttons_historic').removeClass("btn-primary");
-
-        $('#Dataflow_buttons_main').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/', 'idDataflowMainToFullfill');");
-        $('#Dataflow_buttons_work').attr('onclick', "showDiv(event, 'Dataflows/Dataflow-"+web_interface_current_id+"/Work', 'idDataflowMainToFullfill');");
-        $('#Dataflow_buttons_historic').attr('onclick', "showDiv(event, 'Dataflow/Dataflow-"+web_interface_current_id+"/Historic', 'idDataflowMainToFullfill');");
-
-        sakura.common.ws_request('get_dataflow_info', [web_interface_current_id], {}, function(info) {
-            $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
-            if (info.short_desc)
-                $($('#Dataflow_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
-            else
-                $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-        });
-    }
-
 
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
 
@@ -498,51 +463,51 @@ function showDiv(event, dir, div_id) {
 
 
 /* Collaborators Management*/
-function fill_collaborators_table_body(obj_type, db_info) {
-    var tbody = $('#web_interface_'+obj_type+'_collaborators_table_body');
+function fill_collaborators_table_body(info) {
+    var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
-    for (let user in db_info.grants) {
-        grant = db_info.grants[user];
+    for (let user in info.grants) {
+        grant = info.grants[user];
         if (grant == 'own')
             continue;
         var td2 = $('<td>')
         var sel = $('<select>', { class: "selectpicker"});
         sel.change( function() {
-            change_collaborator_access(obj_type, web_interface_current_id, user, $(this));
+            change_collaborator_access(web_interface_current_id, user, $(this));
         });
         var op1 = $('<option>', { text: "Read"});
         var op2 = $('<option>', { text: "Write"});
         if (grant == 'write')
             op2.attr("selected","selected");
-        if (db_info.access_scope != 'public')
+        if (info.access_scope != 'public')
             sel.append(op1);
         sel.append(op2);
         td2.append(sel);
         sel.selectpicker('refresh');
 
-        var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\'database\', '+web_interface_current_id+', \''+user+'\');"></span>'});
+        var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\''+web_interface_current_object_type+'\', '+web_interface_current_id+', \''+user+'\');"></span>'});
         var tr = $('<tr>');
         tr.append($('<td>', {html: user}), td2, td3);
         tbody.append(tr);
     }
 
-    $('#web_interface_adding_collaborators_select option').remove();
+    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option').remove();
 
     sakura.common.ws_request('list_all_users', [], {}, function(result) {
-        for (let user in db_info.grants)
+        for (let user in info.grants)
             result.splice(result.indexOf(user), 1);
 
         result.forEach( function(user) {
-            $('#web_interface_adding_collaborators_select').append($('<option>', {text: user}));
+            $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: user}));
         });
-        $('#web_interface_adding_collaborators_select').selectpicker('refresh');
+        $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
     });
 
 }
 
-function change_collaborator_access(object_type, id, login, sel) {
-    if (object_type == 'database') {
+function change_collaborator_access(id, login, sel) {
+    if (web_interface_current_object_type == 'datas') {
         sakura.common.ws_request('update_database_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {
         });
     }
@@ -550,11 +515,11 @@ function change_collaborator_access(object_type, id, login, sel) {
         not_yet();
 }
 
-function delete_collaborator(object_type, id, login) {
-  if (object_type == 'database') {
+function delete_collaborator(id, login) {
+  if (web_interface_current_object_type == 'datas') {
       sakura.common.ws_request('update_database_grant', [id, login, 'hide'], {}, function(result) {
-          sakura.common.ws_request('get_database_info', [id], {}, function(db_info) {
-              fill_collaborators_table_body(object_type, db_info);
+          sakura.common.ws_request('get_database_info', [id], {}, function(info) {
+              fill_collaborators_table_body(info);
           });
       });
   }
@@ -563,7 +528,8 @@ function delete_collaborator(object_type, id, login) {
 }
 
 function adding_collaborators() {
-    var opts = $('#web_interface_adding_collaborators_select option');
+    console.log("HERE");
+    var opts = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
     var nbs = 0;
 
     opts.map( function (i, opt) {
@@ -574,21 +540,34 @@ function adding_collaborators() {
     opts.map( function (i, opt) {
         if (opt.selected) {
             var index = i+1;
-            sakura.common.ws_request('update_database_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
-                if (index == nbs) {
-                    sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(db_info) {
-                        fill_collaborators_table_body('database', db_info);
-                    });
-                }
-            });
+            if (web_interface_current_object_type == 'datas') {
+                sakura.common.ws_request('update_database_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
+                    if (index == nbs) {
+                        sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(info) {
+                            fill_collaborators_table_body(info);
+                        });
+                    }
+                });
+            }
+            else {
+                not_yet();
+
+                /*sakura.common.ws_request('update_dataflow_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
+                    if (index == nbs) {
+                        sakura.common.ws_request('get_dataflow_info', [web_interface_current_id], {}, function(info) {
+                            fill_collaborators_table_body(info);
+                        });
+                    }
+                });*/
+            }
         }
 
     });
 }
 
 function cleaning_collaborators() {
-    $('#web_interface_adding_collaborators_select option:selected').prop("selected", false);
-    $('#web_interface_adding_collaborators_select').selectpicker('refresh');
+    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option:selected').prop("selected", false);
+    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
 }
 
 

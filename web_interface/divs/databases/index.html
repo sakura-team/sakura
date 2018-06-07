@@ -1,7 +1,7 @@
 <!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
 <!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...-->
 
-<div style="display:none; width: 100%;" id="idDivDatas" class="classMainDiv">
+<div style="display:none; width: 100%;" id="web_interface_datas_div" class="classMainDiv">
 
     <h2>Datas</h2>
     Collect and store your data.<br><br>
@@ -12,18 +12,18 @@
                 <div class="panel-heading">
                     <div class="row">
                         <form class="form-search form-inline col-md-offset-6">
-                            <input id="idInputSearchDatas" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Datas');" />
+                            <input id="web_interface_datas_inputSearch" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Datas');" />
                         </form>
                     </div>
                 </div>
                 <div class="panel-body">
-                    <table id="idTableDatasToFullfill" class="table table-striped table-bordered table-list" style="margin-bottom: 2px;">
+                    <table id="web_interface_datas_table_toFullfill" class="table table-striped table-bordered table-list" style="margin-bottom: 2px;">
                         <thead>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>
-                                    <a href="javascript:listRequestStub('idTableDatasToFullfill',10,'Datas/tmpData',false)" class="executeOnShow">
+                                    <a href="javascript:listRequestStub('web_interface_datas_table_toFullfill',10,'Datas/tmpData',false)" class="executeOnShow">
                                         Looking for databases ...
                                         <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
                                     </a>
@@ -33,21 +33,11 @@
                     </table>
                     <div class="pull-left">
                         &nbsp;
-                        <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#create_database_modal" onclick="database_update_creation_modal();">
+                        <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#create_datas_modal" onclick="datas_update_creation_modal();">
                             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         </a>
                     </div>
                 </div>
-                <!--<div class="panel-footer">
-                    <div class="row">
-                        <div class="col col-xs-offset-3 col-xs-6">
-                            <nav aria-label="Page navigation" class="text-center">
-                                <ul class="pagination" id="databases_pagination">
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
-                </div>-->
             </div>
         </div>
     </div>

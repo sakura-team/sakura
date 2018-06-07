@@ -1,38 +1,41 @@
 <!--LIG, March 2017-->
 
-<div style="display:none;" id="idDivDataflowstmpDataflowMain" class="classMainDiv">
-    <table width='100%'>
-    <tr style="border-bottom: 1px solid lightgrey">
-        <td>
-            <table style="margin-bottom: 10px;">
+<div style="display:none;" id="web_interface_dataflows_tmp_main" class="classMainDiv">
+    <table width="100%">
+    <tr>
+        <td class="block" style="width: 1%; white-space:nowrap;">
+            <table style="margin-bottom: 0px;" width=100% cellpadding=5>
                 <tr>
-                    <td rowspan=2 style="vertical-align: bottom">
-                        &nbsp;&nbsp;<img src="media/Share_icon_BLACK-01.svg.png" style="width: 50px; height: 50px; margin-right: 5px; margin-left: 5px;" />
-                    <td>
-                        <h3 style="margin-bottom: 0px; margin-top: 10px" id='Dataflow_main_name'> Dataflow Name &nbsp;</h3>
+                    <td rowspan=2 style="vertical-align: bottom;" width=100px>
+                        &nbsp;&nbsp;<img src="media/Share_icon_BLACK-01.svg.png" style="width: 50px; height: 50px; margin-right: 5px; margin-left: 5px;" />&nbsp;&nbsp;&nbsp;&nbsp;
+                    <td class="block" style="vertical-align: bottom; white-space:nowrap;">
+                        <h3 style="margin-bottom: 10px;" id='web_interface_dataflows_main_name'> DataFlow Name &nbsp;</h3>
+                    <td style="vertical-align: bottom;" width=100%>
+                        <h5 style="margin-bottom: 10px;" id='web_interface_dataflows_main_short_desc'> Short Description &nbsp;</h5>
                 <tr>
-                    <td>
-                        <h5 style="margin-bottom: 0px;" id='Dataflow_main_short_desc'> Short Description &nbsp;</h5>
-            </table>
-        <td align="left" style="vertical-align: bottom;">
-            <table>
-                <tr>
-                    <td>
-                        <button id='Dataflow_buttons_main' class= "btn" style="border-color: #AAAAAA; padding-top: 4px; padding-bottom: 3px;" title="Meta-data" onclick="showDiv(event, 'Dataflows/tmpDataflow', 'idDataflowMainToFullfill');">
-                            <h4 class="glyphicon glyphicon-list-alt" style="margin-left: 10px; margin-right: 10px; margin-top: 0px; margin-bottom: 0px;"></h4>
-                        </button>
-                    <td>
-                        <button id='Dataflow_buttons_work' class= "btn" style="border-color: #AAAAAA; padding-top: 4px; padding-bottom: 3px;" title="Workflow Editor" onclick="showDiv(event, 'Dataflows/tmpDataflow/Work', 'idDataflowMainToFullfill');">
-                            <h4 class="glyphicon glyphicon-wrench" style="margin-left: 10px; margin-right: 10px; margin-top: 0px; margin-bottom: 0px;"></h4>
-                        </button>
-                    <td>
-                        <button id='Dataflow_buttons_historic' class= "btn" style="border-color: #AAAAAA; padding-top: 4px; padding-bottom: 3px;" disabled title="History of modifications" onclick="showDiv(event, 'Dataflows/tmpDataflow/Historic', 'idDataflowMainToFullfill');">
-                            <h4 class="glyphicon glyphicon-time" style="margin-left: 10px; margin-right: 10px; margin-top: 0px; margin-bottom: 0px;"></h4>
-                        </button>
-            </table>
-
+                    <td colspan=2 align="left" style="vertical-align: bottom;">
+                        <ul class="nav nav-tabs">
+                            <li class="active">
+                                <a href="" id='web_interface_dataflows_buttons_main' onclick="showDiv(event, 'Dataflows/tmpDataflow', 'web_interface_dataflows_main_toFullfill');" style="color: dimgrey; padding: 2px; padding-right: 10px; padding-left: 10px;">
+                                    <h4 class="glyphicon glyphicon-list-alt" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h4>
+                                    <font size=2>MetaData</font>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="" id='web_interface_dataflows_buttons_work' onclick="showDiv(event, 'Dataflows/tmpDataflow/Work', 'web_interface_dataflows_main_toFullfill');" style="color: dimgrey; padding: 2px; padding-right: 10px; padding-left: 10px;">
+                                    <h4 class="glyphicon glyphicon-wrench" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h4>
+                                    <font size=2>Content</font>
+                                </a>
+                            </li>
+                            <li class="disabled">
+                                <a id='web_interface_dataflows_buttons_history' style="color: lightgrey; padding: 2px; padding-right: 10px; padding-left: 10px;">
+                                    <h4 class="glyphicon glyphicon-time" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h4>
+                                    <font size=2>History</font>
+                                </a>
+                            </li>
+                        </ul>
     </table>
 
-    <div id="idDataflowMainToFullfill">
+    <div id="web_interface_dataflows_main_toFullfill">
     </div>
 </div>

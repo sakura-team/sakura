@@ -1,5 +1,5 @@
 
-<div class="modal fade" id="create_dataflow_modal" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+<div class="modal fade" id="create_dataflows_modal" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate">
         <div class="modal-content">
             <div class="modal-header">
@@ -20,35 +20,35 @@
             <br>
             <div class="modal-body">
               <div class="panel panel-default" style="margin-bottom: 0px; margin-top: 5px;">
-                <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px; cursor: pointer;" data-target="#dataflow_creation_div_step1">
+                <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px; cursor: pointer;" data-target="#dataflows_creation_div_step1">
                     <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 1</h4>
                 </div>
 
-                <div id="dataflow_creation_div_step1" class="panel-body" style="padding-top:5px; padding-bottom: 5px;">
-                    <div id="dataflow_div_name_input" class="form-group control-group has-error">
+                <div id="dataflows_creation_div_step1" class="panel-body" style="padding-top:5px; padding-bottom: 5px;">
+                    <div id="dataflows_div_name_input" class="form-group control-group has-error">
                         <label>Name <font color=red>*</font></label>
-                        <input class="form-control" id="dataflow_name_input" name="dataflow_name_input" placeholder="Enter a name" onkeyup="dataflow_creation_check_name();"/>
+                        <input class="form-control" id="dataflows_name_input" name="dataflows_name_input" placeholder="Enter a name" onkeyup="dataflows_creation_check_name();"/>
                     </div>
-                    <div id="dataflow_div_shortdescription_input" class="form-group control-group has-error">
+                    <div id="dataflows_div_shortdescription_input" class="form-group control-group has-error">
                         <label>Short Description <font color=red>*</font></label>
-                        <input class="form-control" id="dataflow_shortdescription_input" name="dataflow_shortdescription_input" placeholder="Enter short description" onkeyup="dataflow_creation_check_shortdescription();"/>
+                        <input class="form-control" id="dataflows_shortdescription_input" name="dataflows_shortdescription_input" placeholder="Enter short description" onkeyup="dataflows_creation_check_shortdescription();"/>
                     </div>
                     <div>
                         <table>
                             <tr>
                                 <td>
                                     <div class="radio">
-                                        <label><input type="radio" id="dataflow_creation_access_scope_radio_public" name="dataflow_creation_access_scope_radio"> Public</label>
+                                        <label><input type="radio" id="dataflows_creation_access_scope_radio_public" name="dataflows_creation_access_scope_radio"> Public</label>
                                     </div>
                                 <td>
                                     <div class="radio">
                                         &nbsp;&nbsp;
-                                        <label><input type="radio" checked id="dataflow_creation_access_scope_radio_restricted" name="dataflow_creation_access_scope_radio"> Restricted</label>
+                                        <label><input type="radio" checked id="dataflows_creation_access_scope_radio_restricted" name="dataflows_creation_access_scope_radio"> Restricted</label>
                                     </div>
                                 <td>
                                     <div class="radio">
                                         &nbsp;&nbsp;<label>
-                                        <input type="radio" id="dataflow_creation_access_scope_radio_private" name="dataflow_creation_access_scope_radio"> Private</label>
+                                        <input type="radio" id="dataflows_creation_access_scope_radio_private" name="dataflows_creation_access_scope_radio"> Private</label>
                                     </div>
                         </table>
                     </div>
@@ -56,7 +56,7 @@
             </div>
 
             <div class="panel panel-default" style="margin-bottom: 0px; margin-top: 5px;">
-                <div class="panel-heading" style="cursor: pointer; padding-top: 1px; padding-bottom: 1px;" data-toggle="collapse" data-target="#dataflow_creation_div_step2">
+                <div class="panel-heading" style="cursor: pointer; padding-top: 1px; padding-bottom: 1px;" data-toggle="collapse" data-target="#dataflows_creation_div_step2">
                     <table width=100%>
                         <tr>
                             <td>
@@ -65,62 +65,62 @@
                                 &nbsp;&nbsp;<label class="glyphicon glyphicon-chevron-down" />
                     </table>
                 </div>
-                <div id="dataflow_creation_div_step2" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;">
+                <div id="dataflows_creation_div_step2" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;">
 
                     <div class="form-group control-group">
                         <label>Topic</label>
-                        <input class="form-control" id="dataflow_topic_input" name="dataflow_agent_type_input" placeholder="Main topic of this dataflow? (e.g Anova, Visualisation)"/>
+                        <input class="form-control" id="dataflows_topic_input" name="dataflows_agent_type_input" placeholder="Main topic of this dataflow? (e.g Anova, Visualisation)"/>
                     </div>
                     <div class="form-group control-group">
 
                         <label style="margin-bottom: 0px;">Licence </label>
                         <table style="margin-left: 20px;">
                             <tr>
-                                <td><input type='radio' checked id="dataflow_data_licence_Public" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' checked id="dataflows_data_licence_Public" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;Public Domain
                                 <!--<td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign" href="https://creativecommons.org/share-your-work/licensing-types-examples/public-domain/pdm/" target="_blank" rel="noopener noreferrer"></a>-->
                             <!--<tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC-0" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC-0" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC-0
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="noopener noreferrer"></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_PPDDL" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_PPDDL" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;PDDL
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="http://opendatacommons.org/licenses/pddl/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC-BY" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC-BY" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC-BY
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_ODC-BY" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_ODC-BY" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;ODC-BY
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="http://opendatacommons.org/licenses/by/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC-BY-SA" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC-BY-SA" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC-BY-SA
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_ODC-ODbL" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_ODC-ODbL" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;ODC-ODbL
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="http://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC_BY-NC" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC_BY-NC" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC BY-NC
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC_BY-ND" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC_BY-ND" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC BY-ND
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nd/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC_BY-NC-SA" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC_BY-NC-SA" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC BY-NC-SA
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_CC_BY-NC-ND" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_CC_BY-NC-ND" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;CC BY-NC-ND
                                 <td>&nbsp;&nbsp;<a class="glyphicon glyphicon-info-sign"href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer"/></a>
                             <tr>
-                                <td><input type='radio' id="dataflow_data_licence_Other" name="dataflow_licence_radio" style="margin-top: 0px;"/>
+                                <td><input type='radio' id="dataflows_data_licence_Other" name="dataflows_licence_radio" style="margin-top: 0px;"/>
                                 <td>&nbsp;&nbsp;Other
                             -->
                         </table>
@@ -129,8 +129,8 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" disabled id="dataflow_submit_button" onclick="new_dataflow();">Submit</button>
-                <button type="button" class="btn" id="dataflow_close_button" onclick="dataflow_close_modal('create_dataflow_modal');">Close</button>
+                <button type="button" class="btn btn-primary" disabled id="dataflows_submit_button" onclick="new_dataflow();">Submit</button>
+                <button type="button" class="btn" id="dataflows_close_button" onclick="dataflows_close_modal('create_dataflows_modal');">Close</button>
             </div>
         </div>
     </div>
