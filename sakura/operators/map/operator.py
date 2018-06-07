@@ -21,20 +21,41 @@ class MapOperator(Operator):
         self.register_tab('Map', 'map.html')
         # custom attributes
         self.curr_heatmap = None
+        self.last_bbox = None
+        self.current_filtered_stream = None
 
-    def filtered_stream(self, westlng, eastlng, southlat, northlat, **args):
+    @property
+    def output_streams(self):
+        if not self.input_stream.connected() or self.last_bbox is None:
+            return []
+        # note: stream must be referenced to avoid garbage collection
+        self.current_filtered_stream = self.filtered_stream()
+        return [ self.current_filtered_stream ]
+
+    def save_last_bbox(self, westlng, eastlng, southlat, northlat, **args):
+        self.last_bbox = westlng, eastlng, southlat, northlat
+
+    def filtered_stream(self):
+        westlng, eastlng, southlat, northlat = self.last_bbox
         # get columns selected in combo parameters
-        lng_column_idx, lat_column_idx = \
+        lng_col_idx, lat_col_idx = \
             self.lng_column_param.value, self.lat_column_param.value
         # filter input stream as much as possible:
         # - select useful columns only
         # - restrict to visible area
         stream = self.input_stream
-        stream = stream.select_columns(lng_column_idx, lat_column_idx)
-        stream = stream.filter_column(0, operator.__ge__, westlng)
-        stream = stream.filter_column(0, operator.__le__, eastlng)
-        stream = stream.filter_column(1, operator.__ge__, southlat)
-        stream = stream.filter_column(1, operator.__le__, northlat)
+        stream = stream.filter_column(lng_col_idx, operator.__ge__, westlng)
+        stream = stream.filter_column(lng_col_idx, operator.__le__, eastlng)
+        stream = stream.filter_column(lat_col_idx, operator.__ge__, southlat)
+        stream = stream.filter_column(lat_col_idx, operator.__le__, northlat)
+        return stream
+
+    def minimal_stream(self):
+        import pdb; pdb.set_trace()
+        lng_col_idx, lat_col_idx = \
+            self.lng_column_param.value, self.lat_column_param.value
+        stream = self.filtered_stream()
+        stream = stream.select_columns(lng_col_idx, lat_col_idx)
         return stream
 
     def handle_event(self, event):
@@ -44,7 +65,8 @@ class MapOperator(Operator):
         time_credit = event[1]
         if ev_type == 'map_move':
             info = event[2]
-            stream = self.filtered_stream(**info)
+            self.save_last_bbox(**info)
+            stream = self.minimal_stream()
             # create heatmap
             self.curr_heatmap = HeatMap(stream, **info)
         # from now on, map_move or map_continue is the same thing
