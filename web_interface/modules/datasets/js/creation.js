@@ -207,8 +207,6 @@ function datasets_on_file_selected(f) {
                 var body = $('#datasets_creation_ff_columns').find('tbody');
                 body.empty();
 
-                console.log(datasets_creation_csv_file.lines);
-
                 datasets_creation_csv_file.headers.forEach( function(col, index) {
                     var new_row = $(body[0].insertRow(-1));
                     new_row.attr('id', 'datasets_ff_row_' + index);

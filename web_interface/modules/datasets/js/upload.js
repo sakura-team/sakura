@@ -21,7 +21,6 @@ function datasets_open_upload_modal(dataset_id) {
     $('#datasets_upload_select_file')[0].value = '';
 
     sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
-            console.log(result);
             var thead = $('#datasets_upload_expected_columns_table').find('thead');
             var tbody = $('#datasets_upload_expected_columns_table').find('tbody');
             thead.empty()
@@ -90,7 +89,7 @@ function datasets_upload_on_file_selected(f, dataset_id) {
             },
             error: function(error) {
                 datasets_alert("Parsing error:", error);
-            }
+            },
     });
 }
 

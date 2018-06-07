@@ -113,7 +113,7 @@ function recover_datasets() {
                 if (dataset.short_desc)
                     $(tds[1]).append(dataset.short_desc);
                 else
-                    $(tds[1]).append("<font color='lightgrey'>No description</font>");
+                    $(tds[1]).append("<font color='lightgrey'>__</font>");
                 spans.toArray().forEach( function(span) {
                     if ($(span).attr('onclick')) {
                         var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
@@ -146,6 +146,11 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
         comments: true,
         header: false,
         skipEmptyLines: true,
+        transform: function(value, field) {
+            if (value.length == 0)
+                return null;
+            return value;
+        },
         chunk: function(chunk, parser) {
             if (first_chunk) {
                 chunk.data.splice(0, 1);

@@ -587,7 +587,7 @@ function adding_collaborators() {
 }
 
 function cleaning_collaborators() {
-    $('#web_interface_adding_collaborators_select option:selected').remove();
+    $('#web_interface_adding_collaborators_select option:selected').prop("selected", false);
     $('#web_interface_adding_collaborators_select').selectpicker('refresh');
 }
 
