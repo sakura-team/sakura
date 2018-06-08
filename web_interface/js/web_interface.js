@@ -58,6 +58,7 @@ function fill_metadata() {
 
         web_interface_current_obj_info = info;
 
+        //General
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').load('divs/templates/metadata_'+web_interface_current_object_type+'.html', function() {
 
@@ -117,6 +118,7 @@ function fill_metadata() {
             }
         });
 
+        //Access
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').empty();
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').load('divs/templates/metadata_access.html', function() {
 
@@ -135,13 +137,17 @@ function fill_metadata() {
                         recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '..');
                       });
 
-            if (info.grant_level == 'own') {
+            if (info.grant_level == 'own' || info.grant_level == 'write') {
                 fill_collaborators_table_body(info);
+            }
+            else {
+              console.log("HIDE");
+              fill_collaborators_table_body(info);
             }
         });
 
 
-        //Now filling the markdownarea field
+        //Large Description
         var l_desc = '<span style="color:grey">*No description !';
         if (info.large_desc)
             l_desc = info.large_desc;
@@ -467,64 +473,94 @@ function fill_collaborators_table_body(info) {
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
-    for (let user in info.grants) {
-        grant = info.grants[user];
-        if (grant == 'own')
-            continue;
-        var td2 = $('<td>')
-        var sel = $('<select>', { class: "selectpicker"});
-        sel.change( function() {
-            change_collaborator_access(web_interface_current_id, user, $(this));
-        });
-        var op1 = $('<option>', { text: "Read"});
-        var op2 = $('<option>', { text: "Write"});
-        if (grant == 'write')
-            op2.attr("selected","selected");
-        if (info.access_scope != 'public')
-            sel.append(op1);
-        sel.append(op2);
-        td2.append(sel);
-        sel.selectpicker('refresh');
+    $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div').hide();
+    if (info.access_scope == 'open' || info.access_scope == 'public' || info.grant_level == 'own' || info.grant_level == 'write') {
+        for (let user in info.grants) {
+            grant = info.grants[user];
+            if (grant == 'own')
+                continue;
+            var td2 = $('<td>')
+            if (info.grant_level == 'own') {
+                var sel = $('<select>', { class: "selectpicker"});
+                sel.change( function() {
+                    change_collaborator_access(web_interface_current_id, user, $(this));
+                });
+                var op1 = $('<option>', { text: "Read"});
+                var op2 = $('<option>', { text: "Write"});
+                if (grant == 'write')
+                    op2.attr("selected","selected");
+                if (info.access_scope != 'public')
+                    sel.append(op1);
+                sel.append(op2);
+                td2.append(sel);
+                sel.selectpicker('refresh');
+            }
 
-        var td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator(\''+web_interface_current_object_type+'\', '+web_interface_current_id+', \''+user+'\');"></span>'});
+            var td3 = $('<td>');
+            if (info.grant_level == 'own')
+                td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator('+web_interface_current_id+', \''+user+'\');"></span>'});
+
+            var tr = $('<tr>');
+            tr.append($('<td>', {html: user}), td2, td3);
+            tbody.append(tr);
+        }
+
+        if (info.grant_level == 'own') {
+            $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div').show();
+            $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option').remove();
+
+            sakura.common.ws_request('list_all_users', [], {}, function(result) {
+                for (let user in info.grants)
+                    result.splice(result.indexOf(user), 1);
+
+                result.forEach( function(user) {
+                    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: user}));
+                });
+                $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
+            });
+        }
+    }
+    else if (info.grant_level == 'read') {
         var tr = $('<tr>');
-        tr.append($('<td>', {html: user}), td2, td3);
+        var td = $('<td>');
+        var a = $('<button>', { text: "Ask for writer access",
+                                onclick: "not_yet();"});
+        td.append(a);
+        tr.append(td);
         tbody.append(tr);
     }
-
-    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option').remove();
-
-    sakura.common.ws_request('list_all_users', [], {}, function(result) {
-        for (let user in info.grants)
-            result.splice(result.indexOf(user), 1);
-
-        result.forEach( function(user) {
-            $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: user}));
-        });
-        $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
-    });
-
 }
 
 function change_collaborator_access(id, login, sel) {
-    if (web_interface_current_object_type == 'datas') {
-        sakura.common.ws_request('update_database_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {
-        });
-    }
-    else
+    var obj = '';
+    if (web_interface_current_object_type == 'datas')
+        obj = 'database';
+    else if (web_interface_current_object_type == 'dataflows')
+        obj = 'dataflow';
+    else {
         not_yet();
+        return;
+    }
+
+    sakura.common.ws_request('update_'+obj+'_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {});
 }
 
 function delete_collaborator(id, login) {
-  if (web_interface_current_object_type == 'datas') {
-      sakura.common.ws_request('update_database_grant', [id, login, 'hide'], {}, function(result) {
-          sakura.common.ws_request('get_database_info', [id], {}, function(info) {
-              fill_collaborators_table_body(info);
-          });
-      });
-  }
-  else
-      not_yet();
+    var obj = '';
+    if (web_interface_current_object_type == 'datas')
+        obj = 'database';
+    else if (web_interface_current_object_type == 'dataflows')
+        obj = 'dataflow';
+    else {
+        not_yet();
+        return;
+    }
+    console.log(id);
+    sakura.common.ws_request('update_'+obj+'_grant', [id, login, 'hide'], {}, function(result) {
+        sakura.common.ws_request('get_'+obj+'_info', [id], {}, function(info) {
+            fill_collaborators_table_body(info);
+        });
+    });
 }
 
 function adding_collaborators() {
@@ -549,15 +585,13 @@ function adding_collaborators() {
                 });
             }
             else {
-                not_yet();
-
-                /*sakura.common.ws_request('update_dataflow_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
+                sakura.common.ws_request('update_dataflow_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
                     if (index == nbs) {
                         sakura.common.ws_request('get_dataflow_info', [web_interface_current_id], {}, function(info) {
                             fill_collaborators_table_body(info);
                         });
                     }
-                });*/
+                });
             }
         }
 

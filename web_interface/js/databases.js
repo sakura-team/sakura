@@ -1,95 +1,95 @@
 //Code started by Michael Ortega for the LIG
 //August, 21st, 2017
 
-var database_datastores = null;
+var datas_datastores = null;
 
 
-var database_mandatory = {'name': false, 'short_description': false}
+var datas_mandatory = {'name': false, 'short_description': false}
 
-function database_creation_check_name() {
-    if ($('#database_name_input').val().length > 0) {
-        $('#database_div_name_input').removeClass('has-error');
-        database_mandatory.name = true;
+function datas_creation_check_name() {
+    if ($('#datas_name_input').val().length > 0) {
+        $('#datas_div_name_input').removeClass('has-error');
+        datas_mandatory.name = true;
     }
     else {
-        $('#database_div_name_input').addClass('has-error');
-        database_mandatory.name = false;
+        $('#datas_div_name_input').addClass('has-error');
+        datas_mandatory.name = false;
     }
-    database_creation_check_mandatory();
+    datas_creation_check_mandatory();
 }
 
 
-function database_creation_check_shortdescription() {
-    if ($('#database_shortdescription_input').val().length > 0) {
-        $('#database_div_shortdescription_input').removeClass('has-error');
-        database_mandatory.short_description = true;
+function datas_creation_check_shortdescription() {
+    if ($('#datas_shortdescription_input').val().length > 0) {
+        $('#datas_div_shortdescription_input').removeClass('has-error');
+        datas_mandatory.short_description = true;
     }
     else {
-        $('#database_div_shortdescription_input').addClass('has-error');
-        database_mandatory.short_description = false;
+        $('#datas_div_shortdescription_input').addClass('has-error');
+        datas_mandatory.short_description = false;
     }
-    database_creation_check_mandatory();
+    datas_creation_check_mandatory();
 }
 
 
-function database_creation_check_mandatory() {
+function datas_creation_check_mandatory() {
     var ok = true;
-    for (x in database_mandatory)
-        if (!database_mandatory[x])
+    for (x in datas_mandatory)
+        if (!datas_mandatory[x])
             ok = false;
     if (ok)
-        $('#database_submit_button').prop('disabled', false);
+        $('#datas_submit_button').prop('disabled', false);
     else
-        $('#database_submit_button').prop('disabled', true);
+        $('#datas_submit_button').prop('disabled', true);
 }
 
 
-function database_update_creation_modal() {
+function datas_update_creation_modal() {
 
     //submit button: back to initial display
-    $("#database_submit_button").html('Submit');
+    $("#datas_submit_button").html('Submit');
 
     //first we ask the hub the datastore
     sakura.common.ws_request('list_datastores', [], {}, function (result) {
-        database_datastores = result;
-        $('#database_datastore_input').empty();
+        datas_datastores = result;
+        $('#datas_datastore_input').empty();
         result.forEach( function(ds) {
             console.log(ds);
             if (ds['online']) {
-                $('#database_datastore_input').append('<option value="'+ds['datastore_id']+'">'+ds['driver_label']+" service on "+ds['host']+'</option>');
+                $('#datas_datastore_input').append('<option value="'+ds['datastore_id']+'">'+ds['driver_label']+" service on "+ds['host']+'</option>');
             }
         });
-        $('#database_datastore_input').append('<option value="other" data-subtext="Requesting access to private datastores">Other</option>');
-        $('#database_datastore_input').selectpicker('refresh');
+        $('#datas_datastore_input').append('<option value="other" data-subtext="Requesting access to private datastores">Other</option>');
+        $('#datas_datastore_input').selectpicker('refresh');
     });
 }
 
 
 function new_database() {
-    var name = $('#database_name_input').val();
+    var name = $('#datas_name_input').val();
 
     if ((name.replace(/ /g,"")).length == 0) {
         alert("Empty name!! We cannot create data without a name.");
         return ;
     }
 
-    var short_d     = $('#database_shortdescription_input').val();
-    var ds_id       = parseInt($('#database_datastore_input').val());
+    var short_d     = $('#datas_shortdescription_input').val();
+    var ds_id       = parseInt($('#datas_datastore_input').val());
 
     var access_scope      = 'restricted';
-    $('[id^="database_creation_access_scope_radio"]').each( function() {
+    $('[id^="datas_creation_access_scope_radio"]').each( function() {
         if (this.checked) {
             var tab = this.id.split('_');
             access_scope = tab[tab.length - 1];
         }
     });
 
-    var agent_type  = $('#database_agent_type_input').val();
-    var topic= $('#database_topic_input').val();
-    //var licence     = $('#database_licence_input').val();
+    var agent_type  = $('#datas_agent_type_input').val();
+    var topic= $('#datas_topic_input').val();
+    //var licence     = $('#datas_licence_input').val();
 
     var data_type   = '';
-    $('[id^="database_data_type_input"]').each( function() {
+    $('[id^="datas_data_type_input"]').each( function() {
         if (this.checked) {
             var tab = this.id.split("_");
             data_type = tab[tab.length-1];
@@ -97,7 +97,7 @@ function new_database() {
     });
 
     var licence = "Public";
-    $('[id^="database_data_licence"]').each( function() {
+    $('[id^="datas_data_licence"]').each( function() {
         if (this.checked) {
             var tab = this.id.split("_");
             licence = tab[tab.length-1];
@@ -105,7 +105,7 @@ function new_database() {
     });
 
 
-    $("#database_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
+    $("#datas_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
     /*console.log("Name:", name);
     console.log("Short:", short_d);
@@ -131,23 +131,23 @@ function new_database() {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
         else {
-            $('#create_database_modal').modal('hide');
+            $('#create_datas_modal').modal('hide');
             showDiv(null, 'Datas/Data-'+result, null);
         }
     });
 }
 
 
-function database_close_modal(id) {
+function datas_close_modal(id) {
     $('#'+id).modal('hide');
 }
 
 
-function database_datastore_on_change() {
-    if ($('#database_datastore_input').val() == 'other') {
-        var tab = $('#database_offline_datastores');
+function datas_datastore_on_change() {
+    if ($('#datas_datastore_input').val() == 'other') {
+        var tab = $('#datas_offline_datastores');
         tab.empty();
-        database_datastores.forEach( function(ds) {
+        datas_datastores.forEach( function(ds) {
             if (!ds['online']) {
                 var new_b_row = $(tab[0].insertRow());
                 var line = "<td>"+ds['driver_label']+" service on "+ds['host']+"</td>";
@@ -155,6 +155,6 @@ function database_datastore_on_change() {
             }
         });
 
-        $('#databases_other_datastores_modal').modal('show');
+        $('#datas_other_datastores_modal').modal('show');
     }
 }
