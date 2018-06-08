@@ -126,8 +126,8 @@ class GuiToHubAPI(object):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
         self.databases[database_id].update_attributes(**kwargs)
 
-    def update_database_grant(self, database_id, login, grant_level):
-        self.databases[database_id].update_grant(login, grant_level)
+    def update_database_grant(self, database_id, login, grant_name):
+        self.databases[database_id].update_grant(login, grant_name)
 
     def list_expected_columns_tags(self, datastore_id):
         return self.datastores[datastore_id].list_expected_columns_tags()
@@ -172,6 +172,9 @@ class GuiToHubAPI(object):
 
     def update_dataflow_info(self, dataflow_id, **kwargs):
         self.dataflows[dataflow_id].update_attributes(**kwargs)
+
+    def update_dataflow_grant(self, dataflow_id, login, grant_name):
+        return self.dataflows[dataflow_id].update_grant(login, grant_name)
 
     def set_dataflow_gui_data(self, dataflow_id, gui_data):
         self.dataflows[dataflow_id].gui_data = gui_data

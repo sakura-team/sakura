@@ -20,6 +20,20 @@ class BaseMixin:
     def assert_grant_level(self, grant, error_msg):
         if self.get_grant_level() < grant:
             raise APIObjectDeniedError(error_msg)
+    def update_grant(self, login, grant_name):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                        'Only owner can change grants.')
+        grants = dict(self.grants)
+        grant_level = GRANT_LEVELS.value(grant_name)
+        if grant_level == GRANT_LEVELS.hide:
+            if login in grants:
+                del grants[login]
+        else:
+            grants[login] = grant_level
+        self.grants = grants
+        self.commit()
+    def commit(self):
+        self._database_.commit()
     @classmethod
     def filter_for_web_user(cls):
         return FilteredView(cls)
