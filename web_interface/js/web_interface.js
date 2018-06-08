@@ -136,14 +136,8 @@ function fill_metadata() {
                     else
                         recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '..');
                       });
-
-            if (info.grant_level == 'own' || info.grant_level == 'write') {
-                fill_collaborators_table_body(info);
-            }
-            else {
-              console.log("HIDE");
-              fill_collaborators_table_body(info);
-            }
+            
+            fill_collaborators_table_body(info);
         });
 
 
@@ -282,7 +276,6 @@ function showDiv(event, dir, div_id) {
             tmp=0;
         }
     }
-
 
     //normalize dir
     if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1)) {

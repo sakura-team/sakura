@@ -35,12 +35,22 @@ function buildListStub(idDiv,result,elt) {
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
         //adding link
         var cell = $('<td>');
-        if (row.name.indexOf('OFFLINE') === -1)
-            cell.append($('<a>',{   text: row.name,
-                                    href: 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id,
-                                    onclick: 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");'
-                                })
-                        );
+        if (row.name.indexOf('OFFLINE') === -1) {
+            var a = $('<a>');
+            if (row.access_scope == 'open' || row.access_scope == 'public' || row.grant_level != 'list') {
+                a.html(row.name );
+                a.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
+                a.attr('title', 'Accessing database');
+                a.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+            }
+            else {
+                a.html( "<font color='black'>"+row.name + "</font> (Ask for access)" );
+                a.attr('title', 'Ask for access');
+                a.attr('style', 'cursor: pointer;');
+                a.attr('onclick', 'not_yet()');
+            }
+            cell.append(a);
+        }
         else
             cell.append(row.name);
 
@@ -102,7 +112,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             databases.forEach( function(db) {
                 result_info = {'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
                                        'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
-                                       'tags': db.tags, 'modif': db.modification_date };
+                                       'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
                 if (db.online) {
                     result_info['owner'] = db.owner;
                 }
