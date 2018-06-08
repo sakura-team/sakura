@@ -146,11 +146,6 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
         comments: true,
         header: false,
         skipEmptyLines: true,
-        transform: function(value, field) {
-            if (value.length == 0)
-                return null;
-            return value;
-        },
         chunk: function(chunk, parser) {
             if (first_chunk) {
                 chunk.data.splice(0, 1);
@@ -161,6 +156,9 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                     d = line[date.column_id];
                     line[date.column_id] = moment(d, date.format).unix();
                 });
+                for (i=0; i<line.length; i++)
+                  if (line[i].length == 0)
+                      line[i] = null;
             });
 
             if (chunk.data.length) {

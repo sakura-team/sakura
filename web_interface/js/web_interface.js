@@ -57,7 +57,6 @@ function fill_metadata() {
     sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
 
         web_interface_current_obj_info = info;
-        console.log(info);
 
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').load('divs/templates/metadata_'+web_interface_current_object_type+'.html', function() {
@@ -110,7 +109,6 @@ function fill_metadata() {
                       {name: "_db_licence_", value: info.licence},
                       {name: "_db_topic_", value: info.topic},
                       ].forEach( function (elt) {
-                          console.log(elt);
                           if (elt.value != undefined && elt.value)
                               recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
                           else
@@ -375,64 +373,66 @@ function showDiv(event, dir, div_id) {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    var obj_type = '';
+    if (dir != 'Home') {
+        var obj_type = '';
 
-    if (dir.indexOf("Datas") != -1)
-        web_interface_current_object_type = 'datas';
-    else if (dir.indexOf("Dataflows") != -1)
-        web_interface_current_object_type = 'dataflows';
+        if (dir.indexOf("Datas") != -1)
+            web_interface_current_object_type = 'datas';
+        else if (dir.indexOf("Dataflows") != -1)
+            web_interface_current_object_type = 'dataflows';
 
-    var obj         = web_interface_current_object_type;
-    var obj_single  = web_interface_current_object_type.substring(0, web_interface_current_object_type.length - 1);
+        var obj         = web_interface_current_object_type;
+        var obj_single  = web_interface_current_object_type.substring(0, web_interface_current_object_type.length - 1);
 
-    var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
-    var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
-    var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
+        var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
+        var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
+        var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
 
-    if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
-        document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
-
-        if (dir.indexOf('Main') != -1) {
-            change_class([li_main, li_work, li_history], [true, false, false], "active");
-            fill_metadata();
-            document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
-        }
-        else if (dir.indexOf('Work') != -1)
-            change_class([li_main, li_work, li_history], [false, true, false], "active");
-
-        else if (dir.indexOf('Historic') != -1)
-            change_class([li_main, li_work, li_history], [false, false, true], "active");
-    }
-    else {
-        var div = '';
-        if (dir.indexOf("Main") != -1)
-            div = 'meta';
-        else if (dir.indexOf("Work") != -1)
-            div = 'work';
-
-        if (div == 'meta') {
-            document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
-            change_class([li_main, li_work, li_history], [true, false, false], "active");
-        }
-        else if (div == 'work') {
+        if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
             document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
-            change_class([li_main, li_work, li_history], [false, true, false], "active");
-        }
 
-        var n1 = 'Datas';
-        var n2 = 'Data';
-        if (web_interface_current_object_type == 'dataflows') {
-            n1 = 'Dataflows';
-            n2 = 'Dataflow';
-        }
-        $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
-        $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
-        //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");
+            if (dir.indexOf('Main') != -1) {
+                change_class([li_main, li_work, li_history], [true, false, false], "active");
+                fill_metadata();
+                document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
+            }
+            else if (dir.indexOf('Work') != -1)
+                change_class([li_main, li_work, li_history], [false, true, false], "active");
 
-        if (div == 'meta')
-            fill_metadata();
-        else if (div == 'work')
-            fill_work();
+            else if (dir.indexOf('Historic') != -1)
+                change_class([li_main, li_work, li_history], [false, false, true], "active");
+        }
+        else {
+            var div = '';
+            if (dir.indexOf("Main") != -1)
+                div = 'meta';
+            else if (dir.indexOf("Work") != -1)
+                div = 'work';
+
+            if (div == 'meta') {
+                document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
+                change_class([li_main, li_work, li_history], [true, false, false], "active");
+            }
+            else if (div == 'work') {
+                document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
+                change_class([li_main, li_work, li_history], [false, true, false], "active");
+            }
+
+            var n1 = 'Datas';
+            var n2 = 'Data';
+            if (web_interface_current_object_type == 'dataflows') {
+                n1 = 'Dataflows';
+                n2 = 'Dataflow';
+            }
+            $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
+            $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
+            //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");
+
+            if (div == 'meta')
+                fill_metadata();
+            else if (div == 'work')
+                fill_work();
+        }
     }
 
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
@@ -528,7 +528,6 @@ function delete_collaborator(id, login) {
 }
 
 function adding_collaborators() {
-    console.log("HERE");
     var opts = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
     var nbs = 0;
 
