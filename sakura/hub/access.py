@@ -1,6 +1,5 @@
 from sakura.common.errors import APIObjectDeniedError
-from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS, USER_TYPES, \
-                                 ACCESS_TABLE
+from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS, USER_TYPES
 from sakura.hub.context import get_context
 
 GRANT_TO_USER_TYPE = {
@@ -16,16 +15,6 @@ def get_user_type(obj, user):
         return USER_TYPES.other
     grant = obj.grants[user.login]
     return GRANT_TO_USER_TYPE[grant]
-
-def get_grant_level_generic(obj):
-    session = get_context().session
-    if session is None:
-        # we are processing a request coming from a daemon,
-        # return max grant
-        return GRANT_LEVELS.own
-    user_type = get_user_type(obj, session.user)
-    grant_level = ACCESS_TABLE[user_type, obj.access_scope]
-    return grant_level
 
 class FilteredView:
     def __init__(self, db_set):

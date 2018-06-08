@@ -4,7 +4,7 @@ from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
 from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
 from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
-                              get_grant_level_generic, find_owner
+                              find_owner
 from sakura.hub.mixins.bases import BaseMixin
 
 DATABASE_OWNER_WARNING = """\
@@ -126,7 +126,7 @@ class DatabaseMixin(BaseMixin):
         if self.datastore.get_grant_level() < GRANT_LEVELS.read:
             return GRANT_LEVELS.hide
         # ok, let's check grant on this database object
-        return get_grant_level_generic(self)
+        return super().get_grant_level()
     def update_grant(self, login, grant_name):
         self.assert_grant_level(GRANT_LEVELS.own,
                         'Only owner can change database grants.')

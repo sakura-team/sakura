@@ -1,7 +1,7 @@
 from sakura.common.errors import APIObjectDeniedError
-from sakura.common.access import GRANT_LEVELS
-from sakura.hub.access import find_owner, \
-           FilteredView, get_grant_level_generic
+from sakura.common.access import GRANT_LEVELS, ACCESS_TABLE
+from sakura.hub.access import find_owner, FilteredView, get_user_type
+from sakura.hub.context import get_context
 
 class BaseMixin:
     @property
@@ -16,7 +16,14 @@ class BaseMixin:
                 metadata[attr] = value
         self.metadata = metadata
     def get_grant_level(self):
-        return get_grant_level_generic(self)
+        session = get_context().session
+        if session is None:
+            # we are processing a request coming from a daemon,
+            # return max grant
+            return GRANT_LEVELS.own
+        user_type = get_user_type(self, session.user)
+        grant_level = ACCESS_TABLE[user_type, self.access_scope]
+        return grant_level
     def assert_grant_level(self, grant, error_msg):
         if self.get_grant_level() < grant:
             raise APIObjectDeniedError(error_msg)
