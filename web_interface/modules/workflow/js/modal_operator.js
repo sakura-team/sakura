@@ -92,10 +92,13 @@ function fill_params(id) {
                         var select_id = 'modal_'+id+'_tab_params_select_'+index;
                         var s = '<br>'+item['label']+' <select id="'+select_id+'" onChange="params_onChange(\''+id+'\', '+index+',\''+select_id+'\');">';
                         for (var i =0; i< item['possible_values'].length; i++) {
+                            var label = item['possible_values'][i];
+                            if (label.length > 40)
+                                label = label.substring(0,37) + '...';
                             if (i == item['value'])
-                                s += ' <option selected> '+item['possible_values'][i]+'</option>';
+                                s += ' <option selected> '+label+'</option>';
                             else
-                                s += ' <option> '+item['possible_values'][i]+'</option>';
+                                s += ' <option> '+label+'</option>';
                         };
                         s += ' </select>';
                         ndiv.innerHTML = s;
@@ -117,7 +120,7 @@ function params_onChange(op_id, param_index, select_id) {
         sakura.common.ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
             if (result2)
                 console.log(result2);
-            else
+            else {
                 fill_in_out('output', op_id);
                 var index = 0;
                 current_instance_info.tabs.forEach( function(tab) {
@@ -125,6 +128,9 @@ function params_onChange(op_id, param_index, select_id) {
                     iframe.src = iframe.src;
                     index += 1;
                 });
+                // value change on one param may change possible values of another one.
+                fill_params(op_id);
+            }
         });
     });
 }

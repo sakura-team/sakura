@@ -17,6 +17,7 @@ class Parameter(object):
         self.value = None
 
     def selected(self):
+        self.recheck()
         return self.value != None
 
     def pack_base(self):
@@ -51,6 +52,10 @@ class Parameter(object):
         self.value = None
 
     # override in subclass if needed.
+    def recheck(self):
+        pass
+
+    # override in subclass if needed.
     def get_value_serializable(self):
         return self.value
 
@@ -71,6 +76,13 @@ class ComboParameter(Parameter):
             if len(possible) == 0:
                 raise ParameterException(Issue.NoPossibleValues)
             self.set_value(0)
+    def recheck(self):
+        if self.value is not None:
+            # value is selected...
+            if self.value >= len(self.get_possible_values()):
+                # ... but it became invalid
+                # (e.g. the value of another parameter changed the set of possible values)
+                self.value = None
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError

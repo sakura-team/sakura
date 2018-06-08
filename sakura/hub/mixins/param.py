@@ -13,6 +13,8 @@ class OpParamMixin:
     def set_value(self, value):
         # on remote instance
         self.remote_param.set_value(value)
+        # refresh any other parameter linked to this one
+        self.op.remote_instance.auto_fill_parameters()
         # on local db
         self.value = value
     @classmethod
