@@ -52,7 +52,9 @@ class DataSourceOperator(Operator):
                 TableSelectionParameter('Table', self))
     @property
     def output_streams(self):
+        if self.database_param.selected_database is None:
+            self.database_param.auto_fill()
+        if self.table_param.selected_table is None:
+            self.table_param.auto_fill()
         table = self.table_param.selected_table
-        if table is None:
-            return []
         return [ table.stream ]

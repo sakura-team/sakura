@@ -17,6 +17,7 @@ class OpParamMixin:
         self.op.remote_instance.auto_fill_parameters()
         # on local db
         self.value = value
+        self._database_.commit()
     @classmethod
     def lookup(cls, op, param_id):
         param = cls.get(op = op, param_id = param_id)

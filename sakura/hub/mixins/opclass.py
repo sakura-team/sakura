@@ -36,6 +36,7 @@ class OpClassMixin:
         for op in op_cls.op_instances:
             if all(link.src_op.instanciated \
                     for link in op.uplinks):
-                for param in op.params:
+                # update params in order (according to param_id)
+                for param in sorted(op.params, key=lambda param: param.param_id):
                     param.update_on_daemon()
         return op_cls

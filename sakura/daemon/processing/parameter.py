@@ -46,6 +46,7 @@ class Parameter(object):
     # override in subclass if needed.
     def set_value(self, value):
         self.value = value
+        self.recheck()
 
     # override in subclass if needed.
     def unset_value(self):
