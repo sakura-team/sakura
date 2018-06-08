@@ -117,3 +117,11 @@ class DatastoreMixin(BaseMixin):
             datastore.restore_grants(grants)
             datastore.restore_databases(databases)
         return datastore
+    def update_grant(self, login, grant_name):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                        'Only owner can change datastore grants.')
+        # update on remote datastore
+        self.remote_instance.update_grant(
+                    login, GRANT_LEVELS.value(grant_name))
+        # update in hub.db
+        super().update_grant(login, grant_name)

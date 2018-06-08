@@ -110,6 +110,9 @@ class GuiToHubAPI(object):
     def list_datastores(self):
         return self.datastores
 
+    def update_datastore_grant(self, datastore_id, login, grant_name):
+        return self.datastores[datastore_id].update_grant(login, grant_name)
+
     def list_databases(self):
         return self.databases
 

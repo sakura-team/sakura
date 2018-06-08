@@ -80,6 +80,10 @@ SQL_GET_DS_GRANTS = '''\
 SELECT  usename, usecreatedb FROM pg_user;
 '''
 
+SQL_SET_DS_GRANTS = '''\
+ALTER ROLE %(ds_user)s WITH %(ds_grants)s;
+'''
+
 SQL_GET_DBS = '''\
 SELECT  datname  FROM pg_database;
 '''
@@ -403,6 +407,19 @@ class PostgreSQLDBDriver:
                         db_name = db_name,
                         db_user = db_user,
                         db_grants = db_grants))
+        admin_db_conn.commit()
+    @staticmethod
+    def set_datastore_grant(admin_db_conn, ds_user, grant):
+        with admin_db_conn.cursor() as cursor:
+            ds_grants = {
+                GRANT_LEVELS.hide:  'NOLOGIN NOCREATEDB',
+                GRANT_LEVELS.list:  'NOLOGIN NOCREATEDB',
+                GRANT_LEVELS.read:  'LOGIN   NOCREATEDB',
+                GRANT_LEVELS.write: 'LOGIN   CREATEDB'
+            }[grant]
+            cursor.execute(SQL_SET_DS_GRANTS % dict(
+                    ds_user = ds_user,
+                    ds_grants = ds_grants))
         admin_db_conn.commit()
 
 DRIVER = PostgreSQLDBDriver

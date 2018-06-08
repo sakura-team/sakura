@@ -111,3 +111,11 @@ class DataStore:
             self.driver.set_database_grant(
                     admin_conn, db_name, db_user, grant_level)
         self.refresh()
+    def update_grant(self, login, grant_level):
+        ds_user = 'sakura_' + login
+        with self.admin_connect() as admin_conn:
+            if not self.has_user(login):
+                self.driver.create_user(admin_conn, ds_user)
+            self.driver.set_datastore_grant(
+                    admin_conn, ds_user, grant_level)
+        self.refresh()
