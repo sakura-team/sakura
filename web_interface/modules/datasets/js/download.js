@@ -9,15 +9,22 @@ function datasets_download(dataset_id) {
 
     var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
 
-    var txt = 'The size of the file is unkown for now.<br> However, do you want a compressed file (gzip) ?';
+    var txt = 'The size of the file is unkown for now.';
     if (dataset.count_estimate)
-        txt = 'This dataset has ~'+dataset.count_estimate+' rows.<br> Do you want a compressed file (gzip) ? ';
+        txt = 'This dataset has ~'+dataset.count_estimate+' rows.';
 
-    datasets_asking('File Format',
-                    txt,
-                    'rgba(91,192,222)',
-                    'datasets_download_start_transfert('+dataset_id+', true);',
-                    'datasets_download_start_transfert('+dataset_id+',false);');
+    var h = $('#datasets_download_modal_header');
+    var b = $('#datasets_download_modal_body');
+    var bc = $('#datasets_download_modal_button_csv');
+    var bg = $('#datasets_download_modal_button_gzip');
+
+    h.css('background-color', 'rgba(91,192,222)');
+    h.html("<h3><font color=\"white\">Dataset Download</font></h3>");
+    b.html("<p>"+txt+"</p>");
+    bc.attr('onclick', 'datasets_download_start_transfert('+dataset_id+', false);');
+    bg.attr('onclick', 'datasets_download_start_transfert('+dataset_id+', true);');
+
+    $('#datasets_download_modal').modal();
 }
 
 function datasets_download_start_transfert(dataset_id, gzip) {
