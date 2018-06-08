@@ -51,7 +51,6 @@ class MapOperator(Operator):
         return stream
 
     def minimal_stream(self):
-        import pdb; pdb.set_trace()
         lng_col_idx, lat_col_idx = \
             self.lng_column_param.value, self.lat_column_param.value
         stream = self.filtered_stream()
