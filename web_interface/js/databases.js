@@ -144,6 +144,7 @@ function datas_close_modal(id) {
 
 
 function datas_datastore_on_change() {
+    console.log("HERE");
     if ($('#datas_datastore_input').val() == 'other') {
         var tab = $('#datas_offline_datastores');
         tab.empty();

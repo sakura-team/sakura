@@ -331,13 +331,11 @@ function showDiv(event, dir, div_id) {
         else if (dir.indexOf("Dataflows") != -1)
             web_interface_current_object_type = 'dataflows';
 
-        var obj         = web_interface_current_object_type;
-        var obj_single  = web_interface_current_object_type.substring(0, web_interface_current_object_type.length - 1);
+        var obj = web_interface_current_object_type;
 
         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
         var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
         var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
-
 
         document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
@@ -384,32 +382,59 @@ function showDiv(event, dir, div_id) {
 
     var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
 
-    for(i=0;i<actionsOnShow.length;i++) {
+    for (i = 0; i < actionsOnShow.length; i++)
         if (actionsOnShow[i].nodeName == "IFRAME") {
             var aos = actionsOnShow[i];
             sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
-                if (aos.id == 'iframe_datasets') {
-                    //idElt = getIdFromUrl(window.location.toString());
+                if (aos.id == 'iframe_datasets')
                     aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_id+"&session-secret="+ss;
-                }
-                else if (aos.id == 'iframe_workflow') {
+                else if (aos.id == 'iframe_workflow')
                   aos.src = "/modules/workflow/index.html?dataflow_id="+web_interface_current_id+"&session-secret="+ss;
-                }
             });
         }
-        else {
-            if (!div_id) {
+        else
+            if (!div_id)
                 eval(actionsOnShow[i].href);
-            }
-        }
-    }
-
     if (event)
         event.preventDefault();
 }
 
+//Access Managment
+function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant) {
 
-/* Collaborators Management*/
+    var txt1 = "You can send an email to the owner of <b>"+o_name+"</b> and then ask for a read access on this "+o_type+".</br>";
+    txt1 += "Here is a default text that the owner will receive. Feel free to update it before sending.";
+
+    var txt2 = "Dear owner of '"+o_name+"' (on Sakura plateform),\n\n";
+    txt2 += "\tPlease, could you give me 'reading' access on your "+o_type+" ?\n\n";
+    txt2 += "Thanks in advance,\n";
+    txt2 += "Sincerely,\n";
+    txt2 += current_login;
+    h = $('#web_interface_asking_access_modal_header');
+    b = $('#web_interface_asking_access_modal_body');
+    h.empty();
+    b.empty();
+    h.append("<h3><font color='white'>Asking Access for </font>"+o_name+" </h3>");
+    b.append($('<p>', {html: txt1}));
+
+    var ti = $('<textarea>', {  class: 'form-control',
+                                id: 'web_interface_asking_access_textarea',
+                                rows: '7',
+                                text: txt2});
+    b.append(ti);
+
+    $('#web_interface_asking_access_modal_button').attr('onclick', 'web_interface_asking_access(\''+o_type+'\','+o_id+',\''+grant+'\');');
+    $('#web_interface_asking_access_modal').modal('show');
+}
+
+function web_interface_asking_access(o_type, o_id, grant) {
+    var txt = $('#web_interface_asking_access_textarea').val();
+    sakura.common.ws_request('request_'+o_type+'_grant', [o_id, grant, txt], {}, function(result) {
+        $('#web_interface_asking_access_modal').modal('hide');
+    });
+}
+
+// Collaborators Management
 function matching_hub_name(obj) {
     if (web_interface_current_object_type == 'datas')
         return 'database';
@@ -423,7 +448,6 @@ function matching_hub_name(obj) {
 }
 
 function fill_collaborators_table_body(info) {
-    console.log(info);
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
@@ -439,12 +463,12 @@ function fill_collaborators_table_body(info) {
                 sel.change( function() {
                     change_collaborator_access(web_interface_current_id, user, $(this));
                 });
-                var op1 = $('<option>', { text: "Read"});
+                if (info.access_scope != 'public')
+                    sel.append($('<option>', { text: "Read"}));
+
                 var op2 = $('<option>', { text: "Write"});
                 if (grant == 'write')
                     op2.attr("selected","selected");
-                if (info.access_scope != 'public')
-                    sel.append(op1);
                 sel.append(op2);
                 td2.append(sel);
                 sel.selectpicker('refresh');
@@ -504,18 +528,17 @@ function delete_collaborator(id, login) {
 
 function adding_collaborators() {
     var obj   = matching_hub_name(web_interface_current_object_type);
+    if (obj.length == 0)
+        return;
+
     var opts  = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
     var nbs   = 0;
     var index = 0;
-
-    if (obj.length == 0)
-        return;
 
     opts.map( function (i, opt) {
         if (opt.selected)
           nbs += 1;
     });
-
 
     opts.map( function (i, opt) {
         if (opt.selected) {

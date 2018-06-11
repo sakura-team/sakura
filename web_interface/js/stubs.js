@@ -48,16 +48,11 @@ function buildListStub(idDiv,result,elt) {
                 name = $('<p>');
                 name.attr('style', 'margin: 0px;');
                 name.html( row.name +'&nbsp;&nbsp;&nbsp;');
-                var a = $('<a>');
-                a.html('<span class=\'glyphicon glyphicon-lock\'></span>');
-                a.attr('title', 'Ask for access');
-                a.attr('style', 'cursor: pointer;');
-                a.attr('onclick', 'not_yet()');
+                var a = $('<a>', {title:  'Ask for access',
+                                  style:  'cursor: pointer;',
+                                  html:   '<span class=\'glyphicon glyphicon-lock\'></span>',
+                                  onclick: 'web_interface_asking_access_open_modal(\''+row.name+'\',\''+row.type+'\',\''+row.id+'\',\'read\');'});
                 name.append(a);
-                /*name.attr('title', 'Ask for access');
-                name.attr('style', 'cursor: pointer;');
-                name.attr('onclick', 'not_yet()');
-                */
             }
             cell.append(name);
         }
@@ -116,29 +111,17 @@ function listRequestStub(idDiv, n, elt, bd) {
         sakura.common.ws_request('list_databases', [], {}, function (databases) {
             var result = new Array();
             databases.sort(databases_sort);
-            var index = 0;
-            n = databases.length;
-
             databases.forEach( function(db) {
-                result_info = {'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
-                                       'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
-                                       'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
-                if (db.online) {
+                result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
+                                'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
+                                'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
+                if (db.online)
                     result_info['owner'] = db.owner;
-                }
-                else {
+                else
                     result_info['name'] += ' (OFFLINE)';
-                }
                 result.push(result_info);
-                if (result.length == n) {
-                    result.sort(databases_sort);
-                    buildListStub(idDiv,result,elt);
-                }
             });
-
-            if (n == 0) {
-                buildListStub(idDiv,result,elt);
-            }
+            buildListStub(idDiv,result,elt);
         });
     }
     //Here is for Dataflows
@@ -146,24 +129,14 @@ function listRequestStub(idDiv, n, elt, bd) {
         sakura.common.ws_request('list_dataflows', [], {}, function (dataflows) {
             var result = new Array();
             dataflows.sort(dataflows_sort);
-            var index = 0;
-            n = dataflows.length;
-
             dataflows.forEach( function(df) {
-                result_info = { 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
+                result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
                                 'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
                                 'tags': df.tags, 'owner': df.owner };
 
                 result.push(result_info);
-                if (result.length == n) {
-                    result.sort(dataflows_sort);
-                    buildListStub(idDiv,result,elt);
-                }
             });
-
-            if (n == 0) {
-                buildListStub(idDiv,result,elt);
-            }
+            buildListStub(idDiv,result,elt);
         });
     }
     //Operators
@@ -192,10 +165,6 @@ function listRequestStub(idDiv, n, elt, bd) {
             buildListStub(idDiv,result,elt);
         });
     }
-    /*else {
-        result=listStubAlea(n); // tableau de {"name":_,"id":_,"tags":_,"shortDesc":_,"date":_,"modif":_,"owner":_,"isViewable":_,"isEditable":_} détail : {"name":fullNameAlea(), "id":numAlea(100,100),"tags":aleaAlea(firstNamesAlea),"shortDesc":shortTextAlea(),"date":dateAlea(),"modif":dateAlea(),"owner":aleaAlea(usersAlea),"isViewable":boolAlea(0.7),"isEditable":boolAlea(0.3)}
-        buildListStub(idDiv,result,elt);
-    }*/
     return ;
 }
 
