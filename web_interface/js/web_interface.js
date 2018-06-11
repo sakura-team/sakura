@@ -46,7 +46,6 @@ function fill_work() {
     });
 }
 
-
 function fill_metadata() {
     var req = 'get_database_info';
 
@@ -159,6 +158,9 @@ function fill_metadata() {
     });
 }
 
+function fill_history() {
+    not_yet();
+}
 
 function get_edit_toolbar(datatype, web_interface_current_id) {
     return [{
@@ -193,38 +195,20 @@ function web_interface_create_large_description_area(datatype, area_id, descript
         simplemde.toTextArea();
         simplemde = null;
 
-    if (toolbar)
-        simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
-                                      element: document.getElementById(area_id),
-                                      toolbar: get_edit_toolbar(datatype, web_interface_current_id)
-                                      });
-    else
-        simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
+    simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
                                   element: document.getElementById(area_id),
-                                  toolbar: false
+                                  toolbar: toolbar ? get_edit_toolbar(datatype, web_interface_current_id) : false
                                   });
-
 
     simplemde.value(description);
     simplemde.togglePreview();
 }
 
 function web_interface_save_large_description(data_type, id) {
-    var obj = '';
-    if (data_type == 'datas')
-        obj = 'database';
-    else if (data_type == 'dataflows')
-        obj = 'dataflow';
-    else {
-        console.log("Cannot save description of '"+data_type+"' data");
-        return;
-    }
+    var obj = matching_hub_name(data_type);
 
-
-
-    sakura.common.ws_request('update_'+obj+'_info', [id], {'large_desc': simplemde.value()}, function(result) {
-        console.log("Done");
-    });
+    if (obj.length != 0)
+        sakura.common.ws_request('update_'+obj+'_info', [id], {'large_desc': simplemde.value()}, function(result) {});
 }
 
 
@@ -246,24 +230,22 @@ function showDiv(event, dir, div_id) {
     }
 
     //normalize dir
-    if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1)) {
+    if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1))
         document.pageElt = +dir.split("?")[1].match(/page=(-?\d+)/)[1];
-    }
-    else {
+    else
         document.pageElt = 1;
-    }
 
     dir = dir.split("?")[0];
 
-    if (dir=="") {
-        dir="Home";
+    if (dir == "") {
+        dir = "Home";
     }
     else if (dir.match("tmp") || isUrlWithId(dir)) {
-        if (!(dir.match("Work") || dir.match("Historic") || dir.match("Main")))  {
+        if (!(dir.match("Work") || dir.match("Historic") || dir.match("Meta")))  {
             if (dir[dir.length -1] == '/')
-                dir = dir + "Main";
+                dir = dir + "Meta";
             else
-                dir = dir + "/Main";
+                dir = dir + "/Meta";
         }
     }
     var dirs = dir.split("/");
@@ -287,13 +269,14 @@ function showDiv(event, dir, div_id) {
     if (dirs.length == 1)
         idDir += "_div";
 
-    if (idDir.match("Main") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
+    document.getElementById(idDir).style.display='inline';
+
+    /*if (idDir.match("Meta") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
         document.getElementById("idEditModeWidget").style.display='';
     }
     else {
         document.getElementById("idEditModeWidget").style.display='none';
-    }
-    document.getElementById(idDir).style.display='inline';
+    }*/
 
 
     //activate navbar
@@ -355,36 +338,22 @@ function showDiv(event, dir, div_id) {
         var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
         var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
 
-        if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
-            document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
-            if (dir.indexOf('Main') != -1) {
+        document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
+
+        if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
+            if (dir.indexOf('Meta') != -1) {
                 change_class([li_main, li_work, li_history], [true, false, false], "active");
                 fill_metadata();
-                document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
             }
-            else if (dir.indexOf('Work') != -1)
+            else if (dir.indexOf('Work') != -1) {
                 change_class([li_main, li_work, li_history], [false, true, false], "active");
-
-            else if (dir.indexOf('Historic') != -1)
+            }
+            else if (dir.indexOf('Historic') != -1) {
                 change_class([li_main, li_work, li_history], [false, false, true], "active");
+            }
         }
         else {
-            var div = '';
-            if (dir.indexOf("Main") != -1)
-                div = 'meta';
-            else if (dir.indexOf("Work") != -1)
-                div = 'work';
-
-            if (div == 'meta') {
-                document.getElementById('web_interface_'+obj+'_tmp_meta').style.display='inline';
-                change_class([li_main, li_work, li_history], [true, false, false], "active");
-            }
-            else if (div == 'work') {
-                document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
-                change_class([li_main, li_work, li_history], [false, true, false], "active");
-            }
-
             var n1 = 'Datas';
             var n2 = 'Data';
             if (web_interface_current_object_type == 'dataflows') {
@@ -395,10 +364,21 @@ function showDiv(event, dir, div_id) {
             $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
             //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");
 
-            if (div == 'meta')
+            if (dir.indexOf("Meta") != -1) {
+                change_class([li_main, li_work, li_history], [true, false, false], "active");
                 fill_metadata();
-            else if (div == 'work')
+            }
+            else if (dir.indexOf("Work") != -1) {
+                change_class([li_main, li_work, li_history], [false, true, false], "active");
                 fill_work();
+            }
+            else if (dir.indexOf('Historic') != -1) {
+                change_class([li_main, li_work, li_history], [false, false, true], "active");
+                fill_history();
+            }
+            else {
+                document.getElementById('web_interface_'+obj+'_tmp_main').style.display='none';
+            }
         }
     }
 
@@ -430,7 +410,7 @@ function showDiv(event, dir, div_id) {
 
 
 /* Collaborators Management*/
-function mathing_hub_name(obj) {
+function matching_hub_name(obj) {
     if (web_interface_current_object_type == 'datas')
         return 'database';
     else if (web_interface_current_object_type == 'dataflows')
@@ -507,24 +487,29 @@ function fill_collaborators_table_body(info) {
 
 function change_collaborator_access(id, login, sel) {
     var obj = matching_hub_name(web_interface_current_object_type);
-    sakura.common.ws_request('update_'+obj+'_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {});
+    if (obj.length != 0)
+        sakura.common.ws_request('update_'+obj+'_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {});
 }
 
 function delete_collaborator(id, login) {
-    var obj = mathing_hub_name(web_interface_current_object_type);
+    var obj = matching_hub_name(web_interface_current_object_type);
 
-    sakura.common.ws_request('update_'+obj+'_grant', [id, login, 'hide'], {}, function(result) {
-        sakura.common.ws_request('get_'+obj+'_info', [id], {}, function(info) {
-            fill_collaborators_table_body(info);
+    if (obj.length != 0)
+        sakura.common.ws_request('update_'+obj+'_grant', [id, login, 'hide'], {}, function(result) {
+            sakura.common.ws_request('get_'+obj+'_info', [id], {}, function(info) {
+                fill_collaborators_table_body(info);
+            });
         });
-    });
 }
 
 function adding_collaborators() {
-    var obj   = mathing_hub_name(web_interface_current_object_type);
+    var obj   = matching_hub_name(web_interface_current_object_type);
     var opts  = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
     var nbs   = 0;
     var index = 0;
+
+    if (obj.length == 0)
+        return;
 
     opts.map( function (i, opt) {
         if (opt.selected)
