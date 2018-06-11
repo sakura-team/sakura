@@ -36,20 +36,30 @@ function buildListStub(idDiv,result,elt) {
         //adding link
         var cell = $('<td>');
         if (row.name.indexOf('OFFLINE') === -1) {
-            var a = $('<a>');
+            var name = null;
             if (row.access_scope == 'open' || row.access_scope == 'public' || row.grant_level != 'list') {
-                a.html(row.name );
-                a.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
-                a.attr('title', 'Accessing database');
-                a.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+                name = $('<a>');
+                name.html(row.name );
+                name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
+                name.attr('title', 'Accessing database');
+                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
             }
             else {
-                a.html( "<font color='black'>"+row.name + "</font> (Ask for access)" );
+                name = $('<p>');
+                name.attr('style', 'margin: 0px;');
+                name.html( row.name +'&nbsp;&nbsp;&nbsp;');
+                var a = $('<a>');
+                a.html('<span class=\'glyphicon glyphicon-lock\'></span>');
                 a.attr('title', 'Ask for access');
                 a.attr('style', 'cursor: pointer;');
                 a.attr('onclick', 'not_yet()');
+                name.append(a);
+                /*name.attr('title', 'Ask for access');
+                name.attr('style', 'cursor: pointer;');
+                name.attr('onclick', 'not_yet()');
+                */
             }
-            cell.append(a);
+            cell.append(name);
         }
         else
             cell.append(row.name);

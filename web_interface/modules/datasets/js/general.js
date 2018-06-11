@@ -152,10 +152,13 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                 first_chunk = false;
             }
             chunk.data.forEach( function(line) {
+                //Dates
                 dates.forEach(function(date) {
                     d = line[date.column_id];
                     line[date.column_id] = moment(d, date.format).unix();
                 });
+
+                //null values
                 for (i=0; i<line.length; i++)
                   if (line[i].length == 0)
                       line[i] = null;

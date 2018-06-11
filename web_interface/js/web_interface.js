@@ -136,7 +136,7 @@ function fill_metadata() {
                     else
                         recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '..');
                       });
-            
+
             fill_collaborators_table_body(info);
         });
 
@@ -159,50 +159,6 @@ function fill_metadata() {
     });
 }
 
-
-function fill_dataflow_metadata(dataflow_id) {
-    sakura.common.ws_request('get_dataflow_info', [dataflow_id], {}, function(df_info) {
-        $('#web_interface_dataflow_metadata').empty();
-        $('#web_interface_dataflow_metadata').load('divs/templates/dataflows_metadata.html', function() {
-
-            //Name
-            $($('#Dataflow_main_name')[0]).html('&nbsp;&nbsp;<em>' + df_info.name + '</em>&nbsp;&nbsp;');
-
-            //Description
-            if (df_info.short_desc)
-                $($('#Dataflow_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + df_info.short_desc + '</font>&nbsp;&nbsp;');
-            else
-                $($('#Dataflow_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
-
-            //MetaData
-            var owner = '..';
-            if (df_info.owner && df_info.owner != 'null')
-                owner =  df_info.owner;
-
-            var date = "..";
-            if (df_info.creation_date)
-                date = moment.unix(df_info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
-
-            [   {name: "_df_date_", value: date},
-                {name: "_df_owner_", value: owner},
-                {name: "_df_grant_", value: df_info.grant_level},
-                {name: "_df_licence_", value: df_info.licence},
-                {name: "_df_topic_", value: df_info.topic},
-                ].forEach( function (elt){
-                    if (elt.value)
-                        recursiveReplace($('#idDivDataflowstmpDataflowMeta')[0], elt.name, elt.value);
-                    else
-                        recursiveReplace($('#idDivDataflowstmpDataflowMeta')[0], elt.name, '..');
-                      });
-        });
-
-        //Now filling the markdownarea field
-        var l_desc = '<span style="color:grey">*No description ! Edit one by clicking on the eye*</span>'
-        if (df_info.large_desc)
-            l_desc = df_info.large_desc;
-        web_interface_create_large_description_area('dataflow', 'web_interface_dataflow_markdownarea', l_desc);
-    });
-}
 
 function get_edit_toolbar(datatype, web_interface_current_id) {
     return [{
@@ -254,7 +210,19 @@ function web_interface_create_large_description_area(datatype, area_id, descript
 }
 
 function web_interface_save_large_description(data_type, id) {
-    sakura.common.ws_request('update_'+data_type+'_info', [id], {'large_desc': simplemde.value()}, function(result) {
+    var obj = '';
+    if (data_type == 'datas')
+        obj = 'database';
+    else if (data_type == 'dataflows')
+        obj = 'dataflow';
+    else {
+        console.log("Cannot save description of '"+data_type+"' data");
+        return;
+    }
+
+
+
+    sakura.common.ws_request('update_'+obj+'_info', [id], {'large_desc': simplemde.value()}, function(result) {
         console.log("Done");
     });
 }
@@ -462,7 +430,20 @@ function showDiv(event, dir, div_id) {
 
 
 /* Collaborators Management*/
+function mathing_hub_name(obj) {
+    if (web_interface_current_object_type == 'datas')
+        return 'database';
+    else if (web_interface_current_object_type == 'dataflows')
+        return 'dataflow';
+    else {
+        console.log('We do not deal with '+obj+' for now');
+        not_yet();
+        return '';
+    }
+}
+
 function fill_collaborators_table_body(info) {
+    console.log(info);
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
@@ -525,30 +506,13 @@ function fill_collaborators_table_body(info) {
 }
 
 function change_collaborator_access(id, login, sel) {
-    var obj = '';
-    if (web_interface_current_object_type == 'datas')
-        obj = 'database';
-    else if (web_interface_current_object_type == 'dataflows')
-        obj = 'dataflow';
-    else {
-        not_yet();
-        return;
-    }
-
+    var obj = matching_hub_name(web_interface_current_object_type);
     sakura.common.ws_request('update_'+obj+'_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {});
 }
 
 function delete_collaborator(id, login) {
-    var obj = '';
-    if (web_interface_current_object_type == 'datas')
-        obj = 'database';
-    else if (web_interface_current_object_type == 'dataflows')
-        obj = 'dataflow';
-    else {
-        not_yet();
-        return;
-    }
-    console.log(id);
+    var obj = mathing_hub_name(web_interface_current_object_type);
+
     sakura.common.ws_request('update_'+obj+'_grant', [id, login, 'hide'], {}, function(result) {
         sakura.common.ws_request('get_'+obj+'_info', [id], {}, function(info) {
             fill_collaborators_table_body(info);
@@ -557,37 +521,28 @@ function delete_collaborator(id, login) {
 }
 
 function adding_collaborators() {
-    var opts = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
-    var nbs = 0;
+    var obj   = mathing_hub_name(web_interface_current_object_type);
+    var opts  = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
+    var nbs   = 0;
+    var index = 0;
 
     opts.map( function (i, opt) {
         if (opt.selected)
           nbs += 1;
     });
 
+
     opts.map( function (i, opt) {
         if (opt.selected) {
-            var index = i+1;
-            if (web_interface_current_object_type == 'datas') {
-                sakura.common.ws_request('update_database_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
-                    if (index == nbs) {
-                        sakura.common.ws_request('get_database_info', [web_interface_current_id], {}, function(info) {
-                            fill_collaborators_table_body(info);
-                        });
-                    }
-                });
-            }
-            else {
-                sakura.common.ws_request('update_dataflow_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
-                    if (index == nbs) {
-                        sakura.common.ws_request('get_dataflow_info', [web_interface_current_id], {}, function(info) {
-                            fill_collaborators_table_body(info);
-                        });
-                    }
-                });
-            }
+            index = index+1;
+            sakura.common.ws_request('update_'+obj+'_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
+                  if (index == nbs) {
+                      sakura.common.ws_request('get_'+obj+'_info', [web_interface_current_id], {}, function(info) {
+                          fill_collaborators_table_body(info);
+                      });
+                  }
+            });
         }
-
     });
 }
 
