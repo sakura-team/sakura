@@ -505,10 +505,15 @@ function fill_collaborators_table_body(info) {
         }
     }
     else if (info.grant_level == 'read') {
+        var hobj_type = matching_hub_name(web_interface_current_object_type);
         var tr = $('<tr>');
         var td = $('<td>');
-        var a = $('<button>', { text: "Ask for writer access",
-                                onclick: "not_yet('code 2');"});
+        var a = $('<button>', { text: "Ask for writer access"});
+
+        a.click(function () {
+            web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'write', null);
+        });
+
         td.append(a);
         tr.append(td);
         tbody.append(tr);
