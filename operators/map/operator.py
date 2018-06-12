@@ -39,7 +39,7 @@ class MapOperator(Operator):
         westlng, eastlng, southlat, northlat = self.last_bbox
         # get columns selected in combo parameters
         lng_col_idx, lat_col_idx = \
-            self.lng_column_param.value, self.lat_column_param.value
+            self.lng_column_param.col_index, self.lat_column_param.col_index
         # filter input stream as much as possible:
         # - select useful columns only
         # - restrict to visible area
@@ -52,7 +52,7 @@ class MapOperator(Operator):
 
     def minimal_stream(self):
         lng_col_idx, lat_col_idx = \
-            self.lng_column_param.value, self.lat_column_param.value
+            self.lng_column_param.col_index, self.lat_column_param.col_index
         stream = self.filtered_stream()
         stream = stream.select_columns(lng_col_idx, lat_col_idx)
         return stream

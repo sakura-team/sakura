@@ -22,7 +22,7 @@ class MeanOperator(Operator):
                 NumericColumnSelection('Input column', self.input))
                 
     def compute(self):
-        column_idx = self.input_column_param.value
+        column_idx = self.input_column_param.col_index
         column = self.input.columns[column_idx]
         res = 0
         num = 0

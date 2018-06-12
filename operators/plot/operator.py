@@ -29,8 +29,8 @@ class PlotOperator(Operator):
 
         if event[0] == 'get_data':
             dp = []
-            column_x = self.input_column_param_x.value
-            column_y = self.input_column_param_y.value
+            column_x = self.input_column_param_x.col_index
+            column_y = self.input_column_param_y.col_index
             #time_credit = 0.3
             #deadline = time() + time_credit
             stream = self.input.select_columns(column_x, column_y)

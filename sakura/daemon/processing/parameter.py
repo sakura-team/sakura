@@ -93,7 +93,6 @@ class ColumnSelectionParameter(ComboParameter):
         super().__init__(label)
         self.stream = stream
         self.condition = condition
-        self.raw_value = None
     def is_linked_to_stream(self, stream):
         return self.stream == stream
     def matching_columns(self):
@@ -106,19 +105,13 @@ class ColumnSelectionParameter(ComboParameter):
         return list('%s (of %s)' % (col_label, self.stream.label) \
                     for col_idx, col_label, col_type, col_tags in \
                         self.matching_columns())
-    def set_value(self, poss_idx):
-        if not self.stream.connected():
-            raise ParameterException(Issue.InputNotConnected)
-        # raw_value is the index of the column in the possible values
-        self.raw_value = poss_idx
-        # value is the index of the column in the stream
-        col_idx = tuple(self.matching_columns())[poss_idx][0]
-        self.value = col_idx
-    def unset_value(self):
-        self.raw_value = None
-        self.value = None
-    def get_value_serializable(self):
-        return self.raw_value
+    @property
+    def col_index(self):
+        if self.value is None:
+            return None
+        # self.value is the index of the column in the possible values
+        # each possible value is a tuple whose first item is the col index
+        return tuple(self.matching_columns())[self.value][0]
 
 class TagBasedColumnSelection(ColumnSelectionParameter):
     def __init__(self, label, stream, tag):
