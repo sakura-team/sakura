@@ -77,6 +77,7 @@ function recover_datasets() {
 
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
 
+        console.log(result);
         //Sorting tables by name
         result.tables.sort(datasets_sort_func);
 
@@ -114,17 +115,28 @@ function recover_datasets() {
                     $(tds[1]).append(dataset.short_desc);
                 else
                     $(tds[1]).append("<font color='lightgrey'>__</font>");
-                spans.toArray().forEach( function(span) {
-                    if ($(span).attr('onclick')) {
-                        var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
-                         $(span).attr('onclick', new_oc);
-                    }
-                });
+                if (result.grant_level == 'write' || result.grant_level == 'own')
+                    spans.toArray().forEach( function(span) {
+                        if ($(span).attr('onclick')) {
+                            var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
+                            $(span).attr('onclick', new_oc);
+                        }
+                    });
+                else
+                    spans.toArray().forEach( function(span) {
+                        $(span).css('display', 'none');
+                    });
+
             });
             body.append(new_row);
         });
 
-        $('#datasets_open_creation_button').attr('onclick', 'datasets_open_creation('+database_id+');');
+        if (result.grant_level == 'write' || result.grant_level == 'own') {
+            $('#datasets_open_creation_button').attr('onclick', 'datasets_open_creation('+database_id+');');
+            $('#datasets_open_creation_button').css('display', 'inline');
+        }
+        else
+            $('#datasets_open_creation_button').css('display', 'none');
 
         //Ask for the existing tags
         sakura.common.ws_request('list_expected_columns_tags', [database_infos.datastore_id], {}, function (tags_list) {
