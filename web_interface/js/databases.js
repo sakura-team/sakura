@@ -54,7 +54,6 @@ function datas_update_creation_modal() {
         datas_datastores = result;
         $('#datas_datastore_input').empty();
         result.forEach( function(ds) {
-            console.log(ds);
             if (ds['online']) {
                 $('#datas_datastore_input').append('<option value="'+ds['datastore_id']+'">'+ds['driver_label']+" service on "+ds['host']+'</option>');
             }
@@ -107,16 +106,6 @@ function new_database() {
 
     $("#datas_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
-    /*console.log("Name:", name);
-    console.log("Short:", short_d);
-    console.log("Datastore:", ds_id);
-    console.log("Access scope:", access_scope);
-    console.log("Agent type:", agent_type);
-    console.log("Topic:", topic);
-    console.log("Data type:", data_type);
-    console.log("Licence:", licence);
-    */
-
     sakura.common.ws_request('new_database',
                                 [ds_id, name],
                                 {   'short_desc': short_d,
@@ -142,20 +131,36 @@ function datas_close_modal(id) {
     $('#'+id).modal('hide');
 }
 
+function close_modal_datastores_other_modal() {
+    $('#web_interface_datastores_other_modal').modal('hide');
+}
 
 function datas_datastore_on_change() {
-    console.log("HERE");
+
     if ($('#datas_datastore_input').val() == 'other') {
-        var tab = $('#datas_offline_datastores');
+        var tab = $('#web_interface_datastores_unaccessible');
         tab.empty();
+        var nb = 0;
         datas_datastores.forEach( function(ds) {
-            if (!ds['online']) {
+            if (ds.online && ds.access_scope != 'private' && ds.grant_level != 'write') {
                 var new_b_row = $(tab[0].insertRow());
-                var line = "<td>"+ds['driver_label']+" service on "+ds['host']+"</td>";
-                new_b_row.append(line);
+                var td1 = $('<td>' , {html: ds.driver_label+" service on "+ds.host});
+                var td2 = $('<td>');
+                var but = $('<button>', { text: 'Ask for access'});
+                but.click(  function () {  web_interface_asking_access_open_modal( ds.host,'datastore',ds.id,'write',close_modal_datastores_other_modal);});
+
+                td2.append(but);
+                new_b_row.append(td1, td2);
+                nb ++;
             }
         });
+        if (nb == 0) {
+          var new_b_row = $(tab[0].insertRow());
+          var td1 = $('<td>' , {html: '<b>No online datastore you can ask access for</b>',
+                                align: "center"});
+          new_b_row.append(td1);
+        }
 
-        $('#datas_other_datastores_modal').modal('show');
+        $('#web_interface_datastores_other_modal').modal('show');
     }
 }

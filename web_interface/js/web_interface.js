@@ -7,8 +7,8 @@ var web_interface_current_object_type = '';
 var simplemde  = null;           //large description textarea
 
 ////////////FUNCTIONS
-function not_yet(s = '') {
-    if (s == '') {
+function not_yet(s) {
+    if (!s) {
         alert('Not implemented yet');
     }
     else {
@@ -159,7 +159,7 @@ function fill_metadata() {
 }
 
 function fill_history() {
-    not_yet();
+    not_yet('code 3');
 }
 
 function get_edit_toolbar(datatype, web_interface_current_id) {
@@ -400,13 +400,13 @@ function showDiv(event, dir, div_id) {
 }
 
 //Access Managment
-function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant) {
+function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, callback) {
 
-    var txt1 = "You can send an email to the owner of <b>"+o_name+"</b> and then ask for a read access on this "+o_type+".</br>";
+    var txt1 = "You can send an email to the owner of <b>"+o_name+"</b> and then ask for a <b>"+grant+"</b> access on this "+o_type+".</br>";
     txt1 += "Here is a default text that the owner will receive. Feel free to update it before sending.";
 
     var txt2 = "Dear owner of '"+o_name+"' (on Sakura plateform),\n\n";
-    txt2 += "\tPlease, could you give me 'reading' access on your "+o_type+" ?\n\n";
+    txt2 += "\tPlease, could you give me '"+grant+"' access on your "+o_type+" ?\n\n";
     txt2 += "Thanks in advance,\n";
     txt2 += "Sincerely,\n";
     txt2 += current_login;
@@ -422,15 +422,21 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant) {
                                 rows: '7',
                                 text: txt2});
     b.append(ti);
-
-    $('#web_interface_asking_access_modal_button').attr('onclick', 'web_interface_asking_access(\''+o_type+'\','+o_id+',\''+grant+'\');');
+    $('#web_interface_asking_access_modal_button').click(function () { web_interface_asking_access(o_type, o_id, grant, callback)});
     $('#web_interface_asking_access_modal').modal('show');
 }
 
-function web_interface_asking_access(o_type, o_id, grant) {
+function web_interface_asking_access(o_type, o_id, grant, callback) {
     var txt = $('#web_interface_asking_access_textarea').val();
     sakura.common.ws_request('request_'+o_type+'_grant', [o_id, grant, txt], {}, function(result) {
-        $('#web_interface_asking_access_modal').modal('hide');
+        if (!result) {
+            if (callback)
+                callback();
+            $('#web_interface_asking_access_modal').modal('hide');
+        }
+        else {
+            console.log("SHIT");
+        }
     });
 }
 
@@ -442,7 +448,7 @@ function matching_hub_name(obj) {
         return 'dataflow';
     else {
         console.log('We do not deal with '+obj+' for now');
-        not_yet();
+        not_yet('code 1');
         return '';
     }
 }
@@ -502,7 +508,7 @@ function fill_collaborators_table_body(info) {
         var tr = $('<tr>');
         var td = $('<td>');
         var a = $('<button>', { text: "Ask for writer access",
-                                onclick: "not_yet();"});
+                                onclick: "not_yet('code 2');"});
         td.append(a);
         tr.append(td);
         tbody.append(tr);
