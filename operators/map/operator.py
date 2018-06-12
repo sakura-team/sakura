@@ -21,22 +21,15 @@ class MapOperator(Operator):
         self.register_tab('Map', 'map.html')
         # custom attributes
         self.curr_heatmap = None
-        self.last_bbox = None
         self.current_filtered_stream = None
 
     @property
     def output_streams(self):
-        if not self.input_stream.connected() or self.last_bbox is None:
+        if not self.input_stream.connected() or self.current_filtered_stream is None:
             return []
-        # note: stream must be referenced to avoid garbage collection
-        self.current_filtered_stream = self.filtered_stream()
         return [ self.current_filtered_stream ]
 
-    def save_last_bbox(self, westlng, eastlng, southlat, northlat, **args):
-        self.last_bbox = westlng, eastlng, southlat, northlat
-
-    def filtered_stream(self):
-        westlng, eastlng, southlat, northlat = self.last_bbox
+    def filtered_stream(self, westlng, eastlng, southlat, northlat, **args):
         # get columns selected in combo parameters
         lng_col_idx, lat_col_idx = \
             self.lng_column_param.col_index, self.lat_column_param.col_index
@@ -53,7 +46,7 @@ class MapOperator(Operator):
     def minimal_stream(self):
         lng_col_idx, lat_col_idx = \
             self.lng_column_param.col_index, self.lat_column_param.col_index
-        stream = self.filtered_stream()
+        stream = self.current_filtered_stream
         stream = stream.select_columns(lng_col_idx, lat_col_idx)
         return stream
 
@@ -64,7 +57,7 @@ class MapOperator(Operator):
         time_credit = event[1]
         if ev_type == 'map_move':
             info = event[2]
-            self.save_last_bbox(**info)
+            self.current_filtered_stream = self.filtered_stream(**info)
             stream = self.minimal_stream()
             # create heatmap
             self.curr_heatmap = HeatMap(stream, **info)
