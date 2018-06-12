@@ -405,7 +405,7 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, cal
     var txt1 = "You can send an email to the owner of <b>"+o_name+"</b> and then ask for a <b>"+grant+"</b> access on this "+o_type+".</br>";
     txt1 += "Here is a default text that the owner will receive. Feel free to update it before sending.";
 
-    var txt2 = "Dear owner of '"+o_name+"' (on Sakura plateform),\n\n";
+    var txt2 = "Dear owner of '"+o_name+"' ("+o_type+" on the Sakura plateform),\n\n";
     txt2 += "\tPlease, could you give me '"+grant+"' access on your "+o_type+" ?\n\n";
     txt2 += "Thanks in advance,\n";
     txt2 += "Sincerely,\n";
@@ -427,12 +427,21 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, cal
 }
 
 function web_interface_asking_access(o_type, o_id, grant, callback) {
+
     var txt = $('#web_interface_asking_access_textarea').val();
+
     sakura.common.ws_request('request_'+o_type+'_grant', [o_id, grant, txt], {}, function(result) {
         if (!result) {
-            if (callback)
-                callback();
             $('#web_interface_asking_access_modal').modal('hide');
+
+            //displayig success modal during 1 sec
+            $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
+            $('#web_interface_success_modal').modal('show');
+            setTimeout( function () {
+                $('#web_interface_success_modal').modal('hide');
+                if (callback)
+                    callback();
+            }, 1000, callback);
         }
         else {
             console.log("SHIT");
@@ -508,7 +517,7 @@ function fill_collaborators_table_body(info) {
         var hobj_type = matching_hub_name(web_interface_current_object_type);
         var tr = $('<tr>');
         var td = $('<td>');
-        var a = $('<button>', { text: "Ask for writer access"});
+        var a = $('<button>', { html: "Ask for <b>write</b> access"});
 
         a.click(function () {
             web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'write', null);
