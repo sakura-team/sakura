@@ -10,6 +10,8 @@ then
     WEBAPP="$1"
 fi
 
+WEBAPP="$PWD/$WEBAPP"
+
 echo $BASH_VERSION
 
 if [ ! -f test/hub-email.conf ]
@@ -103,5 +105,4 @@ $(cat test/hub-email.conf)
 }
 EOF
 
-./hub.py -f $TMPDIR/hub.conf $WEBAPP
-
+PYTHONPATH="$PWD" sakura/hub/hub.py -f $TMPDIR/hub.conf -d $WEBAPP

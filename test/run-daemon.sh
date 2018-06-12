@@ -20,7 +20,7 @@ trap on_exit EXIT
 mkdir -p $TMPDIR/operators
 for operator in $operators
 do
-    ln -s $PWD/sakura/operators/$operator $TMPDIR/operators/$operator
+    ln -s $PWD/operators/$operator $TMPDIR/operators/$operator
 done
 
 CUSTOM_DATASTORES_CONF="$PWD/test/daemon${daemon_index}-datastores.conf"
@@ -56,5 +56,4 @@ EOF
 #   ]
 #   [...]
 
-./daemon.py -f $TMPDIR/daemon.conf
-
+PYTHONPATH="$PWD" sakura/daemon/daemon.py -f $TMPDIR/daemon.conf
