@@ -7,6 +7,19 @@ class BaseMixin:
     @property
     def owner(self):
         return find_owner(self.grants)
+    @owner.setter
+    def owner(self, login):
+        self.grants[login] = GRANT_LEVELS.own
+    def cleanup_grants(self):
+        users = get_context().users
+        grants = dict(self.grants)
+        cleaned_up_grants = {}
+        for login, grant in grants.items():
+            if users.get(login = login) is None:
+                print('WARNING: user %s is unknown is Sakura. Ignored.' % login)
+            else:
+                cleaned_up_grants[login] = grant
+        self.grants = cleaned_up_grants
     def update_attributes(self, **kwargs):
         metadata = dict(self.metadata)
         for attr, value in kwargs.items():

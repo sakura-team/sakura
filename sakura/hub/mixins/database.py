@@ -7,10 +7,6 @@ from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
                               find_owner
 from sakura.hub.mixins.bases import BaseMixin
 
-DATABASE_OWNER_WARNING = """\
-Owner of "%(dbname)s" database is nonexistent Sakura user "%(owner)s".
-Ignoring this database."""
-
 class DatabaseMixin(BaseMixin):
     @property
     def online(self):
@@ -69,26 +65,15 @@ class DatabaseMixin(BaseMixin):
         database = cls.get(datastore = datastore, name = name)
         if database is None:
             # new database detected on a daemon
-            # if owner not specified, set it to datastore's admin
             grants = kwargs.pop('grants', {})
-            owner = find_owner(grants)
-            if owner is None:
-                owner = datastore.owner
-                grants[owner] = GRANT_LEVELS.own
-            else:
-                # verify that owner specified by daemon really exists
-                u_owner = get_context().users.get(login = owner)
-                if u_owner is None:
-                    raise DaemonDataExceptionIgnoreObject(
-                        DATABASE_OWNER_WARNING % dict(
-                            dbname = name,
-                            owner = owner
-                        )
-                    )
             database = cls( datastore = datastore,
                             name = name,
                             grants = grants)
         database.update_attributes(**kwargs)
+        database.cleanup_grants()
+        # if owner not specified by daemon, set it to datastore's admin
+        if database.owner is None:
+            database.owner = datastore.owner
         return database
     def refresh_metadata_from_daemon(self):
         daemon_info = self.remote_instance.overview()
