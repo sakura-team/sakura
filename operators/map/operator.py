@@ -21,12 +21,12 @@ class MapOperator(Operator):
         self.register_tab('Map', 'map.html')
         # custom attributes
         self.curr_heatmap = None
-        self.current_filtered_stream = None
+        # we do not know which filtering should be applied yet,
+        # so just mirror the input for now.
+        self.current_filtered_stream = self.input_stream
 
     @property
     def output_streams(self):
-        if not self.input_stream.connected() or self.current_filtered_stream is None:
-            return []
         return [ self.current_filtered_stream ]
 
     def filtered_stream(self, westlng, eastlng, southlat, northlat, **args):
@@ -57,7 +57,9 @@ class MapOperator(Operator):
         time_credit = event[1]
         if ev_type == 'map_move':
             info = event[2]
+            # update current_filtered_stream
             self.current_filtered_stream = self.filtered_stream(**info)
+            # get minimal stream (only 2 columns needed for the heatmap)
             stream = self.minimal_stream()
             # create heatmap
             self.curr_heatmap = HeatMap(stream, **info)
