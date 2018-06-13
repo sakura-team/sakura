@@ -1,7 +1,24 @@
-from sakura.common.errors import APIObjectDeniedError
+from sakura.common.errors import APIObjectDeniedError, APIRequestError
 from sakura.common.access import GRANT_LEVELS, ACCESS_TABLE
 from sakura.hub.access import find_owner, FilteredView, get_user_type
 from sakura.hub.context import get_context
+from sakura.hub.myemail import sendmail
+
+GRANT_REQUEST_MAIL_SUBJECT = "Sakura user grant request."
+GRANT_REQUEST_MAIL_CONTENT = '''
+Dear %(owner_firstname)s %(owner_lastname)s,
+
+Sakura user %(req_login)s (%(req_firstname)s %(req_lastname)s, %(req_email)s) is requesting \
+*%(grant_name)s* grant to *%(obj_desc)s*.
+
+He or she provided the following explanatory text:
+---------------------
+%(req_text)s
+---------------------
+
+Thanks.
+Sakura platform team.
+'''
 
 class BaseMixin:
     @property
@@ -52,6 +69,28 @@ class BaseMixin:
             grants[login] = grant_level
         self.grants = grants
         self.commit()
+    def handle_grant_request(self, grant_name, req_text):
+        requested_grant = GRANT_LEVELS.value(grant_name)
+        requester_grant = self.get_grant_level()
+        if requester_grant >= requested_grant:
+            raise APIRequestError('This grant level is already allowed to you!')
+        if requested_grant not in (GRANT_LEVELS.read, GRANT_LEVELS.write):
+            raise APIRequestError("Denied, you can only request 'read' or 'write' grants.")
+        context = get_context()
+        requester = context.session.user
+        owner = context.users.from_login_or_email(self.owner)
+        content = GRANT_REQUEST_MAIL_CONTENT % dict(
+                owner_firstname = owner.first_name,
+                owner_lastname = owner.last_name,
+                req_login = requester.login,
+                req_firstname = requester.first_name,
+                req_lastname = requester.last_name,
+                req_email = requester.email,
+                obj_desc = self.describe(),
+                grant_name = grant_name,
+                req_text = req_text
+        )
+        sendmail(owner.email, GRANT_REQUEST_MAIL_SUBJECT, content)
     def commit(self):
         self._database_.commit()
     @classmethod

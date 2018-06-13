@@ -27,6 +27,11 @@ class DatabaseMixin(BaseMixin):
         )
         result.update(**self.metadata)
         return result
+    def describe(self):
+        return "%(name)s database (on %(ds)s)" % dict(
+            name = self.name,
+            ds = self.datastore.describe()
+        )
     def get_full_info(self):
         # start with general metadata
         result = self.pack()

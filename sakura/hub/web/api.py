@@ -10,7 +10,7 @@ class GuiToHubAPI(object):
     ########################################
     # Datastores
     def request_datastore_grant(self, datastore_id, grant_name, text):
-        return
+        return self.datastores[datastore_id].handle_grant_request(grant_name, text)
 
     ########################################
     # Operators
@@ -138,7 +138,7 @@ class GuiToHubAPI(object):
         self.databases[database_id].update_grant(login, grant_name)
 
     def request_database_grant(self, database_id, grant_name, text):
-        return
+        return self.databases[database_id].handle_grant_request(grant_name, text)
 
     def list_expected_columns_tags(self, datastore_id):
         return self.datastores[datastore_id].list_expected_columns_tags()
@@ -188,7 +188,7 @@ class GuiToHubAPI(object):
         return self.dataflows[dataflow_id].update_grant(login, grant_name)
 
     def request_dataflow_grant(self, dataflow_id, grant_name, text):
-        return
+        return self.dataflows[dataflow_id].handle_grant_request(grant_name, text)
 
     def set_dataflow_gui_data(self, dataflow_id, gui_data):
         self.dataflows[dataflow_id].gui_data = gui_data

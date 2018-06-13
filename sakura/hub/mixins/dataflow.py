@@ -24,6 +24,10 @@ class DataflowMixin(BaseMixin):
                 for l in set(op.uplinks) | set(op.downlinks))
         result['links'] = tuple(link.pack() for link in df_links)
         return result
+    def describe(self):
+        return "'%(name)s' dataflow" % dict(
+            name = self.metadata.name
+        )
     @classmethod
     def create_dataflow(cls,    creation_date = None,
                                 **kwargs):

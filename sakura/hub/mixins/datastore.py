@@ -34,6 +34,11 @@ class DatastoreMixin(BaseMixin):
             if self.id in DatastoreMixin.ONLINE_DATASTORES:
                 DatastoreMixin.ONLINE_DATASTORES.remove(self.id)
 
+    def describe(self):
+        return "%(driver_label)s datastore at %(host)s" % dict(
+            driver_label = self.driver_label,
+            host = self.host
+        )
     @property
     def remote_instance(self):
         self.assert_grant_level(GRANT_LEVELS.read,
