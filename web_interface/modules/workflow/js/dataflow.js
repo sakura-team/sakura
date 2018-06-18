@@ -70,8 +70,10 @@ function current_dataflow() {
         sakura.common.ws_request('get_dataflow_info', [current_dataflow_id], {}, function (df_info) {
             console.log(df_info);
             df_info.op_instances.forEach( function(opi) {
-                var jgui = eval("("+opi.gui_data+")");
-                create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
+                if (opi.gui_data) {
+                    var jgui = eval("("+opi.gui_data+")");
+                    create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
+                }
             });
             create_dataflow_links(df_info.links);
         });
