@@ -37,24 +37,36 @@ function buildListStub(idDiv,result,elt) {
         var cell = $('<td>');
         if (row.name.indexOf('OFFLINE') === -1) {
             var name = null;
-            if (row.access_scope == 'open' || row.access_scope == 'public' || row.grant_level != 'list') {
+            var table = $('<table>', {width: "100%"})
+            var tr = $('<tr>')
+            var td1 = $('<td>', {align: "left"})
+            var td2 = $('<td>', {align: "right"})
+            var eye = null;
+
+            if (row.grant_level != 'list') {
                 name = $('<a>');
                 name.html(row.name );
                 name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
                 name.attr('title', 'Accessing database');
                 name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+                eye = $('<p>', {html: '<span class=\'glyphicon glyphicon-eye-open\'></span>',
+                                style: 'margin: 0px;'})
             }
             else {
                 name = $('<p>');
                 name.attr('style', 'margin: 0px;');
                 name.html( row.name +'&nbsp;&nbsp;&nbsp;');
-                var a = $('<a>', {title:  'Ask for access',
+                eye = $('<a>', {  title:  'Request Access',
                                   style:  'cursor: pointer;',
-                                  html:   '<span class=\'glyphicon glyphicon-lock\'></span>',
+                                  html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
                                   onclick: 'web_interface_asking_access_open_modal(\''+row.name+'\',\''+row.type+'\',\''+row.id+'\',\'read\');'});
-                name.append(a);
             }
-            cell.append(name);
+            td1.append(name);
+            td2.append(eye);
+            tr.append(td1, td2);
+            table.append(tr);
+            cell.append(table);
+
         }
         else
             cell.append(row.name);
@@ -81,7 +93,7 @@ function buildListStub(idDiv,result,elt) {
     if (result.length == 0) {
         var new_row = $(tbody[0].insertRow());
         var msg = "There is no accessible database.";
-        if (idDiv.indexOf("Dataflows") != -1)
+        if (idDiv.indexOf("dataflows") != -1)
             msg = "There is no accessible dataflow.";
         new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
     }
@@ -118,7 +130,7 @@ function listRequestStub(idDiv, n, elt, bd) {
                 if (db.online)
                     result_info['owner'] = db.owner;
                 else
-                    result_info['name'] += ' (OFFLINE)';
+                    result_info['name'] += ' <i>(OFFLINE)</i>';
                 result.push(result_info);
             });
             buildListStub(idDiv,result,elt);

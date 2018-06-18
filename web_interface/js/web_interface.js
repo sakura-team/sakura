@@ -402,14 +402,12 @@ function showDiv(event, dir, div_id) {
 //Access Managment
 function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, callback) {
 
-    var txt1 = "You can send an email to the owner of <b>"+o_name+"</b> and then ask for a <b>"+grant+"</b> access on this "+o_type+".</br>";
-    txt1 += "Here is a default text that the owner will receive. Feel free to update it before sending.";
+    var txt1 = "An email will be sent to the owner of <b>"+o_name+"</b> for asking for a <b>"+grant+"</b> access on this "+o_type;
+    txt1 += "Please describe your needs.";
 
-    var txt2 = "Dear owner of '"+o_name+"' ("+o_type+" on the Sakura plateform),\n\n";
-    txt2 += "\tPlease, could you give me '"+grant+"' access on your "+o_type+" ?\n\n";
-    txt2 += "Thanks in advance,\n";
-    txt2 += "Sincerely,\n";
-    txt2 += current_login;
+    var txt2 = "Hello,\n\nI am a ...,\n";
+    txt2 += "I would like to be able to "+grant+" to this "+o_type+" for my ... activity on...\n\n";
+    txt2 += "Thanks you !";
     h = $('#web_interface_asking_access_modal_header');
     b = $('#web_interface_asking_access_modal_body');
     h.empty();
@@ -419,7 +417,7 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, cal
 
     var ti = $('<textarea>', {  class: 'form-control',
                                 id: 'web_interface_asking_access_textarea',
-                                rows: '7',
+                                rows: '6',
                                 text: txt2});
     b.append(ti);
     $('#web_interface_asking_access_modal_button').click(function () { web_interface_asking_access(o_type, o_id, grant, callback)});
