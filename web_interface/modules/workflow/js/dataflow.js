@@ -68,6 +68,7 @@ function current_dataflow() {
         global_ops_cl = JSON.parse(JSON.stringify(result));
         //Then we ask for the instance ids
         sakura.common.ws_request('get_dataflow_info', [current_dataflow_id], {}, function (df_info) {
+            console.log(df_info);
             df_info.op_instances.forEach( function(opi) {
                 var jgui = eval("("+opi.gui_data+")");
                 create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);

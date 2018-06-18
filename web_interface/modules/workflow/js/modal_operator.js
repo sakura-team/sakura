@@ -223,6 +223,8 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                             s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+escapeHtml(col)+'</td>';
                         }
                         else {
+                            if (col == null)
+                                col = '';
                             s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+col+'</td>';
                         }
                     });
