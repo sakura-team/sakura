@@ -32,10 +32,10 @@ def load_datastores():
     datastores = []
     for ds_conf in conf.data_stores:
         ds = DataStore(
-            host = ds_conf['host'],
-            datastore_admin = ds_conf['datastore-admin'],
-            sakura_admin = ds_conf['sakura-admin'],
-            driver_label = ds_conf['driver'],
+            host = ds_conf.host,
+            datastore_admin = ds_conf.datastore_admin,
+            sakura_admin = ds_conf.sakura_admin,
+            driver_label = ds_conf.driver,
             adapter_label = ds_conf.get('adapter', 'native'),
             access_scope = ACCESS_SCOPES.value(
                     ds_conf.get('access-scope', 'private'))
