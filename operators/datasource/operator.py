@@ -12,15 +12,18 @@ class DatabaseSelectionParameter(ComboParameter):
     def iter_databases(self):
         for ds_key in sorted(self.op.daemon.datastores.keys()):
             ds = self.op.daemon.datastores[ds_key]
-            for db_key in sorted(ds.databases.keys()):
-                yield ds.databases[db_key]
+            if ds.online:
+                for db_key in sorted(ds.databases.keys()):
+                    yield ds.databases[db_key]
     def get_possible_values(self):
         return tuple(db.db_name for db in self.iter_databases())
     @property
     def selected_database(self):
         if self.value is None:
             return None
-        return tuple(self.iter_databases())[self.value]
+        dbs = tuple(self.iter_databases())
+        if len(dbs) > 0 and self.value < len(dbs):
+            return dbs[self.value]
 
 class TableSelectionParameter(ComboParameter):
     def __init__(self, label, op):
@@ -29,6 +32,8 @@ class TableSelectionParameter(ComboParameter):
     @property
     def tables(self):
         database = self.op.database_param.selected_database
+        if database is None:
+            return ()
         return tuple(database.tables[k]
              for k in sorted(database.tables.keys()))
     def get_possible_values(self):
