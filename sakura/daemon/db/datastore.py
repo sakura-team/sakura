@@ -4,6 +4,7 @@ from sakura.daemon.db.grants import register_grant
 from sakura.daemon.db.database import Database
 from sakura.common.io import pack
 from sakura.common.access import GRANT_LEVELS
+from sakura.common.password import decode_password
 
 class DataStoreProber:
     def __init__(self, datastore):
@@ -45,6 +46,11 @@ class DataStore:
             host = self.host,
             **self.datastore_admin
         )
+        encoded_password = info.pop('encoded_password', None)
+        if encoded_password is not None:
+            info.update(
+                password = decode_password(encoded_password)
+            )
         if db_name is not None:
             info.update(dbname = db_name)
         return self.driver.connect(**info)

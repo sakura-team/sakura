@@ -33,7 +33,9 @@ setup(
     url = 'https://github.com/sakura-team/sakura',
     description = 'Sakura platform installation files.',
     entry_points = dict(
-        console_scripts = ['sakura-hub = sakura.hub.hub:run', 'sakura-daemon = sakura.daemon.daemon:run']
+        console_scripts = [ 'sakura-hub = sakura.hub.hub:run',
+                            'sakura-daemon = sakura.daemon.daemon:run',
+                            'sakura-encode-password = sakura.common.password:password_encoder_tool' ]
     ),
     include_package_data = True
 )

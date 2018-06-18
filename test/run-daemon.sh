@@ -46,8 +46,8 @@ EOF
 #       {
 #           "host": "<dbms-ip-or-hostname>",
 #           "datastore-admin": {
-#               "user":     "<dbms-admin-user>",
-#               "password": "<dbms-admin-password>"
+#               "user":             "<dbms-admin-user>",
+#               "encoded-password": "<dbms-admin-encoded-password>"
 #           },
 #           "sakura-admin": "<sakura-username>",
 #           "access-scope": "<public|restricted|private>",
@@ -55,5 +55,7 @@ EOF
 #       }
 #   ]
 #   [...]
+#
+# Use sakura-encode-password to encode your passwords.
 
 PYTHONPATH="$PWD" sakura/daemon/daemon.py -f $TMPDIR/daemon.conf

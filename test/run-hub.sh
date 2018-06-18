@@ -68,8 +68,9 @@ then
     done
     echo -n '* Login name/email used to authenticate on mail server: '
     read login
-    echo -n '* Password: '
-    read -s password; echo "$password" | tr '[:print:]' '*'
+    passfile=$(mktemp)
+    python3 sakura/common/password.py prompt "* Password: " 2>"$passfile"
+    password=$(cat "$passfile"); rm "$passfile"
     echo -n '* Source of emails sent (e.g. sakura@your-domain.org): '
     read from
 
@@ -79,7 +80,7 @@ then
         "port": $port,
         "ssl": $ssl,
         "login": "$login",
-        "password": "$password",
+        "encoded-password": "$password",
         "source": "$from"
     }
 EOF
