@@ -74,9 +74,9 @@ class DatastoreMixin(BaseMixin):
                 if grant == GRANT_LEVELS.own:
                     # this is the datastore owner written in daemon's conf!
                     raise DaemonDataError(DATASTORE_ADMIN_ERROR % dict(
-                        host = host,
-                        driver_label = driver_label,
-                        login = admin
+                        host = self.host,
+                        driver_label = self.driver_label,
+                        login = login
                     ))
                 else:
                     # this is another wrong sakura user found inside the
