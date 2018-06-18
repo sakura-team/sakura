@@ -122,11 +122,16 @@ function recover_datasets() {
                             $(span).attr('onclick', new_oc);
                         }
                     });
-                else
+                else if (result.grant_level == 'read')
                     spans.toArray().forEach( function(span) {
-                        $(span).css('display', 'none');
+                        var className = $(span).attr('class');
+                        if (className.indexOf('download') == -1)
+                            $(span).css('display', 'none');
+                        else {
+                            var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
+                            $(span).attr('onclick', new_oc);
+                        }
                     });
-
             });
             body.append(new_row);
         });
