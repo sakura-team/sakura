@@ -298,17 +298,13 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                 var span = $('<span>', {title:    "Download the dataset",
                                         class:    "glyphicon glyphicon-download",
                                         style:    "cursor: pointer;",
-                                        onclick:  "download_table("+id+", "+id_in_out+")"});
+                                        onclick:  "download_table("+id_in_out+")"});
 
                 s+= '<table width="100%"><tr><td>'+ul+'<td align="right">'+span.get(0).outerHTML+'</table>';
                 d.innerHTML = s;
             }
         });
     });
-}
-
-function download_table(oid, id_in_out) {
-    not_yet();
 }
 
 function loadIFrame(url,id){

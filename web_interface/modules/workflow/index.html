@@ -117,7 +117,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- DOWNLOAD MODAL -->
+        <div id="workflow_download_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-md" role="dialog">
+                <div class="modal-content">
+                    <div id="workflow_download_modal_header" class="panel-heading">
+                    </div>
+                    <!--<div id="workflow_download_modal_body" class="modal-body">
+                    </div>-->
+                    <div class="modal-footer">
+                        <button id="workflow_download_modal_button_csv"type="button" class="btn btn btn-sm" data-dismiss="modal">Csv</button>
+                        <button id="workflow_download_modal_button_gzip" type="button" class="btn btn btn-sm" data-dismiss="modal">Gzip (Csv)</button>
+                        <button id="workflow_download_modal_button_cancel" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR MODAL -->
+        <div id="workflow_progress_bar_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-md" role="dialog">
+                <div class="modal-content">
+                    <div id="workflow_progress_bar_modal_header" class="modal-header" style="background-color : rgba(255,255,255,0.5);">
+                        <h3>Progress bar Title</h3>
+                    </div>
+                    <div id="workflow_progress_bar_modal_body" class="modal-body">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="workflow_stop_downloading()">Abort</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script src="js/general.js"></script>
+        <script src="js/download.js"></script>
         <script src="js/comment.js"></script>
         <script src="js/operator.js"></script>
         <script src="js/link.js"></script>
