@@ -24,11 +24,11 @@
             </div>
             <div class="modal-body" id="modal_{{id}}_body">
                 <ul class="nav nav-tabs">
-                    <li class="active">
+                    <li class="active" id="tab_button_inputs">
                         <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_inputs">Inputs</a></li>
-                    <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_params">Params</a></li>
-                    <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_outputs">Outputs</a></li>
-                    <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_code" onclick="loadIFrame('code-editor/index.html?{{inst_id}}','{{id}}')">Code</a></li>
+                    <li id="tab_button_params"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_params" >Params</a></li>
+                    <li id="tab_button_outputs"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_outputs" >Outputs</a></li>
+                    <li id="tab_button_code"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_code" onclick="loadIFrame('code-editor/index.html?{{inst_id}}','{{id}}')">Code</a></li>
                     <!-- <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_code">Code</a></li> -->
                     % for index, tab in enumerate(tabs):
                     <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_tab_{{index}}">{{tab.label}}</a></li>

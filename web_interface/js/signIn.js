@@ -92,46 +92,57 @@ function registerUser(event = '') {
 }
 
 function signInSubmitControl(event) {
-	if (event.type === 'click') {
-	  event.preventDefault();
-	  var userSignInValues = {}; // dictionary of email and password entered by user
-	  let loginOrEmail = document.getElementById("signInLoginOrEmail").value;
-	  let password = document.getElementById("signInPassword").value;
-	  if (loginOrEmail.length > 0 && password.length > 0){
-		  let hashed_sha256 = CryptoJS.SHA256(password);
-		  let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
-		  userSignInValues.login_or_email = loginOrEmail;
-		  userSignInValues.password = client_hashed
-	      sakura.common.ws_request('login', [], userSignInValues,
-	        function (wsResult) {
-		    	  // console.log("wsResult:"+wsResult);
-		    	  alert("Login successful");
-		    	  $('#signInModal').on('hidden.bs.modal', function () {
-	    			  $(this).find('form').trigger('reset');});
-	    		  $("#signInModal").modal("hide");
-	    		  signInWidget = document.getElementsByName("signInWidget")[0];
-	    		  //secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
-	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
-	    		  //secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
-            current_login = wsResult;
-	    		  return;},
-	        function (error_message) {
-	    	      alert(error_message);});} // end checking empty fields
-	  else {
-		  alert("Fill both the fields");}} //end if event click
+    if (event.type === 'click') {
+        event.preventDefault();
+    	  var userSignInValues = {}; // dictionary of email and password entered by user
+    	  let loginOrEmail = document.getElementById("signInLoginOrEmail").value;
+    	  let password = document.getElementById("signInPassword").value;
+    	  if (loginOrEmail.length > 0 && password.length > 0) {
+            let hashed_sha256 = CryptoJS.SHA256(password);
+            let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
+            userSignInValues.login_or_email = loginOrEmail;
+            userSignInValues.password = client_hashed;
+            sakura.common.ws_request('login', [], userSignInValues, function (wsResult) {
+    		    	  // console.log("wsResult:"+wsResult);
+    		    	  $('#signInModal').on('hidden.bs.modal', function () {
+    	    			    $(this).find('form').trigger('reset');
+                });
+    	    		  $("#signInModal").modal("hide");
+
+                signInWidget = document.getElementsByName("signInWidget")[0];
+    	    		  //secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
+    	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
+    	    		  //secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
+                current_login = wsResult;
+
+                //Back to the current div
+                var url = window.location.href.split('#');
+                showDiv(event, url[1], '');
+    	    		  return;
+            },
+  	        function (error_message) {
+  	    	      alert(error_message);
+            });
+        } // end checking empty fields
+        else {
+            alert("Fill both the fields");
+        }
+    } //end if event click
 }
 
 function signOutSubmitControl(event) {
-  res = confirm("Sign Out?");
-  if (res) {
-	  signInWidget = document.getElementsByName("signInWidget")[0];
-		//secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
-	  signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-	  //secondSignInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-    showDiv(event, "");
-    return;
-  } else {
-    showDiv(event, 'HelloYou');}
+    res = confirm("Sign Out?");
+    if (res) {
+        signInWidget = document.getElementsByName("signInWidget")[0];
+    		//secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
+    	  signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
+    	  //secondSignInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
+        showDiv(event, "");
+        return;
+    }
+    else {
+        showDiv(event, 'HelloYou');
+    }
 }
 
 function pwdRecoverySubmitControl(event) {
@@ -158,43 +169,48 @@ function pwdRecoverySubmitControl(event) {
 }
 
 function changePasswordSubmitControl(event) {
-	if (event.type === 'click') {
-	  event.preventDefault();
-	  var changePasswordValues = {}; // dictionary of email and password entered by user
-	  let loginOrEmail = document.getElementById("changePasswordLoginOrEmail").value;
-	  let currentPasswordOrRT = document.getElementById("changePasswordCurrentPasswordOrRT").value;
-	  let newPassword = document.getElementById("changePasswordNewPassword").value;
-	  let confirmPassword = document.getElementById("changePasswordConfirmPassword").value;
-	  if (newPassword != confirmPassword) {
-	    alert("New password and Confirm password should be the same.");
-	    return;}
-	  if ((loginOrEmail.length > 0) && (currentPasswordOrRT.length > 0) && (newPassword.length > 0)){
-	    changePasswordValues.login_or_email = loginOrEmail;
-        if (currentPasswordOrRT.substring(0, 4) == "rec-") {
-            // recovery token, send it unmodified
-            changePasswordValues.current_password_or_rec_token = currentPasswordOrRT
+  	if (event.type === 'click') {
+    	  event.preventDefault();
+    	  var changePasswordValues = {}; // dictionary of email and password entered by user
+    	  let loginOrEmail = document.getElementById("changePasswordLoginOrEmail").value;
+    	  let currentPasswordOrRT = document.getElementById("changePasswordCurrentPasswordOrRT").value;
+    	  let newPassword = document.getElementById("changePasswordNewPassword").value;
+    	  let confirmPassword = document.getElementById("changePasswordConfirmPassword").value;
+    	  if (newPassword != confirmPassword) {
+            alert("New password and Confirm password should be the same.");
+            return;
+        }
+    	  if ((loginOrEmail.length > 0) && (currentPasswordOrRT.length > 0) && (newPassword.length > 0)) {
+            changePasswordValues.login_or_email = loginOrEmail;
+            if (currentPasswordOrRT.substring(0, 4) == "rec-") {
+                // recovery token, send it unmodified
+                changePasswordValues.current_password_or_rec_token = currentPasswordOrRT
+            }
+            else {
+                // current password, hash it
+                let hashed_current_sha256 = CryptoJS.SHA256(currentPasswordOrRT);
+                let client_current_hashed = hashed_current_sha256.toString(CryptoJS.enc.Base64);
+                changePasswordValues.current_password_or_rec_token = client_current_hashed;
+            }
+            let hashed_new_sha256 = CryptoJS.SHA256(newPassword);
+            let client_new_hashed = hashed_new_sha256.toString(CryptoJS.enc.Base64);
+            changePasswordValues.new_password = client_new_hashed;
+            sakura.common.ws_request('change_password', [], changePasswordValues, function (wsResult) {
+                console.log("wsResult:"+wsResult);
+                alert("Password changed");
+                $('#signInModal').on('hidden.bs.modal', function () {
+                  $(this).find('form').trigger('reset');});
+                $("#signInModal").modal("hide");
+                return;
+            },
+    	      function (error_message) {
+    	         alert(error_message);
+            });
         }
         else {
-            // current password, hash it
-            let hashed_current_sha256 = CryptoJS.SHA256(currentPasswordOrRT);
-            let client_current_hashed = hashed_current_sha256.toString(CryptoJS.enc.Base64);
-            changePasswordValues.current_password_or_rec_token = client_current_hashed;
+  	       alert("Fill all the fields");
         }
-	    let hashed_new_sha256 = CryptoJS.SHA256(newPassword);
-	    let client_new_hashed = hashed_new_sha256.toString(CryptoJS.enc.Base64);
-	    changePasswordValues.new_password = client_new_hashed;
-	    sakura.common.ws_request('change_password', [], changePasswordValues,
-	      function (wsResult) {
-	        console.log("wsResult:"+wsResult);
-	        alert("Password changed");
-	        $('#signInModal').on('hidden.bs.modal', function () {
-	          $(this).find('form').trigger('reset');});
-	        $("#signInModal").modal("hide");
-	        return;},
-	      function (error_message) {
-	        alert(error_message);});}
-	  else {
-	   alert("Fill all the fields");}}
+    }
 }
 
 function not_implemented(s = '') {

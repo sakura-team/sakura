@@ -42,6 +42,10 @@ function full_width(elt) {
 
 
 function fill_all(id) {
+    $('#tab_button_inputs').attr('onclick', 'fill_in_out("input", \''+id+'\');');
+    $('#tab_button_params').attr('onclick', 'fill_params(\''+id+'\');');
+    $('#tab_button_outputs').attr('onclick', 'fill_in_out("output", \''+id+'\');');
+
     fill_in_out('input', id);
     fill_params(id);
     fill_in_out('output', id);
@@ -50,7 +54,6 @@ function fill_all(id) {
 
 
 function fill_tabs(id) {
-    console.log("OP ID", id);
     var op_hub_id = parseInt(id.split("_")[2]);
     sakura.common.ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
         current_instance_info = instance_info;
