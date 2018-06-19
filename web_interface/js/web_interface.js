@@ -126,8 +126,16 @@ function fill_metadata() {
             if (info.owner && info.owner != 'null')
                 owner =  info.owner;
 
-            [   {name: "_db_access_",         value: info.access_scope},
-                {name: "_db_owner_",          value: owner},
+            //Access scope
+            console.log('HERE', info.access_scope);
+            var option = $('#web_interface_access_scope_select option[value="'+info.access_scope+'"]');
+            option.prop('selected', true);
+            $('#web_interface_access_scope_select').attr('onchange', 'web_interface_asking_change_access_scope();');
+            $('#web_interface_access_scope_select').selectpicker('refresh');
+
+
+            //Other
+            [   {name: "_db_owner_",          value: owner},
                 {name: "_db_grant_",          value: info.grant_level},
                 ].forEach( function (elt){
                     if (elt.value)
@@ -199,7 +207,7 @@ function web_interface_create_large_description_area(datatype, area_id, descript
                                   element: document.getElementById(area_id),
                                   toolbar: toolbar ? get_edit_toolbar(datatype, web_interface_current_id) : false
                                   });
-
+    console.log(simplemde);
     simplemde.value(description);
     simplemde.togglePreview();
 }
@@ -577,6 +585,30 @@ function cleaning_collaborators() {
     $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
 }
 
+function web_interface_asking_change_access_scope() {
+    var h = $('#web_interface_yes_no_modal_header');
+    var b = $('#web_interface_yes_no_modal_body');
+
+    h.css('background-color', 'rgba(91,192,222)');
+    h.html("<h3><font color='white'>Changing Access Scope on </font>"+web_interface_current_obj_info.name+"</h3");
+
+    b.html("Are you sure you want to change access scope from <b>'"+web_interface_current_obj_info.access_scope+"'</b> to <b>'"+$('#web_interface_access_scope_select').val()+"'</b> ?");
+
+    $('#web_interface_yes_no_modal').modal('show');
+}
+
+function web_interface_change_access_scope() {
+
+    //TEMPORARY
+    not_yet();
+    var option = $('#web_interface_access_scope_select option[value="'+web_interface_current_obj_info.access_scope+'"]');
+    option.prop('selected', true);
+    $('#web_interface_access_scope_select').attr('onchange', 'web_interface_asking_change_access_scope();');
+    $('#web_interface_access_scope_select').selectpicker('refresh');
+    //////////
+
+    $('#web_interface_yes_no_modal').modal('hide');
+}
 
 /* Divers */
 function isUrlWithId(url) {
