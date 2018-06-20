@@ -6,6 +6,7 @@
 
 var current_login = null;
 
+
 function initiateSignInModal(event) {
   var $signUpForm = document.getElementById("signUpForm");
   for (i = 0; i < $signUpForm.length; i++) {
@@ -15,6 +16,11 @@ function initiateSignInModal(event) {
   $('.parsley-errors-list').remove();
   $('.form-control').value = '';
   $(this).find('form').trigger('reset');
+
+  $('#signInPassword').keyup(function(e)  {
+      if(e.keyCode == 13)
+          signInSubmitControl(e);
+  });
 
   //END: Refreshing the modal
 
@@ -92,7 +98,7 @@ function registerUser(event = '') {
 }
 
 function signInSubmitControl(event) {
-    if (event.type === 'click') {
+    if (event.type === 'click' || event.keyCode == 13) {
         event.preventDefault();
     	  var userSignInValues = {}; // dictionary of email and password entered by user
     	  let loginOrEmail = document.getElementById("signInLoginOrEmail").value;
@@ -110,10 +116,8 @@ function signInSubmitControl(event) {
     	    		  $("#signInModal").modal("hide");
 
                 signInWidget = document.getElementsByName("signInWidget")[0];
-    	    		  //secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
-    	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
-    	    		  //secondSignInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>'+wsResult+'</a>';
-                current_login = wsResult;
+    	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;&nbsp;'+wsResult+'&nbsp;&nbsp;</a>';
+    	    		  current_login = wsResult;
 
                 //Back to the current div
                 var url = window.location.href.split('#');
@@ -133,12 +137,11 @@ function signInSubmitControl(event) {
 function signOutSubmitControl(event) {
     res = confirm("Sign Out?");
     if (res) {
-        signInWidget = document.getElementsByName("signInWidget")[0];
-    		//secondSignInWidget = document.getElementsByName("altSignInWidget")[0];
-    	  signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-    	  //secondSignInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-        showDiv(event, "");
-        return;
+      sakura.common.ws_request('logout', [], {}, function (result) {
+            signInWidget = document.getElementsByName("signInWidget")[0];
+            signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
+            showDiv(event, "");
+        });
     }
     else {
         showDiv(event, 'HelloYou');
