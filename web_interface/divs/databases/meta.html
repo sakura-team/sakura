@@ -12,9 +12,15 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h4 style="margin-bottom: 0px; margin-top: 0px; cursor: pointer;" data-toggle="collapse" href="#web_interface_datas_collapse">
-                Access
-            </h4>
+            <table>
+                <tr>
+                    <td>
+                        <h4 style="margin-bottom: 0px; margin-top: 0px; cursor: pointer;" data-toggle="collapse" href="#web_interface_datas_collapse" onclick="web_interface_access_collapse();">
+                            Access
+                        </h4>
+                    <td id="web_interface_datas_collapse_icon_cell">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label style="cursor: pointer;" class="glyphicon glyphicon-chevron-down" data-toggle="collapse" href="#web_interface_datas_collapse" onclick="web_interface_access_collapse();"/>
+            </table>
         </div>
         <div class="panel-body collapse" id="web_interface_datas_collapse">
 

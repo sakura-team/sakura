@@ -580,6 +580,22 @@ function adding_collaborators() {
     });
 }
 
+function web_interface_access_collapse() {
+    var label = $('<label>', {class:    "glyphicon ",
+                              href:     "#web_interface_"+web_interface_current_object_type+"_collapse",
+                              onclick:  "web_interface_access_collapse();",
+                              style:    "cursor: pointer;"});
+
+    label.attr('data-toggle',  'collapse');
+
+    if ($('#web_interface_'+web_interface_current_object_type+'_collapse')[0].className.indexOf('in') != -1)
+        label.addClass('glyphicon-chevron-down');
+    else
+        label.addClass('glyphicon-chevron-up');
+
+    $('#web_interface_'+web_interface_current_object_type+'_collapse_icon_cell').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+label.get(0).outerHTML);
+}
+
 function cleaning_collaborators() {
     $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option:selected').prop("selected", false);
     $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
