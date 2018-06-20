@@ -2,7 +2,7 @@
 
 ////////////GLOBALS
 var web_interface_current_id = -1;  //database or dataflow id
-var web_interface_current_obj_info = null;
+var web_interface_current_object_info = null;
 var web_interface_current_object_type = '';
 var simplemde  = null;           //large description textarea
 
@@ -16,6 +16,17 @@ function not_yet(s) {
     }
 }
 
+function matching_hub_name(obj) {
+    if (web_interface_current_object_type == 'datas')
+        return 'database';
+    else if (web_interface_current_object_type == 'dataflows')
+        return 'dataflow';
+    else {
+        console.log('We do not deal with '+obj+' for now');
+        not_yet('code 1');
+        return '';
+    }
+}
 
 function recursiveReplace(node, init_text, new_text) {
     if (node.nodeType == 3) { // text node
@@ -36,7 +47,7 @@ function fill_work() {
 
     sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
 
-        web_interface_current_obj_info = info;
+        web_interface_current_object_info = info;
 
         $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
         if (info.short_desc)
@@ -55,7 +66,7 @@ function fill_metadata() {
 
     sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
 
-        web_interface_current_obj_info = info;
+        web_interface_current_object_info = info;
 
         //General
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
@@ -456,17 +467,6 @@ function web_interface_asking_access(o_type, o_id, grant, callback) {
 }
 
 // Collaborators Management
-function matching_hub_name(obj) {
-    if (web_interface_current_object_type == 'datas')
-        return 'database';
-    else if (web_interface_current_object_type == 'dataflows')
-        return 'dataflow';
-    else {
-        console.log('We do not deal with '+obj+' for now');
-        not_yet('code 1');
-        return '';
-    }
-}
 
 function fill_collaborators_table_body(info) {
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
@@ -590,24 +590,22 @@ function web_interface_asking_change_access_scope() {
     var b = $('#web_interface_yes_no_modal_body');
 
     h.css('background-color', 'rgba(91,192,222)');
-    h.html("<h3><font color='white'>Changing Access Scope on </font>"+web_interface_current_obj_info.name+"</h3");
+    h.html("<h3><font color='white'>Changing Access Scope on </font>"+web_interface_current_object_info.name+"</h3");
 
-    b.html("Are you sure you want to change access scope from <b>'"+web_interface_current_obj_info.access_scope+"'</b> to <b>'"+$('#web_interface_access_scope_select').val()+"'</b> ?");
+    b.html("Are you sure you want to change access scope from <b>'"+web_interface_current_object_info.access_scope+"'</b> to <b>'"+$('#web_interface_access_scope_select').val()+"'</b> ?");
 
     $('#web_interface_yes_no_modal').modal('show');
 }
 
 function web_interface_change_access_scope() {
 
-    //TEMPORARY
-    not_yet();
-    var option = $('#web_interface_access_scope_select option[value="'+web_interface_current_obj_info.access_scope+'"]');
-    option.prop('selected', true);
-    $('#web_interface_access_scope_select').attr('onchange', 'web_interface_asking_change_access_scope();');
-    $('#web_interface_access_scope_select').selectpicker('refresh');
-    //////////
-
-    $('#web_interface_yes_no_modal').modal('hide');
+    //sakura.common.ws_request('update_'+obj+'_info', [id], {'large_desc': simplemde.value()}, function(result) {});
+    var obj = matching_hub_name(web_interface_current_object_info);
+    var id  = web_interface_current_object_info[obj+'_id'];
+    console.log('access_scope', $('#web_interface_access_scope_select').val());
+    sakura.common.ws_request('update_'+obj+'_info', [id], {'access_scope': $('#web_interface_access_scope_select').val()}, function(result) {
+        $('#web_interface_yes_no_modal').modal('hide');
+    });
 }
 
 /* Divers */
