@@ -115,6 +115,9 @@ class GuiToHubAPI(object):
     def list_datastores(self):
         return self.datastores
 
+    def update_datastore_info(self, datastore_id, **kwargs):
+        self.datastores[datastore_id].parse_and_update_attributes(**kwargs)
+
     def update_datastore_grant(self, datastore_id, login, grant_name):
         return self.datastores[datastore_id].update_grant(login, grant_name)
 
@@ -132,7 +135,7 @@ class GuiToHubAPI(object):
 
     def update_database_info(self, database_id, **kwargs):
         # optional arguments of kwargs: name, short_desc, creation_date, tags, contacts
-        self.databases[database_id].update_attributes(**kwargs)
+        self.databases[database_id].parse_and_update_attributes(**kwargs)
 
     def update_database_grant(self, database_id, login, grant_name):
         self.databases[database_id].update_grant(login, grant_name)
@@ -182,7 +185,7 @@ class GuiToHubAPI(object):
         return self.dataflows.create_dataflow(name = name, **kwargs)
 
     def update_dataflow_info(self, dataflow_id, **kwargs):
-        self.dataflows[dataflow_id].update_attributes(**kwargs)
+        self.dataflows[dataflow_id].parse_and_update_attributes(**kwargs)
 
     def update_dataflow_grant(self, dataflow_id, login, grant_name):
         return self.dataflows[dataflow_id].update_grant(login, grant_name)

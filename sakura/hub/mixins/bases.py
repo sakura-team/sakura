@@ -1,6 +1,6 @@
 from sakura.common.errors import APIObjectDeniedError, APIRequestError
 from sakura.common.access import GRANT_LEVELS, ACCESS_TABLE
-from sakura.hub.access import find_owner, FilteredView, get_user_type
+from sakura.hub.access import parse_gui_access_info, find_owner, FilteredView, get_user_type
 from sakura.hub.context import get_context
 from sakura.hub.myemail import sendmail
 
@@ -37,6 +37,11 @@ class BaseMixin:
             else:
                 cleaned_up_grants[login] = grant
         self.grants = cleaned_up_grants
+    def parse_and_update_attributes(self, **kwargs):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                        'Only owner can change attributes.')
+        kwargs = parse_gui_access_info(**kwargs)
+        self.update_attributes(**kwargs)
     def update_attributes(self, **kwargs):
         metadata = dict(self.metadata)
         for attr, value in kwargs.items():
