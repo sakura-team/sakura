@@ -1,6 +1,6 @@
 from sakura.daemon.db.column import DBColumn
 from sakura.daemon.processing.stream import SQLTableStream
-from sakura.daemon.csv import stream_csv
+from sakura.daemon.csvtools import stream_csv
 
 class DBTable:
     def __init__(self, db, table_name):

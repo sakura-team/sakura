@@ -4,7 +4,7 @@ from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
 from sakura.daemon.processing.cache import Cache
 from sakura.daemon.processing.column import Column
-from sakura.daemon.csv import stream_csv
+from sakura.daemon.csvtools import stream_csv
 from time import time
 from itertools import count
 
