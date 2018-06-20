@@ -300,10 +300,13 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                 }
                 var span = $('<span>', {title:    "Download the dataset",
                                         class:    "glyphicon glyphicon-download",
-                                        style:    "cursor: pointer;",
-                                        onclick:  "download_table("+id_in_out+")"});
-
-                s+= '<table width="100%"><tr><td>'+ul+'<td align="right">'+span.get(0).outerHTML+'</table>';
+                                        style:    "cursor: pointer;"
+                                        });
+                var butt = $('<button>', {class: "button",
+                                          onclick:  "download_table("+id_in_out+")"});
+                butt.append(span);
+                butt.append('&nbsp;Download');
+                s+= '<table width="100%"><tr><td>'+ul+'<td align="right">'+butt.get(0).outerHTML+'</table>';
                 d.innerHTML = s;
             }
         });
