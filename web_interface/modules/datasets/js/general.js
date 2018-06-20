@@ -156,6 +156,8 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
     var f_size          = f.size;
     var sent_data_size  = 0;
     var date            = new Date();
+    var nb_cols         = 0;
+    var length_alert_done = false;
 
     Papa.LocalChunkSize = chunk_size;
 
@@ -165,10 +167,24 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
         skipEmptyLines: true,
         chunk: function(chunk, parser) {
             if (first_chunk) {
+                nb_cols = chunk.data[0].length;
                 chunk.data.splice(0, 1);
                 first_chunk = false;
             }
             chunk.data.forEach( function(line) {
+                if (line.length != nb_cols) {
+                    if (! length_alert_done) {
+                        $('#datasets_alert_header').html('<h3>Data Upload</h3>');
+                        $('#datasets_alert_body').html('One or more lines of your file doesn\'t have the correct number of columns. These lines are truncated, or filled with null values.');
+                        $('#datasets_alert_modal').modal('show');
+                    }
+                    var diff = nb_cols - line.length;
+                    if (diff > 0)
+                        for (var i =0; i< diff; i++)
+                            line.push('');
+                    else
+                        line.splice(line.length + diff, - diff)
+                }
                 //Dates
                 dates.forEach(function(date) {
                     d = line[date.column_id];
