@@ -26,7 +26,7 @@ class DataflowMixin(BaseMixin):
         return result
     def describe(self):
         return "'%(name)s' dataflow" % dict(
-            name = self.metadata.name
+            name = self.metadata['name']
         )
     @classmethod
     def create_dataflow(cls,    creation_date = None,
