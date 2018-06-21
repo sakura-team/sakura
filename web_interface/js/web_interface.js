@@ -5,6 +5,7 @@ var web_interface_current_id = -1;  //database or dataflow id
 var web_interface_current_object_info = null;
 var web_interface_current_object_type = '';
 var simplemde  = null;           //large description textarea
+var empty_text = "__";
 
 ////////////FUNCTIONS
 function not_yet(s) {
@@ -70,69 +71,91 @@ function fill_metadata() {
 
         //General
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
-        $('#web_interface_'+web_interface_current_object_type+'_metadata1').load('divs/templates/metadata_'+web_interface_current_object_type+'.html', function() {
 
-            //Name
-            $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
-            //Description
-            if (info.short_desc)
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
-            else
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+        //Name
+        $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
+        //Description
+        if (info.short_desc)
+            $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
+        else
+            $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
 
-            //Owner
-            var owner = '_';
-            if (info.owner && info.owner != 'null')
-                owner =  info.owner;
+        //Owner
+        var owner = empty_text;
+        if (info.owner && info.owner != 'null')
+            owner =  info.owner;
 
-            //Creation date
-            var date = "__";
-            if (info.creation_date)
-                date = moment.unix(info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
+        //Creation date
+        var date = empty_text;
+        if (info.creation_date)
+            date = moment.unix(info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
 
-            //All now
-            if (web_interface_current_object_type == 'datas') {
+        var dl1 = $('<dl>', {class:  "dl-horizontal col-md-6",
+                            style:  "margin-bottom:0px;"});
+        //All now
+        if (web_interface_current_object_type == 'datas') {
 
-                sakura.common.ws_request('list_datastores', [], {}, function(lds) {
-                    var dt_store = '__';
-                    lds.forEach( function(ds) {
-                        if (ds.datastore_id == info.datastore_id)
-                          dt_store = ds.host+'';
-                    });
-
-                    [   {name: "_db_date_", value: date},
-                        {name: "_db_datastore_", value: dt_store},
-                        {name: "_db_agent_type_", value: info.agent_type},
-                        {name: "_db_licence_", value: info.licence},
-                        {name: "_db_topic_", value: info.topic},
-                        {name: "_db_data_type_", value: info.data_type}
-                        ].forEach( function (elt){
-                        if (elt.value != undefined)
-                            recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
-                        else
-                            recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '__');
-                        });
+            sakura.common.ws_request('list_datastores', [], {}, function(lds) {
+                var dt_store = empty_text;
+                lds.forEach( function(ds) {
+                    if (ds.datastore_id == info.datastore_id)
+                      dt_store = ds.host+'';
                 });
-            }
 
-            else if (web_interface_current_object_type == 'dataflows') {
-                [     {name: "_db_date_", value: date},
-                      {name: "_db_licence_", value: info.licence},
-                      {name: "_db_topic_", value: info.topic},
-                      ].forEach( function (elt) {
-                          if (elt.value != undefined && elt.value)
-                              recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
-                          else
-                              recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '__');
-                          });
-            }
-        });
+                [   {name: '', label: "Creation Date", value: date, editable: false},
+                    {name: '', label: "Datastore Host", value: dt_store, editable: false},
+                    {name: 'agent_type', label: "Agent Type", value: info.agent_type, editable: true},
+                    {name: '', label: "Licence", value: info.licence, editable: false},
+                    {name: 'topic', label: "Topic", value: info.topic, editable: true},
+                    {name: 'data_type', label: "Data Type", value: info.data_type, editable: true}
+                    ].forEach( function (elt){
+                        var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
+                        var dd = $('<dd>');
+                        if (!(elt.value != undefined && elt.value))
+                            elt.value = empty_text;
+                        if (elt.editable && info.grant_level == 'own') {
+                            var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
+                            a.editable({url: function(params) {web_interface_updating_metadata(a, params);}});
+                            dd.append(a);
+                        }
+                        else {
+                            dd.append("<i>"+elt.value+"</i>")
+                        }
+
+                        dl1.append(dt, dd);
+                    });
+                $('#web_interface_'+web_interface_current_object_type+'_metadata1').append(dl1);
+            });
+        }
+
+        else if (web_interface_current_object_type == 'dataflows') {
+            [     {name: '', label: "Creation Date", value: date, editable: false},
+                  {name: 'topic', label: "Topic", value: info.topic, editable: true},
+                  ].forEach( function (elt) {
+                      var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
+                      var dd = $('<dd>');
+                      if (!(elt.value != undefined && elt.value))
+                          elt.value = empty_text;
+                      //dd = $('<dd>', {html: elt.value});
+                      if (elt.editable && info.grant_level == 'own') {
+                          var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
+                          a.editable({url: function(params) {web_interface_updating_metadata(a, params);}});
+                          dd.append(a);
+                      }
+                      else {
+                          dd.append("<i>"+elt.value+"</i>")
+                      }
+
+                      dl1.append(dt, dd);
+                      });
+            $('#web_interface_'+web_interface_current_object_type+'_metadata1').append(dl1);
+        }
 
         //Access
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').empty();
-        var dl = $('<dl>', {class:  "dl-horizontal col-md-6",
-                            style:  "margin-bottom:0px;"});
-        var dt1 = $('<dt>', { html:  "Access Scope"});
+        var dl2 = $('<dl>', { class:  "dl-horizontal col-md-6",
+                              style:  "margin-bottom:0px;"});
+        var dt1 = $('<dt>', { html:  "<i>Access Scope</i>"});
         var dd1 = $('<dd>');
         if (info.grant_level == 'own') {
             dt1.attr('style', "vertical-align: middle; margin-top: 5px;");
@@ -155,7 +178,7 @@ function fill_metadata() {
         else {
             dd1.append(info.access_scope);
         }
-        dl.append(dt1, dd1);
+        dl2.append(dt1, dd1);
 
         //Owner
         var owner = '__';
@@ -167,15 +190,15 @@ function fill_metadata() {
         if (info.grant_level && info.grant_level != 'null')
             grant =  info.grant_level;
 
-        [   {name: "Owner", value: owner},
-            {name: "Your Grant Level", value: grant }].forEach( function(elt) {
+        [   {name: "<i>Owner</i>", value: owner},
+            {name: "<i>Your Grant Level</i>", value: grant }].forEach( function(elt) {
 
             var dt = $('<dt>', { html:  elt.name});
             var dd = $('<dd>', { html: elt.value});
-            dl.append(dt, dd);
+            dl2.append(dt, dd);
         });
 
-        $('#web_interface_'+web_interface_current_object_type+'_metadata2').append(dl);
+        $('#web_interface_'+web_interface_current_object_type+'_metadata2').append(dl2);
 
 
         //Large Description
@@ -196,6 +219,21 @@ function fill_metadata() {
                                                     l_desc,
                                                     info.grant_level == 'own' || info.grant_level == 'write');
     });
+}
+
+function web_interface_updating_metadata(a, params) {
+    var obj = matching_hub_name(web_interface_current_object_type);
+    var id = web_interface_current_object_info[obj+'_id'];
+    var jsn = JSON.parse('{"'+a.get(0).name+'": "'+params.value+'"}');
+
+    sakura.common.ws_request('update_'+obj+'_info', [id], jsn ,
+        function(result) {
+        },
+        function (error) {
+            alert(error);
+            a.html(empty_text);
+        }
+    );
 }
 
 function fill_history() {
@@ -309,13 +347,6 @@ function showDiv(event, dir, div_id) {
         idDir += "_div";
 
     document.getElementById(idDir).style.display='inline';
-
-    /*if (idDir.match("Meta") &&  document.getElementById("idSignInWidget").innerText.match("Hello")){ //todo : ameliorer test hello == test droit en edition
-        document.getElementById("idEditModeWidget").style.display='';
-    }
-    else {
-        document.getElementById("idEditModeWidget").style.display='none';
-    }*/
 
 
     //activate navbar
@@ -466,7 +497,6 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, cal
 function web_interface_asking_access(o_type, o_id, grant, callback) {
 
     var txt = $('#web_interface_asking_access_textarea').val();
-
     sakura.common.ws_request('request_'+o_type+'_grant', [o_id, grant, txt], {}, function(result) {
         if (!result) {
             $('#web_interface_asking_access_modal').modal('hide');

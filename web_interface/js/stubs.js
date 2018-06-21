@@ -66,7 +66,6 @@ function buildListStub(idDiv,result,elt) {
             tr.append(td1, td2);
             table.append(tr);
             cell.append(table);
-
         }
         else
             cell.append(row.name);
@@ -144,7 +143,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             dataflows.forEach( function(df) {
                 result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
                                 'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
-                                'tags': df.tags, 'owner': df.owner };
+                                'tags': df.tags, 'owner': df.owner, 'grant_level': df.grant_level, 'access_scope': df.access_scope };
 
                 result.push(result_info);
             });
@@ -177,67 +176,6 @@ function listRequestStub(idDiv, n, elt, bd) {
             buildListStub(idDiv,result,elt);
         });
     }
-    return ;
-}
-
-
-function listRequestStubForRestart(idDiv) {
-    //TODO : supprimer/deplacer alea
-    result=new Array();
-    s="";
-    i=0;
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Projects/tmpProject';
-    s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
-        + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Simpleicons_Business_notebook.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
-        + "<td>"+result[i].shortDesc+"</td>"
-        + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-        + "</td></tr>";
-    i=i+1;
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Datas/tmpData';
-    s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
-        + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Linecons_database.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
-        + "<td>"+result[i].shortDesc+"</td>"
-        + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-        + "</td></tr>";
-    i=i+1;
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Operators/tmpOperator';
-    s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
-        + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Octicons-gear.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
-        + "<td>"+result[i].shortDesc+"</td>"
-        + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-        + "</td></tr>";
-    i=i+1;
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Dataflows/tmpDataflow';
-    s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
-        + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Share_icon_BLACK-01.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
-        + "<td>"+result[i].shortDesc+"</td>"
-        + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-        + "</td></tr>";
-    i=i+1;
-    result.push({"name":fullNameAlea(),"shortDesc":shortTextAlea(),"isViewable":"true","isEditable":"true"});
-    elt='Results/tmpResult';
-    s = s + "<tr><td><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\">"+result[i].name
-        + "</a>&nbsp;&nbsp;<img  width='40px' height='40px' src='media/Article_icon_cropped.svg.png' alt='CC-BY-3.0 Wikipedia Gears'></img></td>\n"
-        + "<td>"+result[i].shortDesc+"</td>"
-        + "<td align='center'><a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><span class='glyphicon glyphicon-eye-open' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"/Work');\" href=\"http://sakura.imag.fr/"+elt+"/Work\" class='btn btn-default'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></a>"
-        + "  <a onclick=\"showDiv(event,'"+elt+"');\" href=\"http://sakura.imag.fr/"+elt+"\" class='btn btn-default'><img src='media/IconFinder_298785_fork.png'></img></a>"
-        + "</td></tr>";
-    s = s + '<a href="javascript:listRequestStubForRestart(\''+idDiv+'\')" class="executeOnShow"> </a></div>';
-    document.getElementById(idDiv).innerHTML = s;
-
     return ;
 }
 
@@ -282,48 +220,4 @@ function buildEltStub(idDiv,result,elt) {
         imageElt = "Article_icon_cropped.svg.png";
         imageEltInverse = "Article_icon_cropped_inverse.svg.png";
     }
-}
-
-
-function eltRequestStub(idDiv, elt, bd) {
-    if (elt == 'Data') {
-        idElt = getIdFromUrl(window.location.toString());
-        sakura.common.ws_request('get_database_info', [+idElt], {}, function(db_info) {
-            var result = {'name': db_info.name, "userName":db_info.owner,
-            "info":[{"name":'Data-id',"value":idElt},{"name":"Name","value":db_info.name},{"name":"Owner","value":db_info.owner}],
-            "datas":[], "process":[], "results":[], "comments":[],"fileSystem":[]};
-            buildEltStub(idDiv,result,elt);
-        });
-    }
-    else if (elt == 'Operator') {
-        sakura.common.ws_request('list_operators_classes', [], {}, function (operators) {
-            var result = new Array();
-            idElt = getIdFromUrl(window.location.toString());
-            operators.forEach( function(op) {
-                if (op.id == idElt) {
-                    result = {  'name': op.name,
-                                'userName': op.owner,
-                                'info': [   {'name': 'shortDesc', 'value': op.short_desc},
-                                            {'name': 'tags', 'value': op.tags},
-                                            {'name': 'id', 'value': op.id},
-                                            {'name': 'daemon', 'value': op.daemon},
-                                            {'name': 'owner', 'value': op.owner},
-                                            {'name': 'creation date', 'value': op.date},
-                                            {'name': 'modification date', 'value': op.modification_date} ],
-                                'datas':[],
-                                'process':[],
-                                'results':[],
-                                'comments':[],
-                                'fileSystem':[]
-                    }
-                }
-            });
-            buildEltStub(idDiv,result,elt);
-        });
-    }
-    else {
-        result = eltStubAlea(elt);
-        buildEltStub(idDiv,result,elt);
-    }
-    return ;
 }
