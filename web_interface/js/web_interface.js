@@ -130,33 +130,52 @@ function fill_metadata() {
 
         //Access
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').empty();
-        $('#web_interface_'+web_interface_current_object_type+'_metadata2').load('divs/templates/metadata_access.html', function() {
+        var dl = $('<dl>', {class:  "dl-horizontal col-md-6",
+                            style:  "margin-bottom:0px;"});
+        var dt1 = $('<dt>', { html:  "Access Scope"});
+        var dd1 = $('<dd>');
+        if (info.grant_level == 'own') {
+            dt1.attr('style', "vertical-align: middle; margin-top: 5px;");
+            var select = $('<select>', {id:   'web_interface_access_scope_select',
+                                        class: 'selectpicker',
+                                        onchange: 'web_interface_asking_change_access_scope();'
+                                        });
 
-            //Owner
-            var owner = '..';
-            if (info.owner && info.owner != 'null')
-                owner =  info.owner;
+            select.append('<option value="private">private</option>');
+            select.append('<option value="restricted">restricted</option>');
+            select.append('<option value="public">public</option>');
+            select.find('option').each( function () {
+                if ($(this).val() == info.access_scope)
+                    $(this).prop('selected', true);
+            });
 
-            //Access scope
-            console.log('HERE', info.access_scope);
-            var option = $('#web_interface_access_scope_select option[value="'+info.access_scope+'"]');
-            option.prop('selected', true);
-            $('#web_interface_access_scope_select').attr('onchange', 'web_interface_asking_change_access_scope();');
-            $('#web_interface_access_scope_select').selectpicker('refresh');
+            dd1.append(select);
+            select.selectpicker('refresh');
+        }
+        else {
+            dd1.append(info.access_scope);
+        }
+        dl.append(dt1, dd1);
 
+        //Owner
+        var owner = '__';
+        if (info.owner && info.owner != 'null')
+            owner =  info.owner;
 
-            //Other
-            [   {name: "_db_owner_",          value: owner},
-                {name: "_db_grant_",          value: info.grant_level},
-                ].forEach( function (elt){
-                    if (elt.value)
-                        recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, elt.value);
-                    else
-                        recursiveReplace($('#web_interface_'+web_interface_current_object_type+'_tmp_meta')[0], elt.name, '..');
-                      });
+        //Grant level
+        var grant = "__"
+        if (info.grant_level && info.grant_level != 'null')
+            grant =  info.grant_level;
 
-            fill_collaborators_table_body(info);
+        [   {name: "Owner", value: owner},
+            {name: "Your Grant Level", value: grant }].forEach( function(elt) {
+
+            var dt = $('<dt>', { html:  elt.name});
+            var dd = $('<dd>', { html: elt.value});
+            dl.append(dt, dd);
         });
+
+        $('#web_interface_'+web_interface_current_object_type+'_metadata2').append(dl);
 
 
         //Large Description
@@ -168,6 +187,8 @@ function fill_metadata() {
                 l_desc += ' Edit one by clicking on the eye';
             l_desc += '*</span>';
         }
+        fill_collaborators_table_body(info);
+
 
         //Large description can only been modified by writers
         web_interface_create_large_description_area(web_interface_current_object_type,
@@ -218,7 +239,6 @@ function web_interface_create_large_description_area(datatype, area_id, descript
                                   element: document.getElementById(area_id),
                                   toolbar: toolbar ? get_edit_toolbar(datatype, web_interface_current_id) : false
                                   });
-    console.log(simplemde);
     simplemde.value(description);
     simplemde.togglePreview();
 }
