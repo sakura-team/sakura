@@ -90,11 +90,33 @@ function fill_metadata() {
         if (info.creation_date)
             date = moment.unix(info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
 
-        var dl1 = $('<dl>', {class:  "dl-horizontal col-md-6",
-                            style:  "margin-bottom:0px;"});
-        //All now
-        if (web_interface_current_object_type == 'datas') {
+        //Main Meta
+        function add_fields(list, elt) {
+            var dl1 = $('<dl>', {class:  "dl-horizontal col-md-6",
+                                style:  "margin-bottom:0px;"});
+            list.forEach( function (elt){
+                var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
+                var dd = $('<dd>');
 
+                if (!(elt.value != undefined && elt.value))
+                    elt.value = empty_text;
+
+                if (elt.editable && info.grant_level == 'own') {
+                    var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
+                    a.editable({emptytext: empty_text,
+                                url: function(params) {web_interface_updating_metadata(a, params);}});
+                    dd.append(a);
+                }
+                else
+                    dd.append("<i>"+elt.value+"</i>")
+
+                dl1.append(dt, dd);
+            });
+            $('#web_interface_'+web_interface_current_object_type+'_metadata1').append(dl1);
+        }
+
+        if (web_interface_current_object_type == 'datas') {
+            //Should call for datastores list
             sakura.common.ws_request('list_datastores', [], {}, function(lds) {
                 var dt_store = empty_text;
                 lds.forEach( function(ds) {
@@ -102,53 +124,19 @@ function fill_metadata() {
                       dt_store = ds.host+'';
                 });
 
-                [   {name: '', label: "Creation Date", value: date, editable: false},
-                    {name: '', label: "Datastore Host", value: dt_store, editable: false},
-                    {name: 'agent_type', label: "Agent Type", value: info.agent_type, editable: true},
-                    {name: '', label: "Licence", value: info.licence, editable: false},
-                    {name: 'topic', label: "Topic", value: info.topic, editable: true},
-                    {name: 'data_type', label: "Data Type", value: info.data_type, editable: true}
-                    ].forEach( function (elt){
-                        var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
-                        var dd = $('<dd>');
-                        if (!(elt.value != undefined && elt.value))
-                            elt.value = empty_text;
-                        if (elt.editable && info.grant_level == 'own') {
-                            var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
-                            a.editable({url: function(params) {web_interface_updating_metadata(a, params);}});
-                            dd.append(a);
-                        }
-                        else {
-                            dd.append("<i>"+elt.value+"</i>")
-                        }
-
-                        dl1.append(dt, dd);
-                    });
-                $('#web_interface_'+web_interface_current_object_type+'_metadata1').append(dl1);
+                var list = [{name: '', label: "Creation Date", value: date, editable: false},
+                            {name: '', label: "Datastore Host", value: dt_store, editable: false},
+                            {name: 'agent_type', label: "Agent Type", value: info.agent_type, editable: true},
+                            {name: '', label: "Licence", value: info.licence, editable: false},
+                            {name: 'topic', label: "Topic", value: info.topic, editable: true},
+                            {name: 'data_type', label: "Data Type", value: info.data_type, editable: true}  ];
+                add_fields(list);
             });
         }
-
         else if (web_interface_current_object_type == 'dataflows') {
-            [     {name: '', label: "Creation Date", value: date, editable: false},
-                  {name: 'topic', label: "Topic", value: info.topic, editable: true},
-                  ].forEach( function (elt) {
-                      var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
-                      var dd = $('<dd>');
-                      if (!(elt.value != undefined && elt.value))
-                          elt.value = empty_text;
-                      //dd = $('<dd>', {html: elt.value});
-                      if (elt.editable && info.grant_level == 'own') {
-                          var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
-                          a.editable({url: function(params) {web_interface_updating_metadata(a, params);}});
-                          dd.append(a);
-                      }
-                      else {
-                          dd.append("<i>"+elt.value+"</i>")
-                      }
-
-                      dl1.append(dt, dd);
-                      });
-            $('#web_interface_'+web_interface_current_object_type+'_metadata1').append(dl1);
+            var list = [  {name: '', label: "Creation Date", value: date, editable: false},
+                          {name: 'topic', label: "Topic", value: info.topic, editable: true} ];
+            add_fields(list);
         }
 
         //Access
