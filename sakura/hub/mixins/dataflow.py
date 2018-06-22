@@ -1,5 +1,6 @@
 import time
 from sakura.common.access import GRANT_LEVELS
+from sakura.common.errors import APIRequestError
 from sakura.hub.context import get_context
 from sakura.hub.access import pack_gui_access_info, parse_gui_access_info
 from sakura.hub.mixins.bases import BaseMixin
@@ -32,6 +33,8 @@ class DataflowMixin(BaseMixin):
     def create_dataflow(cls,    creation_date = None,
                                 **kwargs):
         context = get_context()
+        if not context.user_is_logged_in():
+            raise APIRequestError('Please log in first!')
         # set a creation_date if missing
         if creation_date is None:
             creation_date = time.time()

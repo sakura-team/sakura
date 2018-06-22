@@ -77,11 +77,13 @@ class BaseMixin:
     def handle_grant_request(self, grant_name, req_text):
         requested_grant = GRANT_LEVELS.value(grant_name)
         requester_grant = self.get_grant_level()
+        context = get_context()
+        if not context.user_is_logged_in():
+            raise APIRequestError('Please log in first!')
         if requester_grant >= requested_grant:
             raise APIRequestError('This grant level is already allowed to you!')
         if requested_grant not in (GRANT_LEVELS.read, GRANT_LEVELS.write):
             raise APIRequestError("Denied, you can only request 'read' or 'write' grants.")
-        context = get_context()
         requester = context.session.user
         owner = context.users.from_login_or_email(self.owner)
         content = GRANT_REQUEST_MAIL_CONTENT % dict(

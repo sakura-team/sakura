@@ -41,6 +41,11 @@ class HubContext(object):
             # we are processing a request coming from a daemon
             return None
         return self.sessions[greenlet_env.session_id]
+    def user_is_logged_in(self):
+        if self.session is None:
+            return False
+        else:
+            return self.session.user != None
     def new_session(self):
         return self.sessions.new_session(self)
     def get_session(self, session_secret):
