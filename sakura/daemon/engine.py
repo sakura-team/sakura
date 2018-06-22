@@ -11,7 +11,6 @@ class DaemonEngine(object):
             self.datastores[(ds.host, ds.driver_label)] = ds
         self.op_instances = {}
         self.hub = None
-        self.fragment_sources = {}
         self.name = conf.daemon_desc
     def fire_data_issue(self, issue, should_fail=True):
         if should_fail:
@@ -62,10 +61,6 @@ class DaemonEngine(object):
         dst_input_stream = dst_op.input_streams[dst_in_id]
         dst_op.unselect_parameters(stream = dst_input_stream)
         dst_input_stream.disconnect()
-        #if self.is_foreign_operator(src_op_id):
-        if False:
-            # discard the fragment source operator
-            del self.fragment_sources[(dst_op_id, dst_in_id)]
         print("disconnected [...] -> %s op_id=%d in%d" % \
                 (dst_op.NAME, dst_op_id, dst_in_id))
     def get_possible_links(self, src_op_id, dst_op_id):
