@@ -1,5 +1,6 @@
 import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
 import pickle, numpy as np
+from threading import get_ident     # get thread id
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
@@ -27,6 +28,27 @@ def print_debug(*args):
         OUT.write('...\n')
         OUT.truncate()
     sys.stdout.write(OUT.getvalue())
+
+class HeldObjectsStore:
+    instance = None
+    @staticmethod
+    def get():
+        if HeldObjectsStore.instance is None:
+            HeldObjectsStore.instance = HeldObjectsStore()
+        return HeldObjectsStore.instance
+    def __init__(self):
+        self.__objects__ = {}
+        self.__held_ids__ = itertools.count()
+    def hold(self, obj):
+        # hold obj locally and return its id.
+        print_debug('held:', obj)
+        held_id = self.__held_ids__.__next__()
+        self.__objects__[held_id] = obj
+        return held_id
+    def __getitem__(self, held_id):
+        return self.__objects__[held_id]
+    def __delitem__(self, held_id):
+        del self.__objects__[held_id]
 
 # obtain a serializable description of an object
 def pack(obj):
@@ -110,8 +132,12 @@ class LocalAPIHandler(object):
             except IOHoldException:
                 # object will be held locally
                 held_id = self.api_runner.hold(res)
+                origin = get_ident(), held_id
+                if isinstance(res, AttrCallAggregator):
+                    if res.get_origin() is not None:
+                        origin = res.get_origin()
                 # notify remote end
-                out = (IO_HELD, held_id)
+                out = (IO_HELD, held_id) + origin
                 self.protocol.dump((req_id,) + out, self.f)
                 self.f.flush()
             except BaseException as e:
@@ -156,16 +182,18 @@ void_result_interpreter = lambda x: x
 
 class AttrCallAggregator(object):
     def __init__(self, request_cb, path = (),
+                        origin = None,
                         delete_callback = None):
         self.path = path
         self.request = request_cb
         self.delete_callback = delete_callback
+        self.__origin__ = origin
     def __getattr__(self, attr):
         path = self.path + (attr,)
         if attr.startswith('_'):
             return self.__io_request__(IO_ATTR, path)
         else:
-            return AttrCallAggregator(self.request, path)
+            return AttrCallAggregator(self.request, path, self.__origin__)
     def __str__(self):
         path = self.path + ('__str__',)
         return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {}) + ')'
@@ -181,12 +209,14 @@ class AttrCallAggregator(object):
     def __delete_held__(self, remote_held_id):
         self.request(IO_FUNC, ('__delete_held__',), (remote_held_id,), {})
     def __getitem__(self, index):
-        return AttrCallAggregator(self.request, self.path + ((index,),))
+        return AttrCallAggregator(self.request, self.path + ((index,),), self.__origin__)
     def __call__(self, *args, **kwargs):
         return self.__io_request__(IO_FUNC, self.path, args, kwargs)
     def __len__(self):
         path = self.path + ('__len__',)
         return self.__io_request__(IO_FUNC, path, (), {})
+    def get_origin(self):
+        return self.__origin__
     def __del__(self):
         if self.delete_callback is not None:
             self.delete_callback()
@@ -201,22 +231,28 @@ class AttrCallAggregator(object):
             raise APIRequestError(res[1])
         if res[0] == IO_HELD:
             # result was held remotely (not transferable)
-            remote_held_id = res[1]
+            remote_held_id, origin = res[1], res[2:]
+            origin_tid, origin_held_id = origin
+            if origin_tid == get_ident():
+                # the object is actually a local object!
+                # (may occur in case of several bounces)
+                # we can short out those bounces and use the object directly.
+                # first, retrieve a reference to this object
+                obj = HeldObjectsStore.get()[origin_held_id]
+                # tell the remote end it can release it
+                self.__delete_held__(remote_held_id)
+                # return the object
+                return obj
             remote_held_path = ('__held_objects__', (remote_held_id,))
-            return AttrCallAggregator(self.request, remote_held_path,
+            return AttrCallAggregator(self.request, remote_held_path, origin,
                     delete_callback=lambda : self.__delete_held__(remote_held_id))
 
 class AttrCallRunner(object):
     def __init__(self, handler):
         self.handler = handler
-        self.__held_ids__ = itertools.count()
-        self.__held_objects__ = {}
+        self.__held_objects__ = HeldObjectsStore.get()
     def hold(self, obj):
-        # hold obj locally and return its id.
-        print_debug('held:', obj)
-        held_id = self.__held_ids__.__next__()
-        self.__held_objects__[held_id] = obj
-        return held_id
+        return self.__held_objects__.hold(obj)
     def do(self, req):
         req_type, path = req[:2]
         if path[0] in ('__held_objects__', '__delete_held__'):
