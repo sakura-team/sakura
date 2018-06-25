@@ -4,6 +4,7 @@
 function buildListStub(idDiv,result,elt) {
 
     var eltAncetre=elt.split("/")[0];
+    var elt_type = elt.split('/')[0].toLowerCase();
 
     //Head of the list, according to the selected columns
     var thead = $('#'+idDiv).find('thead');
@@ -47,7 +48,7 @@ function buildListStub(idDiv,result,elt) {
                 name = $('<a>');
                 name.html(row.name );
                 name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
-                name.attr('title', 'Accessing database');
+                name.attr('title', 'Accessing '+elt_type.slice(0, -1));
                 name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
                 eye = $('<p>', {html: '<span class=\'glyphicon glyphicon-eye-open\'></span>',
                                 style: 'margin: 0px;'})
@@ -66,7 +67,7 @@ function buildListStub(idDiv,result,elt) {
                 name.attr('style', 'margin: 0px;');
                 name.html( row.name +'&nbsp;&nbsp;&nbsp;');
                 eye = $('<a>', {  title:  'You have to be logged for requesting access',
-                                  style:  'cursor: pointer;',
+                                  style:  'cursor: pointer; color: grey;',
                                   html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
                                   onclick: 'alert("You have to be logged for requesting access");'});
             }
@@ -100,13 +101,14 @@ function buildListStub(idDiv,result,elt) {
 
     if (result.length == 0) {
         var new_row = $(tbody[0].insertRow());
-        var msg = "There is no accessible database.";
-        if (idDiv.indexOf("dataflows") != -1)
-            msg = "There is no accessible dataflow.";
+        var msg = "There is no accessible "+elt_type+".";
         new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
     }
 
-
+    if (current_login == null)
+        $('#web_interface_'+elt_type+'_creation_button').addClass('invisible');
+    else
+        $('#web_interface_'+elt_type+'_creation_button').removeClass('invisible');
 }
 
 
