@@ -52,7 +52,7 @@ function buildListStub(idDiv,result,elt) {
                 eye = $('<p>', {html: '<span class=\'glyphicon glyphicon-eye-open\'></span>',
                                 style: 'margin: 0px;'})
             }
-            else {
+            else if (current_login != null) {
                 name = $('<p>');
                 name.attr('style', 'margin: 0px;');
                 name.html( row.name +'&nbsp;&nbsp;&nbsp;');
@@ -60,6 +60,15 @@ function buildListStub(idDiv,result,elt) {
                                   style:  'cursor: pointer;',
                                   html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
                                   onclick: 'web_interface_asking_access_open_modal(\''+row.name+'\',\''+row.type+'\',\''+row.id+'\',\'read\');'});
+            }
+            else {
+                name = $('<p>');
+                name.attr('style', 'margin: 0px;');
+                name.html( row.name +'&nbsp;&nbsp;&nbsp;');
+                eye = $('<a>', {  title:  'You have to be logged for requesting access',
+                                  style:  'cursor: pointer;',
+                                  html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
+                                  onclick: 'alert("You have to be logged for requesting access");'});
             }
             td1.append(name);
             td2.append(eye);
