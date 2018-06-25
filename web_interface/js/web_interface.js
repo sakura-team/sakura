@@ -98,18 +98,19 @@ function fill_metadata() {
                 var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
                 var dd = $('<dd>');
 
-                if (!(elt.value != undefined && elt.value))
-                    elt.value = empty_text;
-
                 if (elt.editable && info.grant_level == 'own') {
+                    if (!(elt.value != undefined && elt.value))
+                        elt.value = '';
                     var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
                     a.editable({emptytext: empty_text,
                                 url: function(params) {web_interface_updating_metadata(a, params);}});
                     dd.append(a);
                 }
-                else
+                else {
+                    if (!(elt.value != undefined && elt.value))
+                        elt.value = empty_text;
                     dd.append("<i>"+elt.value+"</i>")
-
+                }
                 dl1.append(dt, dd);
             });
             $('#web_interface_'+web_interface_current_object_type+'_metadata1').append(dl1);
