@@ -8,6 +8,9 @@ def http_set_file_name(obj_name, gzip_compression):
     file_name = re.sub(r'[^a-z0-9]', '-', obj_name.lower()) + extension
     bottle.response.set_header('content-disposition',
                 'attachment; filename="%s"' % file_name)
+    content_type = 'application/octet-stream' if gzip_compression \
+                            else 'text/csv; charset=utf-8'
+    bottle.response.content_type = content_type
 
 def get_transfer(context):
     if 'transfer' not in bottle.request.query:
