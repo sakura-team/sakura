@@ -54,14 +54,17 @@ function fill_all(id) {
 
 
 function fill_tabs(id) {
-    var op_hub_id = parseInt(id.split("_")[2]);
+    let op_hub_id = parseInt(id.split("_")[2]);
     sakura.common.ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
         current_instance_info = instance_info;
-        var index = 0;
+        let index = 0;
         instance_info.tabs.forEach( function(tab) {
-            var iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
-            var tab_url = '/opfiles/' + op_hub_id + '/' + tab.html_path;
-            iframe.attr('src', tab_url);
+            let iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
+            sakura.common.ws_generate_secret(function(ss) {
+                var tab_url = '/opfiles/' + op_hub_id + '/' + tab.html_path;
+                tab_url = sakura.common.ws_url_add_secret(tab_url, ss);
+                iframe.attr('src', tab_url);
+            });
             index++;
         });
     });
@@ -313,11 +316,14 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
     });
 }
 
-function loadIFrame(url,id){
-  /* by default the iframe is initialized with current url
-      with the condition it will not reload is already loaded
-  */
-  if(document.getElementById("codeEditorIframe_"+id).src.indexOf(url) == -1){
-      document.getElementById("codeEditorIframe_"+id).src=url;
-  }
+function loadIFrame(url, id) {
+    /* by default the iframe is initialized with current url
+       with the condition it will not reload if already loaded
+     */
+    let iframe = document.getElementById("codeEditorIframe_"+id);
+    if (iframe.src.indexOf(url) == -1) {
+        sakura.common.ws_generate_secret(function(ss) {
+            iframe.src = sakura.common.ws_url_add_secret(url, ss);
+        });
+    }
 }
