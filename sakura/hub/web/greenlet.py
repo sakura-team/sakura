@@ -25,16 +25,21 @@ def web_greenlet(context, webapp_path):
 
     @app.route('/websockets/sessions/new')
     def ws_new_session():
+        print('/websockets/sessions/new')
         session = None
         with db_session_wrapper():
             session = context.new_session()
         ws_handle(session)
 
-    @app.route('/websockets/sessions/connect/<secret:int>')
-    def ws_connect_session(secret):
+    @app.route('/websockets/sessions/connect')
+    def ws_connect_session():
+        if 'session-secret' not in bottle.request.query:
+            raise bottle.HTTPError(400, 'session secret not specified.')
+        secret = bottle.request.query.get('session-secret')
+        print('/websockets/sessions/connect', secret)
         session = None
         with db_session_wrapper():
-            session = context.get_session(secret)
+            session = context.recover_session(secret)
         if session is None:
             bottle.abort(401, 'Wrong secret.')
         ws_handle(session)

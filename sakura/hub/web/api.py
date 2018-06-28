@@ -204,8 +204,8 @@ class GuiToHubAPI(object):
     def renew_session(self):
         return self.context.session.renew()
 
-    def generate_session_secret(self):
-        return self.context.generate_session_secret()
+    def save_session_recovery_token(self, b64_sha256):
+        return self.context.save_session_recovery_token(b64_sha256)
 
     # User management
     #################

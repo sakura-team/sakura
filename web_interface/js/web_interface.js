@@ -444,11 +444,14 @@ function showDiv(event, dir, div_id) {
     for (i = 0; i < actionsOnShow.length; i++)
         if (actionsOnShow[i].nodeName == "IFRAME") {
             var aos = actionsOnShow[i];
-            sakura.common.ws_request('generate_session_secret', [], {}, function(ss) {
+            sakura.common.ws_generate_secret(function(ss) {
+                let url;
                 if (aos.id == 'iframe_datasets')
-                    aos.src = "/modules/datasets/index.html?database_id="+web_interface_current_id+"&session-secret="+ss;
+                    url = "/modules/datasets/index.html?database_id=";
                 else if (aos.id == 'iframe_workflow')
-                  aos.src = "/modules/workflow/index.html?dataflow_id="+web_interface_current_id+"&session-secret="+ss;
+                    url = "/modules/workflow/index.html?dataflow_id=";
+                url += web_interface_current_id;
+                aos.src = sakura.common.ws_url_add_secret(url, ss);
             });
         }
         else

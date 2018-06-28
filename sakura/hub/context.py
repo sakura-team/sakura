@@ -1,7 +1,8 @@
 import bottle
 from gevent.local import local
+from base64 import b64decode, b64encode
 from sakura.common.bottle import PicklableFileRequest
-from sakura.hub.secrets import SecretsRegistry
+from sakura.hub.secrets import TemporarySecretsRegistry, OneTimeHashSecretsRegistry
 from sakura.hub.web.transfers import Transfer
 
 # object storing greenlet-local data
@@ -12,7 +13,6 @@ def get_context():
 
 class HubContext(object):
     _instance = None
-    SESSION_SECRETS_LIFETIME = 5
     PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
     def __init__(self, db):
         self.db = db
@@ -28,9 +28,8 @@ class HubContext(object):
         self.databases = self.db.Database
         self.tables = self.db.DBTable
         self.columns = self.db.DBColumn
-        self.session_secrets = SecretsRegistry(
-                        HubContext.SESSION_SECRETS_LIFETIME)
-        self.pw_recovery_secrets = SecretsRegistry(
+        self.session_secrets = OneTimeHashSecretsRegistry()
+        self.pw_recovery_secrets = TemporarySecretsRegistry(
                         HubContext.PW_RECOVERY_SECRETS_LIFETIME)
         self.transfers = {}
         HubContext._instance = self
@@ -48,8 +47,9 @@ class HubContext(object):
             return self.session.user != None
     def new_session(self):
         return self.sessions.new_session(self)
-    def get_session(self, session_secret):
-        return self.session_secrets.get_obj(session_secret)
+    def recover_session(self, b64_secret):
+        session_secret = b64decode(b64_secret.encode('utf-8'))
+        return self.session_secrets.pop_object(session_secret)
     def on_daemon_connect(self, api):
         daemon_info = api.get_daemon_info_serializable()
         daemon = self.daemons.restore_daemon(api = api, **daemon_info)
@@ -76,8 +76,9 @@ class HubContext(object):
             return bottle.HTTPResponse(*resp[1:])
         else:
             return bottle.HTTPError(*resp[1:])
-    def generate_session_secret(self):
-        return self.session_secrets.generate_secret(self.session)
+    def save_session_recovery_token(self, b64_sha256):
+        sha256 = b64decode(b64_sha256.encode('utf-8'))
+        self.session_secrets.save_object(self.session, sha256)
     def start_transfer(self):
         transfer = Transfer(self)
         self.transfers[transfer.transfer_id] = transfer
