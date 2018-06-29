@@ -39,12 +39,14 @@ class DatastoreMixin(BaseMixin):
             driver_label = self.driver_label,
             host = self.host
         )
+    def assert_online(self):
+        if not self.online:
+            raise APIRequestErrorOfflineDatastore('Datastore is offline!')
     @property
     def remote_instance(self):
         self.assert_grant_level(GRANT_LEVELS.read,
                     'You are not allowed to explore this datastore.')
-        if not self.online:
-            raise APIRequestErrorOfflineDatastore('Datastore is offline!')
+        self.assert_online()
         return self.daemon.api.datastores[(self.host, self.driver_label)]
     def list_expected_columns_tags(self):
         # list tags already seen on this datastore

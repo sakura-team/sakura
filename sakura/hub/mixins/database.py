@@ -13,9 +13,12 @@ class DatabaseMixin(BaseMixin):
         return self.datastore.online and self.datastore.daemon.connected
     @property
     def remote_instance(self):
+        self.datastore.assert_online()
         self.assert_grant_level(GRANT_LEVELS.read,
                     'You are not allowed to read data from this database.')
-        return self.datastore.remote_instance.databases[self.name]
+        ds_key = (self.datastore.host, self.datastore.driver_label)
+        remote_ds = self.datastore.daemon.api.datastores[ds_key]
+        return remote_ds.databases[self.name]
     def pack(self):
         result = dict(
             database_id = self.id,
@@ -111,12 +114,6 @@ class DatabaseMixin(BaseMixin):
         # return database_id
         context.db.commit()
         return new_db.id
-    def get_grant_level(self):
-        # user must be granted access to the datastore, first
-        if self.datastore.get_grant_level() < GRANT_LEVELS.read:
-            return GRANT_LEVELS.hide
-        # ok, let's check grant on this database object
-        return super().get_grant_level()
     def update_grant(self, login, grant_name):
         self.assert_grant_level(GRANT_LEVELS.own,
                         'Only owner can change database grants.')
