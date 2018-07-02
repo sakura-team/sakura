@@ -4,11 +4,13 @@ import sakura.hub.conf as conf
 from sakura.common.password import decode_password
 
 def sendmail(receiver_email, subject, content):
-    encoded_password = conf.emailing.get('encoded_password', None)
-    if encoded_password is not None:
-        password = decode_password(encoded_password)
-    else:   # legacy clear-text password
-        password = conf.emailing.password
+    login = conf.emailing.get('login', None)
+    if login is not None:
+        encoded_password = conf.emailing.get('encoded_password', None)
+        if encoded_password is not None:
+            password = decode_password(encoded_password)
+        else:   # legacy clear-text password
+            password = conf.emailing.password
     msg = EmailMessage()
     msg.set_content(content)
     msg['Subject'] = '[sakura] ' + subject
@@ -19,6 +21,7 @@ def sendmail(receiver_email, subject, content):
     else:
         cls = smtplib.SMTP
     s = cls(conf.emailing.host, conf.emailing.port)
-    s.login(conf.emailing.login, password)
+    if login is not None:
+        s.login(login, password)
     s.send_message(msg)
     s.quit()
