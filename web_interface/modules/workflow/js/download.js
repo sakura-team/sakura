@@ -5,35 +5,41 @@ var stop_downloading  = false;
 var timeout = 250;
 var current_transfert_id  = null;
 
-function download_table(id_out) {
+function download_table(id_out, in_out) {
     var h     = $('#workflow_download_modal_header');
     var bcsv  = $('#workflow_download_modal_button_csv');
     var bgzip = $('#workflow_download_modal_button_gzip');
 
     h.css('background-color', 'rgba(91,192,222)');
-    h.html('<h3><font color="white">Downloading</font> '+current_instance_info.outputs[id_out].label+'</h3>');
-    bcsv.attr('onclick', 'workflow_download_start_transfert('+id_out+', false);');
-    bgzip.attr('onclick', 'workflow_download_start_transfert('+id_out+', true);');
+    if (in_out == 'output')
+        h.html('<h3><font color="white">Downloading</font> '+current_instance_info.outputs[id_out].label+'</h3>');
+    else
+        h.html('<h3><font color="white">Downloading</font> '+current_instance_info.inputs[id_out].label+'</h3>');
+
+    bcsv.attr('onclick', 'workflow_download_start_transfert('+id_out+', \''+in_out+'\', false);');
+    bgzip.attr('onclick', 'workflow_download_start_transfert('+id_out+', \''+in_out+'\',true);');
 
     $('#workflow_download_modal').modal('show');
 }
 
-function workflow_download_start_transfert(id_in_out, gzip) {
+function workflow_download_start_transfert(id_in_out, in_out, gzip) {
 
-    console.log(current_instance_info);
     stop_downloading = false;
     sakura.common.ws_request('start_transfer', [], {}, function(transfert_id) {
 
         current_transfert_id = transfert_id;
 
-        var url = "/streams/"+current_instance_info.op_id+"/output/"+id_in_out+"/export.csv?transfer="+current_transfert_id;
+        var url = "/streams/"+current_instance_info.op_id+"/"+in_out+"/"+id_in_out+"/export.csv?transfer="+current_transfert_id;
         if (gzip)
-            url = "/streams/"+current_instance_info.op_id+"/output/"+id_in_out+"/export.csv.gz?transfer="+current_transfert_id;
+            url = "/streams/"+current_instance_info.op_id+"/"+in_out+"/"+id_in_out+"/export.csv.gz?transfer="+current_transfert_id;
 
         //Create a link from downloading the file
         var element = document.createElement('a');
         element.setAttribute('href', url);
-        element.setAttribute('download', current_instance_info.outputs[id_in_out].label+'.csv');
+        if (in_out == 'output')
+            element.setAttribute('download', current_instance_info.outputs[id_in_out].label+'.csv');
+        else
+            element.setAttribute('download', current_instance_info.inputs[id_in_out].label+'.csv');
         element.style.display = 'none';
         document.body.appendChild(element);
 
