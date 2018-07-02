@@ -141,10 +141,8 @@ function signOutSubmitControl(event) {
             signInWidget = document.getElementsByName("signInWidget")[0];
             signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
             showDiv(event, "");
+            current_login = null;
         });
-    }
-    else {
-        showDiv(event, 'HelloYou');
     }
 }
 
