@@ -76,10 +76,11 @@ function recover_datasets() {
     }
 
     sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
-
-        console.log(result.tables);
+        console.log(result);
         if (result.grant_level != 'list') {
 
+            if (result.tables == undefined)
+                result.tables = [];
             //Sorting tables by name
             result.tables.sort(datasets_sort_func);
 
@@ -98,6 +99,13 @@ function recover_datasets() {
             //Filling dataset
             var body = $('#table_of_datasets').find('tbody');
             body.empty();
+            if (result.tables.length == 0) {
+                var tr = $('<tr>');
+                var td = $('<td>', {html: "The list is empty for now"});
+                tr.append(td);
+                body.append(tr);
+            }
+
             result.tables.forEach( function(dataset, index) {
                 var dataset_id = dataset.table_id;
                 var new_row = $(document.createElement('tr'));
