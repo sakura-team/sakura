@@ -73,22 +73,26 @@ function fill_metadata() {
         $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
 
         //Description
-        var empty_desc = 'No short description for now';
+        var empty_desc = '<font color="grey"><i>No short description for now</i></font>';
         if (info.grant_level == 'own') {
             var elt = $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]);
             elt.empty();
-            if (!(info.short_desc != undefined && info.short_desc))
+            if (!(info.short_desc != undefined && info.short_desc)) {
                   info.short_desc = '';
-            var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription"><font color="grey"><i>'+info.short_desc+'<i></font></a>');
+            }
+            else {
+                  info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
+            }
+            var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
             a.editable({emptytext: empty_desc,
                         url: function(params) {web_interface_updating_metadata(a, params);}});
             elt.append(a);
         }
         else {
             if (info.short_desc)
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;<i>' + info.short_desc + '</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
+                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey><i>' + info.short_desc + '</i></font>');
             else
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp;<i> '+empty_desc+'</i></font>' + '&nbsp;&nbsp;');
+                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html(empty_desc+ '&nbsp;&nbsp;');
         }
 
         //Owner
