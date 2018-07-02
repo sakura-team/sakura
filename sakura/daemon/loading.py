@@ -38,7 +38,7 @@ def load_datastores():
             driver_label = ds_conf.driver,
             adapter_label = ds_conf.get('adapter', 'native'),
             access_scope = ACCESS_SCOPES.value(
-                    ds_conf.get('access-scope', 'private'))
+                    ds_conf.get('access_scope', 'private'))
         )
         ds.refresh()
         datastores.append(ds)
