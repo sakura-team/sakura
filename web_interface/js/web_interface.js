@@ -45,7 +45,6 @@ function fill_work() {
     if (web_interface_current_object_type == 'dataflows')
         req = 'get_dataflow_info';
 
-
     sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
 
         web_interface_current_object_info = info;
@@ -60,10 +59,8 @@ function fill_work() {
 
 function fill_metadata() {
     var req = 'get_database_info';
-
     if (web_interface_current_object_type == 'dataflows')
         req = 'get_dataflow_info';
-
 
     sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
 
@@ -89,9 +86,9 @@ function fill_metadata() {
         }
         else {
             if (info.short_desc)
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
+                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;<i>' + info.short_desc + '</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>&nbsp;&nbsp;');
             else
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; '+empty_desc+'</font>' + '&nbsp;&nbsp;');
+                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp;<i> '+empty_desc+'</i></font>' + '&nbsp;&nbsp;');
         }
 
         //Owner
@@ -585,6 +582,30 @@ function fill_collaborators_table_body(info) {
         });
 
         td.append(a);
+        tr.append(td);
+        tbody.append(tr);
+    }
+    else if (info.grant_level == 'list') {
+        var tr = $('<tr>');
+        var td = $('<td>');
+        if (current_login != null) {
+            var hobj_type = matching_hub_name(web_interface_current_object_type);
+            var a1 = $('<button>', { html: "Ask for <b>read</b> access"});
+
+            a1.click(function () {
+                web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'read', null);
+            });
+            var a2 = $('<button>', { html: "Ask for <b>write</b> access"});
+
+            a2.click(function () {
+                web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'write', null);
+            });
+            td.append(a1);
+            td.append(a2);
+        }
+        else {
+            td.append("You have to be logged for asking read or write access");
+        }
         tr.append(td);
         tbody.append(tr);
     }

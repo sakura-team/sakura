@@ -54,8 +54,9 @@ function datas_update_creation_modal() {
         datas_datastores = result;
         $('#datas_datastore_input').empty();
 
+        console.log("Asking DS to hub");
         result.forEach( function(ds) {
-
+            console.log(ds);
             var opt = $('<option>', { value: ds['datastore_id']});
             var p = $('<p>');
             if (ds.grant_level == 'list') {

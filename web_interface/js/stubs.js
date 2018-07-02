@@ -31,7 +31,6 @@ function buildListStub(idDiv,result,elt) {
 
     //Body of the list
     result.forEach( function (row) {
-
         var new_row = $(tbody[0].insertRow());
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
         //adding link
@@ -44,7 +43,10 @@ function buildListStub(idDiv,result,elt) {
             var td2 = $('<td>', {align: "right"})
             var eye = null;
 
-            if (row.grant_level != 'list') {
+            //own, write, read
+            if (row.grant_level == 'own' ||
+                row.grant_level == 'write' ||
+                row.grant_level == 'read') {
                 name = $('<a>');
                 name.html(row.name );
                 name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
@@ -53,23 +55,45 @@ function buildListStub(idDiv,result,elt) {
                 eye = $('<p>', {html: '<span class=\'glyphicon glyphicon-eye-open\'></span>',
                                 style: 'margin: 0px;'})
             }
-            else if (current_login != null) {
-                name = $('<p>');
-                name.attr('style', 'margin: 0px;');
-                name.html( row.name +'&nbsp;&nbsp;&nbsp;');
-                eye = $('<a>', {  title:  'Request Access',
-                                  style:  'cursor: pointer;',
-                                  html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
-                                  onclick: 'web_interface_asking_access_open_modal(\''+row.name+'\',\''+row.type+'\',\''+row.id+'\',\'read\');'});
-            }
+            //list
             else {
-                name = $('<p>');
-                name.attr('style', 'margin: 0px;');
-                name.html( row.name +'&nbsp;&nbsp;&nbsp;');
-                eye = $('<a>', {  title:  'You have to be logged for requesting access',
-                                  style:  'cursor: pointer; color: grey;',
-                                  html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
-                                  onclick: 'alert("You have to be logged for requesting access");'});
+                name = $('<a>');
+                name.html(row.name );
+                name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
+                name.attr('title', 'Accessing '+elt_type.slice(0, -1));
+                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+                if (current_login == null) {
+                    eye = $('<a>', {  title:  'You have to be logged for requesting access',
+                                      style:  'cursor: pointer; color: grey;',
+                                      html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
+                                      onclick: 'alert("You have to be logged for requesting access");'});
+                    console.log(row);
+                }
+                else {
+                    eye = $('<a>', {  title:  'Request Access',
+                                      style:  'cursor: pointer;',
+                                      html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
+                                      onclick: 'web_interface_asking_access_open_modal(\''+row.name+'\',\''+row.type+'\',\''+row.id+'\',\'read\');'});
+                }
+
+                /*if (current_login != null) {
+                    name = $('<p>');
+                    name.attr('style', 'margin: 0px;');
+                    name.html( row.name +'&nbsp;&nbsp;&nbsp;');
+                    eye = $('<a>', {  title:  'Request Access',
+                                      style:  'cursor: pointer;',
+                                      html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
+                                      onclick: 'web_interface_asking_access_open_modal(\''+row.name+'\',\''+row.type+'\',\''+row.id+'\',\'read\');'});
+                }
+                else {
+                    name = $('<p>');
+                    name.attr('style', 'margin: 0px;');
+                    name.html( row.name +'&nbsp;&nbsp;&nbsp;');
+                    eye = $('<a>', {  title:  'You have to be logged for requesting access',
+                                      style:  'cursor: pointer; color: grey;',
+                                      html:   '<span class=\'glyphicon glyphicon-eye-close\'></span>',
+                                      onclick: 'alert("You have to be logged for requesting access");'});
+                }*/
             }
             td1.append(name);
             td2.append(eye);
@@ -131,6 +155,7 @@ function listRequestStub(idDiv, n, elt, bd) {
     //Here we deal with the databases
     if (elt == 'Datas/tmpData') {
         sakura.common.ws_request('list_databases', [], {}, function (databases) {
+            console.log(databases);
             var result = new Array();
             databases.sort(databases_sort);
             databases.forEach( function(db) {
