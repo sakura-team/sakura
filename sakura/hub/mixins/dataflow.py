@@ -17,13 +17,14 @@ class DataflowMixin(BaseMixin):
     def get_full_info(self):
         # start with general metadata
         result = self.pack()
-        # add operator instances
-        result['op_instances'] = tuple(op.pack() for op in self.op_instances)
-        # add links
-        df_links = set(l \
-                for op in self.op_instances \
-                for l in set(op.uplinks) | set(op.downlinks))
-        result['links'] = tuple(link.pack() for link in df_links)
+        if self.get_grant_level() >= GRANT_LEVELS.read:
+            # add operator instances
+            result['op_instances'] = tuple(op.pack() for op in self.op_instances)
+            # add links
+            df_links = set(l \
+                    for op in self.op_instances \
+                    for l in set(op.uplinks) | set(op.downlinks))
+            result['links'] = tuple(link.pack() for link in df_links)
         return result
     def describe(self):
         return "'%(name)s' dataflow" % dict(

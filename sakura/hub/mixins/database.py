@@ -38,8 +38,8 @@ class DatabaseMixin(BaseMixin):
     def get_full_info(self):
         # start with general metadata
         result = self.pack()
-        # if online, explore tables
-        if self.online:
+        # if online and sufficient grant, explore tables
+        if self.online and self.get_grant_level() >= GRANT_LEVELS.read:
             self.update_tables_from_daemon()
             result['tables'] = tuple(t.pack() for t in self.tables)
         return result
