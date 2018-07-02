@@ -789,35 +789,6 @@ function saveModeSubmitControl(event) {
     }
 }
 
-// RMS: The function below has been moved to signIn.js and the name here is affixed with '_old'
-// RMS: Can be removed or commented
-function signInSubmitControl_old(event) {
-    if ((document.getElementById("signInEmail").value.length>2) && (document.getElementById("signInEmail").value	== document.getElementById("signInPassword").value)) {
-        showDiv(event,'HelloYou');
-        $("#signInModal").modal("hide");
-        document.getElementById("idSignInWidget").innerHTML= '<a onclick="signOutSubmitControl(event);" href="http://sakura.imag.fr/signOut" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Hello you</a>';
-        return;
-    }
-    else {
-        alert('not yet, try email=password=guest');
-        return;
-    }
-}
-
-// RMS: The function below has been moved to signIn.js and the name here is affixed with '_old'
-// RMS: Can be removed or commented
-function signOutSubmitControl_old(event) {
-    res=confirm("Sign Out?");
-    if (res) {
-        document.getElementById("idSignInWidget").innerHTML= '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-        showDiv(event,"");
-        return;
-    }
-    else {
-        showDiv(event,'HelloYou');
-    }
-}
-
 
 function searchSubmitControl(event,elt) {
     listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
