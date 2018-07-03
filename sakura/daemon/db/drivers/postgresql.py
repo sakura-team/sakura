@@ -84,6 +84,10 @@ SQL_SET_DS_GRANTS = '''\
 ALTER ROLE %(ds_user)s WITH %(ds_grants)s;
 '''
 
+SQL_GET_DS_USERS = '''\
+SELECT rolname FROM pg_roles;
+'''
+
 SQL_GET_DBS = '''\
 SELECT  datname  FROM pg_database;
 '''
@@ -324,6 +328,14 @@ class PostgreSQLDBDriver:
             metadata_collector.register_count_estimate(
                     table_name,
                     count_estimate)
+    @staticmethod
+    def has_user(admin_db_conn, db_user):
+        with admin_db_conn.cursor() as cursor:
+            cursor.execute(SQL_GET_DS_USERS)
+            for row in cursor.fetchall():
+                if row[0] == db_user:
+                    return True
+        return False
     @staticmethod
     def create_user(admin_db_conn, db_user):
         with admin_db_conn.cursor() as cursor:
