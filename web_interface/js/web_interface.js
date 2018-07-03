@@ -483,7 +483,7 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, cal
 
     var txt2 = "Hello,\n\nI am a ...,\n";
     txt2 += "I would like to be able to "+grant+" to this "+o_type+" for my ... activity on...\n\n";
-    txt2 += "Thanks you !";
+    txt2 += "Thank you !";
     h = $('#web_interface_asking_access_modal_header');
     b = $('#web_interface_asking_access_modal_body');
     h.empty();
