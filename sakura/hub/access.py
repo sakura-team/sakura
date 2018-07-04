@@ -26,14 +26,16 @@ class FilteredView:
             raise APIObjectDeniedError('%s is not allowed to view this item.' % \
                     ('An anonymous user' if user is None else 'User ' + user.login))
     def pack(self):
-        return tuple(o.pack() for o in \
-                filter(self.is_accessible, self.db_set.select()))
+        return tuple(o.pack() for o in self)
     def is_accessible(self, o):
         try:
             FilteredView.list_access_checker(o)
         except APIObjectDeniedError:
             return False
         return True
+    def __iter__(self):
+        return filter(self.is_accessible,
+                    self.db_set.select().order_by(lambda o: o.id))
     def __getitem__(self, idx):
         res = self.db_set[idx]
         FilteredView.list_access_checker(res)
