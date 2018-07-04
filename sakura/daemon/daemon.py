@@ -7,7 +7,8 @@ from sakura.daemon.loading import load_operator_classes, \
                                 load_datastores
 from sakura.daemon.engine import DaemonEngine
 from sakura.daemon.greenlets import \
-            RPCServerGreenlet, RPCClientGreenlet, PlannerGreenlet
+            RPCServerGreenlet, RPCClientGreenlet
+from sakura.common.planner import PlannerGreenlet
 from sakura.daemon.processing.cache import Cache
 
 def run():

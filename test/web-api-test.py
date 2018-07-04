@@ -81,7 +81,7 @@ class FileWSock(object):
 
 
 f = FileWSock(ws_path)
-remote_api = RemoteAPIForwarder(f, json)
+remote_api = RemoteAPIForwarder(f, json, sync=True)
 
 # read-eval-loop
 code.interact(  banner='Entering interpreter prompt. Use "remote_api" variable to interact with the web api.',

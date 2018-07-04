@@ -14,8 +14,9 @@ def get_context():
 class HubContext(object):
     _instance = None
     PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
-    def __init__(self, db):
+    def __init__(self, db, planner):
         self.db = db
+        self.planner = planner
         self.daemons = self.db.Daemon
         self.dataflows = self.db.Dataflow
         self.users = self.db.User
@@ -50,12 +51,8 @@ class HubContext(object):
     def recover_session(self, b64_secret):
         session_secret = b64decode(b64_secret.encode('utf-8'))
         return self.session_secrets.pop_object(session_secret)
-    def on_daemon_connect(self, api):
-        daemon_info = api.get_daemon_info_serializable()
-        daemon = self.daemons.restore_daemon(api = api, **daemon_info)
-        return daemon.id
-    def on_daemon_disconnect(self, daemon_id):
-        self.daemons[daemon_id].disconnect()
+    def get_daemon_from_name(self, daemon_name):
+        return self.daemons.get_or_create(daemon_name)
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         src_op = self.op_instances[src_op_id]
         dst_op = self.op_instances[dst_op_id]

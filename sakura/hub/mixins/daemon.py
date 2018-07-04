@@ -22,7 +22,14 @@ class DaemonMixin:
     def connected(self):
         return self.name in DaemonMixin.APIS
 
-    def disconnect(self):
+    def save_api(self, api):
+        self.api = api
+
+    def on_connect(self):
+        daemon_info = self.api.get_daemon_info_serializable()
+        self.restore(**daemon_info)
+
+    def on_disconnect(self):
         del DaemonMixin.APIS[self.name]
 
     def pack(self):
@@ -34,25 +41,19 @@ class DaemonMixin:
         )
 
     @classmethod
-    def create_or_update(cls, name, **kwargs):
+    def get_or_create(cls, name):
         daemon = cls.get(name = name)
         if daemon is None:
-            daemon = cls(name = name, **kwargs)
-        else:
-            daemon.set(name = name, **kwargs)
+            daemon = cls(name = name)
+            # we will need an up-to-date daemon id
+            get_context().db.commit()
         return daemon
 
-    @classmethod
-    def restore_daemon(cls, api, name, datastores, op_classes, **kwargs):
+    def restore(self, name, datastores, op_classes, **kwargs):
         context = get_context()
-        # create or update existing daemon of db
-        daemon = cls.create_or_update(name, **kwargs)
-        # we will need an up-to-date daemon id
-        context.db.commit()
-        # save api
-        daemon.api = api
+        # update metadata
+        self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
-        daemon.datastores = set(context.datastores.restore_datastore(daemon, **ds) for ds in datastores)
+        self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
         # restore op classes and re-instanciate related objects (instances, links, parameters)
-        daemon.op_classes = set(context.op_classes.restore_op_class(daemon, **cls) for cls in op_classes)
-        return daemon
+        self.op_classes = set(context.op_classes.restore_op_class(self, **cls) for cls in op_classes)

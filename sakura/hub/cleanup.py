@@ -1,9 +1,11 @@
-import gevent
 from sakura.hub.db import db_session_wrapper
+from sakura.hub.context import get_context
 
-def cleanup_greenlet(context):
-    while True:
-        gevent.sleep(6)
-        # cleanup obsolete sessions
-        with db_session_wrapper():
-            context.sessions.cleanup()
+CLEANUP_DELAY = 6   # seconds
+
+def cleanup():
+    with db_session_wrapper():
+        get_context().sessions.cleanup()
+
+def plan_cleanup():
+    get_context().planner.plan(CLEANUP_DELAY, cleanup)

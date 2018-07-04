@@ -274,13 +274,13 @@ class AttrCallRunner(object):
         del self.__held_objects__[held_id]
 
 class RemoteAPIForwarder(AttrCallAggregator):
-    def __init__(self, f, protocol):
+    def __init__(self, f, protocol, sync=False):
         super().__init__(self.request)
         self.f = f
         self.protocol = protocol
         self.reqs = {}
         self.req_ids = itertools.count()
-        self.running = False
+        self.sync = sync
     def request(self, *req):
         req_id = self.req_ids.__next__()
         async_res = AsyncResult()
@@ -288,9 +288,8 @@ class RemoteAPIForwarder(AttrCallAggregator):
         print_debug("sent request", req_id, req)
         self.protocol.dump((req_id, req), self.f)
         self.f.flush()
-        # if the greenlet did not start the loop() method,
-        # block until we get the result. (initialization phase)
-        if not self.running:
+        # synchronous mode, for web api
+        if self.sync:
             self.receive()
         return async_res.get()
     def receive(self):
@@ -310,7 +309,6 @@ class RemoteAPIForwarder(AttrCallAggregator):
         del self.reqs[req_id]
         return True
     def loop(self):
-        self.running = True
         while self.receive():
             pass
 
