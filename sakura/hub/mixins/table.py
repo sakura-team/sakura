@@ -11,6 +11,9 @@ class TableMixin(BaseMixin):
     def access_scope(self):
         return self.database.access_scope
     @property
+    def readable(self):
+        return self.database.readable
+    @property
     def remote_instance(self):
         return self.database.remote_instance.tables[self.name]
     @property

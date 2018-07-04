@@ -12,6 +12,9 @@ class DatabaseMixin(BaseMixin):
     def online(self):
         return self.datastore.online and self.datastore.daemon.connected
     @property
+    def readable(self):
+        return self.online and self.get_grant_level() >= GRANT_LEVELS.read
+    @property
     def remote_instance(self):
         self.datastore.assert_online()
         self.assert_grant_level(GRANT_LEVELS.read,
@@ -39,11 +42,13 @@ class DatabaseMixin(BaseMixin):
         # start with general metadata
         result = self.pack()
         # if online and sufficient grant, explore tables
-        if self.online and self.get_grant_level() >= GRANT_LEVELS.read:
+        if self.readable:
             self.update_tables_from_daemon()
             result['tables'] = tuple(t.pack() for t in self.tables)
         return result
     def update_tables_from_daemon(self):
+        if not self.readable:
+            raise APIObjectDeniedError('You are not allowed to read this database.')
         context = get_context()
         # ask daemon
         info_from_daemon = self.remote_instance.pack()
