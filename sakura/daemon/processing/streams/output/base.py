@@ -1,16 +1,16 @@
 import numpy as np
 from sakura.common.io import pack
+from sakura.common.cache import Cache
 from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
-from sakura.daemon.processing.cache import Cache
 from sakura.daemon.processing.column import Column
 from sakura.daemon.csvtools import stream_csv
 from time import time
 from itertools import count
 
-# We measure the delay <d> it took to compute iterator
+# We measure the total time <t> it took to compute iterator
 # values, and ensure iterator is kept in cache for
-# at least a delay <d>*<factor>.
+# at least a delay <t>*<factor>.
 CACHE_VALUE_FACTOR = 10.0
 
 class OutputStreamBase(Registry):
@@ -45,7 +45,8 @@ class OutputStreamBase(Registry):
         startup_time = time()
         chunk_len = row_end-row_start
         # try to reuse the last iterator
-        it, compute_delay = self.range_iter_cache.get(key=(row_start, row_end, columns, filters))
+        cache_key=(row_start, row_end, columns, filters)
+        it, compute_time = self.range_iter_cache.pop(cache_key, default=(None, None))
         in_cache = it is not None
         # otherwise, create a new iterator
         if not in_cache:
@@ -55,27 +56,21 @@ class OutputStreamBase(Registry):
             for condition in filters:
                 stream = stream.filter(condition)
             it = stream.chunks(chunk_len, row_start)
-            compute_delay = 0
+            compute_time = 0
         # read next chunk and return it
         for chunk in it:
-            if chunk.size < chunk_len:
-                # end of iterator, remove from cache if present
-                if in_cache:
-                    self.range_iter_cache.forget(it)
-            else:
-                # update info about last iterator
+            # having chunk.size < chunk_len would mean we are at the end
+            # of the iterator. let's check that's not the case.
+            if chunk.size == chunk_len:
+                # update cache for later reuse of this iterator.
                 new_row_start = row_start + chunk.size
-                compute_delay += time()- startup_time
-                expiry_delay = compute_delay * CACHE_VALUE_FACTOR
-                self.range_iter_cache.save(it, expiry_delay,
-                    key=(new_row_start, new_row_start + chunk_len, columns, filters),
-                    context_info=compute_delay
-                )
+                compute_time += time()- startup_time
+                expiry_delay = compute_time * CACHE_VALUE_FACTOR
+                cache_key = (new_row_start, new_row_start + chunk_len, columns, filters)
+                cache_item = (it, compute_time)
+                self.range_iter_cache.save(cache_key, cache_item, expiry_delay)
             return chunk
-        # if we are here, stream has ended, forget about iterator and
-        # return empty chunk
-        if in_cache:
-            self.range_iter_cache.forget(it)
+        # if we are here, stream has ended, return empty chunk
         return NumpyChunk.empty(self.get_dtype())
     def get_dtype(self):
         return np.dtype(list(col.get_dtype() for col in self.columns))

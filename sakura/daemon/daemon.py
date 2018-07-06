@@ -9,7 +9,7 @@ from sakura.daemon.engine import DaemonEngine
 from sakura.daemon.greenlets import \
             RPCServerGreenlet, RPCClientGreenlet
 from sakura.common.planner import PlannerGreenlet
-from sakura.daemon.processing.cache import Cache
+from sakura.common.cache import Cache
 
 def run():
     try:
