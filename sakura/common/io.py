@@ -105,12 +105,12 @@ class LocalAPIHandler(object):
         try:
             req_id, req = self.protocol.load(self.f)
             print_debug('received request', str((req_id, req)))
+        except (EOFError, ConnectionResetError):
+            print('remote end disconnected.')
+            return False
         except BaseException:
-            if DEBUG_LEVEL == 0:
-                print('malformed request. closing.')
-            else:
-                print('malformed request? Got exception:')
-                traceback.print_exc()
+            print('malformed request? Got exception:')
+            traceback.print_exc()
             return False
         self.handle_request(req_id, req)
         return True
@@ -296,12 +296,12 @@ class RemoteAPIForwarder(AttrCallAggregator):
         try:
             res_info = self.protocol.load(self.f)
             print_debug("received response", res_info)
+        except (EOFError, ConnectionResetError):
+            print('remote end disconnected.')
+            return False
         except BaseException:
-            if DEBUG_LEVEL == 0:
-                print('malformed result. closing.')
-            else:
-                print('malformed result? Got exception:')
-                traceback.print_exc()
+            print('malformed result? Got exception:')
+            traceback.print_exc()
             return False
         req_id = res_info[0]
         async_res = self.reqs[req_id]
