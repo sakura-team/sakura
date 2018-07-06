@@ -23,6 +23,7 @@ class DataSampleOperator(Operator):
                 except BaseException as exc:
                     print('WARNING: could not load dataset %s: %s. IGNORED.' % \
                             (ds.__name__, str(exc).strip()))
+                    continue
             streams.append(stream)
         for stream in sorted(streams, key=lambda s: s.label):
             self.register_output(stream)
