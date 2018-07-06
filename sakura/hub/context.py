@@ -40,12 +40,23 @@ class HubContext(object):
         if session_id is None:
             # we are processing a request coming from a daemon
             return None
-        return self.sessions[greenlet_env.session_id]
+        return self.sessions[session_id]
+    @property
+    def operator(self):
+        op_id = getattr(greenlet_env, 'op_id', None)
+        if op_id is None:
+            # we are processing a request coming from the web API
+            return None
+        return self.op_instances[op_id]
+    @property
+    def user(self):
+        if self.session is not None:
+            return self.session.user
+        if self.operator is not None:
+            owner = self.operator.dataflow.owner
+            return self.users.get(login = owner)
     def user_is_logged_in(self):
-        if self.session is None:
-            return False
-        else:
-            return self.session.user != None
+        return self.user is not None
     def new_session(self):
         return self.sessions.new_session(self)
     def recover_session(self, b64_secret):

@@ -22,7 +22,7 @@ class FilteredView:
     @staticmethod
     def list_access_checker(o):
         if o.get_grant_level() < GRANT_LEVELS.list:
-            user = get_context().session.user
+            user = get_context().user
             raise APIObjectDeniedError('%s is not allowed to view this item.' % \
                     ('An anonymous user' if user is None else 'User ' + user.login))
     def pack(self):

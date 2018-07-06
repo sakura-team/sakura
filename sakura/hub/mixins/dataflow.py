@@ -43,7 +43,7 @@ class DataflowMixin(BaseMixin):
         kwargs = parse_gui_access_info(**kwargs)
         # record owner
         grants = kwargs.pop('grants', {})
-        grants[context.session.user.login] = GRANT_LEVELS.own
+        grants[context.user.login] = GRANT_LEVELS.own
         # instanciate dataflow
         dataflow = cls()
         # update attributes

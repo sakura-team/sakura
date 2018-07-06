@@ -101,14 +101,13 @@ class DatabaseMixin(BaseMixin):
         datastore.assert_grant_level(GRANT_LEVELS.write,
                     'You are not allowed to create a database on this datastore.')
         context = get_context()
-        current_user = context.session.user
         if creation_date is None:
             creation_date = time.time()
         # parse access info from gui
         kwargs = parse_gui_access_info(**kwargs)
         # owner is current user
         grants = kwargs.pop('grants', {})
-        grants[current_user.login] = GRANT_LEVELS.own
+        grants[context.user.login] = GRANT_LEVELS.own
         # register in central db
         new_db = cls.create_or_update(
                         datastore = datastore,

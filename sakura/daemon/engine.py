@@ -29,7 +29,7 @@ class DaemonEngine(object):
     def create_operator_instance(self, cls_name, op_id):
         op_cls = self.op_classes[cls_name]
         op = op_cls(op_id)
-        op.daemon = self
+        op.api = self.hub.operator_apis[op_id]
         op.construct()
         op.auto_fill_parameters(permissive=True)
         self.op_instances[op_id] = op

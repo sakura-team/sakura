@@ -51,12 +51,7 @@ class BaseMixin:
                 metadata[attr] = value
         self.metadata = metadata
     def get_grant_level(self):
-        session = get_context().session
-        if session is None:
-            # we are processing a request coming from a daemon,
-            # return max grant
-            return GRANT_LEVELS.own
-        user_type = get_user_type(self, session.user)
+        user_type = get_user_type(self, get_context().user)
         grant_level = ACCESS_TABLE[user_type, self.access_scope]
         return grant_level
     def assert_grant_level(self, grant, error_msg):
@@ -84,7 +79,7 @@ class BaseMixin:
             raise APIRequestError('This grant level is already allowed to you!')
         if requested_grant not in (GRANT_LEVELS.read, GRANT_LEVELS.write):
             raise APIRequestError("Denied, you can only request 'read' or 'write' grants.")
-        requester = context.session.user
+        requester = context.user
         owner = context.users.from_login_or_email(self.owner)
         content = GRANT_REQUEST_MAIL_CONTENT % dict(
                 owner_firstname = owner.first_name,
@@ -101,5 +96,5 @@ class BaseMixin:
     def commit(self):
         self._database_.commit()
     @classmethod
-    def filter_for_web_user(cls):
+    def filter_for_current_user(cls):
         return FilteredView(cls)

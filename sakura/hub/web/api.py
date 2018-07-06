@@ -106,11 +106,11 @@ class GuiToHubAPI(object):
     # Databases
     @property
     def datastores(self):
-        return self.context.datastores.filter_for_web_user()
+        return self.context.datastores.filter_for_current_user()
 
     @property
     def databases(self):
-        return self.context.databases.filter_for_web_user()
+        return self.context.databases.filter_for_current_user()
 
     def list_datastores(self):
         return self.datastores
@@ -173,7 +173,7 @@ class GuiToHubAPI(object):
     # Dataflow
     @property
     def dataflows(self):
-        return self.context.dataflows.filter_for_web_user()
+        return self.context.dataflows.filter_for_current_user()
 
     def get_dataflow_info(self, dataflow_id):
         return self.dataflows[dataflow_id].get_full_info()
