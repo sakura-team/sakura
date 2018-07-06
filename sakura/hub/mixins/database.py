@@ -1,6 +1,7 @@
 import time
 from enum import Enum
 from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
+from sakura.common.cache import cache_result
 from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
 from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
@@ -46,6 +47,7 @@ class DatabaseMixin(BaseMixin):
             self.update_tables_from_daemon()
             result['tables'] = tuple(t.pack() for t in self.tables)
         return result
+    @cache_result(5)    # do not call this too often
     def update_tables_from_daemon(self):
         if not self.readable:
             raise APIObjectDeniedError('You are not allowed to read this database.')
