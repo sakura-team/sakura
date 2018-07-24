@@ -4,7 +4,6 @@ import zlib, pickle, numpy as np
 from sakura.daemon.processing.stream import NumpyArrayStream
 
 def load_data():
-    global data
     print('Loading data file gpsparis.dat... ',)
     # data is compressed in file gpsparis.dat
     compressed_data = resource_string(__name__, 'gpsparis.dat')
