@@ -37,7 +37,7 @@ class Cache:
     def save(self, key, item, expiry_delay):
         # ensure we keep in cache for at least CACHE_MIN_DELAY
         expiry_time = time() + max(CACHE_MIN_DELAY, expiry_delay)
-        #print(time(), 'cache.save', item, expiry_time, key)
+        #print(time(), 'cache.save', key, item, expiry_time)
         # remove any previous info linked to key
         self.forget(key)
         if self.size is not None and len(self.per_date) == self.size:
@@ -56,9 +56,14 @@ class Cache:
     def cleanup(self):
         #print(time(), 'cache.cleanup')
         while len(self.per_date) > 0 and self.per_date[0][0] < time():
-            expiry_time, key = self.per_date[0]
-            self.per_date = self.per_date[1:]
-            del self.per_key[key]
+            self.cleanup_oldest()
+    def cleanup_oldest(self):
+        expiry_time, key = self.per_date[0]
+        self.per_date = self.per_date[1:]
+        del self.per_key[key]
+    def __del__(self):
+        while len(self.per_date) > 0:
+            self.cleanup_oldest()
     @staticmethod
     def cleanup_all():
         for cache in Cache.instances:
@@ -67,6 +72,7 @@ class Cache:
     def plan_cleanup(planner):
         planner.plan(CACHE_MIN_DELAY/2, Cache.cleanup_all)
 
+result_cache = Cache()
 def cache_result(delay):
     """
     cache_result is a decorator you can use like this:
@@ -83,18 +89,17 @@ def cache_result(delay):
     This can also be used on class methods.
     """
     def wrapper(func):
-        cache = Cache()
         def cached_func(*args, **kwargs):
             key = (func, args, tuple(kwargs.items()))
             # check if we have the result of the same call in cache
-            in_cache = cache.in_cache(key, check_expiry=True)
+            in_cache = result_cache.in_cache(key, check_expiry=True)
             # if yes, return it
             if in_cache:
-                return cache.get(key)
+                return result_cache.get(key)
             # otherwise, call func
             result = func(*args, **kwargs)
             # save for next time
-            cache.save(key, result, delay)
+            result_cache.save(key, result, delay)
             # return result of this call
             return result
         return cached_func

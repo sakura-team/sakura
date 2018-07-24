@@ -1,5 +1,5 @@
 import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
-import pickle, numpy as np
+import gc, pickle, numpy as np
 from threading import get_ident     # get thread id
 from gevent.queue import Queue
 from gevent.event import AsyncResult
@@ -49,6 +49,7 @@ class HeldObjectsStore:
         return self.__objects__[held_id]
     def __delitem__(self, held_id):
         del self.__objects__[held_id]
+        gc.collect()
 
 # obtain a serializable description of an object
 def pack(obj):
@@ -140,6 +141,7 @@ class LocalAPIHandler(object):
                 out = (IO_HELD, held_id) + origin
                 self.protocol.dump((req_id,) + out, self.f)
                 self.f.flush()
+                sys.last_traceback = None   # let garbage collector work
             except BaseException as e:
                 print('could not send response:', e)
     def handle_request_pool(self, req_id, req):
