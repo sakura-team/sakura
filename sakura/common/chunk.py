@@ -53,9 +53,12 @@ class NumpyChunk(np.ma.MaskedArray):
         # when we have overlapping or out-of-order fields
         # (i.e. when self.dtype shows itemsize and offsets info).
         try:
-            # deserialization code tries to read this attribute,
-            # which fails in this specific case.
-            self.dtype.descr
+            # deserialization code tries to read self.dtype.descr,
+            # which may throw ValueError in this specific case.
+            # another error case can be detected by comparing
+            # the 2 following lengths.
+            if len(self.dtype.descr) != len(self.dtype.fields):
+                raise ValueError
             # ok, no problem, use standard method:
             return np.ma.MaskedArray.__reduce__(self)
         except ValueError:
