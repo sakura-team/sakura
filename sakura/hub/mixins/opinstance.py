@@ -19,7 +19,7 @@ class OpInstanceMixin:
         if boolean:
             OpInstanceMixin.INSTANCIATED.add(self.id)
         else:
-            OpInstanceMixin.INSTANCIATED.remove(self.id)
+            OpInstanceMixin.INSTANCIATED.discard(self.id)
     def __getattr__(self, attr):
         # if we cannot find the attr,
         # let's look at the real operator
@@ -42,6 +42,9 @@ class OpInstanceMixin:
     def delete_on_daemon(self):
         self.instanciated = False
         self.daemon_api.delete_operator_instance(self.id)
+    def on_daemon_disconnect(self):
+        # daemon stopped
+        self.instanciated = False
     @classmethod
     def create_instance(cls, dataflow, op_cls_id):
         # create in local db

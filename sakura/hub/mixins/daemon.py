@@ -26,10 +26,15 @@ class DaemonMixin:
         self.api = api
 
     def on_connect(self):
+        # restore according to up-to-date info from daemon
         daemon_info = self.api.get_daemon_info_serializable()
         self.restore(**daemon_info)
 
     def on_disconnect(self):
+        # notify related objects
+        for cls in self.op_classes:
+            cls.on_daemon_disconnect()
+        # unregister api object
         del DaemonMixin.APIS[self.name]
 
     def pack(self):
