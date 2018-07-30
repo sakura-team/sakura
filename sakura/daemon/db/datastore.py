@@ -29,8 +29,9 @@ class DataStoreProber:
         self.databases[db_name].register_grant(db_user, grant)
 
 class DataStore:
-    def __init__(self, host, datastore_admin, sakura_admin,
+    def __init__(self, engine, host, datastore_admin, sakura_admin,
                  driver_label, adapter_label, access_scope):
+        self.engine = engine
         self.host = host
         self.datastore_admin = datastore_admin
         self.sakura_admin = sakura_admin

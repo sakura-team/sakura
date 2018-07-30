@@ -28,8 +28,8 @@ class SQLQuery:
         select_clause = 'SELECT ' + ', '.join(
             db_column.to_sql_select_clause() for db_column in self.selected_cols
         )
-        tables = set(db_column.table_name for db_column in self.selected_cols)
-        tables |= set(cond[0].table_name for cond in self.conditions)
+        tables = set(db_column.table.name for db_column in self.selected_cols)
+        tables |= set(cond[0].table.name for cond in self.conditions)
         from_clause = 'FROM "' + '", "'.join(tables) + '"'
         where_clause, offset_clause, cond_vals = '', '', ()
         if len(self.conditions) > 0:

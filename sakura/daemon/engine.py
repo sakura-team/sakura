@@ -1,12 +1,14 @@
 import sys, sakura.daemon.conf as conf
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import ParameterException
+from sakura.daemon.loading import load_operator_classes, \
+                                load_datastores
 
 class DaemonEngine(object):
-    def __init__(self, op_classes, datastores):
-        self.op_classes = op_classes
+    def __init__(self):
+        self.op_classes = load_operator_classes()
         self.datastores = {}
-        for ds in datastores:
+        for ds in load_datastores(self):
             ds = ds.adapter.adapt(self, ds)
             self.datastores[(ds.host, ds.driver_label)] = ds
         self.op_instances = {}

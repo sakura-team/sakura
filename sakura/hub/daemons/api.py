@@ -65,3 +65,15 @@ class DaemonToHubAPI(object):
         if u is None:
             return None
         return u.login
+    def get_col_tags(self, daemon_name, ds_host, ds_driver_label,
+                        db_name, table_name, col_name):
+        daemon = self.context.daemons.get(name = daemon_name)
+        datastore = self.context.datastores.get(daemon = daemon,
+                            host = ds_host, driver_label = ds_driver_label)
+        database = self.context.databases.get(datastore = datastore,
+                            name = db_name)
+        table = self.context.tables.get(database = database,
+                            name = table_name)
+        column = self.context.columns.get(table = table,
+                            col_name = col_name)
+        return column.user_tags

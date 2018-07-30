@@ -28,10 +28,11 @@ def load_operator_classes():
     sys.path = sys.path[1:]
     return op_classes
 
-def load_datastores():
+def load_datastores(engine):
     datastores = []
     for ds_conf in conf.data_stores:
         ds = DataStore(
+            engine = engine,
             host = ds_conf.host,
             datastore_admin = ds_conf.datastore_admin,
             sakura_admin = ds_conf.sakura_admin,

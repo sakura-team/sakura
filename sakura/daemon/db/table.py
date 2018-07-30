@@ -17,7 +17,7 @@ class DBTable:
             self._stream = SQLTableStream(self.name, self)
         return self._stream
     def add_column(self, *col_info, **params):
-        col = DBColumn(self.name, *col_info, **params)
+        col = DBColumn(self, *col_info, **params)
         self.columns.append(col)
     def pack(self):
         return dict(name = self.name, columns = self.columns,

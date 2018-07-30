@@ -24,11 +24,10 @@ class ColumnMixin:
             column.set(**kwargs)
         return column
     @classmethod
-    def restore_column(cls, table, col_id, col_name, col_type, daemon_tags):
+    def restore_column(cls, table, col_id, col_name, col_type):
         return cls.create_or_update(table, col_id,
                                     col_name = col_name,
-                                    col_type = col_type,
-                                    daemon_tags = daemon_tags)
+                                    col_type = col_type)
     @classmethod
     def create_column(cls, table, col_id, col_name, col_type, user_tags):
         return cls.create_or_update(table, col_id,
