@@ -28,13 +28,18 @@ class OpClassMixin:
         for op in op_cls.op_instances:
             op.instanciate_on_daemon()
         # restore links if the other end is also ok
+        # caution, we should create the link only once
+        # if operators on both ends belong to this daemon
+        links_done = set()
         for op in op_cls.op_instances:
-            for link in op.uplinks:
+            for link in set(op.uplinks) - links_done:
                 if link.src_op.instanciated:
                     link.link_on_daemon()
-            for link in op.downlinks:
+                    links_done.add(link)
+            for link in set(op.downlinks) - links_done:
                 if link.dst_op.instanciated:
                     link.link_on_daemon()
+                    links_done.add(link)
         # if all uplinks are ok, restore operator parameters
         for op in op_cls.op_instances:
             if all(link.src_op.instanciated \
