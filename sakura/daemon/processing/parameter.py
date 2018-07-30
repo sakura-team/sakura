@@ -39,8 +39,8 @@ class Parameter(object):
         print('auto_fill() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
-    def is_linked_to_stream(self, stream):
-        print('is_linked_to_stream() must be implemented in Parameter subclasses.')
+    def is_linked_to_plug(self, plug):
+        print('is_linked_to_plug() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
     # override in subclass if needed.
@@ -89,20 +89,20 @@ class ComboParameter(Parameter):
         raise NotImplementedError
 
 class ColumnSelectionParameter(ComboParameter):
-    def __init__(self, label, stream, condition):
+    def __init__(self, label, plug, condition):
         super().__init__(label)
-        self.stream = stream
+        self.plug = plug
         self.condition = condition
-    def is_linked_to_stream(self, stream):
-        return self.stream == stream
+    def is_linked_to_plug(self, plug):
+        return self.plug == plug
     def matching_columns(self):
-        for col_idx, column_info in enumerate(self.stream.get_columns_info()):
+        for col_idx, column_info in enumerate(self.plug.get_columns_info()):
             if self.condition(*column_info):
                 yield (col_idx,) + column_info
     def get_possible_values(self):
-        if not self.stream.connected():
+        if not self.plug.connected():
             raise ParameterException(Issue.InputNotConnected)
-        return list('%s (of %s)' % (col_label, self.stream.label) \
+        return list('%s (of %s)' % (col_label, self.plug.label) \
                     for col_idx, col_label, col_type, col_tags in \
                         self.matching_columns())
     @property
@@ -114,21 +114,21 @@ class ColumnSelectionParameter(ComboParameter):
         return tuple(self.matching_columns())[self.value][0]
 
 class TagBasedColumnSelection(ColumnSelectionParameter):
-    def __init__(self, label, stream, tag):
+    def __init__(self, label, plug, tag):
         def condition(col_label, col_type, col_tags):
             return tag in col_tags
-        ColumnSelectionParameter.__init__(self, label, stream, condition)
+        ColumnSelectionParameter.__init__(self, label, plug, condition)
 
 class TypeBasedColumnSelection(ColumnSelectionParameter):
-    def __init__(self, label, stream, cls):
+    def __init__(self, label, plug, cls):
         def condition(col_label, col_type, col_tags):
             return np.issubdtype(col_type, cls)
-        ColumnSelectionParameter.__init__(self, label, stream, condition)
+        ColumnSelectionParameter.__init__(self, label, plug, condition)
     @staticmethod
     def adapt_to_cls(cls):
         class AdaptedTypeBasedColumnSelection(TypeBasedColumnSelection):
-            def __init__(self, label, stream):
-                super().__init__(label, stream, cls)
+            def __init__(self, label, plug):
+                super().__init__(label, plug, cls)
         return AdaptedTypeBasedColumnSelection
 
 NumericColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.number)

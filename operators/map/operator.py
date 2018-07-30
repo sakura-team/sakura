@@ -11,22 +11,22 @@ class MapOperator(Operator):
     TAGS = [ "geo", "map", "selection" ]
     def construct(self):
         # inputs
-        self.input_stream = self.register_input('GPS data')
+        self.input_plug = self.register_input('GPS data')
         # parameters
         self.lng_column_param = self.register_parameter(
-                TagBasedColumnSelection('input longitude', self.input_stream, 'longitude'))
+                TagBasedColumnSelection('input longitude', self.input_plug, 'longitude'))
         self.lat_column_param = self.register_parameter(
-                TagBasedColumnSelection('input latitude', self.input_stream, 'latitude'))
+                TagBasedColumnSelection('input latitude', self.input_plug, 'latitude'))
         # additional tabs
         self.register_tab('Map', 'map.html')
         # custom attributes
         self.curr_heatmap = None
         # we do not know which filtering should be applied yet,
         # so just mirror the input for now.
-        self.current_filtered_stream = self.input_stream
+        self.current_filtered_stream = self.input_plug
 
     @property
-    def output_streams(self):
+    def output_plugs(self):
         return [ self.current_filtered_stream ]
 
     def filtered_stream(self, westlng, eastlng, southlat, northlat, **args):
@@ -36,7 +36,7 @@ class MapOperator(Operator):
         # filter input stream as much as possible:
         # - select useful columns only
         # - restrict to visible area
-        stream = self.input_stream
+        stream = self.input_plug
         stream = stream.filter_column(lng_col_idx, operator.__ge__, westlng)
         stream = stream.filter_column(lng_col_idx, operator.__le__, eastlng)
         stream = stream.filter_column(lat_col_idx, operator.__ge__, southlat)
@@ -51,7 +51,7 @@ class MapOperator(Operator):
         return stream
 
     def handle_event(self, event):
-        if not self.input_stream.connected():
+        if not self.input_plug.connected():
             return { 'issue': 'NO DATA: Input is not connected.' }
         ev_type = event[0]
         time_credit = event[1]

@@ -61,7 +61,7 @@ class DataSourceOperator(Operator):
                 TableSelectionParameter('Table', self.api, self.database_param))
         self.table_id = None
     @property
-    def output_streams(self):
+    def output_plugs(self):
         try:
             if self.database_param.selected_database_id is None:
                 self.database_param.auto_fill()
@@ -73,5 +73,5 @@ class DataSourceOperator(Operator):
         if table_id != self.table_id:   # if selection has changed
             self.table_id = table_id
             # store stream object locally to prevent garbage collection
-            self.out_stream = self.api.get_table_stream(table_id)
-        return [ self.out_stream ]
+            self.out_plug = self.api.get_table_stream(table_id)
+        return [ self.out_plug ]

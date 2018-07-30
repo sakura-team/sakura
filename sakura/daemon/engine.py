@@ -51,18 +51,18 @@ class DaemonEngine(object):
             src_op = self.op_instances[src_op_id]
             src_label = '%s op_id=%d out%d' % (src_op.NAME, src_op_id, src_out_id)
         dst_op = self.op_instances[dst_op_id]
-        dst_input_stream = dst_op.input_streams[dst_in_id]
-        dst_input_stream.connect(src_op.output_streams[src_out_id])
+        dst_input_plug = dst_op.input_plugs[dst_in_id]
+        dst_input_plug.connect(src_op.output_plugs[src_out_id])
         if auto_fill_params:
             # auto select unselected parameters
-            dst_op.auto_fill_parameters(stream = dst_input_stream)
+            dst_op.auto_fill_parameters(plug = dst_input_plug)
         print("connected %s -> %s op_id=%d in%d" % \
                 (src_label, dst_op.NAME, dst_op_id, dst_in_id))
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         dst_op = self.op_instances[dst_op_id]
-        dst_input_stream = dst_op.input_streams[dst_in_id]
-        dst_op.unselect_parameters(stream = dst_input_stream)
-        dst_input_stream.disconnect()
+        dst_input_plug = dst_op.input_plugs[dst_in_id]
+        dst_op.unselect_parameters(plug = dst_input_plug)
+        dst_input_plug.disconnect()
         print("disconnected [...] -> %s op_id=%d in%d" % \
                 (dst_op.NAME, dst_op_id, dst_in_id))
     def get_possible_links(self, src_op_id, dst_op_id):
@@ -74,16 +74,16 @@ class DaemonEngine(object):
         # check all src_op.output -> dst_op.input combinations
         # and discard those which cause an exception.
         links = []
-        for dst_in_id, dst_input_stream in enumerate(dst_op.input_streams):
-            for src_out_id in range(len(src_op.output_streams)):
-                if dst_input_stream.connected():
+        for dst_in_id, dst_input_plug in enumerate(dst_op.input_plugs):
+            for src_out_id in range(len(src_op.output_plugs)):
+                if dst_input_plug.connected():
                     # this entry is already connected with something else
                     continue
                 self.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id,
                                         auto_fill_params = False)
                 try:
                     # auto select parameters
-                    dst_op.auto_fill_parameters(stream = dst_input_stream)
+                    dst_op.auto_fill_parameters(plug = dst_input_plug)
                     # if we are here, this link is possible
                     links.append((src_out_id, dst_in_id))
                 except ParameterException:

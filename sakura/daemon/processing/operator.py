@@ -1,7 +1,7 @@
 import inspect
 from pathlib import Path
 from sakura.common.io import pack
-from sakura.daemon.processing.stream import InputStream
+from sakura.daemon.processing.plugs.input import InputPlug
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.parameter import ParameterException
 from gevent.lock import Semaphore
@@ -15,14 +15,14 @@ class Operator:
         self.event_lock = Semaphore()
     # overridable dynamic properties
     @property
-    def input_streams(self):
-        return getattr(self, '_input_streams', ())
+    def input_plugs(self):
+        return getattr(self, '_input_plugs', ())
     @property
-    def output_streams(self):
-        return getattr(self, '_output_streams', ())
+    def output_plugs(self):
+        return getattr(self, '_output_plugs', ())
     @property
-    def internal_streams(self):
-        return getattr(self, '_internal_streams', ())
+    def internal_plugs(self):
+        return getattr(self, '_internal_plugs', ())
     @property
     def parameters(self):
         return getattr(self, '_parameters', ())
@@ -30,12 +30,12 @@ class Operator:
     def tabs(self):
         return getattr(self, '_tabs', ())
     # static properties
-    def register_input(self, input_stream_label):
-        return self.register('_input_streams', InputStream(input_stream_label))
+    def register_input(self, input_plug_label):
+        return self.register('_input_plugs', InputPlug(input_plug_label))
     def register_output(self, output):
-        return self.register('_output_streams', output)
-    def register_internal_stream(self, internal_stream):
-        return self.register('_internal_streams', internal_stream)
+        return self.register('_output_plugs', output)
+    def register_internal_plug(self, internal_plug):
+        return self.register('_internal_plugs', internal_plug)
     def register_parameter(self, param):
         return self.register('_parameters', param)
     def register_tab(self, tab_label, html_path):
@@ -47,8 +47,8 @@ class Operator:
         setattr(self, container_name, container)
         return obj
     def is_ready(self):
-        for stream in self.input_streams:
-            if not stream.connected():
+        for plug in self.input_plugs:
+            if not plug.connected():
                 return False
         for parameter in self.parameters:
             if not parameter.selected():
@@ -67,28 +67,28 @@ class Operator:
             op_id = self.op_id,
             cls_name = self.NAME,
             parameters = self.parameters,
-            inputs = self.input_streams,
-            outputs = self.output_streams,
-            internal_streams = self.internal_streams,
+            inputs = self.input_plugs,
+            outputs = self.output_plugs,
+            internal_plugs = self.internal_plugs,
             tabs = self.tabs
         ))
-    def auto_fill_parameters(self, permissive = False, stream = None):
+    def auto_fill_parameters(self, permissive = False, plug = None):
         if permissive:
             ignored_exception = ParameterException
         else:
             ignored_exception = ()  # do not ignore any exception
         for param in self.parameters:
-            # restrict to parameters concerning the specified stream if any
-            if stream != None and not param.is_linked_to_stream(stream):
+            # restrict to parameters concerning the specified plug if any
+            if plug != None and not param.is_linked_to_plug(plug):
                 continue
             try:
                 param.auto_fill()
             except ignored_exception:
                 pass
-    def unselect_parameters(self, stream = None):
+    def unselect_parameters(self, plug = None):
         for param in self.parameters:
-            # restrict to parameters concerning the specified stream if any
-            if stream != None and not param.is_linked_to_stream(stream):
+            # restrict to parameters concerning the specified plug if any
+            if plug != None and not param.is_linked_to_plug(plug):
                 continue
             param.unset_value()
     def serve_file(self, request):

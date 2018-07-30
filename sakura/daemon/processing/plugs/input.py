@@ -1,16 +1,16 @@
-class InputStream(object):
+class InputPlug:
     def __init__(self, label):
-        self.source_stream = None
+        self.source_plug = None
         self.columns = None
         self.label = label
-    def connect(self, output_stream):
-        self.source_stream = output_stream
-        self.columns = self.source_stream.columns
+    def connect(self, output_plug):
+        self.source_plug = output_plug
+        self.columns = self.source_plug.columns
     def disconnect(self):
-        self.source_stream = None
+        self.source_plug = None
         self.columns = None
     def connected(self):
-        return self.source_stream != None
+        return self.source_plug != None
     def columns(self):
         return self.columns
     def pack(self):
@@ -18,7 +18,7 @@ class InputStream(object):
         if self.connected():
             info.update(
                 connected = True,
-                **self.source_stream.pack()
+                **self.source_plug.pack()
             )
         else:
             info.update(
@@ -29,13 +29,13 @@ class InputStream(object):
     def get_range(self, *args, **kwargs):
         # redirect call to the connected output stream
         if self.connected():
-            return self.source_stream.get_range(*args, **kwargs)
+            return self.source_plug.get_range(*args, **kwargs)
         else:
             return None
     def __getattr__(self, attr):
         # redirect calls to the connected output stream
         if self.connected():
-            return getattr(self.source_stream, attr)
+            return getattr(self.source_plug, attr)
         else:
             return None
     def __iter__(self):
@@ -43,6 +43,6 @@ class InputStream(object):
         # (such a 'special method' is not matched by the
         # __getattr__() function above)
         if self.connected():
-            return self.source_stream.__iter__()
+            return self.source_plug.__iter__()
         else:
             return None

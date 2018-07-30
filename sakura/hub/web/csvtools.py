@@ -47,7 +47,7 @@ def export_table_as_csv(context, table_id, gzip_compression=False):
     yield from table.stream_csv(transfer, gzip_compression)
 
 @csv_export_wrapper
-def export_stream_as_csv(context, op_id, stream_type, stream_idx, gzip_compression=False):
+def export_stream_as_csv(context, op_id, plug_type, plug_idx, gzip_compression=False):
     transfer = get_transfer(context)
     greenlet_env.session_id = transfer.session_id
     print('exporting stream as csv...')
@@ -55,21 +55,21 @@ def export_stream_as_csv(context, op_id, stream_type, stream_idx, gzip_compressi
     if op is None:
         raise bottle.HTTPError(404, 'Invalid operator identifier.')
     op_info = op.pack()
-    if stream_type == 0:
-        streams_info = op_info['inputs']
+    if plug_type == 0:
+        plugs_info = op_info['inputs']
     else:
-        streams_info = op_info['outputs']
-    if stream_idx < 0 or stream_idx >= len(streams_info):
-        raise bottle.HTTPError(404, 'No such operator stream.')
-    if stream_type == 0:
-        stream = op.input_streams[stream_idx]
+        plugs_info = op_info['outputs']
+    if plug_idx < 0 or plug_idx >= len(plugs_info):
+        raise bottle.HTTPError(404, 'No such operator plug.')
+    if plug_type == 0:
+        plug = op.input_plugs[plug_idx]
     else:
-        stream = op.output_streams[stream_idx]
-    http_set_file_name(stream.get_label(), gzip_compression)
-    rows_estimate = stream.get_length()
+        plug = op.output_plugs[plug_idx]
+    http_set_file_name(plug.get_label(), gzip_compression)
+    rows_estimate = plug.get_length()
     if rows_estimate is None:
         rows_estimate = -1
-    csv_stream = stream.stream_csv(gzip_compression)
+    csv_stream = plug.stream_csv(gzip_compression)
     for rows_transfered, bytes_transfered, s in csv_stream:
         transfer.notify_status(rows_transfered, rows_estimate, bytes_transfered)
         yield s

@@ -9,7 +9,7 @@ function StreamInterface(op, stream_type, stream_label) {
                 streams = op_info.inputs;
             }
             else if (stream_type == 'internal') {
-                streams = op_info.internal_streams;
+                streams = op_info.internal_plugs;
             }
             else if (stream_type == 'output') {
                 streams = op_info.outputs;
