@@ -1,5 +1,5 @@
 from sakura.daemon.db.column import DBColumn
-from sakura.daemon.processing.stream import SQLTableStream
+from sakura.daemon.processing.source import SQLTableSource
 from sakura.daemon.csvtools import stream_csv
 
 class DBTable:
@@ -14,7 +14,7 @@ class DBTable:
     @property
     def stream(self):
         if self._stream is None:
-            self._stream = SQLTableStream(self.name, self)
+            self._stream = SQLTableSource(self.name, self)
         return self._stream
     def add_column(self, *col_info, **params):
         col = DBColumn(self, *col_info, **params)

@@ -1,6 +1,6 @@
 import numpy as np
-from itertools import islice, count
-from sakura.daemon.processing.streams.output.base import OutputStreamBase
+from itertools import count
+from sakura.daemon.processing.sources.base import SourceBase
 from sakura.common.chunk import NumpyChunk
 
 DEFAULT_CHUNK_SIZE = 100000
@@ -17,9 +17,9 @@ def iter_uniq(names):
         seen.add(name)
         yield name
 
-class NumpyArrayStream(OutputStreamBase):
+class NumpyArraySource(SourceBase):
     def __init__(self, label, array, rows_cond = None):
-        OutputStreamBase.__init__(self, label)
+        SourceBase.__init__(self, label)
         self.array = array
         for col_label in array.dtype.names:
             col_type = array.dtype[col_label]
@@ -56,7 +56,7 @@ class NumpyArrayStream(OutputStreamBase):
                               offsets=offsets,
                               itemsize=itemsize))
         filtered_array = self.array.view(newdt)
-        return NumpyArrayStream(self.label, filtered_array)
+        return NumpyArraySource(self.label, filtered_array)
     def __filter__(self, col_index, comp_op, other):
         col_label = self.columns[col_index]._label
         # we generate a condition of the form:
@@ -70,4 +70,4 @@ class NumpyArrayStream(OutputStreamBase):
         if self.rows_cond is not None:
             rows_cond = np.logical_and(rows_cond, self.rows_cond)
         # return filtered object
-        return NumpyArrayStream(self.label, self.array, rows_cond)
+        return NumpyArraySource(self.label, self.array, rows_cond)

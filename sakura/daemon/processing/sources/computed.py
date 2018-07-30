@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum
 from itertools import islice
-from sakura.daemon.processing.streams.output.base import OutputStreamBase
+from sakura.daemon.processing.sources.base import SourceBase
 from sakura.common.chunk import NumpyChunk
 
 DEFAULT_CHUNK_SIZE = 10000
@@ -10,9 +10,9 @@ class ComputeMode(Enum):
     ITEMS = 0
     CHUNKS = 1
 
-class ItemsComputedStream(OutputStreamBase):
+class ItemsComputedSource(SourceBase):
     def __init__(self, label, compute_cb, columns=None):
-        OutputStreamBase.__init__(self, label)
+        SourceBase.__init__(self, label)
         self.compute_cb = compute_cb
         if columns is not None:
             for col in columns:
@@ -37,17 +37,17 @@ class ItemsComputedStream(OutputStreamBase):
             for record in self.compute_cb():
                 yield tuple(record[i] for i in col_indexes)
         columns = tuple(self.columns[i] for i in col_indexes)
-        return ItemsComputedStream(self.label, filtered_compute_cb, columns)
+        return ItemsComputedSource(self.label, filtered_compute_cb, columns)
     def __filter__(self, col_index, comp_op, other):
         def filtered_compute_cb():
             for record in self.compute_cb():
                 if comp_op(record[col_index], other):
                     yield record
-        return ItemsComputedStream(self.label, filtered_compute_cb, self.columns)
+        return ItemsComputedSource(self.label, filtered_compute_cb, self.columns)
 
-class ChunksComputedStream(OutputStreamBase):
+class ChunksComputedSource(SourceBase):
     def __init__(self, label, compute_cb, columns=None):
-        OutputStreamBase.__init__(self, label)
+        SourceBase.__init__(self, label)
         self.compute_cb = compute_cb
         if columns is not None:
             for col in columns:
@@ -97,7 +97,7 @@ class ChunksComputedStream(OutputStreamBase):
             for chunk in self.compute_cb():
                 yield chunk[col_labels]
         columns = tuple(self.columns[i] for i in col_indexes)
-        return ChunksComputedStream(self.label, filtered_compute_cb, columns)
+        return ChunksComputedSource(self.label, filtered_compute_cb, columns)
     def __filter__(self, col_index, comp_op, other):
         col_label = self.columns[col_index]._label
         def filtered_compute_cb():
@@ -106,12 +106,12 @@ class ChunksComputedStream(OutputStreamBase):
                 chunk = chunk[chunk_cond]
                 if chunk.size > 0:
                     yield chunk
-        return ChunksComputedStream(self.label, filtered_compute_cb, self.columns)
+        return ChunksComputedSource(self.label, filtered_compute_cb, self.columns)
     def create_chunk(self, array):
         return NumpyChunk(array, self.get_dtype())
 
-def ComputedStream(label, compute_cb, compute_mode = ComputeMode.ITEMS, columns=None):
+def ComputedSource(label, compute_cb, compute_mode = ComputeMode.ITEMS, columns=None):
     if compute_mode == ComputeMode.ITEMS:
-        return ItemsComputedStream(label, compute_cb, columns)
+        return ItemsComputedSource(label, compute_cb, columns)
     else:
-        return ChunksComputedStream(label, compute_cb, columns)
+        return ChunksComputedSource(label, compute_cb, columns)

@@ -1,9 +1,8 @@
-import numpy as np
 from sakura.common.chunk import NumpyChunk
-from sakura.daemon.processing.streams.output.base import OutputStreamBase
+from sakura.daemon.processing.sources.base import SourceBase
 from sakura.daemon.db.query import SQLQuery
 
-class SQLStreamIterator:
+class SQLSourceIterator:
     def __init__(self, stream, chunk_size, offset):
         self.chunk_size = chunk_size
         self.dtype = stream.get_dtype()
@@ -32,9 +31,9 @@ class SQLStreamIterator:
     def __del__(self):
         self.release()
 
-class SQLStream(OutputStreamBase):
+class SQLSource(SourceBase):
     def __init__(self, label, query, db):
-        OutputStreamBase.__init__(self, label)
+        SourceBase.__init__(self, label)
         self.db = db
         self.query = query
         for col in query.selected_cols:
@@ -43,20 +42,20 @@ class SQLStream(OutputStreamBase):
         for chunk in self.chunks():
             yield from chunk
     def chunks(self, chunk_size = None, offset=0):
-        return SQLStreamIterator(self, chunk_size, offset)
+        return SQLSourceIterator(self, chunk_size, offset)
     def __select_columns__(self, *col_indexes):
         new_query = self.query.select_columns(*col_indexes)
-        return SQLStream(self.label, new_query, self.db)
+        return SQLSource(self.label, new_query, self.db)
     def __filter__(self, *cond_info):
         new_query = self.query.filter(*cond_info)
-        return SQLStream(self.label, new_query, self.db)
+        return SQLSource(self.label, new_query, self.db)
     def open_cursor(self, db_conn, offset=0):
         self.query.set_offset(offset)
         cursor = self.db.dbms.driver.open_server_cursor(db_conn)
         self.query.execute(cursor)
         return cursor
 
-class SQLTableStream(SQLStream):
+class SQLTableSource(SQLSource):
     def __init__(self, label, db_table):
         query = SQLQuery(db_table.columns, ())
-        SQLStream.__init__(self, label, query, db_table.db)
+        SQLSource.__init__(self, label, query, db_table.db)

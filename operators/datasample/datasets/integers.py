@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
-from sakura.daemon.processing.stream import ComputedStream, ComputeMode
+from sakura.daemon.processing.source import ComputedSource, ComputeMode
 
 CHUNK_SIZE = int(1E+5)
 LEN = int(1E+7)
@@ -13,9 +13,9 @@ def compute():
         yield chunk.astype([COL_TYPE])
 
 # dataset description
-STREAM = ComputedStream(
+SOURCE = ComputedSource(
             'Random integers',
             compute,
             compute_mode = ComputeMode.CHUNKS)
-STREAM.add_column(*COL_TYPE)
-STREAM.length = LEN
+SOURCE.add_column(*COL_TYPE)
+SOURCE.length = LEN

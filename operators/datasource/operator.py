@@ -3,7 +3,7 @@ import itertools, numpy as np, operator
 from sakura.common.cache import cache_result
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import ComboParameter, ParameterException
-from sakura.daemon.processing.stream import SQLTableStream
+from sakura.daemon.processing.source import SQLTableSource
 from time import time
 
 class DatabaseSelectionParameter(ComboParameter):

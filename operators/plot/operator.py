@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import NumericColumnSelection
-from sakura.daemon.processing.stream import ComputedStream
+from sakura.daemon.processing.source import ComputedSource
 
 from time import time
 import numpy as np

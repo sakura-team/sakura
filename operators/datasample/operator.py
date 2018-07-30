@@ -13,9 +13,9 @@ class DataSampleOperator(Operator):
         # outputs:
         streams = []
         for ds in datasets.load():
-            if hasattr(ds, 'STREAM'):
+            if hasattr(ds, 'SOURCE'):
                 # statically defined stream
-                stream = ds.STREAM
+                stream = ds.SOURCE
             else:
                 # dynamically generated stream
                 try:

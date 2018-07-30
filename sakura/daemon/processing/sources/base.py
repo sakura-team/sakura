@@ -13,7 +13,7 @@ from itertools import count
 # at least a delay <t>*<factor>.
 CACHE_VALUE_FACTOR = 10.0
 
-class OutputStreamBase(Registry):
+class SourceBase(Registry):
     def __init__(self, label):
         self.columns = []
         self.label = label
