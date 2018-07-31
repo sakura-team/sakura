@@ -15,6 +15,7 @@ class Parameter(object):
         self.gui_type = gui_type
         self.label = label
         self.value = None
+        self.on_change = lambda: None
 
     def selected(self):
         self.recheck()
@@ -47,10 +48,12 @@ class Parameter(object):
     def set_value(self, value):
         self.value = value
         self.recheck()
+        self.on_change()
 
     # override in subclass if needed.
     def unset_value(self):
         self.value = None
+        self.on_change()
 
     # override in subclass if needed.
     def recheck(self):
@@ -83,7 +86,7 @@ class ComboParameter(Parameter):
             if self.value >= len(self.get_possible_values()):
                 # ... but it became invalid
                 # (e.g. the value of another parameter changed the set of possible values)
-                self.value = None
+                self.unset_value()
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError

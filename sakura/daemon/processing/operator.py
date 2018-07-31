@@ -2,6 +2,7 @@ import inspect
 from pathlib import Path
 from sakura.common.io import pack
 from sakura.daemon.processing.plugs.input import InputPlug
+from sakura.daemon.processing.plugs.output import OutputPlug
 from sakura.daemon.processing.tab import Tab
 from sakura.daemon.processing.parameter import ParameterException
 from gevent.lock import Semaphore
@@ -32,10 +33,10 @@ class Operator:
     # static properties
     def register_input(self, input_plug_label):
         return self.register('_input_plugs', InputPlug(input_plug_label))
-    def register_output(self, output):
-        return self.register('_output_plugs', output)
-    def register_internal_plug(self, internal_plug):
-        return self.register('_internal_plugs', internal_plug)
+    def register_output(self, *args, **kwargs):
+        return self.register('_output_plugs', OutputPlug(*args, **kwargs))
+    def register_internal_plug(self, *args, **kwargs):
+        return self.register('_internal_plugs', OutputPlug(*args, **kwargs))
     def register_parameter(self, param):
         return self.register('_parameters', param)
     def register_tab(self, tab_label, html_path):

@@ -12,10 +12,10 @@ class MeanOperator(Operator):
         self.input = self.register_input('Mean input data')
         
         # outputs
-        output = self.register_output(
-                    ComputedSource('Mean result', self.compute))
-        output.add_column('Mean', float)
-        output.length = 1
+        output_source = ComputedSource('Mean result', self.compute)
+        output_source.add_column('Mean', float)
+        output_source.length = 1
+        self.register_output('Mean result', output_source)
         
         # parameters
         self.input_column_param = self.register_parameter(

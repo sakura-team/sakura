@@ -11,21 +11,21 @@ class DataSampleOperator(Operator):
         # no inputs
         pass
         # outputs:
-        streams = []
+        sources = []
         for ds in datasets.load():
             if hasattr(ds, 'SOURCE'):
-                # statically defined stream
-                stream = ds.SOURCE
+                # statically defined source
+                source = ds.SOURCE
             else:
-                # dynamically generated stream
+                # dynamically generated source
                 try:
-                    stream = ds.load_stream(self)
+                    source = ds.load_source(self)
                 except BaseException as exc:
                     print('WARNING: could not load dataset %s: %s. IGNORED.' % \
                             (ds.__name__, str(exc).strip()))
                     continue
-            streams.append(stream)
-        for stream in sorted(streams, key=lambda s: s.label):
-            self.register_output(stream)
+            sources.append(source)
+        for source in sorted(sources, key=lambda s: s.label):
+            self.register_output(source=source)
         # no parameters
         pass

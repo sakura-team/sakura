@@ -60,18 +60,18 @@ class DataSourceOperator(Operator):
         self.table_param = self.register_parameter(
                 TableSelectionParameter('Table', self.api, self.database_param))
         self.table_id = None
-    @property
-    def output_plugs(self):
-        try:
-            if self.database_param.selected_database_id is None:
-                self.database_param.auto_fill()
-            if self.table_param.selected_table_id is None:
-                self.table_param.auto_fill()
-        except ParameterException:
-            return []   # sorry no table accessible to current user
+        self.output_plug = self.register_output('Database table data')
+        self.database_param.on_change = self.update
+        self.table_param.on_change = self.update
+        self.update()
+
+    def auto_fill_params(self):
+        if self.database_param.selected_database_id is None:
+            self.database_param.auto_fill()
+        if self.table_param.selected_table_id is None:
+            self.table_param.auto_fill()
+
+    def update(self):
+        self.auto_fill_params()
         table_id = self.table_param.selected_table_id
-        if table_id != self.table_id:   # if selection has changed
-            self.table_id = table_id
-            # store stream object locally to prevent garbage collection
-            self.out_plug = self.api.get_table_stream(table_id)
-        return [ self.out_plug ]
+        self.output_plug.source = self.api.get_table_source(table_id)

@@ -36,7 +36,7 @@ class OperatorToHubAPI:
         if not db.readable:
             return ()
         return pack(db.tables)
-    def get_table_stream(self, table_id):
+    def get_table_source(self, table_id):
         table = self.tables[table_id]
         if not table.readable:
             return None

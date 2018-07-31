@@ -33,8 +33,9 @@ class PlotOperator(Operator):
             column_y = self.input_column_param_y.col_index
             #time_credit = 0.3
             #deadline = time() + time_credit
-            stream = self.input.select_columns(column_x, column_y)
-            for chunk in stream.chunks():
+            source = self.input.source
+            source = source.select_columns(column_x, column_y)
+            for chunk in source.chunks():
                 for x, y in chunk:
                     dp.append({'x': x, 'y': y})
                 #if time() > deadline:
