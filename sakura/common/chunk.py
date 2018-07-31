@@ -1,4 +1,36 @@
 import numpy as np
+from itertools import count
+
+# iterate over "names" ensuring they are all different.
+# if 2 names match, add suffix "(2)", then "(3)", etc.
+def iter_uniq(names):
+    seen = set()
+    for name in names:
+        if name in seen:
+            for i in count(start=2):
+                alt_name = '%s(%d)' % (name, i)
+                if alt_name not in seen:
+                    name = alt_name
+                    break
+        seen.add(name)
+        yield name
+
+def np_select_columns(array, col_indexes):
+    # caution: we may have strange requests here, such
+    # as building a stream with twice the same column
+    # (e.g. XY plot with default value of axis selection
+    # parameters)
+    dt = array.dtype
+    itemsize = dt.itemsize
+    names = tuple(dt.names[i] for i in col_indexes)
+    formats = [dt.fields[name][0] for name in names]
+    offsets = [dt.fields[name][1] for name in names]
+    names = tuple(iter_uniq(names))
+    newdt = np.dtype(dict(names=names,
+                          formats=formats,
+                          offsets=offsets,
+                          itemsize=itemsize))
+    return array.view(newdt)
 
 # properties are computed when they are accessed;
 # as a result we do not have to deal with
@@ -69,3 +101,9 @@ class NumpyChunk(np.ma.MaskedArray):
             ordered_dt = np.dtype(dict(names=names, formats=formats))
             ordered_array = np.ma.array(self, ordered_dt, mask=self.mask)
             return np.ma.MaskedArray.__reduce__(ordered_array)
+    def __select_columns__(self, *col_indexes):
+        # workaround the fact np_select_columns() does not work directly
+        # on masked arrays.
+        new_data = np_select_columns(self.data, col_indexes).view(np.ma.MaskedArray)
+        new_data.mask = np_select_columns(self.mask, col_indexes)
+        return new_data.view(NumpyChunk)

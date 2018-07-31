@@ -92,10 +92,9 @@ class ChunksComputedSource(SourceBase):
                 buf_chunk = buf_chunk[:buf_level]
                 yield buf_chunk.view(NumpyChunk)
     def __select_columns__(self, *col_indexes):
-        col_labels = list(self.columns[col_index]._label for col_index in col_indexes)
         def filtered_compute_cb():
             for chunk in self.compute_cb():
-                yield chunk[col_labels]
+                yield chunk.view(NumpyChunk).__select_columns__(*col_indexes)
         columns = tuple(self.columns[i] for i in col_indexes)
         return ChunksComputedSource(self.label, filtered_compute_cb, columns)
     def __filter__(self, col_index, comp_op, other):
