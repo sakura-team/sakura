@@ -33,9 +33,12 @@ class SimpleAttrContainer:
         return self.__dict__.copy()
 
 class MonitoredFunc(object):
-    def __init__(self, func):
+    def __init__(self, func, out_queue):
         self.func = func
-        self.out_queue = Queue()
+        if out_queue is None:
+            self.out_queue = Queue()
+        else:
+            self.out_queue = out_queue
     def __call__(self, *args, **kwargs):
         try:
             res = self.func(*args, **kwargs)
@@ -53,8 +56,8 @@ class MonitoredFunc(object):
                 raise out
 
 # decorator allowing to catch exceptions in children greenlets
-def monitored(func):
-    return MonitoredFunc(func)
+def monitored(func, out_queue = None):
+    return MonitoredFunc(func, out_queue)
 
 OverriddenObjectClasses = {}
 

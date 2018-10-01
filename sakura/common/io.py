@@ -4,7 +4,7 @@ from threading import get_ident     # get thread id
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
-from sakura.common.errors import APIRequestError, IOHoldException
+from sakura.common.errors import APIRequestError, APIRemoteError, IOHoldException
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 #DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
@@ -91,12 +91,20 @@ class LocalAPIHandler(object):
             self.pool = greenlets_pool
             self.handle_request = self.handle_request_pool
     def loop(self):
-        if self.pool is None:
-            self.do_loop()
-        else:
-            self.handle_request_base = monitored(self.handle_request_base)
-            self.pool.spawn(self.do_loop)
-            self.handle_request_base.catch_issues()
+        try:
+            if self.pool is None:
+                self.do_loop()
+            else:
+                # redirect exceptions of all sub-greenlets to the same queue
+                self.do_loop = monitored(self.do_loop)
+                self.handle_request_base = monitored(
+                        self.handle_request_base, self.do_loop.out_queue)
+                # start
+                self.pool.spawn(self.do_loop)
+                # wait for an exception
+                self.do_loop.catch_issues()
+        except (EOFError, ConnectionResetError):
+            return  # leave the loop
     def do_loop(self):
         while True:
             should_continue = self.handle_next_request()
@@ -107,8 +115,8 @@ class LocalAPIHandler(object):
             req_id, req = self.protocol.load(self.f)
             print_debug('received request', str((req_id, req)))
         except (EOFError, ConnectionResetError):
-            print('remote end disconnected.')
-            return False
+            print('remote end disconnected!')
+            raise   # we should stop
         except BaseException:
             print('malformed request? Got exception:')
             traceback.print_exc()
@@ -293,18 +301,27 @@ class RemoteAPIForwarder(AttrCallAggregator):
         # synchronous mode, for web api
         if self.sync:
             self.receive()
-        return async_res.get()
+        res = async_res.get()
+        if isinstance(res, BaseException):
+            raise APIRemoteError(str(res))
+        return res
+    def handle_receive_exception(self, e):
+        # connection issue, pass exception to all
+        # awaiting requests
+        for async_res in self.reqs.values():
+            async_res.set(e)
+        return False
     def receive(self):
         try:
             res_info = self.protocol.load(self.f)
             print_debug("received response", res_info)
-        except (EOFError, ConnectionResetError):
+        except (EOFError, ConnectionResetError) as e:
             print('remote end disconnected.')
-            return False
-        except BaseException:
+            return self.handle_receive_exception(e)
+        except BaseException as e:
             print('malformed result? Got exception:')
             traceback.print_exc()
-            return False
+            return self.handle_receive_exception(e)
         req_id = res_info[0]
         async_res = self.reqs[req_id]
         async_res.set(res_info[1:])

@@ -12,3 +12,6 @@ class APIRequestErrorOfflineDatastore(APIRequestError):
 
 class IOHoldException(Exception):
     pass
+
+class APIRemoteError(Exception):
+    pass

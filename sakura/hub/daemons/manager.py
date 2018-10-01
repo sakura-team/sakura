@@ -5,7 +5,7 @@ from sakura.common.io import LocalAPIHandler, \
                 RemoteAPIForwarder, PickleLocalAPIProtocol
 from sakura.hub.daemons.api import DaemonToHubAPI
 from sakura.hub.exceptions import DaemonDataError
-from sakura.common.errors import APIRequestError
+from sakura.common.errors import APIRemoteError
 
 def dump_to_sock_file(sock_file, **kwargs):
     pickle.dump(kwargs, sock_file)
@@ -18,6 +18,8 @@ def on_daemon_connect(context, daemon_id):
             daemon.on_connect()
         except DaemonDataError as e:
             daemon.api.fire_data_issue(str(e))
+        except APIRemoteError as e:
+            print('on_daemon_connect() remote exception: ' + str(e))
 
 def rpc_client_manager(context, daemon_name, sock_file):
     print('new rpc connection hub (client) -> %s (server).' % daemon_name)
