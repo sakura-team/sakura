@@ -1,8 +1,7 @@
 import bottle
 from gevent.local import local
-from base64 import b64decode, b64encode
 from sakura.common.bottle import PicklableFileRequest
-from sakura.hub.secrets import TemporarySecretsRegistry, OneTimeHashSecretsRegistry
+from sakura.hub.secrets import TemporarySecretsRegistry
 from sakura.hub.web.transfers import Transfer
 
 # object storing greenlet-local data
@@ -29,7 +28,6 @@ class HubContext(object):
         self.databases = self.db.Database
         self.tables = self.db.DBTable
         self.columns = self.db.DBColumn
-        self.session_secrets = OneTimeHashSecretsRegistry()
         self.pw_recovery_secrets = TemporarySecretsRegistry(
                         HubContext.PW_RECOVERY_SECRETS_LIFETIME)
         self.transfers = {}
@@ -40,7 +38,10 @@ class HubContext(object):
         if session_id is None:
             # we are processing a request coming from a daemon
             return None
-        return self.sessions[session_id]
+        session = self.sessions.get(id=session_id)
+        if session is None:
+            bottle.abort(401, 'Wrong session id.')
+        return session
     @property
     def operator(self):
         op_id = getattr(greenlet_env, 'op_id', None)
@@ -57,11 +58,17 @@ class HubContext(object):
             return self.users.get(login = owner)
     def user_is_logged_in(self):
         return self.user is not None
-    def new_session(self):
-        return self.sessions.new_session(self)
-    def recover_session(self, b64_secret):
-        session_secret = b64decode(b64_secret.encode('utf-8'))
-        return self.session_secrets.pop_object(session_secret)
+    def save_session_id(self, session_id):
+        if session_id is not None and \
+                self.sessions.get(id = session_id) is not None:
+            greenlet_env.session_id = session_id
+            self.session.renew()
+        else:
+            # session_id not given or obsolete
+            # create a new session
+            session = self.sessions.new_session(self)
+            greenlet_env.session_id = session.id
+            print('new session created ' + str(session.id))
     def get_daemon_from_name(self, daemon_name):
         return self.daemons.get_or_create(daemon_name)
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
@@ -84,9 +91,6 @@ class HubContext(object):
             return bottle.HTTPResponse(*resp[1:])
         else:
             return bottle.HTTPError(*resp[1:])
-    def save_session_recovery_token(self, b64_sha256):
-        sha256 = b64decode(b64_sha256.encode('utf-8'))
-        self.session_secrets.save_object(self.session, sha256)
     def start_transfer(self):
         transfer = Transfer(self)
         self.transfers[transfer.transfer_id] = transfer

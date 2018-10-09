@@ -19,30 +19,14 @@ def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
 
     @monitored
-    def ws_handle(session):
+    def ws_handle():
         wsock = bottle_get_wsock()
-        rpc_manager(context, wsock, session)
-
-    @app.route('/websockets/sessions/new')
-    def ws_new_session():
-        print('/websockets/sessions/new')
-        session = None
         with db_session_wrapper():
-            session = context.new_session()
-        ws_handle(session)
+            rpc_manager(context, wsock)
 
-    @app.route('/websockets/sessions/connect')
-    def ws_connect_session():
-        if 'session-secret' not in bottle.request.query:
-            raise bottle.HTTPError(400, 'session secret not specified.')
-        secret = bottle.request.query.get('session-secret')
-        print('/websockets/sessions/connect', secret)
-        session = None
-        with db_session_wrapper():
-            session = context.recover_session(secret)
-        if session is None:
-            bottle.abort(401, 'Wrong secret.')
-        ws_handle(session)
+    @app.route('/websocket')
+    def ws_create():
+        ws_handle()
 
     @app.route('/opfiles/<op_id:int>/<filepath:path>')
     def serve_operator_file(op_id, filepath):
@@ -101,7 +85,33 @@ def web_greenlet(context, webapp_path):
         print('serving ' + filepath, end="")
         resp = bottle.static_file(filepath, root = webapp_path)
         print(' ->', resp.status_line)
+        session_id_set(resp)
         return resp
+
+    # session-id cookie management
+    # ----------------------------
+    def get_session_id_cookie():
+        session_id = bottle.request.get_cookie("session-id")
+        if session_id is None:
+            return None
+        try:
+            return int(session_id)
+        except ValueError:
+            bottle.abort(401, 'Wrong session id.')
+
+    # save session-id cookie transmitted from browser
+    @app.hook('before_request')
+    def session_id_save():
+        session_id = get_session_id_cookie()
+        with db_session_wrapper():
+            context.save_session_id(session_id)
+
+    # if session-id cookie is not present or has changed,
+    # let the browser update it
+    def session_id_set(resp):
+        with db_session_wrapper():
+            if get_session_id_cookie() != context.session.id:
+                resp.set_cookie("session-id", str(context.session.id))
 
     server = WSGIServer(("0.0.0.0", conf.web_port), app,
                         handler_class=WebSocketHandler)

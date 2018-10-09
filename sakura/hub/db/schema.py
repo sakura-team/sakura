@@ -34,6 +34,7 @@ def define_schema(db):
         sessions = Set('Session')
 
     class Session(db.Entity, SessionMixin):
+        id = PrimaryKey(int)
         user = Optional(User)
         timeout = Required(epoch)
 

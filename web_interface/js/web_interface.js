@@ -457,16 +457,13 @@ function showDiv(event, dir, div_id) {
 
     for (i = 0; i < actionsOnShow.length; i++)
         if (actionsOnShow[i].nodeName == "IFRAME") {
-            var aos = actionsOnShow[i];
-            sakura.common.ws_generate_secret(function(ss) {
-                let url;
-                if (aos.id == 'iframe_datasets')
-                    url = "/modules/datasets/index.html?database_id=";
-                else if (aos.id == 'iframe_workflow')
-                    url = "/modules/workflow/index.html?dataflow_id=";
-                url += web_interface_current_id;
-                aos.src = sakura.common.ws_url_add_secret(url, ss);
-            });
+            let aos = actionsOnShow[i];
+            if (aos.id == 'iframe_datasets')
+                url = "/modules/datasets/index.html?database_id=";
+            else if (aos.id == 'iframe_workflow')
+                url = "/modules/workflow/index.html?dataflow_id=";
+            url += web_interface_current_id;
+            aos.src = url;
         }
         else
             if (!div_id)

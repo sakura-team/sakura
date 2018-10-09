@@ -1,14 +1,11 @@
-import time
+import time, random
 import sakura.hub.conf as conf
+
+INTMAX_LIMIT = 2147483648
 
 class SessionMixin:
     UNUSED_DELAY = 360
     NUM_WS_PER_SESSION = {}
-
-#    cote javascript : il faut toujours avoir au moins une
-#    websocket libre. avant d utiliser la derniere, on envoie
-#    une requete pour obtenir un secret temporaire permettant
-#    d en creer une autre.
 
     @property
     def num_ws(self):
@@ -26,7 +23,7 @@ class SessionMixin:
         return time.time() > self.timeout
 
     def cleanup_session(self):
-        print('Cleaned up session.')
+        print('Cleaning up session ' + str(self.id))
         if self.id in SessionMixin.NUM_WS_PER_SESSION:
             del SessionMixin.NUM_WS_PER_SESSION[self.id]
         self.delete()
@@ -42,11 +39,12 @@ class SessionMixin:
         user = None
         if conf.mode == 'debug' and hasattr(conf.debug, 'autologin'):
             user = context.users.get(login = conf.debug.autologin)
-        session = cls(timeout = timeout, user = user)
+        session_id = random.randrange(INTMAX_LIMIT)
+        session = cls(id = session_id, timeout = timeout, user = user)
         context.db.commit()
         return session
     @classmethod
     def cleanup(cls):
         for session in cls.select():
-            if not session.in_use:
+            if not session.in_use and session.expired:
                 session.cleanup_session()

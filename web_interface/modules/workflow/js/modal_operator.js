@@ -60,11 +60,8 @@ function fill_tabs(id) {
         let index = 0;
         instance_info.tabs.forEach( function(tab) {
             let iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
-            sakura.common.ws_generate_secret(function(ss) {
-                var tab_url = '/opfiles/' + op_hub_id + '/' + tab.html_path;
-                tab_url = sakura.common.ws_url_add_secret(tab_url, ss);
-                iframe.attr('src', tab_url);
-            });
+            let tab_url = '/opfiles/' + op_hub_id + '/' + tab.html_path;
+            iframe.attr('src', tab_url);
             index++;
         });
     });
@@ -322,8 +319,6 @@ function loadIFrame(url, id) {
      */
     let iframe = document.getElementById("codeEditorIframe_"+id);
     if (iframe.src.indexOf(url) == -1) {
-        sakura.common.ws_generate_secret(function(ss) {
-            iframe.src = sakura.common.ws_url_add_secret(url, ss);
-        });
+        iframe.src = url;
     }
 }

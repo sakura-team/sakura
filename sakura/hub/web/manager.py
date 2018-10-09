@@ -77,17 +77,17 @@ class GUILocalAPIProtocol:
             raise Exception('Hub->GUI: Hub could not serialize object ' + \
                                 repr(res_info))
 
-def rpc_manager(context, wsock, session):
+def rpc_manager(context, wsock):
     print('New GUI RPC connection.')
     # make wsock a file-like object
     f = FileWSock(wsock)
     # manage api requests
     local_api = GuiToHubAPI(context)
-    web_session_wrapper = get_web_session_wrapper(session.id)
+    web_session_wrapper = get_web_session_wrapper(context.session.id)
     handler = LocalAPIHandler(f, GUILocalAPIProtocol, local_api,
                 session_wrapper = web_session_wrapper)
-    session.num_ws += 1
+    context.session.num_ws += 1
     handler.loop()
-    session.num_ws -= 1
+    context.session.num_ws -= 1
     print('GUI RPC disconnected.')
 

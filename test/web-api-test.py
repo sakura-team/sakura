@@ -6,16 +6,11 @@ from sakura.common.io import RemoteAPIForwarder
 from websocket import create_connection
 
 if len(sys.argv) < 2:
-    print('Usage: %s <hub_web_port> [<session_secret>]' % sys.argv[0])
+    print('Usage: %s <hub_web_port>' % sys.argv[0])
     sys.exit()
 
 web_port = int(sys.argv[1])
-if len(sys.argv) > 2:
-    session_secret = sys.argv[2]
-    ws_path = "ws://localhost:%d/websockets/sessions/connect/%s" % \
-                    (web_port, session_secret)
-else:
-    ws_path = "ws://localhost:%d/websockets/sessions/new" % web_port
+ws_path = "ws://localhost:%d/websocket" % web_port
 
 # Persistent command history.
 histfile = os.path.join(os.environ["HOME"], ".web-api-history")
