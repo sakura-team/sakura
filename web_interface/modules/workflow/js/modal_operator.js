@@ -55,7 +55,7 @@ function fill_all(id) {
 
 function fill_tabs(id) {
     let op_hub_id = parseInt(id.split("_")[2]);
-    sakura.common.ws_request('get_operator_instance_info', [op_hub_id], {}, function (instance_info) {
+    sakura.apis.hub.operators[op_hub_id].info().then(function (instance_info) {
         current_instance_info = instance_info;
         let index = 0;
         instance_info.tabs.forEach( function(tab) {
@@ -69,7 +69,7 @@ function fill_tabs(id) {
 
 
 function fill_params(id) {
-    sakura.common.ws_request('get_operator_instance_info', [parseInt(id.split("_")[2])], {}, function (result) {
+    sakura.apis.hub.operators[parseInt(id.split("_")[2])].info().then(function (result) {
             var d = document.getElementById('modal_'+id+'_tab_params');
             while (d.firstChild) {
                 d.removeChild(d.firstChild);
@@ -118,9 +118,10 @@ function fill_params(id) {
 function params_onChange(op_id, param_index, select_id) {
 
     var index = document.getElementById(select_id).selectedIndex;
-    sakura.common.ws_request('get_operator_instance_info', [parseInt(op_id.split("_")[2])], {}, function (result) {
+    let hub_remote_op = sakura.apis.hub.operators[parseInt(op_id.split("_")[2])];
+    hub_remote_op.info().then(function (result) {
         var param_value = index;
-        sakura.common.ws_request('set_parameter_value', [parseInt(op_id.split("_")[2]), param_index, param_value], {}, function (result2) {
+        hub_remote_op.parameters[param_index].set_value(param_value).then(function (result2) {
             if (result2)
                 console.log(result2);
             else {
@@ -149,7 +150,7 @@ function fill_in_out(in_out, id) {
     }
 
     //infos
-    sakura.common.ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
+    sakura.apis.hub.operators[inst_id].info().then(function (result_info) {
         var nb_in_out = result_info[in_out+'s'].length;
 
         if (nb_in_out == 0) {
@@ -203,8 +204,14 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
     $(d).append(p);
 
     //infos
-    sakura.common.ws_request('get_operator_instance_info', [inst_id], {}, function (result_info) {
-        sakura.common.ws_request('get_operator_'+in_out+'_range', [inst_id, id_in_out, min, max], {}, function (result_in_out) {
+    sakura.apis.hub.operators[inst_id].info().then(function (result_info) {
+        let plugs;
+        if (in_out == 'input') {
+            plugs = sakura.apis.hub.operators[inst_id].inputs;
+        } else {
+            plugs = sakura.apis.hub.operators[inst_id].outputs;
+        }
+        plugs[id_in_out].get_range(min, max).then(function (result_in_out) {
             if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
                 s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed; margin-bottom: 1px;">\n';

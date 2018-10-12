@@ -12,7 +12,5 @@ function update_plot(data) {
 function init_plot() {
 
     //Get data
-    sakura.operator.fire_event(
-            ['get_data'],
-            update_plot);
+    sakura.apis.operator.fire_event('get_data').then(update_plot);
 }

@@ -56,7 +56,7 @@ main_div.addEventListener("drop", function( e ) {
         var link = link_from_id('con_'+parseInt(tab1[4]));
 
         if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
-            sakura.common.ws_request('create_link', [link.src, out_id, link.dst, in_id], {}, function (link_id_from_hub) {
+            sakura.apis.hub.links.create(link.src, out_id, link.dst, in_id).then(function (link_id_from_hub) {
 
                 //local creation
                 var line = create_link_line(link, out_id, in_id);

@@ -22,8 +22,7 @@ class Rscript(Operator):
     def compute(self):
         pass
     
-    def handle_event(self, event):
-        ev_type = event[0]
+    def handle_event(self, ev_type, source_code):
         if ev_type == 'script':
             
             f = open('data.csv', 'w')
@@ -35,7 +34,7 @@ class Rscript(Operator):
             
             f = open('script.r', 'w')
             f.write('input_table <- read.csv("data.csv", header = FALSE, sep = ",");\n')
-            f.write(event[1])
+            f.write(source_code)
             f.close()
             
             os.system('Rscript script.r > rscript.out 2> rscript.err')

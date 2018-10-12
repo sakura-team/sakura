@@ -1,34 +1,44 @@
+/* We want an easy-to-use API call mechanism:
+   hub.workflows[3].info().then(function(result) {
+     console.log('workflow info: ' + result);
+   });
+
+   The function call may involve named parameters. In this case, they must be specified
+   in the form of a directory and as the last argument:
+   sakura.hub.<func>(<arg1>, <arg2>, { <name1>: <val1>, <name2>: <val2> }).then(...).catch(...);
+*/
+
 sakura = {
-    common: {
-        ws: {
-            internal: {
-            }
-        }
+    internal: {
+    },
+    tools: {
+    },
+    apis: {
     }
 }
 
 // debugging
 // ---------
 // uncomment / comment to activate debug
-//sakura.common.debug = function (s) { console.log("" + new Date().getTime() + " -- " + s); };
-sakura.common.debug = function (s) { };
+//sakura.internal.debug = function (s) { console.log("" + new Date().getTime() + " -- " + s); };
+sakura.internal.debug = function (s) { };
 
-sakura.common.debug('Loading sakura-common.js');
+sakura.internal.debug('Loading sakura-common.js');
 
 
 // document ready state management
 // -------------------------------
-sakura.common.document_ready = false;
+sakura.internal.document_ready = false;
 
-sakura.common.add_document_onready = function (cb) {
+sakura.internal.add_document_onready = function (cb) {
     document.addEventListener("DOMContentLoaded", function(event) {
         cb();
     });
 }
 
-sakura.common.add_document_onready(function() {
-    sakura.common.document_ready = true;
-    sakura.common.debug('document now ready');
+sakura.internal.add_document_onready(function() {
+    sakura.internal.document_ready = true;
+    sakura.internal.debug('document now ready');
 });
 
 // websocket management
@@ -39,11 +49,11 @@ sakura.common.add_document_onready(function() {
 // To achieve this, we connect several websockets. Each of these websocket
 // may be free or busy at a given time. 'busy' means that a request was
 // sent on this websocket but the response was not obtained yet.
-sakura.common.ws.internal.running_requests = {};
-sakura.common.ws.internal.next_req_idx = 0;
-sakura.common.ws.internal.free_ws = [];
+sakura.internal.running_requests = {};
+sakura.internal.next_req_idx = 0;
+sakura.internal.free_ws = [];
 
-sakura.common.ws.internal.complete_url = function (path) {
+sakura.internal.complete_url = function (path) {
     var loc = window.location, proto;
     if (loc.protocol === "https:") {
         proto = "wss:";
@@ -53,28 +63,28 @@ sakura.common.ws.internal.complete_url = function (path) {
     return proto + "//" + loc.host + path;
 }
 
-sakura.common.ws.internal.get_url = function () {
-    return sakura.common.ws.internal.complete_url("/websocket");
+sakura.internal.get_url = function () {
+    return sakura.internal.complete_url("/websocket");
 }
 
-sakura.common.ws.internal.default_error_callback = function (msg) {
+sakura.internal.default_error_callback = function (msg) {
     alert(msg);
 }
 
-sakura.common.ws.internal.onmessage = function (evt) {
-    sakura.common.debug('sakura.common.ws.internal.onmessage called');
+sakura.internal.onmessage = function (evt) {
+    sakura.internal.debug('sakura.internal.onmessage called');
     IO_TRANSFERED = 0;
     IO_REQUEST_ERROR = 2;
     // parse the message
     var json = JSON.parse(evt.data);
     var req_idx = json[0];
-    sakura.common.debug('ws_request ' + req_idx + ' got answer');
-    var req = sakura.common.ws.internal.running_requests[req_idx];
-    // sakura.common.ws.internal.running_requests[req_idx] will no longer be needed
-    delete sakura.common.ws.internal.running_requests[req_idx];
+    sakura.internal.debug('ws_request ' + req_idx + ' got answer');
+    var req = sakura.internal.running_requests[req_idx];
+    // sakura.internal.running_requests[req_idx] will no longer be needed
+    delete sakura.internal.running_requests[req_idx];
     // we have the response, thus this websocket is free again
-    sakura.common.ws.internal.free_ws.push(req.ws);
-    sakura.common.debug('+1 (response received) *** ' + sakura.common.ws.internal.free_ws.length);
+    sakura.internal.free_ws.push(req.ws);
+    sakura.internal.debug('+1 (response received) *** ' + sakura.internal.free_ws.length);
     if (json[1] == IO_TRANSFERED)
     {   // all ok, and result could be transfered
         // call the callback that was given with the request
@@ -89,48 +99,48 @@ sakura.common.ws.internal.onmessage = function (evt) {
     console.error('Bug: result of ws_request() got unknown status: ' + json[1]);
 }
 
-sakura.common.ws.internal.send = function (func_name, args, kwargs, callback, error_callback) {
-    sakura.common.debug('sakura.common.ws.internal.send called');
+sakura.internal.send = function (func_path, args, kwargs, callback, error_callback) {
+    sakura.internal.debug('sakura.internal.send called');
     IO_FUNC = 0;
     if (typeof error_callback === 'undefined')
     {
-        error_callback = sakura.common.ws.internal.default_error_callback;
+        error_callback = sakura.internal.default_error_callback;
     }
     // get a callback id
-    var req_idx = sakura.common.ws.internal.next_req_idx;
-    sakura.common.ws.internal.next_req_idx += 1;
+    var req_idx = sakura.internal.next_req_idx;
+    sakura.internal.next_req_idx += 1;
     // pop one of the free websockets
     // we select the 1st (using shift()), and we will append it back
     // at the end of the array (using push()) when receiving the response,
     // in to avoid having idle websockets that would be closed by HTTP proxies.
-    let ws = sakura.common.ws.internal.free_ws.shift();
-    sakura.common.debug('-1 (sending message..) *** ' + sakura.common.ws.internal.free_ws.length);
+    let ws = sakura.internal.free_ws.shift();
+    sakura.internal.debug('-1 (sending message..) *** ' + sakura.internal.free_ws.length);
     if (ws == undefined) {
         console.error('ws undefined!!');
         return;
     }
     // record the request using its id
-    sakura.common.ws.internal.running_requests[req_idx] = {
+    sakura.internal.running_requests[req_idx] = {
         'ws': ws,
         'callback': callback,
         'error_callback': error_callback
     };
     // prepare the message and send it
-    var msg = JSON.stringify([ req_idx, [ IO_FUNC, [func_name], args, kwargs ]]);
-    sakura.common.debug('ws_request sent: ' + msg);
+    var msg = JSON.stringify([ req_idx, [ IO_FUNC, func_path, args, kwargs ]]);
+    sakura.internal.debug('ws_request sent: ' + msg);
     ws.send(msg);
 }
 
-sakura.common.ws.internal.create = function (cb) {
-    sakura.common.debug('sakura.common.ws.internal.create called');
-    let ws_url = sakura.common.ws.internal.get_url();
+sakura.internal.create = function (cb) {
+    sakura.internal.debug('sakura.internal.create called');
+    let ws_url = sakura.internal.get_url();
     let ws = new WebSocket(ws_url);
-    ws.onmessage = sakura.common.ws.internal.onmessage;
+    ws.onmessage = sakura.internal.onmessage;
     ws.onopen = function() {
-        sakura.common.debug('ws.onopen called');
-        sakura.common.ws.internal.free_ws.push(ws);
-        sakura.common.debug('+1 (ws just created!!) *** ' + sakura.common.ws.internal.free_ws.length);
-        sakura.common.debug('new ws ready!');
+        sakura.internal.debug('ws.onopen called');
+        sakura.internal.free_ws.push(ws);
+        sakura.internal.debug('+1 (ws just created!!) *** ' + sakura.internal.free_ws.length);
+        sakura.internal.debug('new ws ready!');
         // ready, call cb()
         cb();
     }
@@ -139,40 +149,40 @@ sakura.common.ws.internal.create = function (cb) {
         ws.close();
     }
     ws.onclose = function() {
-        sakura.common.debug("ws closed!");
+        sakura.internal.debug("ws closed!");
         // remove from free websockets
-        sakura.common.ws.internal.free_ws = sakura.common.ws.internal.free_ws.filter(function(free_ws) {
+        sakura.internal.free_ws = sakura.internal.free_ws.filter(function(free_ws) {
             return free_ws != ws;
         });
-        sakura.common.debug('-1?(ws was closed....) *** ' + sakura.common.ws.internal.free_ws.length);
+        sakura.internal.debug('-1?(ws was closed....) *** ' + sakura.internal.free_ws.length);
     }
 }
 
-sakura.common.ws.internal.keep_alive = function() {
-    sakura.common.ws_request('renew_session', [], {}, function() {})
+sakura.internal.keep_alive = function() {
+    sakura.internal.ws_request(['renew_session'], [], {}, function() {})
 }
 
-sakura.common.ws.internal.prepare = function (cb) {
-    sakura.common.debug('sakura.common.ws.internal.prepare called');
+sakura.internal.prepare = function (cb) {
+    sakura.internal.debug('sakura.internal.prepare called');
     let recall = function() {
-        sakura.common.debug('recalling sakura.common.ws.internal.prepare...');
-        sakura.common.ws.internal.prepare(cb);
+        sakura.internal.debug('recalling sakura.internal.prepare...');
+        sakura.internal.prepare(cb);
     };
 
     // firefox fails if we call ws API too early
-    if (sakura.common.document_ready == false)
+    if (sakura.internal.document_ready == false)
     {
-        sakura.common.debug('document NOT ready');
+        sakura.internal.debug('document NOT ready');
         // restart the call when document is ready
-        sakura.common.add_document_onready(recall);
+        sakura.internal.add_document_onready(recall);
         return;
     }
 
     // if there is no free websocket, create a new one
-    if (sakura.common.ws.internal.free_ws.length == 0)
+    if (sakura.internal.free_ws.length == 0)
     {
-        sakura.common.debug('creating ws');
-        sakura.common.ws.internal.create(recall);
+        sakura.internal.debug('creating ws');
+        sakura.internal.create(recall);
         return;
     }
 
@@ -180,19 +190,66 @@ sakura.common.ws.internal.prepare = function (cb) {
     cb();
 }
 
-sakura.common.ws_request = function (func_name, args, kwargs, callback, error_callback) {
-    sakura.common.debug('sakura.common.ws_request called');
-    sakura.common.ws.internal.prepare(function() {
-        sakura.common.ws.internal.send(func_name, args, kwargs, callback, error_callback);
+sakura.internal.ws_request = function (func_path, args, kwargs, callback, error_callback) {
+    sakura.internal.debug('sakura.internal.ws_request called');
+    sakura.internal.prepare(function() {
+        sakura.internal.send(func_path, args, kwargs, callback, error_callback);
     });
 };
 
+sakura.internal.hub_api_send = function(path, args) {
+    let named_args = {};
+    let posit_args = args;
+
+    /* a dictionary of named arguments may be passed as the last
+       positional argument */
+    if (args.length > 0) {
+        let last_arg = args[args.length-1];
+        if ((typeof last_arg) === 'object' && !Array.isArray(last_arg)) {
+            named_args = last_arg;
+            posit_args = args.slice(0, args.length-1);
+        }
+    }
+
+    return new Promise(function(resolve, reject) {
+        sakura.internal.ws_request(path, posit_args, named_args, resolve, reject);
+    });
+};
+
+/* This relies on Proxy features, see
+   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+   We catch object property access (through get(), see below) to iterately build the API
+   request path, up to the function call. The function call itself is catched by apply()
+   function. */
+
+sakura.internal.get_hub_api = function(path) {
+    return new Proxy(sakura.internal.hub_api_send, {
+        path: path,
+        get: function(target, prop, receiver) {
+            let new_path = this.path.slice();
+            let prop_as_int = parseInt(prop, 10);
+            if (!isNaN(prop_as_int)) {
+                new_path.push([ prop_as_int ]);
+            }
+            else {
+                new_path.push(prop);
+            }
+            return sakura.internal.get_hub_api(new_path);
+        },
+        apply: function(target, this_arg, args) {
+            return target(this.path, args);
+        }
+    });
+};
+
+sakura.apis.hub = sakura.internal.get_hub_api([]);
+
 // send a keep alive every 30s
-setInterval(sakura.common.ws.internal.keep_alive, 30000);
+setInterval(sakura.internal.keep_alive, 30000);
 
 // tools
 // -----
-sakura.common.load_files = function (sources, cb) {
+sakura.tools.load_files = function (sources, cb) {
     // dynamically load js or css files by appending a
     // <script> or <link> element to the <head>.
     cb.counter = sources.length;
@@ -220,15 +277,15 @@ sakura.common.load_files = function (sources, cb) {
     }
 }
 
-sakura.common.load_files_in_order = function (sources, cb) {
+sakura.tools.load_files_in_order = function (sources, cb) {
     let remaining_sources = sources.slice();     // copy
     let first_item = remaining_sources.shift();  // 1st item removed
-    sakura.common.load_files(
+    sakura.tools.load_files(
             [ first_item ],
             function() {
                 if (remaining_sources.length > 0)
                 {
-                    sakura.common.load_files_in_order(remaining_sources, cb);
+                    sakura.tools.load_files_in_order(remaining_sources, cb);
                 }
                 else
                 {

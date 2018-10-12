@@ -32,7 +32,7 @@ function datasets_download_start_transfert(dataset_id, gzip) {
   var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
   stop_downloading = false;
 
-  sakura.common.ws_request('start_transfer', [], {}, function(transfert_id) {
+  sakura.apis.hub.transfers.start().then(function(transfert_id) {
         current_transfert_id = transfert_id;
 
         var url = "/tables/"+dataset.table_id+"/export.csv?transfer="+current_transfert_id;
@@ -47,7 +47,7 @@ function datasets_download_start_transfert(dataset_id, gzip) {
         document.body.appendChild(element);
 
         //Get first transfert status
-        sakura.common.ws_request('get_transfer_status', [current_transfert_id], {}, function(status) {
+        sakura.apis.hub.transfers[current_transfert_id].get_status().then(function(status) {
             var pb = null;
             var pb_txt = null;
             $('#datasets_progress_bar_modal_header').html("<table width=\"100%\"><tr><td><h3>Downloading ...</h3><td align=\"right\"><span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span></table>");
@@ -92,7 +92,7 @@ function datasets_download_start_transfert(dataset_id, gzip) {
 
 function datasets_download_update_feedback(dataset, progress_bar, progress_bar_txt, init_date) {
 
-    sakura.common.ws_request('get_transfer_status', [current_transfert_id], {}, function(status) {
+    sakura.apis.hub.transfers[current_transfert_id].get_status().then(function(status) {
         if (status.status == 'waiting' && !stop_downloading) {
           setTimeout(function () {
               datasets_download_update_feedback(dataset, progress_bar, progress_bar_txt, init_date);
@@ -146,7 +146,7 @@ function datasets_Giga_Mega_Kilo(val, txt) {
 }
 
 function datasets_stop_downloading() {
-    sakura.common.ws_request('abort_transfer', [current_transfert_id], {}, function(result) {
+    sakura.apis.hub.transfers[current_transfert_id].abort().then(function(result) {
         stop_downloading = true;
     });
 }

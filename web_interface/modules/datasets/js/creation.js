@@ -157,13 +157,12 @@ function datasets_send_new(database_id) {
         $('#datasets_creation_button').addClass('btn-success');
         $('#datasets_creation_button').html("Creating Table <span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span>");
     }
-    sakura.common.ws_request(   'new_table',
-                                [database_id, name, columns],
+    sakura.apis.hub.tables.create(database_id, name, columns,
                                 {   'short_desc':       desc,
                                     'creation_date':    creation_date,
                                     'primary_key':      pkey,
-                                    'foreign_keys':     fkeys   },
-                                function(dataset_id) {
+                                    'foreign_keys':     fkeys   }).then(
+    function(dataset_id) {
         if (dataset_id >= 0) {
             //Sending file
             if (from_what == 'ff') {

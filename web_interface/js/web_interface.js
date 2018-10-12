@@ -39,13 +39,17 @@ function recursiveReplace(node, init_text, new_text) {
     }
 }
 
-function fill_work() {
-    var req = 'get_database_info';
+function current_remote_api_object() {
+    var api_objects = sakura.apis.hub.databases;
 
     if (web_interface_current_object_type == 'dataflows')
-        req = 'get_dataflow_info';
+        api_objects = sakura.apis.hub.dataflows;
 
-    sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
+    return api_objects[web_interface_current_id];
+}
+
+function fill_work() {
+    current_remote_api_object().info().then(function(info) {
 
         web_interface_current_object_info = info;
 
@@ -58,11 +62,7 @@ function fill_work() {
 }
 
 function fill_metadata() {
-    var req = 'get_database_info';
-    if (web_interface_current_object_type == 'dataflows')
-        req = 'get_dataflow_info';
-
-    sakura.common.ws_request(req, [web_interface_current_id], {}, function(info) {
+    current_remote_api_object().info().then(function(info) {
 
         web_interface_current_object_info = info;
 
@@ -132,7 +132,7 @@ function fill_metadata() {
 
         if (web_interface_current_object_type == 'datas') {
             //Should call for datastores list
-            sakura.common.ws_request('list_datastores', [], {}, function(lds) {
+            sakura.apis.hub.datastores.list().then(function(lds) {
                 var dt_store = empty_text;
                 lds.forEach( function(ds) {
                     if (ds.datastore_id == info.datastore_id)
@@ -225,13 +225,11 @@ function fill_metadata() {
 }
 
 function web_interface_updating_metadata(a, params) {
-    var obj = matching_hub_name(web_interface_current_object_type);
-    var id = web_interface_current_object_info[obj+'_id'];
     var jsn = JSON.parse('{"'+a.get(0).name+'": "'+params.value+'"}');
 
-    sakura.common.ws_request('update_'+obj+'_info', [id], jsn ,
+    current_remote_api_object().update(jsn).then(
         function(result) {
-        },
+        }).catch(
         function (error) {
             alert(error);
             a.html(empty_text);
@@ -285,10 +283,7 @@ function web_interface_create_large_description_area(datatype, area_id, descript
 }
 
 function web_interface_save_large_description(data_type, id) {
-    var obj = matching_hub_name(data_type);
-
-    if (obj.length != 0)
-        sakura.common.ws_request('update_'+obj+'_info', [id], {'large_desc': simplemde.value()}, function(result) {});
+    current_remote_api_object().update({'large_desc': simplemde.value()});
 }
 
 
@@ -473,7 +468,7 @@ function showDiv(event, dir, div_id) {
 }
 
 //Access Managment
-function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, callback) {
+function web_interface_asking_access_open_modal(o_name, o_type, grant, callback) {
 
     var txt1 = "An email will be sent to the owner of <b>"+o_name+"</b> for asking for a <b>"+grant+"</b> access on this "+o_type;
     txt1 += "Please describe your needs.";
@@ -493,14 +488,14 @@ function web_interface_asking_access_open_modal(o_name, o_type, o_id, grant, cal
                                 rows: '6',
                                 text: txt2});
     b.append(ti);
-    $('#web_interface_asking_access_modal_button').click(function () { web_interface_asking_access(o_type, o_id, grant, callback)});
+    $('#web_interface_asking_access_modal_button').click(function () { web_interface_asking_access(grant, callback)});
     $('#web_interface_asking_access_modal').modal('show');
 }
 
-function web_interface_asking_access(o_type, o_id, grant, callback) {
+function web_interface_asking_access(grant, callback) {
 
     var txt = $('#web_interface_asking_access_textarea').val();
-    sakura.common.ws_request('request_'+o_type+'_grant', [o_id, grant, txt], {}, function(result) {
+    current_remote_api_object().grants.request(grant, txt).then(function(result) {
         if (!result) {
             $('#web_interface_asking_access_modal').modal('hide');
 
@@ -561,7 +556,7 @@ function fill_collaborators_table_body(info) {
             $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div').show();
             $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option').remove();
 
-            sakura.common.ws_request('list_all_users', [], {}, function(result) {
+            sakura.apis.hub.users.list().then(function(result) {
                 for (let user in info.grants)
                     result.splice(result.indexOf(user), 1);
 
@@ -579,7 +574,7 @@ function fill_collaborators_table_body(info) {
         var a = $('<button>', { html: "Ask for <b>write</b> access"});
 
         a.click(function () {
-            web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'write', null);
+            web_interface_asking_access_open_modal(info.name, hobj_type, 'write', null);
         });
 
         td.append(a);
@@ -594,12 +589,12 @@ function fill_collaborators_table_body(info) {
             var a1 = $('<button>', { html: "Ask for <b>read</b> access"});
 
             a1.click(function () {
-                web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'read', null);
+                web_interface_asking_access_open_modal(info.name, hobj_type, 'read', null);
             });
             var a2 = $('<button>', { html: "Ask for <b>write</b> access"});
 
             a2.click(function () {
-                web_interface_asking_access_open_modal(info.name, hobj_type, info[hobj_type+'_id'], 'write', null);
+                web_interface_asking_access_open_modal(info.name, hobj_type, 'write', null);
             });
             td.append(a1);
             td.append(a2);
@@ -613,27 +608,18 @@ function fill_collaborators_table_body(info) {
 }
 
 function change_collaborator_access(id, login, sel) {
-    var obj = matching_hub_name(web_interface_current_object_type);
-    if (obj.length != 0)
-        sakura.common.ws_request('update_'+obj+'_grant', [id, login, sel[0].value.toLowerCase()], {}, function(result) {});
+    current_remote_api_object().grants.update(login, sel[0].value.toLowerCase());
 }
 
 function delete_collaborator(id, login) {
-    var obj = matching_hub_name(web_interface_current_object_type);
-
-    if (obj.length != 0)
-        sakura.common.ws_request('update_'+obj+'_grant', [id, login, 'hide'], {}, function(result) {
-            sakura.common.ws_request('get_'+obj+'_info', [id], {}, function(info) {
-                fill_collaborators_table_body(info);
-            });
+    current_remote_api_object().grants.update(login, 'hide').then(function(result) {
+        current_remote_api_object().info().then(function(info) {
+            fill_collaborators_table_body(info);
         });
+    });
 }
 
 function adding_collaborators() {
-    var obj   = matching_hub_name(web_interface_current_object_type);
-    if (obj.length == 0)
-        return;
-
     var opts  = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
     var nbs   = 0;
     var index = 0;
@@ -646,9 +632,9 @@ function adding_collaborators() {
     opts.map( function (i, opt) {
         if (opt.selected) {
             index = index+1;
-            sakura.common.ws_request('update_'+obj+'_grant', [web_interface_current_id, opt.value, 'read'], {}, function(result) {
+            current_remote_api_object().grants.update(opt.value, 'read').then(function(result) {
                   if (index == nbs) {
-                      sakura.common.ws_request('get_'+obj+'_info', [web_interface_current_id], {}, function(info) {
+                      current_remote_api_object().info().then(function(info) {
                           fill_collaborators_table_body(info);
                       });
                   }
@@ -691,12 +677,8 @@ function web_interface_asking_change_access_scope() {
 }
 
 function web_interface_change_access_scope() {
-
-    //sakura.common.ws_request('update_'+obj+'_info', [id], {'large_desc': simplemde.value()}, function(result) {});
-    var obj = matching_hub_name(web_interface_current_object_info);
-    var id  = web_interface_current_object_info[obj+'_id'];
     console.log('access_scope', $('#web_interface_access_scope_select').val());
-    sakura.common.ws_request('update_'+obj+'_info', [id], {'access_scope': $('#web_interface_access_scope_select').val()}, function(result) {
+    current_remote_api_object().update({'access_scope': $('#web_interface_access_scope_select').val()}).then(function(result) {
         $('#web_interface_yes_no_modal').modal('hide');
     });
 }

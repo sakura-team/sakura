@@ -17,8 +17,8 @@ function update_heatmap_callback(result) {
         icon = 'hourglass';
         // request server for more complete data,
         // while we refresh the screen
-        sakura.operator.fire_event(
-                ["map_continue", HEATMAP_REFRESH_DELAY],
+        sakura.apis.operator.fire_event(
+                "map_continue", HEATMAP_REFRESH_DELAY).then(
                 update_heatmap_callback);
     }
     // expand compressed data
@@ -83,8 +83,8 @@ function request_heatmap() {
     console.log(info);
 
     // send event, then update map
-    sakura.operator.fire_event(
-            ["map_move", HEATMAP_REFRESH_DELAY, info],
+    sakura.apis.operator.fire_event(
+            "map_move", HEATMAP_REFRESH_DELAY, info).then(
             update_heatmap_callback);
 }
 

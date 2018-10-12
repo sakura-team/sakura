@@ -20,7 +20,7 @@ function datasets_open_upload_modal(dataset_id) {
 
     $('#datasets_upload_select_file')[0].value = '';
 
-    sakura.common.ws_request('get_table_info', [dataset_id], {}, function(result) {
+    sakura.apis.hub.tables[dataset_id].info().then(function (result) {
             var thead = $('#datasets_upload_expected_columns_table').find('thead');
             var tbody = $('#datasets_upload_expected_columns_table').find('tbody');
             thead.empty()

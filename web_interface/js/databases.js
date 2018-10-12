@@ -50,7 +50,7 @@ function datas_update_creation_modal() {
     $("#datas_submit_button").html('Submit');
 
     //first we ask the hub the datastore
-    sakura.common.ws_request('list_datastores', [], {}, function (result) {
+    sakura.apis.hub.datastores.list().then(function (result) {
         datas_datastores = result;
         $('#datas_datastore_input').empty();
 
@@ -138,15 +138,14 @@ function new_database() {
 
     $("#datas_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
-    sakura.common.ws_request('new_database',
-                                [ds_id, name],
+    sakura.apis.hub.databases.create(ds_id, name,
                                 {   'short_desc': short_d,
                                     'access_scope': access_scope,
                                     'agent_type': agent_type,
                                     'topic': topic,
                                     'data_type': data_type,
-                                    'licence': licence  },
-                                function(result) {
+                                    'licence': licence  }
+                                ).then(function(result) {
         //result = new database id
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");

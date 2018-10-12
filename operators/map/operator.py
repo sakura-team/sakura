@@ -43,13 +43,10 @@ class MapOperator(Operator):
         source = source.select_columns(lng_col_idx, lat_col_idx)
         return source
 
-    def handle_event(self, event):
+    def handle_event(self, ev_type, time_credit, **info):
         if not self.input_plug.connected():
             return { 'issue': 'NO DATA: Input is not connected.' }
-        ev_type = event[0]
-        time_credit = event[1]
         if ev_type == 'map_move':
-            info = event[2]
             # update current source...
             source = self.input_plug.source
             source = self.geo_filter(source, **info)

@@ -84,7 +84,7 @@ function registerUser(event = '') {
             // console.log(userAccountValues); //after password hashing
 
             //begin request calls for websocket
-            sakura.common.ws_request('new_user', [], userAccountValues,
+            sakura.apis.hub.users.create(userAccountValues).then(
                 function (wsResult) {
                     if (wsResult) {
                         userAccountValues = {};
@@ -100,7 +100,7 @@ function registerUser(event = '') {
                         console.log("Error callbacks in the new_user function need to be handled properly");
         	    		      return;
                     }
-                },
+                }).catch(
                 function (error_message) {
             	      alert(error_message);
                 });
@@ -132,7 +132,7 @@ function signInSubmitControl(event, login, passw) {
             let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
             userSignInValues.login_or_email = loginOrEmail;
             userSignInValues.password = client_hashed;
-            sakura.common.ws_request('login', [], userSignInValues, function (wsResult) {
+            sakura.apis.hub.login(userSignInValues).then(function (wsResult) {
     		    	  // console.log("wsResult:"+wsResult);
     		    	  $('#signInModal').on('hidden.bs.modal', function () {
     	    			    $(this).find('form').trigger('reset');
@@ -147,7 +147,7 @@ function signInSubmitControl(event, login, passw) {
                 var url = window.location.href.split('#');
                 showDiv(event, url[1], '');
     	    		  return;
-            },
+            }).catch(
   	        function (error_message) {
   	    	      alert(error_message);
             });
@@ -161,7 +161,7 @@ function signInSubmitControl(event, login, passw) {
 function signOutSubmitControl(event) {
     res = confirm("Sign Out?");
     if (res) {
-      sakura.common.ws_request('logout', [], {}, function (result) {
+      sakura.apis.hub.logout().then(function (result) {
             signInWidget = document.getElementsByName("signInWidget")[0];
             signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
             showDiv(event, "");
@@ -177,14 +177,14 @@ function pwdRecoverySubmitControl(event) {
 	  let loginOrEmail = document.getElementById("pwdRecoveryLoginOrEmail").value;
 	  if (loginOrEmail.length > 0){
 		  pwdRecoveryValues.login_or_email = loginOrEmail;
-	      sakura.common.ws_request('recover_password', [], pwdRecoveryValues,
+	      sakura.apis.hub.recover_password(pwdRecoveryValues).then(
 	        function (wsResult) {
                 alert("Mail sent. Checkout your mailbox.");
                 $('#signInModal').on('hidden.bs.modal', function () {
                       $(this).find('form').trigger('reset');
                 });
                 return;
-            },
+            }).catch(
 	        function (error_message) {
                   alert(error_message);
             });
@@ -220,14 +220,14 @@ function changePasswordSubmitControl(event) {
             let hashed_new_sha256 = CryptoJS.SHA256(newPassword);
             let client_new_hashed = hashed_new_sha256.toString(CryptoJS.enc.Base64);
             changePasswordValues.new_password = client_new_hashed;
-            sakura.common.ws_request('change_password', [], changePasswordValues, function (wsResult) {
+            sakura.apis.hub.change_password(changePasswordValues).then(function (wsResult) {
                 console.log("wsResult:"+wsResult);
                 alert("Password changed");
                 $('#signInModal').on('hidden.bs.modal', function () {
                   $(this).find('form').trigger('reset');});
                 $("#signInModal").modal("hide");
                 return;
-            },
+            }).catch(
     	      function (error_message) {
     	         alert(error_message);
             });

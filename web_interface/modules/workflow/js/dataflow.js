@@ -64,10 +64,10 @@ function current_dataflow() {
     }
 
     //Now we ask for the operator classes
-    sakura.common.ws_request('list_operators_classes', [], {}, function (result) {
+    sakura.apis.hub.op_classes.list().then(function (result) {
         global_ops_cl = JSON.parse(JSON.stringify(result));
         //Then we ask for the instance ids
-        sakura.common.ws_request('get_dataflow_info', [current_dataflow_id], {}, function (df_info) {
+        sakura.apis.hub.dataflows[current_dataflow_id].info().then(function (df_info) {
             console.log(df_info);
             df_info.op_instances.forEach( function(opi) {
                 if (opi.gui_data) {
@@ -80,7 +80,7 @@ function current_dataflow() {
     });
 
     //Finally, the panels and the comments
-    sakura.common.ws_request('get_dataflow_gui_data', [current_dataflow_id], {}, function (result) {
+    sakura.apis.hub.dataflows[current_dataflow_id].get_gui_data().then(function (result) {
 
         if (!result)
             return
@@ -133,12 +133,12 @@ function save_dataflow() {
         coms.push(get_comment_info(com));
     });
 
-    sakura.common.ws_request('set_dataflow_gui_data', [current_dataflow_id, JSON.stringify({'panels': global_op_panels, 'comments': coms})], {}, function(result){});
+    sakura.apis.hub.dataflows[current_dataflow_id].set_gui_data(JSON.stringify({'panels': global_op_panels, 'comments': coms}));
 
     //Second the operators
     global_ops_inst.forEach( function(inst) {
         var gui = {x: inst.gui.x,    y: inst.gui.y};
-        sakura.common.ws_request('set_operator_instance_gui_data', [parseInt(inst.hub_id), JSON.stringify(gui)], {}, function(result) {});
+        sakura.apis.hub.operators[parseInt(inst.hub_id)].set_gui_data(JSON.stringify(gui));
     });
 
     //Finally the links
@@ -149,7 +149,7 @@ function save_dataflow() {
                                     'top':      para.top,
                                     'left':     para.left,
                                     'line':     para.line});
-            sakura.common.ws_request('set_link_gui_data', [   parseInt(para.hub_id), js], {}, function(result) {});
+            sakura.apis.hub.links[parseInt(para.hub_id)].set_gui_data(js);
         });
     });
 };

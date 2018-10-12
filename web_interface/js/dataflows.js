@@ -79,12 +79,11 @@ function new_dataflow() {
 
     $("#dataflows_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
-    sakura.common.ws_request('new_dataflow',
-                                [name],
+    sakura.apis.hub.dataflows.create(name,
                                 {   'short_desc': short_d,
                                     'access_scope': access_scope,
                                     'topic': topic,
-                                    'licence': licence  },
+                                    'licence': licence  }).then(
                                 function(result) {
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");

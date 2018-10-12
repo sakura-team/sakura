@@ -31,7 +31,7 @@ function datasets_visu_dataset(dataset_id) {
 
     //Rows
     var row_start   = 0;
-    sakura.common.ws_request('get_rows_from_table', [current_dataset_id, row_start, row_start + nb_rows], {}, function (rows) {
+    sakura.apis.hub.tables[current_dataset_id].get_rows(row_start, row_start + nb_rows).then(function (rows) {
         datasets_visu_table_fill_rows(body, rows, row_start, dataset);
 
         $('#datasets_visu_table_of_rows').data('row_start', row_start);
@@ -83,7 +83,7 @@ function datasets_visu_table_next(speed) {
     if (speed == -10)
         row_start == 0;
 
-    sakura.common.ws_request('get_rows_from_table', [current_dataset_id, row_start, row_start + nb_r], {}, function (rows) {
+    sakura.apis.hub.tables[current_dataset_id].get_rows(row_start, row_start + nb_r).then(function (rows) {
         var body  = $('#datasets_visu_table_of_rows').find('tbody');
         body.empty()
 

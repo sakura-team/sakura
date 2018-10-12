@@ -16,7 +16,6 @@ class SpaceTimeOperator(Operator):
     def flat_iterator(self):
         pass
     
-    def handle_event(self, event):
-        ev_type = event[0]
+    def handle_event(self, ev_type):
         if ev_type == 'click':
             pass

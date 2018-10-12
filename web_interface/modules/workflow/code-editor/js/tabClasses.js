@@ -47,7 +47,7 @@ class tab{
     save(){
         (debug?console.log("saved : " + this.path ):null);
         var content = this.content;
-        sakura.operator.save_file_content(this.path, content, function(ret){});
+        sakura.apis.operator.save_file_content(this.path, content).then(function(ret){});
         this.modified = false;
         updateModifiedTab();
     }

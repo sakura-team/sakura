@@ -75,7 +75,7 @@ function recover_datasets() {
         database_id = searchParams.get('database_id')
     }
 
-    sakura.common.ws_request('get_database_info', [parseInt(database_id)], {}, function (result) {
+    sakura.apis.hub.databases[parseInt(database_id)].info().then(function (result) {
         console.log(result);
         if (result.grant_level != 'list') {
 
@@ -154,7 +154,7 @@ function recover_datasets() {
                 $('#datasets_open_creation_button').css('display', 'none');
 
             //Ask for the existing tags
-            sakura.common.ws_request('list_expected_columns_tags', [database_infos.datastore_id], {}, function (tags_list) {
+            sakura.apis.hub.datastores[database_infos.datastore_id].list_expected_columns_tags().then(function (tags_list) {
                 columns_tags_list = tags_list;
             });
         }
@@ -219,7 +219,7 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
 
             if (chunk.data.length) {
                 parser.pause();
-                sakura.common.ws_request('add_rows_into_table', [dataset_id, chunk.data], {}, function(result) {
+                sakura.apis.hub.tables[dataset_id].add_rows(chunk.data).then(function(result) {
                     if (result) {
                         console.log("Issue in sending file");
                     }
@@ -284,7 +284,7 @@ function datasets_delete(dataset_id) {
 }
 
 function datasets_delete_yes(ds_id) {
-    sakura.common.ws_request('delete_table', [ds_id], {}, function(result) {
+    sakura.apis.hub.tables[ds_id].delete().then(function(result) {
         if (result)
             console.log("Issue in deleting dataset");
         else

@@ -23,11 +23,11 @@ class PlotOperator(Operator):
         # additional tabs
         self.register_tab('Plot', 'plot.html')
 
-    def handle_event(self, event):
+    def handle_event(self, ev_type):
         if not self.input.connected():
             return { 'issue': 'NO DATA: Input is not connected.' }
 
-        if event[0] == 'get_data':
+        if ev_type == 'get_data':
             dp = []
             column_x = self.input_column_param_x.col_index
             column_y = self.input_column_param_y.col_index

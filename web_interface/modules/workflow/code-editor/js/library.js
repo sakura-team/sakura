@@ -19,7 +19,7 @@ function generateTree(){
         $('#tree').jstree().destroy();
     } catch(e){}
     //call the tree builder
-    sakura.operator.get_file_tree(print_file_tree);
+    sakura.apis.operator.get_file_tree().then(print_file_tree);
 }
 /**
 * parameter : - entry : a Json file containing all the elements and infos
@@ -30,7 +30,7 @@ function generateTree(){
 function print_file_tree(entries)
 {
     (debug?console.log("\n________________________________________\n\tgenerateTree\n"):null);
-    // entries obtained with sakura.operator.get_file_tree()
+    // entries obtained with sakura.apis.operator.get_file_tree()
     // are either:
     // - a directory:     { 'name': <dirname>,
     //                      'is_dir': true,
@@ -119,7 +119,7 @@ function applyMove(data,initVal){
       var newPath = (newPos + slashRemover(oldPos)).replace("//","");
       $(".jstree-node [id = '"+ data.data.nodes[0] +"']")[0].attributes['data-path'].value = newPath;
 
-      sakura.operator.move_file(oldPos,newPath, function(ret) {
+      sakura.apis.operator.move_file(oldPos,newPath).then(function(ret) {
           //if the moved tab is open
           var movedTab = $(".tabListElement[id = '"+ oldPos +"']");
           // console.log(movedTab);
@@ -218,13 +218,13 @@ function createNewElement(path,mode){
     (debug?console.log("Mode : " + mode):null);
 
     if(mode === "dir") {
-        var i = sakura.operator.new_directory(path, function(ret) {
+        var i = sakura.apis.operator.create_directory(path).then(function(ret) {
             (debug?console.log("\nDirectory successfully created : " + path):null);
         });
         generateTree();
         highlightTree();
     } else if(mode === "file") {
-        var i = sakura.operator.new_file(path, "", function(ret) {
+        var i = sakura.apis.operator.create_file(path, "").then(function(ret) {
             (debug?console.log("\nFile successfully created : " + path):null);
             generateTree();
             setFocusOnNewElement(path);
@@ -255,7 +255,7 @@ function removeElement(path){
     });
     //close it
     for(var i=0;i<toClose.length;i++) closeTab(document.getElementById(toClose[i]));
-    sakura.operator.delete_file(path, function(ret) {
+    sakura.apis.operator.delete_file(path).then(function(ret) {
         (debug?console.log("\nRemoved : " + path + "\n________________________________________\n"):null);
         // console.log(document.getElementById(path).getElementsByTagName('button')[0]);
     });
@@ -284,7 +284,7 @@ function openFile(fileName){
         (debug?console.log("New file : " + filePath):null);
         //if it's a file
         if (fileType == 'file') {
-            var content = sakura.operator.get_file_content(filePath, function(returnContent) {
+            var content = sakura.apis.operator.get_file_content(filePath).then(function(returnContent) {
                 (debug?console.log("\n_______________open remote file"):null);
 
                 var newtab = new tab(slashRemover(filePath),filePath,returnContent);
@@ -538,7 +538,7 @@ function submitPopUp(){
       //name part of the element (exemple.ex)
       var inputValue = $(".dialogInput")[0].value;
       //move and rename is the same function
-      sakura.operator.move_file(treeClickedElement,elementPath + inputValue, function(ret) {
+      sakura.apis.operator.move_file(treeClickedElement,elementPath + inputValue).then(function(ret) {
           //if the renamed tab is open
           var modifiedTab = $(".tabListElement[id = '"+ treeClickedElement +"']");
           if(modifiedTab.length > 0){

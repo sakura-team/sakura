@@ -140,8 +140,8 @@ class Operator:
             p.rmdir()
         else:
             p.unlink()
-    def sync_handle_event(self, event):
+    def sync_handle_event(self, *args, **kwargs):
         # operators handle events one at a time
         # (easier for the operator developer)
         with self.event_lock:
-            return self.handle_event(event)
+            return self.handle_event(*args, **kwargs)

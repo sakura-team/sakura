@@ -113,7 +113,7 @@ function listRequestStub(idDiv, n, elt, bd) {
 
     //Here we deal with the databases
     if (elt == 'Datas/tmpData') {
-        sakura.common.ws_request('list_databases', [], {}, function (databases) {
+        sakura.apis.hub.databases.list().then(function (databases) {
             console.log(databases);
             var result = new Array();
             databases.sort(databases_sort);
@@ -132,7 +132,7 @@ function listRequestStub(idDiv, n, elt, bd) {
     }
     //Here is for Dataflows
     else if (elt == 'Dataflows/tmpDataflow') {
-        sakura.common.ws_request('list_dataflows', [], {}, function (dataflows) {
+        sakura.apis.hub.dataflows.list().then(function (dataflows) {
             var result = new Array();
             dataflows.sort(dataflows_sort);
             dataflows.forEach( function(df) {
@@ -147,7 +147,7 @@ function listRequestStub(idDiv, n, elt, bd) {
     }
     //Operators
     else if (elt == 'Operators/tmpOperator') {
-        sakura.common.ws_request('list_operators_classes', [], {}, function (operators) {
+        sakura.apis.hub.op_classes.list().then(function (operators) {
             var result = new Array();
             operators.forEach( function(op) {
                 result_info = { 'name': op.name,
@@ -189,7 +189,7 @@ function historyRequestStub(idDiv,n,elt,bd) {
         result=historyStubAlea(n);
         buildHistoryStub(idDiv,result,elt);}
     else {     // version réseau à faire
-        sakura.common.ws_request('list_nObjets', [10,'etude_'], {}, function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
+        sakura.apis.hub.list_nObjets(10,'etude_').then(function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
     return ;}
 
 

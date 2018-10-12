@@ -25,7 +25,7 @@ function download_table(id_out, in_out) {
 function workflow_download_start_transfert(id_in_out, in_out, gzip) {
 
     stop_downloading = false;
-    sakura.common.ws_request('start_transfer', [], {}, function(transfert_id) {
+    sakura.apis.hub.transfers.start().then(function(transfert_id) {
 
         current_transfert_id = transfert_id;
 
@@ -44,7 +44,7 @@ function workflow_download_start_transfert(id_in_out, in_out, gzip) {
         document.body.appendChild(element);
 
         //Get first transfert status
-        sakura.common.ws_request('get_transfer_status', [current_transfert_id], {}, function(status) {
+        sakura.apis.hub.transfers[current_transfert_id].get_status().then(function(status) {
             var pb = null;
             var pb_txt = null;
             $('#workflow_progress_bar_modal_header').html("<table width=\"100%\"><tr><td><h3>Downloading ...</h3><td align=\"right\"><span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span></table>");
@@ -86,7 +86,7 @@ function workflow_download_start_transfert(id_in_out, in_out, gzip) {
 }
 
 function workflow_download_update_feedback(progress_bar, progress_bar_txt, init_date) {
-    sakura.common.ws_request('get_transfer_status', [current_transfert_id], {}, function(status) {
+    sakura.apis.hub.transfers[current_transfert_id].get_status().then(function(status) {
         if (status.status == 'waiting' && !stop_downloading) {
           setTimeout(function () {
               workflow_download_update_feedback(progress_bar, progress_bar_txt, init_date);
@@ -139,7 +139,7 @@ function workflow_Giga_Mega_Kilo(val, txt) {
 }
 
 function workflow_stop_downloading() {
-    sakura.common.ws_request('abort_transfer', [current_transfert_id], {}, function(result) {
+    sakura.apis.hub.transfers[current_transfert_id].abort().then(function(result) {
         stop_downloading = true;
     });
 }
