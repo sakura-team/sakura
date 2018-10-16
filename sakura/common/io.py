@@ -1,6 +1,6 @@
 import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
 import gc, pickle, numpy as np
-from threading import get_ident     # get thread id
+from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
@@ -141,7 +141,7 @@ class LocalAPIHandler(object):
             except IOHoldException:
                 # object will be held locally
                 held_id = self.api_runner.hold(res)
-                origin = get_ident(), held_id
+                origin = getpid(), held_id
                 if isinstance(res, AttrCallAggregator):
                     if res.get_origin() is not None:
                         origin = res.get_origin()
@@ -242,8 +242,8 @@ class AttrCallAggregator(object):
         if res[0] == IO_HELD:
             # result was held remotely (not transferable)
             remote_held_id, origin = res[1], res[2:]
-            origin_tid, origin_held_id = origin
-            if origin_tid == get_ident():
+            origin_pid, origin_held_id = origin
+            if origin_pid == getpid():
                 # the object is actually a local object!
                 # (may occur in case of several bounces)
                 # we can short out those bounces and use the object directly.
