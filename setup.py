@@ -37,7 +37,8 @@ setup(
     entry_points = dict(
         console_scripts = [ 'sakura-hub = sakura.hub.hub:run',
                             'sakura-daemon = sakura.daemon.daemon:run',
-                            'sakura-encode-password = sakura.common.password:password_encoder_tool' ]
+                            'sakura-encode-password = sakura.common.password:password_encoder_tool',
+                            'sakura-shell = sakura.client.shell:run' ]
     ),
     include_package_data = True
 )

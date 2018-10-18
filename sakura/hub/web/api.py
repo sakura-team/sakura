@@ -48,15 +48,25 @@ class GuiToHubAPI:
     def set_parameter_value(self, op_id, param_id, value):
         return self.context.op_params.lookup(op_id, param_id).set_value(value)
 
+    @api.operators.__getitem__.inputs.__getitem__.info
+    def get_operator_input_info(self, op_id, in_id):
+        return self.context.op_instances[op_id].input_plugs[in_id]
+
     @api.operators.__getitem__.inputs.__getitem__.get_range
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
         return self.context.op_instances[op_id].input_plugs[in_id].get_range(row_start, row_end)
 
+    @api.operators.__getitem__.outputs.__getitem__.info
+    def get_operator_output_info(self, op_id, out_id):
+        return self.context.op_instances[op_id].output_plugs[out_id]
+
     @api.operators.__getitem__.outputs.__getitem__.get_range
     def get_operator_output_range(self, op_id, out_id, row_start, row_end):
-        if not self.context.op_instances[op_id].is_ready():
-            return None
         return self.context.op_instances[op_id].output_plugs[out_id].get_range(row_start, row_end)
+
+    @api.operators.__getitem__.outputs.__getitem__.get_link_id
+    def get_operator_outputplug_link_id(self, op_id, out_id):
+        return self.context.op_instances[op_id].get_ouputplug_link_id(out_id)
 
     @api.operators.__getitem__.internals.__getitem__.get_range
     def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):

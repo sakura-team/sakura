@@ -63,3 +63,8 @@ class OpInstanceMixin:
         self.delete_on_daemon()
         # delete instance in local db
         self.delete()
+    def get_ouputplug_link_id(self, out_id):
+        for l in self.downlinks:
+            if l.src_out_id == out_id:
+                return l.id
+        return None     # not connected
