@@ -13,7 +13,9 @@ def find_packages():
 def iter_data_files(dirname):
     # iterate over files of web_interface
     for d in sorted(set(f.parent.relative_to(proj_dir) for f in proj_dir.glob(dirname + '/**/*'))):
-        files = list(str(f) for f in d.iterdir() if f.is_file() and not str(f).startswith('gitignore'))
+        files = list(str(f) for f in d.iterdir() \
+                                if f.is_file() \
+                                and not f.name.startswith('gitignore'))
         if len(files) == 0:
             continue
         dest_path = 'sakura/' + str(d)
