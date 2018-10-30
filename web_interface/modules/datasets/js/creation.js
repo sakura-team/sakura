@@ -206,6 +206,7 @@ function datasets_on_file_selected(f) {
                 var body = $('#datasets_creation_ff_columns').find('tbody');
                 body.empty();
 
+                var nb_lines_to_test = min(10, datasets_creation_csv_file.lines[0].length);
                 datasets_creation_csv_file.headers.forEach( function(col, index) {
                     var new_row = $(body[0].insertRow(-1));
                     new_row.attr('id', 'datasets_ff_row_' + index);
@@ -229,7 +230,12 @@ function datasets_on_file_selected(f) {
 
                         type_select.attr('id', 'datasets_ff_type_select_'+index);
                         type_select.attr('onchange', "datasets_type_change("+index+", this);");
-                        type_select.val(getType(datasets_creation_csv_file.lines[0][0][col]));
+
+                        var types = [];
+                        for (var i=0; i<nb_lines_to_test; i++) {
+                            types.push(get_type(datasets_creation_csv_file.lines[0][i][col]))
+                        }
+                        type_select.val(check_types(types));
 
                         tags_select.attr('id', 'datasets_ff_tags_select_'+index);
                         datasets_fill_select_tags(tags_select);
@@ -877,7 +883,7 @@ function datasets_type_change(row_id, from) {
 }
 
 
-function getType(str){
+function get_type(str){
     if (typeof str !== 'string') str = str.toString();
     var nan = isNaN(Number(str));
     var isfloat = /^\d*(\.|,)\d*$/;
@@ -892,4 +898,15 @@ function getType(str){
     else if (isfloat.test(str) || commaFloat.test(str) || dotFloat.test(str)) return "float32";
     else if (date.test(str)) return "date";
     else return "string";
+}
+
+function check_types(l) {
+    var types_order = ['int32', 'float32', 'date', 'string']
+    var type = l[0];
+    for (var i=1; i< l.length; i++) {
+      if (l[i] != type && types_order.indexOf(type) < types_order.indexOf(l[i])) {
+        type = l[i];
+      }
+    }
+    return type;
 }

@@ -16,6 +16,10 @@ function datasets_sort_func(a, b) {
     return a.name > b.name ? 1 : -1;
 }
 
+function min(a, b) {
+    if (a <= b) return a;
+    return b;
+}
 
 $(document).mousemove(function(e) {
     mouse.x = e.pageX;
