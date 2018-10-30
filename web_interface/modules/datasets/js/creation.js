@@ -314,7 +314,6 @@ function datasets_creation_empty_tables() {
     body.empty();
     var trs = $('#datasets_creation_fs_columns').find('tbody').find('tr');
     for (var i=0; i< trs.length-1; i++) {
-        console.log(trs[i]);
         var tab = trs[i].id.split('_');
         var row_id = parseInt(tab[tab.length -1]);
         datasets_remove_line(row_id, 'fs');
@@ -323,7 +322,6 @@ function datasets_creation_empty_tables() {
 
 
 function datasets_remove_line(row, from_what) {
-    console.log("Removing row", row, from_what);
     //Remove the foreign key if there is one
     datasets_creation_check_keys(row, from_what);
 

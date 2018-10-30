@@ -223,21 +223,34 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
 
             if (chunk.data.length) {
                 parser.pause();
-                sakura.apis.hub.tables[dataset_id].add_rows(chunk.data).then(function(result) {
-                    if (result) {
-                        console.log("Issue in sending file");
-                    }
-                    else {
-                        sent_data_size += Papa.LocalChunkSize;
-                        var perc = parseInt(sent_data_size/f.size * 100);
-                        $('#datasets_'+from_what+'_button').removeClass("btn-primary");
-                        $('#datasets_'+from_what+'_button').addClass("btn-success");
-                        $('#datasets_'+from_what+'_button').html('Uploading ...'+ perc + '%');
-                        $('#datasets_'+from_what+'_progress_bar').css("width", ""+perc+"%");
-                        $('#datasets_'+from_what+'_progress_bar').css("aria-valuenow", ""+perc);
 
-                        parser.resume();
-                    }
+                sakura.apis.hub.tables[dataset_id].add_rows(chunk.data).then(function(result) {
+                    sent_data_size += Papa.LocalChunkSize;
+                    var perc = parseInt(sent_data_size/f.size * 100);
+                    $('#datasets_'+from_what+'_button').removeClass("btn-primary");
+                    $('#datasets_'+from_what+'_button').addClass("btn-success");
+                    $('#datasets_'+from_what+'_button').html('Uploading ...'+ perc + '%');
+                    $('#datasets_'+from_what+'_progress_bar').css("width", ""+perc+"%");
+                    $('#datasets_'+from_what+'_progress_bar').css("aria-valuenow", ""+perc);
+                    parser.resume();
+                },
+                function(error_msg){
+
+                    //We delete the freshly created table
+                    datasets_delete_yes(dataset_id);
+
+                    //Update the display
+                    //Disable creation button
+                    $('#datasets_cancel_creation_button').prop("disabled", false);
+                    $('#datasets_creation_button').prop("disabled", false);
+                    $('#datasets_creation_button').html('Create Dataset');
+                    $('#datasets_creation_button').addClass('btn-primary');
+                    $('#datasets_creation_button').removeClass('btn-success');
+                    $('#datasets_creation_div_progress_bar').hide();
+
+                    //Then give the message
+                    datasets_alert('Error in adding rows into the dataset',error_msg);
+                    return false;
                 });
             }
         },
