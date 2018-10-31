@@ -42,8 +42,13 @@ def analyse_col_meta(col_comment):
                     col_meta[attr[12:]] = int(value)
     return col_meta
 
+def esc(name):
+    """ function to escape object names (database, table, column names) """
+    return '"' + name.replace('%', '%%') + '"'
+
 def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta):
-    select_clause_wrapper = '"%(table_name)s"."%(col_name)s"'
+    select_clause_sql = esc(table_name) + "." + esc(col_name)
+    where_clause_sql = select_clause_sql
     value_wrapper = '%s'
     tags = ()
     params = {}
@@ -51,7 +56,9 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         col_type = 'object'
     elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
         col_type = 'date'
-        select_clause_wrapper = 'extract(epoch from "%(table_name)s"."%(col_name)s") as "%(col_name)s"'
+        select_clause_sql = 'extract(epoch from %(table_name)s.%(col_name)s) as %(col_name)s' % dict(
+                                table_name = esc(table_name),
+                                col_name = esc(col_name))
         value_wrapper = 'to_timestamp(%s)'
         tags = ('timestamp',)
     elif col_pgtype.startswith('character') or col_pgtype.startswith('text'):
@@ -64,7 +71,9 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     elif col_pgtype.startswith('geometry'):
         col_type = 'geometry'
         params.update(max_length = col_meta.get('max_geojson_chars', None))
-        select_clause_wrapper = 'ST_AsGeoJSON("%(table_name)s"."%(col_name)s") as "%(col_name)s"'
+        select_clause_sql = 'ST_AsGeoJSON(%(table_name)s.%(col_name)s) as %(col_name)s' % dict(
+                                table_name = esc(table_name),
+                                col_name = esc(col_name))
         value_wrapper = 'ST_GeomFromGeoJSON(%s)'
         tags = ('geometry', 'supports_in')
     elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
@@ -73,7 +82,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
     metadata_collector.register_column(
             table_name, col_name, col_type,
-            select_clause_wrapper, value_wrapper,
+            select_clause_sql, where_clause_sql, value_wrapper,
             tags, **params)
 
 SQL_GET_DS_GRANTS = '''\
@@ -127,7 +136,7 @@ SQL_GET_TABLE_COLUMNS = '''
             format_type(a.atttypid, a.atttypmod) AS type,
             col_description(a.attrelid, a.attnum) AS comment
     FROM   pg_attribute a
-    WHERE  a.attrelid = '"%(table_name)s"'::regclass::oid
+    WHERE  a.attrelid = '%(table_name)s'::regclass::oid
     AND    a.attnum > 0
     AND    NOT a.attisdropped
     ORDER  BY a.attnum;
@@ -142,14 +151,14 @@ SQL_GET_TABLE_FOREIGN_KEYS = '''
                 fk_table.oid as fk_table_oid
         FROM    pg_catalog.pg_constraint r,
                 pg_catalog.pg_class fk_table
-        WHERE   r.conrelid = '"%(table_name)s"'::regclass
+        WHERE   r.conrelid = '%(table_name)s'::regclass
           AND   r.contype = 'f'
           AND   r.confrelid = fk_table.oid)
     SELECT  json_agg(a.attname) as attnames,
             json_agg(fk_a.attname) as fk_attnames,
             fk.fk_table
     FROM    pg_attribute a, pg_attribute fk_a, fk_info fk
-    WHERE   a.attrelid = '"%(table_name)s"'::regclass
+    WHERE   a.attrelid = '%(table_name)s'::regclass
       AND   a.attnum = fk.attnum
       AND   fk_a.attrelid = fk.fk_table_oid
       AND   fk_a.attnum = fk.fk_attnum
@@ -160,43 +169,43 @@ SQL_GET_TABLE_PRIMARY_KEY = '''
     WITH pk_info AS (
         SELECT  unnest(indkey) as attnum
         FROM    pg_index
-        WHERE   pg_index.indrelid = '"%(table_name)s"'::regclass::oid
+        WHERE   pg_index.indrelid = '%(table_name)s'::regclass::oid
         AND     indisprimary)
     SELECT  COALESCE(json_agg(a.attname), '[]') as attnames
     FROM pg_attribute a, pk_info pk
-    WHERE a.attrelid = '"%(table_name)s"'::regclass
+    WHERE a.attrelid = '%(table_name)s'::regclass
       AND a.attnum = pk.attnum;
 '''
 
 SQL_CREATE_USER = '''
-CREATE USER "%(db_user)s";
+CREATE USER %(db_user)s;
 '''
 
 SQL_CREATE_DB = '''
-CREATE DATABASE "%(db_name)s" WITH OWNER "%(db_owner)s";
+CREATE DATABASE %(db_name)s WITH OWNER %(db_owner)s;
 '''
 
 SQL_INIT_GRANT_DB = '''
-GRANT ALL ON DATABASE "%(db_name)s" TO "%(db_owner)s";
-REVOKE ALL ON DATABASE "%(db_name)s" FROM PUBLIC;
+GRANT ALL ON DATABASE %(db_name)s TO %(db_owner)s;
+REVOKE ALL ON DATABASE %(db_name)s FROM PUBLIC;
 '''
 
 SQL_REVOKE_DB = '''
-REVOKE ALL ON DATABASE "%(db_name)s" FROM "%(db_user)s";
+REVOKE ALL ON DATABASE %(db_name)s FROM %(db_user)s;
 '''
 
 SQL_GRANT_DB = '''
-GRANT %(db_grants)s ON DATABASE "%(db_name)s" TO "%(db_user)s";
+GRANT %(db_grants)s ON DATABASE %(db_name)s TO %(db_user)s;
 '''
 
-SQL_DESC_COLUMN = '"%(col_name)s" %(col_type)s'
+SQL_DESC_COLUMN = '%(col_name)s %(col_type)s'
 SQL_PK = 'PRIMARY KEY %(pk_cols)s'
-SQL_FK = 'FOREIGN KEY %(local_columns)s REFERENCES "%(remote_table)s" %(remote_columns)s'
+SQL_FK = 'FOREIGN KEY %(local_columns)s REFERENCES %(remote_table)s %(remote_columns)s'
 SQL_CREATE_TABLE = '''
-CREATE TABLE "%(table_name)s" (%(columns_sql)s);
+CREATE TABLE %(table_name)s (%(columns_sql)s);
 '''
 
-SQL_DROP_TABLE = '''DROP TABLE "%(table_name)s"'''
+SQL_DROP_TABLE = '''DROP TABLE %(table_name)s'''
 
 SQL_ESTIMATE_ROWS_COUNT = '''
 SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='%(table_name)s';
@@ -205,7 +214,7 @@ SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='%(table_name)s
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 
 def identifier_list_to_sql(l):
-    return "(" + ', '.join('"%s"' % name for name in l) + ")"
+    return "(" + ', '.join(esc(name) for name in l) + ")"
 
 class PostgreSQLServerCursor(psycopg2.extensions.cursor):
     def close(self):
@@ -294,14 +303,14 @@ class PostgreSQLDBDriver:
     @staticmethod
     def collect_table_primary_key(db_conn, metadata_collector, table_name):
         with db_conn.cursor() as cursor:
-            cursor.execute(SQL_GET_TABLE_PRIMARY_KEY % dict(table_name = table_name))
+            cursor.execute(SQL_GET_TABLE_PRIMARY_KEY % dict(table_name = esc(table_name)), ())
             for row in cursor:
                 pk_col_names = row[0]
                 metadata_collector.register_primary_key(table_name, pk_col_names)
     @staticmethod
     def collect_table_foreign_keys(db_conn, metadata_collector, table_name):
         with db_conn.cursor() as cursor:
-            cursor.execute(SQL_GET_TABLE_FOREIGN_KEYS % dict(table_name = table_name))
+            cursor.execute(SQL_GET_TABLE_FOREIGN_KEYS % dict(table_name = esc(table_name)), ())
             for row in cursor:
                 pk_col_names = row[0]
                 metadata_collector.register_foreign_key(
@@ -311,9 +320,9 @@ class PostgreSQLDBDriver:
                         remote_columns = row['fk_attnames'])
     @staticmethod
     def collect_table_columns(db_conn, metadata_collector, table_name):
-        sql = SQL_GET_TABLE_COLUMNS % dict(table_name = table_name)
+        sql = SQL_GET_TABLE_COLUMNS % dict(table_name = esc(table_name))
         with db_conn.cursor() as cursor:
-            cursor.execute(sql)
+            cursor.execute(sql, ())
             rows = cursor.fetchall()
             for col_name, col_pgtype, col_comment in rows:
                 col_meta = analyse_col_meta(col_comment)
@@ -339,7 +348,7 @@ class PostgreSQLDBDriver:
     @staticmethod
     def create_user(admin_db_conn, db_user):
         with admin_db_conn.cursor() as cursor:
-            cursor.execute(SQL_CREATE_USER % dict(db_user = db_user))
+            cursor.execute(SQL_CREATE_USER % dict(db_user = esc(db_user)), ())
     @staticmethod
     def create_db(admin_db_conn, db_name, db_owner):
         # CREATE DATABASE requires to set autocommit, and
@@ -350,15 +359,15 @@ class PostgreSQLDBDriver:
         with admin_db_conn.cursor() as cursor:
             for sql in (SQL_CREATE_DB, SQL_INIT_GRANT_DB):
                 cursor.execute(sql % dict(
-                        db_name = db_name,
-                        db_owner = db_owner))
+                        db_name = esc(db_name),
+                        db_owner = esc(db_owner)), ())
         admin_db_conn.autocommit = saved_mode
     @staticmethod
     def create_table(db_conn, table_name, columns, primary_key, foreign_keys):
         columns_sql = []
         for col_name, col_type in columns:
             col_sql = SQL_DESC_COLUMN % dict(
-                col_name = col_name,
+                col_name = esc(col_name),
                 col_type = TYPES_SAKURA_TO_PG[col_type]
             )
             columns_sql.append(col_sql)
@@ -369,22 +378,22 @@ class PostgreSQLDBDriver:
         for fk_info in foreign_keys:
             constraint_sql = SQL_FK % dict(
                 local_columns = identifier_list_to_sql(fk_info['local_columns']),
-                remote_table = fk_info['remote_table'],
+                remote_table = esc(fk_info['remote_table']),
                 remote_columns = identifier_list_to_sql(fk_info['remote_columns'])
             )
             columns_sql.append(constraint_sql)
         sql = SQL_CREATE_TABLE % dict(
-            table_name = table_name,
+            table_name = esc(table_name),
             columns_sql = ', '.join(columns_sql)
         )
         with db_conn.cursor() as cursor:
-            cursor.execute(sql)
+            cursor.execute(sql, ())
         db_conn.commit()
     @staticmethod
     def delete_table(db_conn, table_name):
         try:
             with db_conn.cursor() as cursor:
-                cursor.execute(SQL_DROP_TABLE % dict(table_name = table_name))
+                cursor.execute(SQL_DROP_TABLE % dict(table_name = esc(table_name)), ())
             db_conn.commit()
         except psycopg2.Error as e:
             raise APIRequestError(e.pgerror)
@@ -396,9 +405,8 @@ class PostgreSQLDBDriver:
             tuple_pattern = '(' + ','.join(value_wrappers) + ')'
             with db_conn.cursor() as cursor:
                 args_str = b','.join(cursor.mogrify(tuple_pattern, row) for row in rows)
-                cursor.mogrify('"%s"' % table_name)
-                cursor.execute(b"INSERT INTO " + cursor.mogrify('"%s"' % table_name) + \
-                               b" VALUES " + args_str)
+                cursor.execute(b"INSERT INTO " + cursor.mogrify(esc(table_name)) + \
+                               b" VALUES " + args_str, ())
             db_conn.commit()
         except psycopg2.Error as e:
             raise APIRequestError(e.pgerror)
@@ -407,8 +415,8 @@ class PostgreSQLDBDriver:
         with admin_db_conn.cursor() as cursor:
             # start by removing existing grants for this user
             cursor.execute(SQL_REVOKE_DB % dict(
-                    db_name = db_name,
-                    db_user = db_user))
+                    db_name = esc(db_name),
+                    db_user = esc(db_user)), ())
             # add needed grants
             if grant >= GRANT_LEVELS.read:
                 db_grants = {
@@ -416,9 +424,9 @@ class PostgreSQLDBDriver:
                     GRANT_LEVELS.write: 'CONNECT, CREATE, TEMPORARY'
                 }[grant]
                 cursor.execute(SQL_GRANT_DB % dict(
-                        db_name = db_name,
-                        db_user = db_user,
-                        db_grants = db_grants))
+                        db_name = esc(db_name),
+                        db_user = esc(db_user),
+                        db_grants = db_grants), ())
         admin_db_conn.commit()
     @staticmethod
     def set_datastore_grant(admin_db_conn, ds_user, grant):
@@ -430,8 +438,8 @@ class PostgreSQLDBDriver:
                 GRANT_LEVELS.write: 'LOGIN   CREATEDB'
             }[grant]
             cursor.execute(SQL_SET_DS_GRANTS % dict(
-                    ds_user = ds_user,
-                    ds_grants = ds_grants))
+                    ds_user = esc(ds_user),
+                    ds_grants = ds_grants), ())
         admin_db_conn.commit()
 
 DRIVER = PostgreSQLDBDriver
