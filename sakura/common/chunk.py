@@ -60,25 +60,20 @@ class NumpyChunk(np.ma.MaskedArray):
     def empty(dtype):
         return np.ma.masked_array(np.empty(0, dtype)).view(NumpyChunk)
     @staticmethod
+    def check_missing_items(row, zero):
+        for j, item in enumerate(row):
+            if item is None:
+                yield (zero[j], True)
+            else:
+                yield (item, False)
+    @staticmethod
     def create(chunk_data, dtype):
-        row_list = list(tuple(row) for row in chunk_data)
-        try:
-            # fast path, if possible
-            return np.ma.array(row_list, dtype).view(NumpyChunk)
-        except TypeError:
-            # error probably means we have missing values
-            pass    # continue below
-        # create a mask array indicating where values are None
-        mask_dtype = np.ma.make_mask_descr(dtype)
-        mask = np.ma.masked_equal(row_list, None).mask.view(mask_dtype).reshape(len(row_list))
-        # copy chunk data in an array where column types are all set to "object" (=> allow None)
-        obj_dtype = np.dtype(list((name, 'O') for name in dtype.names))
-        obj_chunk = np.ma.array(row_list, obj_dtype, mask=mask)
-        # create an empty chunk with appropriate type and copy unmasked data there
-        chunk = np.ma.masked_array(np.empty(len(row_list), dtype), mask=mask)
-        for colname in dtype.names:
-            colmask = ~obj_chunk[colname].mask
-            chunk[colname][colmask] = obj_chunk[colname][colmask]
+        chunk = np.ma.empty(len(chunk_data), dtype)
+        zero = np.zeros(1, dtype)[0]
+        for i, row in enumerate(chunk_data):
+            values, mask = tuple(zip(*NumpyChunk.check_missing_items(row, zero)))
+            chunk[i] = values
+            chunk.mask[i] = mask
         return chunk.view(NumpyChunk)
     def __reduce__(self):
         # workaround for numpy.ma.masked_array failing to deserialize
