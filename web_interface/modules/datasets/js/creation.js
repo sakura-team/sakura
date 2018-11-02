@@ -207,7 +207,9 @@ function datasets_on_file_selected(f) {
                 body.empty();
 
                 var nb_lines_to_test = min(10, datasets_creation_csv_file.lines[0].length);
+                var nb_cols = 0;
                 datasets_creation_csv_file.headers.forEach( function(col, index) {
+                    nb_cols += 1;
                     var new_row = $(body[0].insertRow(-1));
                     new_row.attr('id', 'datasets_ff_row_' + index);
                     new_row.load('templates/creation_dataset_row.html', function () {
@@ -250,7 +252,7 @@ function datasets_on_file_selected(f) {
                 });
             },
             error: function(error) {
-                datasets_alert("Parsing error:", error);
+                datasets_alert("Parsing error", error);
             }
     });
 }
@@ -882,7 +884,10 @@ function datasets_type_change(row_id, from) {
 
 
 function get_type(str){
-    if (typeof str !== 'string') str = str.toString();
+    if (str == null)
+        return 'int32';
+    if (typeof str !== 'string')
+        str = str.toString();
     var nan = isNaN(Number(str));
     var isfloat = /^\d*(\.|,)\d*$/;
     var commaFloat = /^(\d{0,3}(,)?)+\.\d*$/;

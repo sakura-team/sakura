@@ -184,12 +184,14 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
     var length_alert_done = false;
 
     Papa.LocalChunkSize = chunk_size;
+    var chunks_to_do = [];
 
     Papa.parse(f, {
         comments: true,
         header: false,
         skipEmptyLines: true,
         chunk: function(chunk, parser) {
+
             if (first_chunk) {
                 nb_cols = chunk.data[0].length;
                 chunk.data.splice(0, 1);
@@ -224,6 +226,7 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
             if (chunk.data.length) {
                 parser.pause();
 
+                chunks_to_do.push(1);
                 sakura.apis.hub.tables[dataset_id].add_rows(chunk.data).then(function(result) {
                     sent_data_size += Papa.LocalChunkSize;
                     var perc = parseInt(sent_data_size/f.size * 100);
@@ -232,15 +235,20 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                     $('#datasets_'+from_what+'_button').html('Uploading ...'+ perc + '%');
                     $('#datasets_'+from_what+'_progress_bar').css("width", ""+perc+"%");
                     $('#datasets_'+from_what+'_progress_bar').css("aria-valuenow", ""+perc);
+
                     parser.resume();
+                    chunks_to_do.pop();
+
+                    if (chunks_to_do.length == 0) {
+                        datasets_send_file_ended(date, modal);
+                    }
                 },
                 function(error_msg){
 
                     //We delete the freshly created table
-                    datasets_delete_yes(dataset_id);
+                    datasets_delete_yes(dataset_id, false);
 
                     //Update the display
-                    //Disable creation button
                     $('#datasets_cancel_creation_button').prop("disabled", false);
                     $('#datasets_creation_button').prop("disabled", false);
                     $('#datasets_creation_button').html('Create Dataset');
@@ -248,25 +256,59 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                     $('#datasets_creation_button').removeClass('btn-success');
                     $('#datasets_creation_div_progress_bar').hide();
 
+
+                    //ERROR: invalid input syntax for integer
+                    //Testing chunk
+                    var cols_list = []
+                    var nb_rows = chunk.data.length;
+                    var nb_cols = chunk.data[0].length;
+                    for (var c=0; c<nb_cols; c++) {
+                        var types = [$('#datasets_ff_type_select_'+c).val()];
+                        for (var r=0; r<nb_rows; r++) {
+                            types.push(get_type(chunk.data[r][c]));
+                        }
+                        var ntype = check_types(types);
+                        if (ntype != $('#datasets_ff_type_select_'+c).val()) {
+                            cols_list.push([$('#datasets_creation_col_name_ff_'+c).val(), ntype]);
+                        }
+                        $('#datasets_ff_type_select_'+c).val(ntype);
+                        $('#datasets_ff_type_select_'+c).selectpicker('refresh');
+                    }
+
                     //Then give the message
-                    datasets_alert('Error in adding rows into the dataset',error_msg);
+                    var msg = 'According to the error, the type of the following columns has been udpated. Please check and create again:<br>';
+                    cols_list.forEach( function(e) {
+                        msg += '- <b>'+e[0]+'</b> >> '+e[1]+'<br>';
+                    });
+                    if (cols_list.length) {
+                        datasets_alert('Error in adding rows into the dataset',error_msg+'<br><br>'+msg);
+                    }
+                    else {
+                        datasets_alert('Error in adding rows into the dataset',error_msg);
+                    }
+
                     return false;
                 });
             }
         },
         complete: function() {
-            //datasets_info('Sending File', 'Done !!');
-            var ndate = new Date();
-            var s = parseInt((ndate.getTime() - date.getTime())/1000);
-            var m = parseInt(s/60);
-            console.log("Uploading time: "+m+"min:"+s+"s");
-            modal.modal('hide');
-            recover_datasets();
+            if (chunks_to_do.length == 0) {
+                datasets_send_file_ended(date, modal);
+            }
         },
         error: function (error) {
-            datasets_alert("Parsing error:", error);
+            datasets_alert("Parsing error", error);
         }
     });
+}
+
+function datasets_send_file_ended(date, modal) {
+    var ndate = new Date();
+    var s = parseInt((ndate.getTime() - date.getTime())/1000);
+    var m = parseInt(s/60);
+    console.log("Uploading time: "+m+"min:"+s+"s");
+    modal.modal('hide');
+    recover_datasets();
 }
 
 
@@ -296,17 +338,28 @@ function datasets_delete(dataset_id) {
     datasets_asking('Delete a Dataset',
                     'Are you sure you want to definitely delete this dataset ??',
                     'rgba(217,83,79)',
-                    'datasets_delete_yes('+dataset_id+')',
+                    'datasets_delete_yes('+dataset_id+', true)',
                     '');
 }
 
+<<<<<<< HEAD
 function datasets_delete_yes(ds_id) {
     sakura.apis.hub.tables[ds_id].delete().then(function(result) {
+=======
+function datasets_delete_yes(ds_id, alert) {
+    sakura.common.ws_request('delete_table', [ds_id], {}, function(result) {
+>>>>>>> web interface: datasets mod: updating types while sending csv file
         if (result)
             console.log("Issue in deleting dataset");
         else
             console.log("Dataset deleted");
         //refresh datasets list
         recover_datasets();
+    },
+    function (error_msg) {
+        if (alert)
+            datasets_alert('Deleting Dataset', error_msg);
+        else
+            console.log(error_msg);
     });
 }
