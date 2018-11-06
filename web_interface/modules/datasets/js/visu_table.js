@@ -31,14 +31,8 @@ function datasets_visu_dataset(dataset_id) {
 
     //Rows
     var row_start   = 0;
-<<<<<<< HEAD
+
     sakura.apis.hub.tables[current_dataset_id].get_rows(row_start, row_start + nb_rows).then(function (rows) {
-=======
-    console.log('Here');
-    sakura.common.ws_request('get_rows_from_table', [current_dataset_id, row_start, row_start + nb_rows], {},
-    function (rows) {
-        console.log(rows);
->>>>>>> web interface: datasets mod: updating types while sending csv file
         datasets_visu_table_fill_rows(body, rows, row_start, dataset);
 
         $('#datasets_visu_table_of_rows').data('row_start', row_start);

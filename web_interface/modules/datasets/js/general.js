@@ -55,8 +55,14 @@ function datasets_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     h.css('background-color', rgba_color);
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
-    b_yes.attr('onclick', func_yes);
-    b_no.attr('onclick', func_no);
+    b_yes.unbind("click");
+    b_yes.click(function() {
+                    func_yes();
+                });
+    b_no.unbind("click");
+    b_no.click(function() {
+                    func_no();
+    });
     $('#datasets_asking_modal').modal();
 }
 
@@ -183,6 +189,7 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
     var nb_cols         = 0;
     var length_alert_done = false;
 
+
     Papa.LocalChunkSize = chunk_size;
     var chunks_to_do = [];
 
@@ -236,7 +243,8 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                     $('#datasets_'+from_what+'_progress_bar').css("width", ""+perc+"%");
                     $('#datasets_'+from_what+'_progress_bar').css("aria-valuenow", ""+perc);
 
-                    parser.resume();
+                    if (parser)
+                        parser.resume();
                     chunks_to_do.pop();
 
                     if (chunks_to_do.length == 0) {
@@ -246,48 +254,56 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                 function(error_msg){
 
                     //We delete the freshly created table
-                    datasets_delete_yes(dataset_id, false);
+                    sakura.common.ws_request('delete_table', [dataset_id], {}, function(result) {
 
-                    //Update the display
-                    $('#datasets_cancel_creation_button').prop("disabled", false);
-                    $('#datasets_creation_button').prop("disabled", false);
-                    $('#datasets_creation_button').html('Create Dataset');
-                    $('#datasets_creation_button').addClass('btn-primary');
-                    $('#datasets_creation_button').removeClass('btn-success');
-                    $('#datasets_creation_div_progress_bar').hide();
+                        //Update the display
+                        $('#datasets_cancel_creation_button').prop("disabled", false);
+                        $('#datasets_creation_button').prop("disabled", false);
+                        $('#datasets_creation_button').html('Create Dataset');
+                        $('#datasets_creation_button').addClass('btn-primary');
+                        $('#datasets_creation_button').removeClass('btn-success');
+                        $('#datasets_creation_div_progress_bar').hide();
 
-
-                    //ERROR: invalid input syntax for integer
-                    //Testing chunk
-                    var cols_list = []
-                    var nb_rows = chunk.data.length;
-                    var nb_cols = chunk.data[0].length;
-                    for (var c=0; c<nb_cols; c++) {
-                        var types = [$('#datasets_ff_type_select_'+c).val()];
-                        for (var r=0; r<nb_rows; r++) {
-                            types.push(get_type(chunk.data[r][c]));
+                        //Testing chunk
+                        //-- Test on types
+                        var cols_list = []
+                        var nb_rows = chunk.data.length;
+                        var nb_cols = chunk.data[0].length;
+                        for (var c=0; c<nb_cols; c++) {
+                            var types = [$('#datasets_ff_type_select_'+c).val()];
+                            for (var r=0; r<nb_rows; r++) {
+                                types.push(get_type(chunk.data[r][c]));
+                            }
+                            var ntype = check_types(types);
+                            if (ntype != $('#datasets_ff_type_select_'+c).val()) {
+                                cols_list.push([$('#datasets_creation_col_name_ff_'+c).val(), ntype]);
+                            }
+                            $('#datasets_ff_type_select_'+c).val(ntype);
+                            $('#datasets_ff_type_select_'+c).selectpicker('refresh');
                         }
-                        var ntype = check_types(types);
-                        if (ntype != $('#datasets_ff_type_select_'+c).val()) {
-                            cols_list.push([$('#datasets_creation_col_name_ff_'+c).val(), ntype]);
-                        }
-                        $('#datasets_ff_type_select_'+c).val(ntype);
-                        $('#datasets_ff_type_select_'+c).selectpicker('refresh');
-                    }
 
-                    //Then give the message
-                    var msg = 'According to the error, the type of the following columns has been udpated. Please check and create again:<br>';
-                    cols_list.forEach( function(e) {
-                        msg += '- <b>'+e[0]+'</b> >> '+e[1]+'<br>';
+                        //Then give the message
+                        var msg = 'According to the error, the type of the following columns <b>has been udpated</b>:<br>';
+                        cols_list.forEach( function(e) {
+                            msg += '- <b>'+e[0]+'</b> >> '+e[1]+'<br>';
+                        });
+                        msg += '<br><b>Do you want to create the dataset with these column types?</b>';
+
+                        if (cols_list.length) {
+                            datasets_asking('Error in adding rows into the dataset',
+                                            error_msg+'<br><br>'+msg,
+                                            'rgba(217,83,79)',
+                                            function() {  datasets_send_new(database_infos.database_id)},
+                                            function() {  console.log("NO");}   );
+                        }
+                        else {
+                            datasets_alert('Error in adding rows into the dataset',error_msg);
+                        }
+                        return false;
+                    },
+                    function (error_msg) {
+                        console.log('Error in deleting Table !!!');
                     });
-                    if (cols_list.length) {
-                        datasets_alert('Error in adding rows into the dataset',error_msg+'<br><br>'+msg);
-                    }
-                    else {
-                        datasets_alert('Error in adding rows into the dataset',error_msg);
-                    }
-
-                    return false;
                 });
             }
         },
@@ -338,8 +354,8 @@ function datasets_delete(dataset_id) {
     datasets_asking('Delete a Dataset',
                     'Are you sure you want to definitely delete this dataset ??',
                     'rgba(217,83,79)',
-                    'datasets_delete_yes('+dataset_id+', true)',
-                    '');
+                    function() { console.log('Evaluated'); datasets_delete_yes(dataset_id, true);},
+                    function(){});
 }
 
 <<<<<<< HEAD
@@ -358,8 +374,8 @@ function datasets_delete_yes(ds_id, alert) {
     },
     function (error_msg) {
         if (alert)
-            datasets_alert('Deleting Dataset', error_msg);
+            datasets_alert('Error deleting Dataset', error_msg);
         else
-            console.log(error_msg);
+            console.log('Error deleting Dataset:', error_msg);
     });
 }
