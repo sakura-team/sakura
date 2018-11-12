@@ -7,6 +7,6 @@ Python3 modules:
 * bottle
 * numpy >= 1.14.2
 * psycopg2
-* pony==0.7.2 (0.7.3 causes issues)
+* pony==0.7.6
 * websocket-client (optional, only for running web API tests)
 
