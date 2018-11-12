@@ -174,8 +174,7 @@ function datasets_send_new(database_id) {
             }
             datasets_creation_first_time = true;
         }
-    },
-    function(error) {
+    }).catch( function(error) {
         console.log(error);
     });
 }

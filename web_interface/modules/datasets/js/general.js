@@ -55,14 +55,13 @@ function datasets_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     h.css('background-color', rgba_color);
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
+
     b_yes.unbind("click");
-    b_yes.click(function() {
-                    func_yes();
-                });
     b_no.unbind("click");
-    b_no.click(function() {
-                    func_no();
-    });
+
+    b_yes.click(function() {  func_yes(); });
+    b_no.click(function() { func_no();  });
+
     $('#datasets_asking_modal').modal();
 }
 
@@ -250,11 +249,10 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                     if (chunks_to_do.length == 0) {
                         datasets_send_file_ended(date, modal);
                     }
-                },
-                function(error_msg){
+                }).catch( function(error_msg){
 
                     //We delete the freshly created table
-                    sakura.common.ws_request('delete_table', [dataset_id], {}, function(result) {
+                    sakura.apis.hub.tables[dataset_id].delete().then( function(result) {
 
                         //Update the display
                         $('#datasets_cancel_creation_button').prop("disabled", false);
@@ -300,7 +298,7 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                             datasets_alert('Error in adding rows into the dataset',error_msg);
                         }
                         return false;
-                    },
+                    }).catch(
                     function (error_msg) {
                         console.log('Error in deleting Table !!!');
                     });
@@ -354,25 +352,17 @@ function datasets_delete(dataset_id) {
     datasets_asking('Delete a Dataset',
                     'Are you sure you want to definitely delete this dataset ??',
                     'rgba(217,83,79)',
-                    function() { console.log('Evaluated'); datasets_delete_yes(dataset_id, true);},
+                    function() {datasets_delete_yes(dataset_id, true);},
                     function(){});
 }
 
-<<<<<<< HEAD
-function datasets_delete_yes(ds_id) {
-    sakura.apis.hub.tables[ds_id].delete().then(function(result) {
-=======
-function datasets_delete_yes(ds_id, alert) {
-    sakura.common.ws_request('delete_table', [ds_id], {}, function(result) {
->>>>>>> web interface: datasets mod: updating types while sending csv file
-        if (result)
-            console.log("Issue in deleting dataset");
-        else
-            console.log("Dataset deleted");
+function datasets_delete_yes(dataset_id, alert) {
+    console.log('Deleting !!!', dataset_id);
+    sakura.apis.hub.tables[dataset_id].delete().then(function() {
+        console.log("Dataset deleted");
         //refresh datasets list
         recover_datasets();
-    },
-    function (error_msg) {
+    }).catch( function (error_msg) {
         if (alert)
             datasets_alert('Error deleting Dataset', error_msg);
         else

@@ -43,8 +43,7 @@ function datasets_visu_dataset(dataset_id) {
         datasets_visu_enable_disable('sf', !(rows.length < nb_rows));
 
         $('#datasets_visu_dataset_modal').modal();
-    },
-    function(error_msg) {
+    }).catch( function(error_msg) {
         console.log('Error reading the table');
     });
 }
