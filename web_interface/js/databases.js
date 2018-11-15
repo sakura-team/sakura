@@ -37,8 +37,15 @@ function datas_creation_check_mandatory() {
     for (x in datas_mandatory)
         if (!datas_mandatory[x])
             ok = false;
-    if (ok)
-        $('#datas_submit_button').prop('disabled', false);
+    if (ok) {
+        //Datastore check
+        var ds_id       = parseInt($('#datas_datastore_input').val());
+        if (isNaN(ds_id)) {
+            $('#datas_submit_button').prop('disabled', true);
+        }
+        else
+            $('#datas_submit_button').prop('disabled', false);
+    }
     else
         $('#datas_submit_button').prop('disabled', true);
 }
@@ -53,6 +60,7 @@ function datas_update_creation_modal() {
     sakura.apis.hub.datastores.list().then(function (result) {
         datas_datastores = result;
         $('#datas_datastore_input').empty();
+        console.log(result);
 
         result.forEach( function(ds) {
 
@@ -106,6 +114,10 @@ function new_database() {
 
     var short_d     = $('#datas_shortdescription_input').val();
     var ds_id       = parseInt($('#datas_datastore_input').val());
+    if (isNaN(ds_id)) {
+        return
+    }
+
 
     var access_scope      = 'restricted';
     $('[id^="datas_creation_access_scope_radio"]').each( function() {
