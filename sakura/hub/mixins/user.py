@@ -22,6 +22,19 @@ Note: For security reasons, the recovery token expires after %(delay)d minutes.
 
 class UserMixin:
 
+    def pack(self):
+        return dict(
+            login = self.login,
+            email = self.email,
+            first_name = self.first_name,
+            last_name = self.last_name,
+            creation_date = self.creation_date,
+            gender = self.gender,
+            country = self.country,
+            institution = self.institution,
+            occupation = self.occupation,
+            work_domain = self.work_domain)
+
     @classmethod
     def from_logins(cls, logins):
         return [cls.get(login = login) for login in logins]

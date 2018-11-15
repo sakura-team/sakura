@@ -294,6 +294,10 @@ class GuiToHubAPI:
         self.context.users.change_password(
                 login_or_email, current_password_or_rec_token, new_password)
 
+    @api.users.current.info
+    def get_current_login_name(self):
+        return None if self.context.user is None else self.context.user
+
     @api.users.list
     def list_all_users(self):
         return tuple(u.login for u in self.context.users.select())
