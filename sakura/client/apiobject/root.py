@@ -5,6 +5,9 @@ class APIRoot:
     def __new__(cls, remote_api, ws):
         class APIRootImpl:
             @property
+            def __ap__(self):
+                return remote_api
+            @property
             def op_classes(self):
                 return get_op_classes(remote_api)
             @property
