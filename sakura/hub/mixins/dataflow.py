@@ -57,3 +57,11 @@ class DataflowMixin(BaseMixin):
         return dataflow.id
     def create_operator_instance(self, cls_id):
         return get_context().op_instances.create_instance(self, cls_id)
+    def delete_dataflow(self):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                'Only owner is allowed to delete this dataflow.')
+        # delete operators explicitely (they must be deleted on the daemon)
+        for op in self.op_instances:
+            op.delete_instance()
+        # delete this dataflow
+        self.delete()

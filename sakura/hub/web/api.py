@@ -268,6 +268,10 @@ class GuiToHubAPI:
     def get_dataflow_gui_data(self, dataflow_id):
         return self.dataflows[dataflow_id].gui_data
 
+    @api.dataflows.__getitem__.delete
+    def delete_dataflow(self, dataflow_id):
+        return self.dataflows[dataflow_id].delete_dataflow()
+
     # Session management
     ####################
     @api.renew_session
