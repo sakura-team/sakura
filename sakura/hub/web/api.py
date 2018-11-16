@@ -193,6 +193,10 @@ class GuiToHubAPI:
     def request_database_grant(self, database_id, grant_name, text):
         return self.databases[database_id].handle_grant_request(grant_name, text)
 
+    @api.databases.__getitem__.delete
+    def delete_database(self, database_id):
+        return self.context.databases[database_id].delete_database()
+
     @api.datastores.__getitem__.list_expected_columns_tags
     def list_expected_columns_tags(self, datastore_id):
         return self.datastores[datastore_id].list_expected_columns_tags()

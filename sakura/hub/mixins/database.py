@@ -126,3 +126,10 @@ class DatabaseMixin(BaseMixin):
         self.datastore.remote_instance.update_database_grant(
                     self.name, login, GRANT_LEVELS.value(grant_name))
         self.refresh_metadata_from_daemon()
+    def delete_database(self):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                'Only owner is allowed to delete this database.')
+        # delete table on datastore
+        self.datastore.remote_instance.delete_database(self.name)
+        # delete instance in local db
+        self.delete()

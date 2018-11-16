@@ -124,3 +124,7 @@ class DataStore:
             self.driver.set_datastore_grant(
                     admin_conn, ds_user, grant_level)
         self.refresh()
+    def delete_database(self, db_name):
+        with self.admin_connect() as admin_conn:
+            self.driver.delete_db(admin_conn, db_name)
+        self.refresh()

@@ -185,6 +185,10 @@ SQL_CREATE_DB = '''
 CREATE DATABASE %(db_name)s WITH OWNER %(db_owner)s;
 '''
 
+SQL_DROP_DB = '''
+DROP DATABASE %(db_name)s;
+'''
+
 SQL_INIT_GRANT_DB = '''
 GRANT ALL ON DATABASE %(db_name)s TO %(db_owner)s;
 REVOKE ALL ON DATABASE %(db_name)s FROM PUBLIC;
@@ -361,6 +365,15 @@ class PostgreSQLDBDriver:
                 cursor.execute(sql % dict(
                         db_name = esc(db_name),
                         db_owner = esc(db_owner)), ())
+        admin_db_conn.autocommit = saved_mode
+    @staticmethod
+    def delete_db(admin_db_conn, db_name):
+        # DROP DATABASE requires to set autocommit
+        saved_mode = admin_db_conn.autocommit
+        admin_db_conn.commit() # complete running transaction if any
+        admin_db_conn.autocommit = True
+        with admin_db_conn.cursor() as cursor:
+            cursor.execute(SQL_DROP_DB % dict(db_name = esc(db_name)), ())
         admin_db_conn.autocommit = saved_mode
     @staticmethod
     def create_table(db_conn, table_name, columns, primary_key, foreign_keys):
