@@ -46,6 +46,8 @@ class TableMixin(BaseMixin):
                 self.primary_key,
                 fk)
     def delete_table(self):
+        self.database.assert_grant_level(GRANT_LEVELS.write,
+                    'You are not delete a table of this database.')
         # delete table on datastore
         self.database.remote_instance.delete_table(self.name)
         # delete instance in local db
