@@ -1,4 +1,4 @@
-from sakura.common.errors import APIObjectDeniedError
+from sakura.common.errors import APIRequestError, APIObjectDeniedError
 from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS, USER_TYPES
 from sakura.hub.context import get_context
 
@@ -37,7 +37,10 @@ class FilteredView:
         return filter(self.is_accessible,
                     self.db_set.select().order_by(lambda o: o.id))
     def __getitem__(self, idx):
-        res = self.db_set[idx]
+        try:
+            res = self.db_set[idx]
+        except:
+            raise APIRequestError('No such object')
         FilteredView.list_access_checker(res)
         return res
     def __getattr__(self, attr):
