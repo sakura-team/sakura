@@ -114,7 +114,6 @@ function listRequestStub(idDiv, n, elt, bd) {
     //Here we deal with the databases
     if (elt == 'Datas/tmpData') {
         sakura.apis.hub.databases.list().then(function (databases) {
-            console.log(databases);
             var result = new Array();
             databases.sort(databases_sort);
             databases.forEach( function(db) {

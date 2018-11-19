@@ -197,6 +197,20 @@
         <script src="/webcache/cdnjs/crypto-js/3.1.2/rollups/hmac-sha256.js"></script>
         <script src="/webcache/cdnjs/crypto-js/3.1.2/components/enc-base64-min.js"></script>
         <script src="js/signIn.js"></script>
+        <script>
+            //Here we ask the hub if there is a current login
+            sakura.apis.hub.users.current.info().then(function(result) {
+                if (result) {
+                    signInWidget = document.getElementsByName("signInWidget")[0];
+                    signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;&nbsp;'+result.login+'&nbsp;&nbsp;</a>';
+                    current_login = result;
+                }
+                else {
+                    current_login = null;
+                }
+            });
+        </script>
+
         <script src="js/web_interface.js"></script>
         <script src="js/databases.js"></script>
         <script src="js/dataflows.js"></script>
