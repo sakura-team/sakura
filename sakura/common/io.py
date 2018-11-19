@@ -4,7 +4,8 @@ from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
-from sakura.common.errors import APIRequestError, APIRemoteError, IOHoldException
+from sakura.common.errors import APIRequestError, APIRemoteError, \
+                                 IOHoldException, APIInvalidRequest
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 #DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
@@ -117,6 +118,9 @@ class LocalAPIHandler(object):
         except (EOFError, ConnectionResetError):
             print('remote end disconnected!')
             raise   # we should stop
+        except APIInvalidRequest:
+            print('malformed request.')
+            return False
         except BaseException:
             print('malformed request? Got exception:')
             traceback.print_exc()

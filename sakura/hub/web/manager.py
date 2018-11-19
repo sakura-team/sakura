@@ -4,7 +4,7 @@ from sakura.common.io import LocalAPIHandler
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.context import greenlet_env
-from sakura.common.errors import APIRequestError
+from sakura.common.errors import APIRequestError, APIInvalidRequest
 
 # caution: the object should be sent all at once,
 # otherwise it will be received as several messages
@@ -60,7 +60,10 @@ def gui_fallback_handler(obj):
 class GUILocalAPIProtocol:
     @staticmethod
     def load(f):
-        return json.load(f)
+        try:
+            return json.load(f)
+        except:
+            raise APIInvalidRequest('json decoding failed.')
     @staticmethod
     def dump(res_info, f):
         try:

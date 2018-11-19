@@ -15,3 +15,6 @@ class IOHoldException(Exception):
 
 class APIRemoteError(Exception):
     pass
+
+class APIInvalidRequest(Exception):
+    pass
