@@ -51,7 +51,7 @@ function buildListStub(idDiv,result,elt) {
             name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
             n_td1.append(name);
             if (row.grant_level == 'own') {
-                n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="database_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
+                n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
             }
         }
         else
@@ -95,31 +95,32 @@ function databases_sort(a, b) {
     return a.name > b.name ? 1 : -1;
 }
 
-function database_delete(db_id, idDiv, elt) {
+function stub_delete(db_id, idDiv, elt) {
+
+    var type = null;
+    var asking_msg = null;
+    var stub = null;
+
+    if (idDiv.indexOf('dataflows') != -1) {
+        type = 'Dataflow';
+        asking_msg = 'Are you sure you want to definitely delete this dataflow ??'
+        stub = sakura.apis.hub.dataflows;
+    }
+    else if (idDiv.indexOf('datas') != -1) {
+        type = 'Database';
+        asking_msg = 'Are you sure you want to definitely delete this database, with all its datasets ??'
+        stub = sakura.apis.hub.databases;
+    }
+
     //Alert first
-    datas_asking( 'Delete a Database',
-                  'Are you sure you want to definitely delete this database, with all its datasets ??',
+    stub_asking( 'Delete a '+ type,
+                  asking_msg,
                   'rgba(217,83,79)',
                   function() {
                       //then delete
-                      sakura.apis.hub.databases[parseInt(db_id)].delete().then( function(result) {
-
-                          //Refresh
-                          sakura.apis.hub.databases.list().then(function (databases) {
-                              var result = new Array();
-                              databases.sort(databases_sort);
-                              databases.forEach( function(db) {
-                                  result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
-                                                  'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
-                                                  'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
-                                  if (db.online)
-                                      result_info['owner'] = db.owner;
-                                  else
-                                      result_info['name'] += ' <i>(OFFLINE)</i>';
-                                  result.push(result_info);
-                              });
-                              buildListStub(idDiv, result, elt);
-                          });
+                      stub[parseInt(db_id)].delete().then( function(result) {
+                          //then refresh
+                          listRequestStub(idDiv, 10, elt, false);
                       }).catch( function (error_msg) {
                         console.log(error_msg);
                       });
@@ -138,7 +139,6 @@ function replace_undefined(val) {
 }
 
 function listRequestStub(idDiv, n, elt, bd) {
-
     //Here we deal with the databases
     if (elt == 'Datas/tmpData') {
         sakura.apis.hub.databases.list().then(function (databases) {

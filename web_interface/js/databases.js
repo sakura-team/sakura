@@ -6,26 +6,6 @@ var datas_datastores = null;
 
 var datas_mandatory = {'name': false, 'short_description': false}
 
-function datas_asking(header_str, body_str, rgba_color, func_yes, func_no) {
-    var h = $('#datas_asking_header');
-    var b = $('#datas_asking_body');
-    var b_yes = $('#datas_asking_button_yes');
-    var b_no = $('#datas_asking_button_no');
-
-    h.css('background-color', rgba_color);
-    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
-    b.html("<p>"+body_str+"</p>");
-
-    b_yes.unbind("click");
-    b_no.unbind("click");
-
-    b_yes.click(function() {  func_yes(); });
-    b_no.click(function() { func_no();  });
-
-    $('#datas_asking_modal').modal();
-}
-
-
 function datas_creation_check_name() {
     if ($('#datas_name_input').val().length > 0) {
         $('#datas_div_name_input').removeClass('has-error');
@@ -80,7 +60,7 @@ function datas_update_creation_modal() {
     sakura.apis.hub.datastores.list().then(function (result) {
         datas_datastores = result;
         $('#datas_datastore_input').empty();
-        
+
         result.forEach( function(ds) {
 
             var opt = $('<option>', { value: ds['datastore_id']});

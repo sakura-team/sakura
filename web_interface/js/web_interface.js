@@ -17,6 +17,25 @@ function not_yet(s) {
     }
 }
 
+function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
+    var h = $('#stub_asking_header');
+    var b = $('#stub_asking_body');
+    var b_yes = $('#stub_asking_button_yes');
+    var b_no = $('#stub_asking_button_no');
+
+    h.css('background-color', rgba_color);
+    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+
+    b_yes.unbind("click");
+    b_no.unbind("click");
+
+    b_yes.click(function() {  func_yes(); });
+    b_no.click(function() { func_no();  });
+
+    $('#stub_asking_modal').modal();
+}
+
 function matching_hub_name(obj) {
     if (web_interface_current_object_type == 'datas')
         return 'database';
