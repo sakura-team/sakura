@@ -33,37 +33,33 @@ function buildListStub(idDiv,result,elt) {
     result.forEach( function (row) {
         var new_row = $(tbody[0].insertRow());
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
-        //adding link
-        var cell = $('<td>');
-        if (row.name.indexOf('OFFLINE') === -1) {
-            var name = null;
 
-            //own, write, read
-            if (row.grant_level == 'own' ||
-                row.grant_level == 'write' ||
-                row.grant_level == 'read') {
-                name = $('<a>');
-                name.html(row.name );
-                name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
-                name.attr('title', 'Accessing '+elt_type.slice(0, -1));
-                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
-                eye = $('<p>', {html: '<span class=\'glyphicon glyphicon-eye-open\'></span>',
-                                style: 'margin: 0px;'})
+        //adding link
+        var new_td = $('<td>');
+        var n_table = $('<table width=100%>');
+        var n_row = $('<tr>');
+        n_table.append(n_row);
+
+        var n_td1 = $('<td>');
+        var n_td2 = $('<td align="right">');
+
+        if (row.name.indexOf('OFFLINE') === -1) {
+            var name = $('<a>');
+            name.html(row.name);
+            name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
+            name.attr('title', 'Accessing '+elt_type.slice(0, -1));
+            name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+            n_td1.append(name);
+            if (row.grant_level == 'own') {
+                n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="database_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
             }
-            //list
-            else {
-                name = $('<a>');
-                name.html(row.name );
-                name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
-                name.attr('title', 'Accessing '+elt_type.slice(0, -1));
-                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
-            }
-            cell.append(name);
         }
         else
-            cell.append(row.name);
+            n_td1.append(row.name);
 
-        new_row.append(cell);
+        n_row.append(n_td1, n_td2);
+        new_td.append(n_table);
+        new_row.append(new_td);
 
         list_cols_gui.forEach( function (lelt, index) {
             if (document.getElementById("cbColSelect"+lelt).checked) {
@@ -97,6 +93,38 @@ function buildListStub(idDiv,result,elt) {
 
 function databases_sort(a, b) {
     return a.name > b.name ? 1 : -1;
+}
+
+function database_delete(db_id, idDiv, elt) {
+    //Alert first
+    datas_asking( 'Delete a Database',
+                  'Are you sure you want to definitely delete this database, with all its datasets ??',
+                  'rgba(217,83,79)',
+                  function() {
+                      //then delete
+                      sakura.apis.hub.databases[parseInt(db_id)].delete().then( function(result) {
+
+                          //Refresh
+                          sakura.apis.hub.databases.list().then(function (databases) {
+                              var result = new Array();
+                              databases.sort(databases_sort);
+                              databases.forEach( function(db) {
+                                  result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
+                                                  'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
+                                                  'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
+                                  if (db.online)
+                                      result_info['owner'] = db.owner;
+                                  else
+                                      result_info['name'] += ' <i>(OFFLINE)</i>';
+                                  result.push(result_info);
+                              });
+                              buildListStub(idDiv, result, elt);
+                          });
+                      }).catch( function (error_msg) {
+                        console.log(error_msg);
+                      });
+                  },
+                  function() {} );
 }
 
 function dataflows_sort(a, b) {
