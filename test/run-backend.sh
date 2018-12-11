@@ -50,7 +50,7 @@ terminate()
 # output.
 prefix_out HUB test/run-hub.sh $args
 sleep 3
-prefix_out DAEMON0 test/run-daemon.sh 0 datasample spacetime datasource
+prefix_out DAEMON0 test/run-daemon.sh 0 datasample spacetime datasource basicOGL
 sleep 0.2
 prefix_out DAEMON1 test/run-daemon.sh 1 mean map
 sleep 0.2
