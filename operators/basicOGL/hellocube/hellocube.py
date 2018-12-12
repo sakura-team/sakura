@@ -6,9 +6,13 @@
 ## GLOBAL LIBS
 import sys
 import math
+import time
+import inspect
+import gevent
+
 import platform as pl
 import numpy    as np
-import inspect
+
 from pathlib import Path
 from gevent import Greenlet
 
@@ -64,6 +68,9 @@ class hellocube:
         self.cube_shader = self.sh.shader()
         self.projo = self.pr.projector(position = [0, 0, 2])
 
+        self.fps_limitation = 60    #Hz
+        self.last_time      = time.time()
+
     def import_local_libs(self):
         if __name__ == '__main__':
             sys.path.append(str(self.hellocube_dir))
@@ -80,7 +87,6 @@ class hellocube:
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
     def init_shader(self):
 
@@ -131,7 +137,6 @@ class hellocube:
         print('\t\tOk')
         sys.stdout.flush()
 
-
     def start(self):
 
         #Glut Init
@@ -160,17 +165,27 @@ class hellocube:
         glutMouseFunc(self.mouse_clicks)
         glutMotionFunc(self.mouse_motion)
         glutReshapeFunc(self.reshape)
+
         if __name__ == '__main__':
             glutMainLoop()
         else:
+            glutIdleFunc(self.idle)
             Greenlet.spawn(glutMainLoop)
+
+    def idle(self):
+        nt = time.time()
+        dt = 1/self.fps_limitation - (nt - self.last_time)
+        self.last_time = nt
+        if  dt > 0:
+            gevent.sleep(dt)
+        else:
+            gevent.idle()
 
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self.sh.display_list([self.cube_shader])
         glutSwapBuffers()
-
 
     def mouse_clicks(self, button, state, x, y):
         self.mouse = [x, y]
@@ -180,7 +195,6 @@ class hellocube:
         elif button == GLUT_LEFT_BUTTON and state == GLUT_UP:
             self.imode = 'none'
 
-
     def mouse_motion(self, x, y):
         dx, dy = x - self.mouse[0], y - self.mouse[1]
         self.mouse = [x, y]
@@ -189,7 +203,6 @@ class hellocube:
             self.projo.rotate_v(-dy/glutGet(GLUT_WINDOW_HEIGHT)*math.pi)
         glutPostRedisplay()
 
-
     def keyboard(self, key, x, y):
         if key == b'\x1b':
             sys.exit()
@@ -197,16 +210,13 @@ class hellocube:
         elif key == b't':
             self.resize(400, 200)
 
-
     def resize(self, w, h):
         glutReshapeWindow(w, h)
-
 
     def reshape(self, w, h):
         glViewport(0,  0,  w,  h);
         self.projo.ratio = w/float(h)
         glutPostRedisplay()
-
 
 
 if __name__ == '__main__':
