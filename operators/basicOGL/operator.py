@@ -15,9 +15,9 @@ class basicOGL(Operator):
     TAGS = [ "visualisation"]
     def construct(self):
         # additional tabs
-        self.register_tab('OGL', 'basicOGL.html')
+        self.register_tab('OGL', 'basicOGL.html?op_id='+str(self.op_id))
         self.button_state = 1
-        self.bOGL = hcube.hellocube(800, 600)
+        self.bOGL = hcube.hellocube()
         self.bOGL.start()
 
     def handle_event(self, ev_type, **info):

@@ -57,14 +57,14 @@ def wire_cube(pos, edge):
 
 
 class hellocube:
-    def __init__(self, w, h):
+    def __init__(self):
         # import local libs
         hellocube_py_path = Path(inspect.getabsfile(self.__class__))
         self.hellocube_dir = hellocube_py_path.parent
         self.import_local_libs()
         # display attributes
-        self.width = w
-        self.height = h
+        self.width = 100
+        self.height = 100
         self.cube_shader = self.sh.shader()
         self.projo = self.pr.projector(position = [0, 0, 2])
 
@@ -137,7 +137,14 @@ class hellocube:
         print('\t\tOk')
         sys.stdout.flush()
 
-    def start(self):
+    def start(self, w=None, h=None):
+
+        if w:
+            self.width = w
+        if h:
+            self.height = h
+        if w or h:
+            self.projo.change_ratio(w/float(h))
 
         #Glut Init
         try:
@@ -156,7 +163,7 @@ class hellocube:
                 print(e)
                 sys.exit()
 
-        glutInitWindowSize (800, 600)
+        glutInitWindowSize (self.width, self.height)
         glutCreateWindow ('Basic OGL')
         self.init_GL()
         self.init_shader()
@@ -189,10 +196,14 @@ class hellocube:
 
     def mouse_clicks(self, button, state, x, y):
         self.mouse = [x, y]
-
-        if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        LEFT_BUTTON = 0
+        MIDDLE_BUTTON = 1
+        RIGHT_BUTTON = 2
+        DOWN = 0
+        UP = 1
+        if button == LEFT_BUTTON and state == DOWN:
             self.imode = 'rotation'
-        elif button == GLUT_LEFT_BUTTON and state == GLUT_UP:
+        elif button == LEFT_BUTTON and state == UP:
             self.imode = 'none'
 
     def mouse_motion(self, x, y):
@@ -212,7 +223,7 @@ class hellocube:
 
     def reshape(self, w, h):
         glViewport(0,  0,  w,  h);
-        self.projo.ratio = w/float(h)
+        self.projo.change_ratio(w/float(h))
         glutPostRedisplay()
 
     def resize(self, w, h):
@@ -221,5 +232,5 @@ class hellocube:
 
 
 if __name__ == '__main__':
-    bogl = hellocube(800, 600)
+    bogl = hellocube()
     bogl.start()

@@ -1,7 +1,12 @@
 // Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-//Global
-var canvas = null;
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
 
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
@@ -11,8 +16,9 @@ function getMousePos(canvas, evt) {
     };
 }
 
-function update_size() {
-    var div = document.getElementById('basicOGL_div');
+function update_size(id) {
+    var div   = document.getElementById('basicOGL_div'+id)
+    var canvas= document.getElementById('basicOGL_canvas'+id)
     w = div.getBoundingClientRect().width;
     h = div.getBoundingClientRect().height;
     if (w != canvas.width || h != canvas.height) {
@@ -26,15 +32,37 @@ function update_size() {
     }
 }
 
+function close_basicOGL() {
+    console.log('unload');
+}
+
+
 function init_basicOGL() {
-    canvas = document.getElementById("basicOGL_canvas");
+
+    console.log(getUrlVars()['op_id'])
+
+    var body = document.body;
+    body.setAttribute('id', 'basicOGL_body'+getUrlVars()['op_id'])
+    var div = document.createElement('div');
+    div.setAttribute('style', 'height:100%;');
+    div.setAttribute('id', 'basicOGL_div'+getUrlVars()['op_id']);
+
+    var canvas = document.createElement('canvas');
+    canvas.setAttribute('id', 'basicOGL_canvas'+getUrlVars()['op_id']);
+    canvas.setAttribute('width', 800);
+    canvas.setAttribute('height', 800);
+
+    div.appendChild(canvas);
+    body.appendChild(div);
+
+    div.addEventListener('focusout', function () {
+        console.log('visibility', div.visibilityState);
+    });
 
     ////////////////////////////////////////////////
     //MOUSE INTERACTION
     canvas.addEventListener('mousemove', function(evt) {
         var pos = getMousePos(canvas, evt);
-        //send('move', [pos.x, pos.y]);
-        //console.log('move', [pos.x, pos.y]);
         sakura.apis.operator.fire_event('mouse_motion',
                                         {'x': pos.x, 'y': pos.y})
                                         .then( function (result) {});
@@ -61,12 +89,12 @@ function init_basicOGL() {
         evt.preventDefault();
     }, false);
 
-    update_size();
-
+    update_size(getUrlVars()['op_id']);
 
     //regular asking for the main image
     setInterval( function() {
-    update_size();
+    update_size(getUrlVars()['op_id']);
+    
     /*sakura.apis.operator.fire_event('resize', {}).then( function(result) {
             var ctx = canvas.getContext("2d");
             var img = new Image();

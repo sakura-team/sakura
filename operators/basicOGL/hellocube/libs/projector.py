@@ -111,9 +111,12 @@ class projector:
         self.far            = 1000
         self.width          = width
         self.height         = height
-        self.ratio          = width/height
         self.v_angle        = 45*math.pi/180.0          #60degrees
 
+        self.change_ratio(width/height)
+
+    def change_ratio(self, new_ratio):
+        self.ratio = new_ratio
         h = self.near*math.tan(self.v_angle/2.0)
         w = h*self.ratio
 
