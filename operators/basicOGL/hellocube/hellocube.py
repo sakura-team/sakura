@@ -210,13 +210,14 @@ class hellocube:
         elif key == b't':
             self.resize(400, 200)
 
-    def resize(self, w, h):
-        glutReshapeWindow(w, h)
-
     def reshape(self, w, h):
         glViewport(0,  0,  w,  h);
         self.projo.ratio = w/float(h)
         glutPostRedisplay()
+
+    def resize(self, w, h):
+        glutReshapeWindow(w, h)
+
 
 
 if __name__ == '__main__':

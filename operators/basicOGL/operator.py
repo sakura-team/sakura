@@ -16,9 +16,16 @@ class basicOGL(Operator):
     def construct(self):
         # additional tabs
         self.register_tab('OGL', 'basicOGL.html')
+        self.button_state = 1
         self.bOGL = hcube.hellocube(800, 600)
         self.bOGL.start()
 
     def handle_event(self, ev_type, **info):
-        print('#################')
-        print(ev_type, info)
+        if ev_type == 'resize':
+            return self.bOGL.resize(info['w'], info['h'])
+        elif ev_type == 'mouse_clicks':
+            self.button_state = info['state']
+            return self.bOGL.mouse_clicks(info['button'], info['state'], info['x'], info['y'])
+        elif ev_type == 'mouse_motion':
+            if self.button_state == 0:
+                return self.bOGL.mouse_motion(info['x'], info['y'])
