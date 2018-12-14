@@ -16,9 +16,10 @@ import numpy    as np
 from pathlib import Path
 from gevent import Greenlet
 
-from sakura.common.gpu.libegl import EGLContext
-from sakura.common.gpu.tools import write_jpg
-import io
+if __name__ != '__main__':
+    from sakura.common.gpu.libegl import EGLContext
+    from sakura.common.gpu.tools import write_jpg
+    import io
 
 try:
     from OpenGL.GL      import *
