@@ -1,5 +1,6 @@
 import sys, gevent
 from gevent.queue import Queue
+import ctypes
 
 class StdoutProxy(object):
     def __init__(self, stdout):
@@ -95,3 +96,30 @@ class Enum:
 
 def make_enum(*words):
     return Enum(words)
+
+# only load libraries if they are needed
+class LazyFuncCaller:
+    libs = {}
+    def __init__(self, lib_name, func_name):
+        self.lib_name = lib_name
+        self.func_name = func_name
+    def __call__(self, *args, **kwargs):
+        if self.lib_name not in LazyFuncCaller.libs:
+            LazyFuncCaller.libs[self.lib_name] = ctypes.CDLL(self.lib_name)
+        func = getattr(LazyFuncCaller.libs[self.lib_name], self.func_name)
+        return func(*args, **kwargs)
+
+# provide rollback capability to classes
+class TransactionMixin:
+    def __init__(self):
+        self.rollback_cbs = []
+    def rollback(self):
+        for cb in reversed(self.rollback_cbs):
+            cb()
+        self.rollback_cbs = []
+    def add_rollback_cb(self, cb):
+        self.rollback_cbs += [ cb ]
+    def __enter__(self):
+        return self
+    def __exit__(self, type, value, traceback):
+        self.rollback()

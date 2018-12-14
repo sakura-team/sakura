@@ -16,14 +16,17 @@ import numpy    as np
 from pathlib import Path
 from gevent import Greenlet
 
+from sakura.common.gpu.libegl import EGLContext
+
+
 try:
     from OpenGL.GL      import *
     from OpenGL.GLU     import *
-    from OpenGL.GLUT    import *
+    if __name__ == '__main__':
+        from OpenGL.GLUT    import *
     from OpenGL.GL      import shaders
 except:
-    print ('''ERROR: PyOpenGL not installed properly.''')
-
+    print ('''ERROR: PyOpenGL not installed properly. ** ''')
 
 def wire_cube(pos, edge):
     p = np.array(pos)
@@ -146,38 +149,40 @@ class hellocube:
         if w or h:
             self.projo.change_ratio(w/float(h))
 
-        #Glut Init
-        try:
-            glutInit()
-        except Exception as e:
-            print(e)
-            sys.exit()
-
-        if pl.system() == 'Darwin': #Darwin: OSX
-            glutInitDisplayString('double rgba samples=8 core depth')
-        else:   #Other: Linux
+        if __name__ == '__main__':
+            #Glut Init
             try:
-                glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE | GLUT_DEPTH)
+                glutInit()
             except Exception as e:
-                print('Issue detected')
                 print(e)
                 sys.exit()
 
-        glutInitWindowSize (self.width, self.height)
-        glutCreateWindow ('Basic OGL')
-        self.init_GL()
-        self.init_shader()
-        glutDisplayFunc(self.display)
-        glutKeyboardFunc(self.keyboard)
-        glutMouseFunc(self.mouse_clicks)
-        glutMotionFunc(self.mouse_motion)
-        glutReshapeFunc(self.reshape)
+            if pl.system() == 'Darwin': #Darwin: OSX
+                glutInitDisplayString('double rgba samples=8 core depth')
+            else:   #Other: Linux
+                try:
+                    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE | GLUT_DEPTH)
+                except Exception as e:
+                    print('Issue detected')
+                    print(e)
+                    sys.exit()
 
-        if __name__ == '__main__':
+            glutInitWindowSize (self.width, self.height)
+            glutCreateWindow ('Basic OGL')
+            self.init_GL()
+            self.init_shader()
+            glutDisplayFunc(self.display)
+            glutKeyboardFunc(self.keyboard)
+            glutMouseFunc(self.mouse_clicks)
+            glutMotionFunc(self.mouse_motion)
+            glutReshapeFunc(self.reshape)
+
             glutMainLoop()
         else:
-            glutIdleFunc(self.idle)
-            Greenlet.spawn(glutMainLoop)
+            self.ctx = EGLContext()
+            self.ctx.initialize(self.width, self.height)
+            self.init_GL()
+            self.init_shader()
 
     def idle(self):
         nt = time.time()
@@ -192,7 +197,8 @@ class hellocube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self.sh.display_list([self.cube_shader])
-        glutSwapBuffers()
+        if __name__ == '__main__':
+            glutSwapBuffers()
 
     def mouse_clicks(self, button, state, x, y):
         self.mouse = [x, y]
@@ -210,9 +216,12 @@ class hellocube:
         dx, dy = x - self.mouse[0], y - self.mouse[1]
         self.mouse = [x, y]
         if self.imode == 'rotation':
-            self.projo.rotate_h(-dx/glutGet(GLUT_WINDOW_WIDTH)*math.pi)
-            self.projo.rotate_v(-dy/glutGet(GLUT_WINDOW_HEIGHT)*math.pi)
-        glutPostRedisplay()
+            self.projo.rotate_h(-dx/self.width*math.pi)
+            self.projo.rotate_v(-dy/self.height*math.pi)
+        if __name__ == '__main__':
+            glutPostRedisplay()
+        else:
+            self.display()
 
     def keyboard(self, key, x, y):
         if key == b'\x1b':
@@ -227,8 +236,10 @@ class hellocube:
         glutPostRedisplay()
 
     def resize(self, w, h):
-        glutReshapeWindow(w, h)
-
+        if __name__ == '__main__':
+            glutReshapeWindow(int(w), int(h))
+        else:
+            pass # TODO
 
 
 if __name__ == '__main__':
