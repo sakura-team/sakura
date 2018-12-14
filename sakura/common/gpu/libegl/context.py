@@ -37,6 +37,7 @@ class EGLContext(TransactionMixin):
         egl_surface = device.create_surface(egl_dpy, egl_config)
         if egl_surface.initialize(width, height):
             self.add_rollback_cb(lambda: egl_surface.release())
+            self.egl_surface = egl_surface
         else:
             self.rollback(); return False
         # step 6
@@ -79,3 +80,5 @@ class EGLContext(TransactionMixin):
         return egl_context
     def release(self):
         self.rollback()
+    def resize(self, width, height):
+        self.egl_surface.resize(width, height)

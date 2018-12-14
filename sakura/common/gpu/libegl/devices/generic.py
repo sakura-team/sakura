@@ -20,6 +20,9 @@ class GenericEGLSurface:
         egl.eglDestroySurface(self.egl_dpy, self.egl_surface)
     def make_current(self, egl_context):
         return egl.eglMakeCurrent(self.egl_dpy, self.egl_surface, self.egl_surface, egl_context)
+    def resize(self, width, height):
+        self.release()
+        self.initialize(width, height)
 
 class GenericEGLDevice:
     @staticmethod
