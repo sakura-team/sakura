@@ -21,7 +21,10 @@ class basicOGL(Operator):
         self.bOGL.start()
 
     def handle_event(self, ev_type, **info):
-        if ev_type == 'resize':
+        if ev_type == 'init':
+            url = "/streams/%d/video.mjpeg" % self.op_id
+            return { "mjpeg_url": url }
+        elif ev_type == 'resize':
             return self.bOGL.resize(info['w'], info['h'])
         elif ev_type == 'mouse_clicks':
             self.button_state = info['state']
@@ -29,3 +32,6 @@ class basicOGL(Operator):
         elif ev_type == 'mouse_motion':
             if self.button_state == 0:
                 return self.bOGL.mouse_motion(info['x'], info['y'])
+
+    def stream_jpeg_frames(self):
+        yield from self.bOGL.stream_jpeg_frames()

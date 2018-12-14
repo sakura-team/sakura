@@ -5,6 +5,7 @@ from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
 from sakura.hub.web.cache import webcache_serve
 from sakura.hub.web.csvtools import export_table_as_csv, export_stream_as_csv
+from sakura.hub.web.video import serve_video_stream
 from sakura.hub.db import db_session_wrapper
 from sakura.common.tools import monitored
 from pathlib import Path
@@ -65,6 +66,11 @@ def web_greenlet(context, webapp_path):
     def exp_table_as_csv_gz(table_id):
         with db_session_wrapper():
             yield from export_table_as_csv(context, table_id, gzip_compression=True)
+
+    @app.route('/streams/<op_id:int>/video.mjpeg')
+    def server_video_stream(op_id):
+        with db_session_wrapper():
+            yield from serve_video_stream(context, op_id)
 
     @app.route('/modules/workflow/tpl/<filepath:path>', method=['POST'])
     def serve_template(filepath):

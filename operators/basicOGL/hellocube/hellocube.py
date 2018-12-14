@@ -17,7 +17,8 @@ from pathlib import Path
 from gevent import Greenlet
 
 from sakura.common.gpu.libegl import EGLContext
-
+from sakura.common.gpu.tools import write_jpg
+import io
 
 try:
     from OpenGL.GL      import *
@@ -183,6 +184,17 @@ class hellocube:
             self.ctx.initialize(self.width, self.height)
             self.init_GL()
             self.init_shader()
+
+    def stream_jpeg_frames(self):
+        f = io.BytesIO()
+        while True:
+            gevent.sleep(1.0/30)
+            #draw()
+            write_jpg(f, self.width, self.height)
+            yield f.getvalue()
+            print('yielded')
+            f.seek(0)
+            f.truncate()
 
     def idle(self):
         nt = time.time()
