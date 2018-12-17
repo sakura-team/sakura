@@ -246,16 +246,25 @@ class hellocube:
             self.resize(400, 200)
 
     def reshape(self, w, h):
-        glViewport(0,  0,  w,  h);
-        self.projo.change_ratio(w/float(h))
-        glutPostRedisplay()
+        print('reshape ' + str((w, h)))
+        if (w, h) != (self.width, self.height):
+            glViewport(0,  0,  w,  h);
+            self.projo.change_ratio(w/float(h))
+            self.width, self.height = w, h
+            if __name__ == '__main__':
+                glutPostRedisplay()
+            else:
+                self.display()
 
     def resize(self, w, h):
-        if __name__ == '__main__':
-            glutReshapeWindow(int(w), int(h))
-        else:
-            pass # TODO
-
+        print('resize ' + str((w, h)))
+        w, h = int(w), int(h)
+        if (w, h) != (self.width, self.height):
+            if __name__ == '__main__':
+                glutReshapeWindow(w, h)
+            else:
+                self.ctx.resize(w, h)
+                self.reshape(w, h)
 
 if __name__ == '__main__':
     bogl = hellocube()
