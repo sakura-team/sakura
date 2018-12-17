@@ -10,28 +10,16 @@ import time
 import inspect
 import gevent
 
-import platform as pl
 import numpy    as np
 
 from pathlib import Path
-from gevent import Greenlet
-from gevent.queue import Queue, Empty
-
-if __name__ != '__main__':
-    from sakura.common.gpu.libegl import EGLContext
-    from sakura.common.gpu.tools import write_jpg
-    import io
 
 try:
     from OpenGL.GL      import *
     from OpenGL.GLU     import *
-    if __name__ == '__main__':
-        from OpenGL.GLUT    import *
     from OpenGL.GL      import shaders
 except:
     print ('''ERROR: PyOpenGL not installed properly. ** ''')
-
-MIN_RATE =  0.5      # frames per second (if no change)
 
 def wire_cube(pos, edge):
     p = np.array(pos)
@@ -69,6 +57,7 @@ class hellocube:
         # import local libs
         hellocube_py_path = Path(inspect.getabsfile(self.__class__))
         self.hellocube_dir = hellocube_py_path.parent
+        #self.import_global_libs(ctx)
         self.import_local_libs()
         # display attributes
         self.width = 100
@@ -78,7 +67,6 @@ class hellocube:
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
-        self.change_queue   = Queue()
 
     def import_local_libs(self):
         if __name__ == '__main__':
@@ -91,14 +79,17 @@ class hellocube:
         self.sh = sh
         self.pr = pr
 
-    def init_GL(self):
+    def init(self):
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        self.init_shader()
 
     def init_shader(self):
 
+        glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8").replace('.', '')
+        
         ##########################
         # general vertex array object
         print('\n\tGenerating vao...', end='')
@@ -140,98 +131,18 @@ class hellocube:
         #Loading shader files
         print('\tCube shader...', end='')
         self.cube_shader.sh = self.sh.create(str(self.hellocube_dir / 'shaders/cube.vert'), None,
-                                             str(self.hellocube_dir / 'shaders/cube.frag'), [self.cube_shader.attr_vertices], ['in_vertex'])
+                                             str(self.hellocube_dir / 'shaders/cube.frag'), [self.cube_shader.attr_vertices], ['in_vertex'], glsl_version)
         if not self.cube_shader.sh:
             exit(1)
         print('\t\tOk')
         sys.stdout.flush()
 
-    def start(self, w=None, h=None):
-
-        if w:
-            self.width = w
-        if h:
-            self.height = h
-        if w or h:
-            self.projo.change_ratio(w/float(h))
-
-        if __name__ == '__main__':
-            #Glut Init
-            try:
-                glutInit()
-            except Exception as e:
-                print(e)
-                sys.exit()
-
-            if pl.system() == 'Darwin': #Darwin: OSX
-                glutInitDisplayString('double rgba samples=8 core depth')
-            else:   #Other: Linux
-                try:
-                    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE | GLUT_DEPTH)
-                except Exception as e:
-                    print('Issue detected')
-                    print(e)
-                    sys.exit()
-
-            glutInitWindowSize (self.width, self.height)
-            glutCreateWindow ('Basic OGL')
-            self.init_GL()
-            self.init_shader()
-            glutDisplayFunc(self.display)
-            glutKeyboardFunc(self.keyboard)
-            glutMouseFunc(self.mouse_clicks)
-            glutMotionFunc(self.mouse_motion)
-            glutReshapeFunc(self.reshape)
-
-            glutMainLoop()
-        else:
-            self.ctx = EGLContext()
-            self.ctx.initialize(self.width, self.height)
-            self.ctx.make_current()
-            self.init_GL()
-            self.init_shader()
-
-    def notify_change(self):
-        print('notify_change')
-        self.change_queue.put(1)
-
-    def stream_jpeg_frames(self):
-        f = io.BytesIO()
-        while True:
-            try:
-                self.change_queue.get(timeout=1/MIN_RATE)
-            except Empty:
-                pass
-            # if there were more change notifications queued,
-            # ignore them (we are late)
-            while not self.change_queue.empty():
-                self.change_queue.get()     # pop
-            self.ctx.make_current()
-            self.display()
-            write_jpg(f, self.width, self.height)
-            yield f.getvalue()
-            f.seek(0)
-            f.truncate()
-
-    def idle(self):
-        nt = time.time()
-        dt = 1/self.fps_limitation - (nt - self.last_time)
-        self.last_time = nt
-        if  dt > 0:
-            gevent.sleep(dt)
-        else:
-            gevent.idle()
-
     def display(self):
-        if __name__ != '__main__':
-            self.ctx.make_current()
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self.sh.display_list([self.cube_shader])
-        if __name__ == '__main__':
-            glutSwapBuffers()
 
-    def mouse_clicks(self, button, state, x, y):
+    def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
         LEFT_BUTTON = 0
         MIDDLE_BUTTON = 1
@@ -243,42 +154,21 @@ class hellocube:
         elif button == LEFT_BUTTON and state == UP:
             self.imode = 'none'
 
-    def mouse_motion(self, x, y):
+    def on_mouse_motion(self, x, y):
         dx, dy = x - self.mouse[0], y - self.mouse[1]
         self.mouse = [x, y]
         if self.imode == 'rotation':
             self.projo.rotate_h(-dx/self.width*math.pi)
             self.projo.rotate_v(-dy/self.height*math.pi)
-        if __name__ == '__main__':
-            glutPostRedisplay()
-        else:
-            self.notify_change()
 
-    def keyboard(self, key, x, y):
+    def on_key_press(self, key, x, y):
         if key == b'\x1b':
             sys.exit()
+        elif key == b't':
+            print('test', x, y)
 
-    def reshape(self, w, h):
-        print('reshape ' + str((w, h)))
-        if (w, h) != (self.width, self.height):
-            glViewport(0,  0,  w,  h);
-            self.projo.change_ratio(w/float(h))
-            self.width, self.height = w, h
-            if __name__ == '__main__':
-                glutPostRedisplay()
-            else:
-                self.notify_change()
-
-    def resize(self, w, h):
+    def on_resize(self, w, h):
         print('resize ' + str((w, h)))
-        w, h = int(w), int(h)
-        if (w, h) != (self.width, self.height):
-            if __name__ == '__main__':
-                glutReshapeWindow(w, h)
-            else:
-                self.ctx.resize(w, h)
-                self.reshape(w, h)
-
-if __name__ == '__main__':
-    bogl = hellocube()
-    bogl.start()
+        glViewport(0,  0,  w,  h);
+        self.projo.change_ratio(w/float(h))
+        self.width, self.height = w, h

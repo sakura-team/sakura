@@ -1,5 +1,3 @@
-#version 130
-
 precision highp float;
 
 uniform mat4 projection_mat;

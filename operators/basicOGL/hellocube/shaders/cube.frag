@@ -1,5 +1,3 @@
-#version 130
-
 precision highp float; //High precision, critical !!!
 precision highp int; //High precision, critical !!!
 

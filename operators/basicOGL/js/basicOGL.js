@@ -45,7 +45,7 @@ function init_basicOGL() {
     img.addEventListener('mousedown', function(evt) {
         evt.preventDefault();
         var pos = getMousePos(img, evt)
-        sakura.apis.operator.fire_event('mouse_clicks',
+        sakura.apis.operator.fire_event('mouse_click',
                                         {'button': evt.button, 'state': 0, 'x': pos.x, 'y': pos.y})
                                         .then( function (result) {});
     }, false);
@@ -53,7 +53,7 @@ function init_basicOGL() {
     img.addEventListener('mouseup', function(evt) {
         evt.preventDefault();
         var pos = getMousePos(img, evt)
-        sakura.apis.operator.fire_event('mouse_clicks',
+        sakura.apis.operator.fire_event('mouse_click',
                                         {'button': evt.button, 'state': 1, 'x': pos.x, 'y': pos.y})
                                         .then( function (result) {});
     }, false);

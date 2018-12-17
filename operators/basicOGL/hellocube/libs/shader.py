@@ -62,7 +62,7 @@ class shader:
             else:
                 print("Error in setting Uniform: Unknown type")
 
-def compile(path, type):
+def compile(path, type, version):
     try:
         shader = open(path, 'r').read()
     except:
@@ -70,6 +70,9 @@ def compile(path, type):
         print('\t!!! Cannot read', path, '!!!')
         print('\t!!!!!!!!!!!!!!!!!!!!!!!!!\n')
         return None
+
+    if version:
+        shader = "#version "+str(int(version.replace('.', '')))+"\n\n"+shader
 
     vs = glCreateShader(type)
     glShaderSource(vs, shader)
@@ -85,21 +88,21 @@ def compile(path, type):
     return vs
 
 
-def create(vert_fname, geom_fname, frag_fname, attrib_indexes, attrib_names):
+def create(vert_fname, geom_fname, frag_fname, attrib_indexes, attrib_names, version = None):
 
     #Reading Shaders
     if vert_fname:
-        vs = compile(vert_fname, GL_VERTEX_SHADER)
+        vs = compile(vert_fname, GL_VERTEX_SHADER, version)
         if not vs:
             sys.exit()
 
     if geom_fname:
-        gs = compile(geom_fname, GL_GEOMETRY_SHADER)
+        gs = compile(geom_fname, GL_GEOMETRY_SHADER, version)
         if not gs:
             sys.exit()
 
     if frag_fname:
-        fs = compile(frag_fname, GL_FRAGMENT_SHADER)
+        fs = compile(frag_fname, GL_FRAGMENT_SHADER, version)
         if not fs:
             sys.exit()
 
