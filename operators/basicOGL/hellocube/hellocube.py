@@ -183,6 +183,7 @@ class hellocube:
         else:
             self.ctx = EGLContext()
             self.ctx.initialize(self.width, self.height)
+            self.ctx.make_current()
             self.init_GL()
             self.init_shader()
 
@@ -193,7 +194,6 @@ class hellocube:
             #draw()
             write_jpg(f, self.width, self.height)
             yield f.getvalue()
-            print('yielded')
             f.seek(0)
             f.truncate()
 
@@ -207,6 +207,8 @@ class hellocube:
             gevent.idle()
 
     def display(self):
+        if __name__ != '__main__':
+            self.ctx.make_current()
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self.sh.display_list([self.cube_shader])

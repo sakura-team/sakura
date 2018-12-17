@@ -5,6 +5,10 @@ from sakura.common.gpu.libegl import devices, egl_convert_to_int_array
 from sakura.common.tools import TransactionMixin
 
 class EGLContext(TransactionMixin):
+    CURRENT = None
+    @property
+    def is_current(self):
+        return EGLContext.CURRENT == self
     def initialize(self, width, height):
         for device in devices.probe():
             if not self.initialize_on_device(device, width, height):
@@ -44,10 +48,8 @@ class EGLContext(TransactionMixin):
         egl_context = self.get_context(egl_dpy, egl_config)
         if egl_context is not None:
             self.add_rollback_cb(lambda: egl.eglDestroyContext(egl_dpy, egl_context))
+            self.egl_context = egl_context
         else:
-            self.rollback(); return False
-        # step 7
-        if not egl_surface.make_current(egl_context):
             self.rollback(); return False
         # device seems to be working
         return True
@@ -82,3 +84,13 @@ class EGLContext(TransactionMixin):
         self.rollback()
     def resize(self, width, height):
         self.egl_surface.resize(width, height)
+        if self.is_current:
+            self.make_surface_current()
+    def make_current(self):
+        if self.is_current:
+            return True     # nothing to do
+        res = self.make_surface_current()
+        EGLContext.CURRENT = self
+        return res
+    def make_surface_current(self):
+        return self.egl_surface.make_current(self.egl_context)
