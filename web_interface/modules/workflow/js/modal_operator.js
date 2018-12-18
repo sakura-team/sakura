@@ -17,7 +17,7 @@ function create_op_modal(main_div, id, cl_id, tabs) {
                     "modal-operator.html",
                     {'id': id, 'cl': cl, 'tabs': tabs, 'inst_id': parseInt(id.split("_")[2])},
                     function () {
-                        var modal = wrapper.firstChild;
+                        let modal = wrapper.firstChild;
                         // update the svg icon
                         $(modal).find("#tdsvg").html(cl.svg);
                         // append to main div
@@ -26,6 +26,21 @@ function create_op_modal(main_div, id, cl_id, tabs) {
     );
 }
 
+function set_tab_urls(id, url_formatter) {
+    let op_hub_id = parseInt(id.split("_")[2]);
+    return new Promise(function(resolve, reject) {
+        sakura.apis.hub.operators[op_hub_id].info().then(function (instance_info) {
+            current_instance_info = instance_info;
+            let index = 0;
+            instance_info.tabs.forEach( function(tab) {
+                let iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
+                let tab_url = url_formatter(op_hub_id, tab);
+                iframe.attr('src', tab_url);
+                index++;
+            });
+        }).then(resolve);
+    });
+}
 
 function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
@@ -54,16 +69,8 @@ function fill_all(id) {
 
 
 function fill_tabs(id) {
-    let op_hub_id = parseInt(id.split("_")[2]);
-    sakura.apis.hub.operators[op_hub_id].info().then(function (instance_info) {
-        current_instance_info = instance_info;
-        let index = 0;
-        instance_info.tabs.forEach( function(tab) {
-            let iframe = $(document.getElementById('modal_'+id+'_tab_tab_'+index));
-            let tab_url = '/opfiles/' + op_hub_id + '/' + tab.html_path;
-            iframe.attr('src', tab_url);
-            index++;
-        });
+    return set_tab_urls(id, function(op_hub_id, tab) {
+        return '/opfiles/' + op_hub_id + '/' + tab.html_path;
     });
 }
 
@@ -114,6 +121,15 @@ function fill_params(id) {
     });
 }
 
+function release_all(id) {
+    return release_tabs(id);
+}
+
+function release_tabs(id) {
+    return set_tab_urls(id, function(op_hub_id, tab) {
+        return '';
+    });
+}
 
 function params_onChange(op_id, param_index, select_id) {
 

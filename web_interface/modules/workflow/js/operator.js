@@ -179,8 +179,9 @@ function open_op_help(e) {
 
 
 function open_op_modal() {
-    var modal_name = "modal_"+this.id;
-    fill_all(this.id);
+    let modal_id = this.id;
+    let modal_name = "modal_"+modal_id;
+    fill_all(modal_id);
     if ($('#'+modal_name+"_dialog").attr('class').includes("full_width")) {
         $('#'+modal_name+"_dialog").toggleClass("full_width");
         $('#'+modal_name+"_body").css("height", "100%");
@@ -188,6 +189,10 @@ function open_op_modal() {
         current_nb_rows = max_rows;
     }
     $('#'+modal_name).modal();
+    // add on-close handler
+    $('#'+modal_name).on('hide.bs.modal', function () {
+        release_all(modal_id).then(function(){});
+    });
 }
 
 function class_from_id(id) {
