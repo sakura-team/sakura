@@ -192,6 +192,7 @@ class hellocube:
         while True:
             gevent.sleep(1.0/30)
             #draw()
+            self.ctx.make_current()
             write_jpg(f, self.width, self.height)
             yield f.getvalue()
             f.seek(0)
@@ -241,9 +242,6 @@ class hellocube:
     def keyboard(self, key, x, y):
         if key == b'\x1b':
             sys.exit()
-
-        elif key == b't':
-            self.resize(400, 200)
 
     def reshape(self, w, h):
         print('reshape ' + str((w, h)))

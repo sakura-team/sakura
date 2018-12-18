@@ -26,6 +26,7 @@ class EGLContext(TransactionMixin):
         egl_dpy = device.get_egl_display()
         if egl_dpy != egl.EGL_NO_DISPLAY:
             self.add_rollback_cb(lambda: egl.eglTerminate(egl_dpy))
+            self.egl_dpy = egl_dpy
         else:
             self.rollback(); return False
         # step 3
@@ -81,16 +82,25 @@ class EGLContext(TransactionMixin):
             return None
         return egl_context
     def release(self):
+        if self.is_current:
+            self.make_surface_not_current()
+            EGLContext.CURRENT = None
         self.rollback()
     def resize(self, width, height):
+        if self.is_current:
+            self.make_surface_not_current()
         self.egl_surface.resize(width, height)
         if self.is_current:
             self.make_surface_current()
     def make_current(self):
         if self.is_current:
             return True     # nothing to do
+        if EGLContext.CURRENT is not None:
+            EGLContext.CURRENT.make_surface_not_current()
         res = self.make_surface_current()
         EGLContext.CURRENT = self
         return res
     def make_surface_current(self):
         return self.egl_surface.make_current(self.egl_context)
+    def make_surface_not_current(self):
+        egl.eglMakeCurrent(self.egl_dpy, egl.EGL_NO_SURFACE, egl.EGL_NO_SURFACE, egl.EGL_NO_CONTEXT)

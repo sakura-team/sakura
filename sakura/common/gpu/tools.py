@@ -25,12 +25,12 @@ class JPEGWriter:
     def __init__(self):
         self.array, self.array_size = None, 0
     def __call__(self, f, width, height):
-        new_array_size = width * height * 3
-        if new_array_size > self.array_size:
-            self.array = (gl.GLubyte * new_array_size)()
-            self.array_size = new_array_size
-        gl.glReadPixels(0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, self.array)
-        im = Image.frombuffer('RGB', (width, height), self.array, "raw", 'RGB', 0, -1)
+        # TODO: check how we could reuse the previous buffer, if (width, height)
+        # does not change. Maybe by creating the Image object first and providing
+        # its buffer to glReadPixels.
+        args = (0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
+        array = gl.glReadPixels(*args)
+        im = Image.frombuffer('RGB', (width, height), array, "raw", 'RGB', 0, -1)
         im.save(f, 'JPEG')
 
 write_jpg = JPEGWriter()

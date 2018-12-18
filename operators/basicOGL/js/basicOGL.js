@@ -16,18 +16,22 @@ function getMousePos(img, evt) {
     };
 }
 
+var old_width = -1;
+var old_height = -1;
+
 function update_size() {
     var div   = document.getElementById('basicOGL_div')
     var img= document.getElementById('basicOGL_img')
-    w = div.getBoundingClientRect().width;
-    h = div.getBoundingClientRect().height;
-    if (w != img.width || h != img.height) {
-        if (w <= 0 || h <= 0) {
-            w = 50;
-            h = 50;
-        }
-        img.width = w;
-        img.height = h;
+    w = img.width;
+    h = img.height;
+    if (w <= 0 || h <= 0) {
+        w = 50;
+        h = 50;
+    }
+    if (w != old_width || h != old_height) {
+        console.log('resize', w, h);
+        old_width = w;
+        old_height = h;
         sakura.apis.operator.fire_event("resize", {'w':w, 'h':h}).then( function(result) {});
     }
 }
