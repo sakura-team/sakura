@@ -24,12 +24,18 @@
     <link rel="stylesheet" href="/webcache/cdnjs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"/>
 
     <script>
-        window.onpopstate = function(event) {
+        /*window.onpopstate = function(event) {
             if (event.state)
                 showDiv(event,event.state.where);
             else
                 alert('bad event');
-        };
+        };*/
+        window.onpopstate = function(event) {
+            console.log('here, onpopstate');
+            var evt = document.createEvent('Event');
+            evt.initEvent('load', false, false);
+            window.dispatchEvent(evt);
+        }
         window.onload = function(event) {
             let a = window.location.href.split("#");
             if (a.length>1) {
