@@ -1,13 +1,5 @@
 // Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-function getUrlVars() {
-    var vars = {};
-    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
-        vars[key] = value;
-    });
-    return vars;
-}
-
 function getMousePos(img, evt) {
     var rect = img.getBoundingClientRect();
     return {
@@ -16,43 +8,28 @@ function getMousePos(img, evt) {
     };
 }
 
-var old_width = -1;
-var old_height = -1;
+function close_basicOGL() {
+    console.log('unload');
+}
 
-function update_size() {
-    var div   = document.getElementById('basicOGL_div')
-    var img= document.getElementById('basicOGL_img')
+function onresize() {
+    var img= document.getElementById('basicOGL_img');
     w = img.width;
     h = img.height;
     if (w <= 0 || h <= 0) {
         w = 50;
         h = 50;
     }
-    if (w != old_width || h != old_height) {
-        console.log('resize', w, h);
-        old_width = w;
-        old_height = h;
-        sakura.apis.operator.fire_event("resize", {'w':w, 'h':h}).then( function(result) {});
-    }
+    console.log('onresize', img.width, img.height);
+    sakura.apis.operator.fire_event("resize", {'w':w, 'h':h});
 }
-
-function close_basicOGL() {
-    console.log('unload');
-}
-
 
 function init_basicOGL() {
 
-    console.log(getUrlVars()['op_id'])
-
-    var div   = document.getElementById('basicOGL_div')
     var img= document.getElementById('basicOGL_img')
 
     sakura.apis.operator.fire_event('init').then(function (init_info) {
         img.src = init_info.mjpeg_url;
-    });
-    div.addEventListener('focusout', function () {
-        console.log('visibility', div.visibilityState);
     });
 
     ////////////////////////////////////////////////
@@ -84,22 +61,4 @@ function init_basicOGL() {
     img.addEventListener('contextmenu', function(evt) {
         evt.preventDefault();
     }, false);
-
-    update_size();
-
-    //regular asking for the main image
-    setInterval( function() {
-    update_size();
-    
-    /*sakura.apis.operator.fire_event('resize', {}).then( function(result) {
-            var ctx = img.getContext("2d");
-            var img = new Image();
-            img.src = "data:image/jpeg;base64,"+btoa(image);
-            img.onload = function() {
-                console.log('here2');
-                cxt.drawImage(img, 0, 0);
-            }
-        });
-      */
-    }, 100);
 }

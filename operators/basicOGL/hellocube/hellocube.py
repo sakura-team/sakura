@@ -15,6 +15,7 @@ import numpy    as np
 
 from pathlib import Path
 from gevent import Greenlet
+from gevent.queue import Queue, Empty
 
 if __name__ != '__main__':
     from sakura.common.gpu.libegl import EGLContext
@@ -29,6 +30,8 @@ try:
     from OpenGL.GL      import shaders
 except:
     print ('''ERROR: PyOpenGL not installed properly. ** ''')
+
+MIN_RATE =  0.5      # frames per second (if no change)
 
 def wire_cube(pos, edge):
     p = np.array(pos)
@@ -75,6 +78,7 @@ class hellocube:
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
+        self.change_queue   = Queue()
 
     def import_local_libs(self):
         if __name__ == '__main__':
@@ -187,12 +191,23 @@ class hellocube:
             self.init_GL()
             self.init_shader()
 
+    def notify_change(self):
+        print('notify_change')
+        self.change_queue.put(1)
+
     def stream_jpeg_frames(self):
         f = io.BytesIO()
         while True:
-            gevent.sleep(1.0/30)
-            #draw()
+            try:
+                self.change_queue.get(timeout=1/MIN_RATE)
+            except Empty:
+                pass
+            # if there were more change notifications queued,
+            # ignore them (we are late)
+            while not self.change_queue.empty():
+                self.change_queue.get()     # pop
             self.ctx.make_current()
+            self.display()
             write_jpg(f, self.width, self.height)
             yield f.getvalue()
             f.seek(0)
@@ -237,7 +252,7 @@ class hellocube:
         if __name__ == '__main__':
             glutPostRedisplay()
         else:
-            self.display()
+            self.notify_change()
 
     def keyboard(self, key, x, y):
         if key == b'\x1b':
@@ -252,7 +267,7 @@ class hellocube:
             if __name__ == '__main__':
                 glutPostRedisplay()
             else:
-                self.display()
+                self.notify_change()
 
     def resize(self, w, h):
         print('resize ' + str((w, h)))

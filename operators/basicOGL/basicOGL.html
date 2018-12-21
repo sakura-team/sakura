@@ -3,7 +3,7 @@
 
 <!DOCTYPE html>
 
-<html style="height:100%;">
+<html style="height:100%; overflow:hidden;">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <script src="/webcache/cdnjs/jquery/3.1.1/jquery.min.js"></script>
@@ -11,9 +11,7 @@
         <script src="/js/sakura-operator.js"></script>
         <script src='js/basicOGL.js'></script>
     </head>
-    <body style="height:100%;" onload="init_basicOGL();">
-        <div id="basicOGL_div" style="height:100%;">
-            <img id="basicOGL_img" width="100%" height="100%"/>
-        </div>
+    <body style="height:100%; margin:0;" onload="init_basicOGL();" onresize="onresize();">
+        <img id="basicOGL_img" style="width:100%; height:100%;"/>
     </body>
 </html>
