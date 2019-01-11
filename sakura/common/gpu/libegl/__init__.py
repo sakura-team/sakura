@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 import os, sys
-# if OpenGL was already loaded, we have to reload it after the
-# PYOPENGL_PLATFORM variable is set...
-ogl_module_names = list(k for k in sys.modules.keys() if k.startswith('OpenGL'))
-for mod_name in ogl_module_names:
-    del sys.modules[mod_name]
+# if OpenGL was already loaded and 'PYOPENGL_PLATFORM' was not defined, fail.
+if os.environ.get('PYOPENGL_PLATFORM', 'undef') != 'egl':
+    ogl_modules = list(k for k in sys.modules.keys() if k.startswith('OpenGL'))
+    if len(ogl_modules) > 0:
+        print('Sorry, cannot load EGL because OpenGL was already imported with a different backend!')
+        print('Tip: import sakura.common.gpu.openglapp earlier.')
+        sys.exit()
 os.environ['PYOPENGL_PLATFORM'] = 'egl'
+
 import OpenGL.EGL as egl
 import ctypes
 
