@@ -4,7 +4,14 @@ from sakura.common.gpu import libegl
 from sakura.common.gpu.openglapp.base import OpenglAppBase
 from sakura.common.gpu.tools import write_jpg
 
-MIN_RATE =  0.5      # frames per second (if no change)
+# parameters of jpeg streams
+# * we compute images as soon as possible, with default jpeg quality (low quality)
+# * if we are idle during MAX_LOW_QUALITY_DELAY seconds, we compute and deliver a
+#   high quality image
+# * if we are still idle after MAX_HIGH_QUALITY_DELAY, we deliver the same high
+#   quality image again (in order to avoid timeouts on the browser)
+MAX_LOW_QUALITY_DELAY =  0.1
+MAX_HIGH_QUALITY_DELAY = 2.0
 
 class EGLApp(OpenglAppBase):
 
@@ -36,18 +43,27 @@ class EGLApp(OpenglAppBase):
 
     def stream_jpeg_frames(self):
         f = io.BytesIO()
+        high_quality = False
         while True:
+            timed_out = False
+            if high_quality:
+                timeout = MAX_HIGH_QUALITY_DELAY
+            else:
+                timeout = MAX_LOW_QUALITY_DELAY
             try:
-                self.change_queue.get(timeout=1/MIN_RATE)
+                self.change_queue.get(timeout=timeout)
+                # if there were more change notifications queued,
+                # ignore them (we are late)
+                while not self.change_queue.empty():
+                    self.change_queue.get()     # pop
             except Empty:
-                pass
-            # if there were more change notifications queued,
-            # ignore them (we are late)
-            while not self.change_queue.empty():
-                self.change_queue.get()     # pop
+                timed_out = True
+            high_quality = timed_out
             self.ctx.make_current()
-            self.display()
-            write_jpg(f, self.width, self.height)
+            if not timed_out:   # otherwise display did not change
+                self.display()
+            quality = 95 if high_quality else 75
+            write_jpg(f, self.width, self.height, quality = quality)
             yield f.getvalue()
             f.seek(0)
             f.truncate()

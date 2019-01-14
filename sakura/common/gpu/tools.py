@@ -24,13 +24,13 @@ def write_ppm(filename, width, height):
 class JPEGWriter:
     def __init__(self):
         self.array, self.array_size = None, 0
-    def __call__(self, f, width, height):
+    def __call__(self, f, width, height, **params):
         # TODO: check how we could reuse the previous buffer, if (width, height)
         # does not change. Maybe by creating the Image object first and providing
         # its buffer to glReadPixels.
         args = (0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
         array = gl.glReadPixels(*args)
         im = Image.frombuffer('RGB', (width, height), array, "raw", 'RGB', 0, -1)
-        im.save(f, 'JPEG')
+        im.save(f, 'JPEG', **params)
 
 write_jpg = JPEGWriter()
