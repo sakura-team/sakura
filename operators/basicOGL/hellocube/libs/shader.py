@@ -64,7 +64,8 @@ class shader:
 
 def compile(path, type, version):
     try:
-        shader = open(path, 'r').read()
+        with open(path, 'r') as f:
+            shader = f.read()
     except:
         print('\n\n\t!!!!!!!!!!!!!!!!!!!!!!!!!')
         print('\t!!! Cannot read', path, '!!!')

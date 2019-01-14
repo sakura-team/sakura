@@ -34,6 +34,7 @@ def merge_conf(conf, added_conf):
 def merge_args_and_conf(parser, defaults=None):
     args_conf = parser.parse_args(namespace=ConfContainer())
     file_conf = json.load(args_conf.conf_file)
+    args_conf.conf_file.close()
     # priority is: args_conf > file_conf > defaults
     conf = ConfContainer()
     merge_conf(conf, args_conf)
