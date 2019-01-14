@@ -1,12 +1,15 @@
 import bottle
 from sakura.common.errors import APIRequestError, APIObjectDeniedError
 
-def serve_video_stream(context, op_id):
+def serve_video_stream(context, op_id, ogl_id):
     try:
         # TODO: check rights on operator
         op = context.op_instances.get(id=op_id)
         if op is None:
             raise bottle.HTTPError(404, 'Invalid operator identifier.')
+        if ogl_id < 0 or ogl_id >= len(op.opengl_apps):
+            raise bottle.HTTPError(404, 'Invalid opengl app ID.')
+        opengl_app = op.opengl_apps[ogl_id]
         print('serving video stream...')
         # let browser know our content type (i.e. motion jpeg format)
         content_type = 'multipart/x-mixed-replace; boundary=boundary'
@@ -17,7 +20,7 @@ def serve_video_stream(context, op_id):
         # a frame is not displayed before the header of the next one is
         # received. That's why we first yield the multipart boundary and
         # the content-type before waiting for the frame to be generated.
-        iterator = enumerate(op.stream_jpeg_frames())
+        iterator = enumerate(opengl_app.stream_jpeg_frames())
         while True:
             yield (b'--boundary\r\n' +
                b'Content-Type: image/jpeg\r\n\r\n')

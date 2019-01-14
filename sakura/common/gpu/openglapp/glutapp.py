@@ -47,7 +47,7 @@ class GlutApp(OpenglAppBase):
                 print(e)
                 sys.exit()
         glut.glutInitWindowSize (self.width, self.height)
-        glut.glutCreateWindow ('Basic OGL')
+        glut.glutCreateWindow (self.label)
 
         self.handler.init()
 

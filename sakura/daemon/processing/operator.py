@@ -14,6 +14,7 @@ class Operator:
         operator_py_path = Path(inspect.getabsfile(self.__class__))
         self.root_dir = operator_py_path.parent
         self.event_lock = Semaphore()
+        self.opengl_apps = []
     # overridable dynamic properties
     @property
     def input_plugs(self):
@@ -41,6 +42,11 @@ class Operator:
         return self.register('_parameters', param)
     def register_tab(self, tab_label, html_path):
         return self.register('_tabs', Tab(tab_label, html_path))
+    def register_opengl_app(self, ogl_app):
+        ogl_id = len(self.opengl_apps)
+        url = '/streams/%d/opengl/%d/video.mjpeg' % (self.op_id, ogl_id)
+        ogl_app.url = url
+        self.opengl_apps.append(ogl_app)
     # other functions
     def register(self, container_name, obj):
         container = getattr(self, container_name, [])
@@ -71,7 +77,8 @@ class Operator:
             inputs = self.input_plugs,
             outputs = self.output_plugs,
             internal_plugs = self.internal_plugs,
-            tabs = self.tabs
+            tabs = self.tabs,
+            opengl_apps = tuple(app.label for app in self.opengl_apps)
         ))
     def auto_fill_parameters(self, permissive = False, plug = None):
         if permissive:

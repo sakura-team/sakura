@@ -52,12 +52,11 @@ def wire_cube(pos, edge):
                 [pos + np.array([-e, e, e])]    ]
 
 
-class hellocube:
+class HelloCube:
     def __init__(self):
         # import local libs
         hellocube_py_path = Path(inspect.getabsfile(self.__class__))
         self.hellocube_dir = hellocube_py_path.parent
-        #self.import_global_libs(ctx)
         self.import_local_libs()
         # display attributes
         self.width = 100
@@ -67,6 +66,7 @@ class hellocube:
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
+        self.label = "3D cube"
 
     def import_local_libs(self):
         if __name__ == '__main__':
@@ -80,6 +80,8 @@ class hellocube:
         self.pr = pr
 
     def init(self):
+        self.mouse = [ 0, 0 ]
+        self.imode = 'none'
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
@@ -155,11 +157,11 @@ class hellocube:
             self.imode = 'none'
 
     def on_mouse_motion(self, x, y):
-        dx, dy = x - self.mouse[0], y - self.mouse[1]
-        self.mouse = [x, y]
         if self.imode == 'rotation':
+            dx, dy = x - self.mouse[0], y - self.mouse[1]
             self.projo.rotate_h(-dx/self.width*math.pi)
             self.projo.rotate_v(-dy/self.height*math.pi)
+        self.mouse = [x, y]
 
     def on_key_press(self, key, x, y):
         if key == b'\x1b':

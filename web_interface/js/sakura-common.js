@@ -223,9 +223,17 @@ sakura.internal.hub_api_send = function(path, args) {
    function. */
 
 sakura.internal.get_hub_api = function(path) {
+    let _internal_attrs = {};
     return new Proxy(sakura.internal.hub_api_send, {
         path: path,
+        _internal_attrs: _internal_attrs,
+        set: function(target, prop, value, receiver) {
+            _internal_attrs[prop] = value;
+        },
         get: function(target, prop, receiver) {
+            if (_internal_attrs.hasOwnProperty(prop)) {
+                return _internal_attrs[prop];
+            }
             let new_path = this.path.slice();
             let prop_as_int = parseInt(prop, 10);
             if (!isNaN(prop_as_int)) {

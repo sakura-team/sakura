@@ -1,8 +1,19 @@
+from sakura.common.gpu.openglapp import MouseMoveReporting
+
 class OpenglAppBase:
     def __init__ (self, handler):
         self.handler = handler
         self.width   = 100
         self.height  = 100
+        self.label   = getattr(handler, "label", 'Unnamed 3D App')
+        self.mouse_move_reporting = \
+                       getattr(handler, "mouse_move_reporting",
+                       MouseMoveReporting.LEFT_CLICKED)
+        self.url     = None
+
+    def pack(self):
+        return { "mjpeg_url": self.url,
+                 "mouse_move_reporting": self.mouse_move_reporting.name }
 
     def on_resize(self, w, h):
         w, h = int(w), int(h)
@@ -28,6 +39,9 @@ class OpenglAppBase:
         self.prepare_display()
         self.handler.display()
         self.release_display()
+
+    def fire_event(self, event_type, *args, **kwargs):
+        return getattr(self, event_type)(*args, **kwargs)
 
     def notify_change(self):
         raise NotImplementedError   # should be implemented in subclass
