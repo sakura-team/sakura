@@ -4,14 +4,8 @@
 
 #################################
 ## GLOBAL LIBS
-import sys
-import math
-import time
-import inspect
-import gevent
-
-import numpy    as np
-
+import sys, math, time, inspect
+import numpy as np
 from pathlib import Path
 
 try:
@@ -20,6 +14,9 @@ try:
     from OpenGL.GL      import shaders
 except:
     print ('''ERROR: PyOpenGL not installed properly. ** ''')
+
+from .libs import shader             as sh
+from .libs import projector          as pr
 
 def wire_cube(pos, edge):
     p = np.array(pos)
@@ -57,27 +54,15 @@ class HelloCube:
         # import local libs
         hellocube_py_path = Path(inspect.getabsfile(self.__class__))
         self.hellocube_dir = hellocube_py_path.parent
-        self.import_local_libs()
         # display attributes
         self.width = 100
         self.height = 100
-        self.cube_shader = self.sh.shader()
-        self.projo = self.pr.projector(position = [0, 0, 2])
+        self.cube_shader = sh.shader()
+        self.projo = pr.projector(position = [0, 0, 2])
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
         self.label = "3D cube"
-
-    def import_local_libs(self):
-        if __name__ == '__main__':
-            sys.path.append(str(self.hellocube_dir))
-            from libs import shader             as sh
-            from libs import projector          as pr
-        else:
-            from .libs import shader             as sh
-            from .libs import projector          as pr
-        self.sh = sh
-        self.pr = pr
 
     def init(self):
         self.mouse = [ 0, 0 ]
@@ -89,9 +74,8 @@ class HelloCube:
         self.init_shader()
 
     def init_shader(self):
-
         glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8").replace('.', '')
-        
+
         ##########################
         # general vertex array object
         print('\n\tGenerating vao...', end='')
@@ -112,12 +96,12 @@ class HelloCube:
         # simple cube
         self.cube_vbo           = glGenBuffers(1)
         self.cube_vertices      = np.array(wire_cube([0,0,0], 1))
-        self.cube_shader.attr_vertices = self.sh.new_attribute_index()
+        self.cube_shader.attr_vertices = sh.new_attribute_index()
 
         ## CALLBACKS -------
         #update arrays callback
         def _update_arrays():
-            self.sh.bind(self.cube_vbo, self.cube_vertices, self.cube_shader.attr_vertices, 3, GL_FLOAT)
+            sh.bind(self.cube_vbo, self.cube_vertices, self.cube_shader.attr_vertices, 3, GL_FLOAT)
         self.cube_shader.update_arrays = _update_arrays
 
         # display callback
@@ -132,7 +116,7 @@ class HelloCube:
 
         #Loading shader files
         print('\tCube shader...', end='')
-        self.cube_shader.sh = self.sh.create(str(self.hellocube_dir / 'shaders/cube.vert'), None,
+        self.cube_shader.sh = sh.create(str(self.hellocube_dir / 'shaders/cube.vert'), None,
                                              str(self.hellocube_dir / 'shaders/cube.frag'), [self.cube_shader.attr_vertices], ['in_vertex'], glsl_version)
         if not self.cube_shader.sh:
             exit(1)
@@ -142,7 +126,7 @@ class HelloCube:
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-        self.sh.display_list([self.cube_shader])
+        sh.display_list([self.cube_shader])
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
