@@ -59,63 +59,64 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
         evt.preventDefault();
     }, false);
 
-    remote_app.init().then(function () {
-        remote_app.info().then(function (app_info) {
-            img.src = app_info.mjpeg_url;
-            let mouse_move_reporting = app_info.mouse_move_reporting;
+    remote_app.info().then(function (app_info) {
+        img.src = app_info.mjpeg_url;
+        let mouse_move_reporting = app_info.mouse_move_reporting;
 
-            // RESIZE EVENTS
-            window.addEventListener('resize', function(event){
-                w = img.width;
-                h = img.height;
-                if (w <= 0 || h <= 0) {
-                    w = 50;
-                    h = 50;
-                }
-                console.log('opengl_resize', w, h);
-                remote_app.fire_event('on_resize', w, h);
-            });
+        // RESIZE EVENTS
+        let do_resize = function(evt) {
+            w = img.width;
+            h = img.height;
+            if (w <= 0 || h <= 0) {
+                w = 50;
+                h = 50;
+            }
+            console.log('opengl_resize', w, h);
+            remote_app.fire_event('on_resize', w, h);
+        };
+        window.addEventListener('resize', do_resize);
 
-            // MOUSE INTERACTION
-            let report_move = function(evt) {
-                var pos = sakura.internal.get_mouse_pos(img, evt);
-                remote_app.fire_event('on_mouse_motion', pos.x, pos.y);
-            };
+        // MOUSE INTERACTION
+        let report_move = function(evt) {
+            var pos = sakura.internal.get_mouse_pos(img, evt);
+            remote_app.fire_event('on_mouse_motion', pos.x, pos.y);
+        };
 
-            let update_mouse_reports = function() {
-                let should_activate;
-                if (mouse_move_reporting == 'ALWAYS') {
-                    should_activate = 1;
-                }
-                else {
-                    let mask = masks[mouse_move_reporting];
-                    should_activate = clicked_buttons & mask;
-                }
-                if (should_activate > 0) {
-                    img.onmousemove = report_move;
-                }
-                else {
-                    img.onmousemove = null;
-                }
-            };
+        let update_mouse_reports = function() {
+            let should_activate;
+            if (mouse_move_reporting == 'ALWAYS') {
+                should_activate = 1;
+            }
+            else {
+                let mask = masks[mouse_move_reporting];
+                should_activate = clicked_buttons & mask;
+            }
+            if (should_activate > 0) {
+                img.onmousemove = report_move;
+            }
+            else {
+                img.onmousemove = null;
+            }
+        };
 
+        img.addEventListener('mousedown', function(evt) {
+            evt.preventDefault();
+            var pos = sakura.internal.get_mouse_pos(img, evt)
+            remote_app.fire_event('on_mouse_click', evt.button, 0, pos.x, pos.y);
+            clicked_buttons += Math.pow(2, evt.button);
             update_mouse_reports();
+        }, false);
 
-            img.addEventListener('mousedown', function(evt) {
-                evt.preventDefault();
-                var pos = sakura.internal.get_mouse_pos(img, evt)
-                remote_app.fire_event('on_mouse_click', evt.button, 0, pos.x, pos.y);
-                clicked_buttons += Math.pow(2, evt.button);
-                update_mouse_reports();
-            }, false);
+        img.addEventListener('mouseup', function(evt) {
+            evt.preventDefault();
+            var pos = sakura.internal.get_mouse_pos(img, evt)
+            remote_app.fire_event('on_mouse_click', evt.button, 1, pos.x, pos.y);
+            clicked_buttons -= Math.pow(2, evt.button);
+            update_mouse_reports();
+        }, false);
 
-            img.addEventListener('mouseup', function(evt) {
-                evt.preventDefault();
-                var pos = sakura.internal.get_mouse_pos(img, evt)
-                remote_app.fire_event('on_mouse_click', evt.button, 1, pos.x, pos.y);
-                clicked_buttons -= Math.pow(2, evt.button);
-                update_mouse_reports();
-            }, false);
-        })
+        // initialize
+        update_mouse_reports();
+        do_resize();
     });
 }

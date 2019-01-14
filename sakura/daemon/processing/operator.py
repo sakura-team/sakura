@@ -46,6 +46,7 @@ class Operator:
         ogl_id = len(self.opengl_apps)
         url = '/streams/%d/opengl/%d/video.mjpeg' % (self.op_id, ogl_id)
         ogl_app.url = url
+        ogl_app.init()
         self.opengl_apps.append(ogl_app)
     # other functions
     def register(self, container_name, obj):
