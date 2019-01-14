@@ -9,7 +9,7 @@ class basicOGL(Operator):
     TAGS = [ "visualisation"]
     def construct(self):
         # additional tab
-        self.register_tab('OGL', 'basicOGL.html')
+        self.register_tab('OGL', 'basic-ogl.html')
         # opengl app
         ogl_app = OpenglApp(HelloCube())
         self.register_opengl_app(ogl_app)
