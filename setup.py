@@ -1,10 +1,25 @@
-from setuptools import setup
+import sys
 from pathlib import Path
 from pkg_resources import resource_filename
-import sys
 
 if not sys.version_info[0] == 3:
     sys.exit("Sorry, only Python 3 is supported.")
+
+missing = []
+
+try:
+    from setuptools import setup
+except:
+    missing.append("setuptools")
+
+try:
+    import wheel
+except:
+    missing.append("wheel")
+
+if len(missing) > 0:
+    sys.exit("Sorry, your python environment is not ready: install %s with pip first." % \
+             " and ".join(missing))
 
 proj_dir = Path(resource_filename(__name__, 'setup.py')).resolve().parent
 def find_packages():
