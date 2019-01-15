@@ -1,4 +1,4 @@
-import platform as pl
+import platform as pl, gevent, time
 from sakura.common.gpu.openglapp.base import OpenglAppBase
 
 try:
@@ -9,13 +9,20 @@ try:
 except:
     print ('''ERROR: PyOpenGL not installed properly. ** ''')
 
+# do not try to exceed this number of frame per seconds.
+# if we reach it, let other greenlets work.
+FPS_LIMITATION = 60
+
 class GlutApp(OpenglAppBase):
 
-    def notify_change(self):
+    def trigger_local_display(self):
         glut.glutPostRedisplay()
 
     def window_resize(self, w, h):
         glut.glutReshapeWindow(w, h)
+
+    def make_current(self):
+        pass    # FIX THIS
 
     def prepare_display(self):
         pass
@@ -56,6 +63,30 @@ class GlutApp(OpenglAppBase):
         glut.glutMouseFunc(self.on_mouse_click)
         glut.glutMotionFunc(self.on_mouse_motion)
         glut.glutReshapeFunc(self.on_resize)
+
+        self.last_glut_idle_time = time.time()
+        glut.glutIdleFunc(self.on_glut_idle)
+        if self.streamed:
+            # sakura core defines the main program loop,
+            # so we have to run GLUT's own loop in another
+            # greenlet.
+            self.spawn_greenlet_loop()
+
+    def on_glut_idle(self):
+        # This method allows to make glut gevent-friendly, by allowing
+        # other greenlets to run when idle.
+        # call gevent.sleep taking into account the framerate
+        nt = time.time()
+        dt = 1/FPS_LIMITATION - (nt - self.last_glut_idle_time)
+        self.last_glut_idle_time = nt
+        if  dt > 0:
+            gevent.sleep(dt)
+        else:   # we are late
+            gevent.idle()
+
+    def spawn_greenlet_loop(self):
+        g_task = gevent.Greenlet.spawn(self.loop)
+        self.greenlets.append(g_task)
 
     def loop(self):
         glut.glutMainLoop()
