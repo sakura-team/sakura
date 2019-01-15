@@ -1,8 +1,25 @@
 import psycopg2, uuid, numpy as np
+from gevent.socket import wait_read, wait_write
 from collections import defaultdict
 from psycopg2.extras import DictCursor
+from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE, set_wait_callback
 from sakura.common.errors import APIRequestError
 from sakura.common.access import GRANT_LEVELS
+
+# psycopg should let gevent switch to other greenlets
+def wait_callback(conn, timeout=None):
+    while True:
+        state = conn.poll()
+        if state == POLL_OK:
+            break
+        elif state == POLL_READ:
+            wait_read(conn.fileno(), timeout=timeout)
+        elif state == POLL_WRITE:
+            wait_write(conn.fileno(), timeout=timeout)
+        else:
+            raise psycopg2.OperationalError("Bad result from poll: %r" % state)
+
+set_wait_callback(wait_callback)
 
 DEBUG_CURSORS=False
 #DEBUG_CURSORS=True
