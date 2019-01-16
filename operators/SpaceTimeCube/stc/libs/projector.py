@@ -68,20 +68,15 @@ def m_rotation(vector, angle):
                        Czx - sy,            Cyz + sx,       v[2] * Cz + c,  0.0,
                        0.0,                 0.0,            0.0,            1.0]).reshape((4,4))
 
-
 def rotate(p, vector, angle, pivot = []):
 
     M = m_rotation(vector, angle)
-
     if len(pivot) == 0:
         return M.dot(np.array([p[0], p[1], p[2], 1.0]))[:3]
     else:
         po = np.array([p[0], p[1], p[2], 1.0])
         pi = np.array([pivot[0], pivot[1], pivot[2], 1.0])
         return (M.dot( po - pi) +pi)[:3]
-
-
-
 
 def projectPointOnPlane(p0,p,n):
     """    This function gives the projection of p0 on the plan defined by a point ( p ) and a normal vector ( n )

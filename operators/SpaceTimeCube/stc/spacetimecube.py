@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 #Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-#################################
-## GLOBAL LIBS
-import sys, math, time, inspect
+import sys, math, time, inspect, datetime
 import numpy as np
 from pathlib import Path
 
@@ -15,8 +13,9 @@ try:
 except:
     print ('''ERROR: PyOpenGL not installed properly. ** ''')
 
-from .libs import shader             as sh
-from .libs import projector          as pr
+from .libs import shader        as sh
+from .libs import projector     as pr
+from .libs import trajectory    as tr
 
 def wire_cube(pos, edge):
     p = np.array(pos)
@@ -64,6 +63,8 @@ class SpaceTimeCube:
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
         self.label = "3D cube"
+
+        self.data = tr.data()
 
     def init(self):
         self.mouse = [ 0, 0 ]
@@ -123,6 +124,30 @@ class SpaceTimeCube:
             exit(1)
         print('\t\tOk')
         sys.stdout.flush()
+
+    def load_data(self, chunk=[], file=''):
+        if len(chunk) >0:
+            self.data.add(chunk)
+        elif file != '':
+            big_chunk = np.recfromcsv(file, delimiter=',', encoding='utf-8')
+            if type(big_chunk[0][1]) != int:
+                for b in big_chunk:
+                    b[1] = int(datetime.datetime.strptime(b[1], '%Y-%m-%d %H:%M:%S').strftime("%s"))
+                big_chunk = big_chunk.astype([  ('trajectory', big_chunk.dtype[0]),
+                                                ('date', big_chunk.dtype[2]),
+                                                ('longitude', big_chunk.dtype[2]),
+                                                ('latitude', big_chunk.dtype[3]),
+                                                ('elevation', big_chunk.dtype[4])])
+            self.data.add(big_chunk[ : int(len(big_chunk)/2)])
+            self.data.add(big_chunk[int(len(big_chunk)/2) : ])
+
+        self.data.make_meta()
+        self.data.print_meta()
+        self.data.compute_geometry()
+        self.resize_cube()
+
+    def resize_cube(self):
+        pass
 
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
