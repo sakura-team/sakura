@@ -4,7 +4,7 @@ class OpInstanceMixin:
     INSTANCIATED = set()
     @property
     def daemon_api(self):
-        return self.op_class.daemon.api
+        return self.daemon.api
     @property
     def remote_instance(self):
         # note: the following shortcut will become valid only after
@@ -36,7 +36,7 @@ class OpInstanceMixin:
            res.update(**self.remote_instance.pack())
         return res
     def instanciate_on_daemon(self):
-        self.daemon_api.create_operator_instance(self.op_class.name, self.id)
+        self.op_class.instanciate(self.daemon.api, self.id)
         self.instanciated = True
         return self.remote_instance
     def delete_on_daemon(self):
@@ -46,9 +46,9 @@ class OpInstanceMixin:
         # daemon stopped
         self.instanciated = False
     @classmethod
-    def create_instance(cls, dataflow, op_cls_id):
+    def create_instance(cls, daemon, dataflow, op_cls_id):
         # create in local db
-        op = cls(dataflow = dataflow, op_class = op_cls_id)
+        op = cls(daemon = daemon, dataflow = dataflow, op_class = op_cls_id)
         # refresh op id
         get_context().db.commit()
         # create remotely

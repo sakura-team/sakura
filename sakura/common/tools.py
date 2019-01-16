@@ -1,6 +1,8 @@
-import sys, gevent
+import os, sys, gevent
+from pathlib import Path
 from gevent.queue import Queue
 import ctypes
+from gevent.subprocess import run, PIPE, STDOUT
 
 class StdoutProxy(object):
     def __init__(self, stdout):
@@ -132,3 +134,16 @@ class ObservableEvent:
     def notify(self, *args, **kwargs):
         for cb in self.observer_callbacks:
             cb(*args, **kwargs)
+
+def run_cmd(cmd, cwd=None):
+    if cwd is not None:
+        saved_cwd = Path.cwd()
+        os.chdir(str(cwd))
+    print(str(Path.cwd()) + ': ' + cmd)
+    status = run(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+    if status.returncode != 0:
+        print(status.stdout)
+        raise Exception(cmd + ' failed!')
+    if cwd is not None:
+        os.chdir(str(saved_cwd))
+    return status.stdout.decode(sys.stdout.encoding)

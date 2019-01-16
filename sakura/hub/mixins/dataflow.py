@@ -56,7 +56,9 @@ class DataflowMixin(BaseMixin):
         context.db.commit()
         return dataflow.id
     def create_operator_instance(self, cls_id):
-        return get_context().op_instances.create_instance(self, cls_id)
+        context = get_context()
+        daemon = context.daemons.any_connected()
+        return context.op_instances.create_instance(daemon, self, cls_id)
     def delete_dataflow(self):
         self.assert_grant_level(GRANT_LEVELS.own,
                 'Only owner is allowed to delete this dataflow.')

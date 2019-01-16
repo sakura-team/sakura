@@ -29,6 +29,18 @@ class GuiToHubAPI:
     def get_operator_class_info(self, cls_id):
         return self.context.op_classes[cls_id]
 
+    @api.op_classes.register
+    def register_op_class(self, code_url, code_ref, code_subdir):
+        return self.context.op_classes.register(self.context, code_url, code_ref, code_subdir)
+
+    @api.op_classes.__getitem__.is_updatable
+    def update_operator_class(self, cls_id):
+        return self.context.op_classes[cls_id].is_updatable()
+
+    @api.op_classes.__getitem__.update
+    def update_operator_class(self, cls_id):
+        return self.context.op_classes[cls_id].update()
+
     # instantiate an operator and return the instance info
     @api.operators.create
     def create_operator_instance(self, dataflow_id, cls_id):
@@ -337,3 +349,9 @@ class GuiToHubAPI:
     @api.transfers.__getitem__.abort
     def abort_transfer(self, transfer_id):
         return self.context.abort_transfer(transfer_id)
+
+    # Misc features
+    ###############
+    @api.misc.list_remote_code_refs
+    def list_remote_code_refs(self, repo_url):
+        return self.context.daemons.list_remote_code_refs(repo_url)

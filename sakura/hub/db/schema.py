@@ -47,19 +47,19 @@ def define_schema(db):
 
     class Daemon(db.Entity, DaemonMixin):
         name = Required(str, unique=True)
-        op_classes = Set('OpClass')
         datastores = Set('Datastore')
+        op_instances = Set('OpInstance')
 
     class OpClass(db.Entity, OpClassMixin):
-        daemon = Required(Daemon, reverse='op_classes')
-        name = Required(str)
-        short_desc = Required(str)
-        tags = Optional(Json, default = [])
-        icon = Required(str)
+        code_url = Required(str)
+        code_ref = Required(str)
+        code_subdir = Required(str)
+        metadata = Optional(Json, default = {})
         op_instances = Set('OpInstance')
-        UNIQUE(daemon, name)
+        UNIQUE(code_url, code_ref, code_subdir)
 
     class OpInstance(db.Entity, OpInstanceMixin):
+        daemon = Required(Daemon)
         dataflow = Required(Dataflow)
         op_class = Required(OpClass)
         gui_data = Optional(str)

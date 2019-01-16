@@ -1,5 +1,5 @@
 from sakura.hub.context import get_context
-from sakura.common.errors import APIRequestErrorOfflineDaemon
+from sakura.common.errors import APIRequestError, APIRequestErrorOfflineDaemon
 
 class DaemonMixin:
     APIS = {}
@@ -32,8 +32,8 @@ class DaemonMixin:
 
     def on_disconnect(self):
         # notify related objects
-        for cls in self.op_classes:
-            cls.on_daemon_disconnect()
+        for op in self.op_instances:
+            op.on_daemon_disconnect()
         # unregister api object
         del DaemonMixin.APIS[self.name]
 
@@ -41,8 +41,7 @@ class DaemonMixin:
         return dict(
             name = self.name,
             connected = self.connected,
-            datastores = self.datastores,
-            op_classes = self.op_classes
+            datastores = self.datastores
         )
 
     @classmethod
@@ -54,11 +53,54 @@ class DaemonMixin:
             get_context().db.commit()
         return daemon
 
-    def restore(self, name, datastores, op_classes, **kwargs):
+    def fetch_op_classes(self):
+        for op_cls in get_context().op_classes.select():
+            self.api.fetch_op_class(op_cls.code_url, op_cls.static_code_ref, op_cls.code_subdir)
+
+    def instanciate_op_instances(self):
+        # re-instantiate instances on daemon
+        for op in self.op_instances:
+            op.instanciate_on_daemon()
+        # restore links if the other end is also ok
+        # caution, we should create the link only once
+        # if operators on both ends belong to this daemon
+        links_done = set()
+        for op in self.op_instances:
+            for link in set(op.uplinks) - links_done:
+                if link.src_op.instanciated:
+                    link.link_on_daemon()
+                    links_done.add(link)
+            for link in set(op.downlinks) - links_done:
+                if link.dst_op.instanciated:
+                    link.link_on_daemon()
+                    links_done.add(link)
+        # if all uplinks are ok, restore operator parameters
+        for op in self.op_instances:
+            if all(link.src_op.instanciated for link in op.uplinks):
+                # update params in order (according to param_id)
+                for param in sorted(op.params, key=lambda param: param.param_id):
+                    param.update_on_daemon()
+
+    def restore(self, name, datastores, **kwargs):
         context = get_context()
         # update metadata
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
-        # restore op classes and re-instanciate related objects (instances, links, parameters)
-        self.op_classes = set(context.op_classes.restore_op_class(self, **cls) for cls in op_classes)
+        # ensure op classes are fetched on daemon
+        self.fetch_op_classes()
+        # re-instanciate op instances and related objects (links, parameters)
+        self.instanciate_op_instances()
+
+    @classmethod
+    def any_connected(cls):
+        for daemon in cls.select():
+            if daemon.connected:
+                return daemon
+
+    @classmethod
+    def list_remote_code_refs(cls, repo_url):
+        daemon = cls.any_connected()
+        if daemon is None:
+            raise APIRequestError('Unable to proceed because no daemon is connected.')
+        return daemon.api.list_remote_code_refs(repo_url)
