@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #Michael ORTEGA - for STEAMER/LIG/CNRS- 16/01/2019
 
+import math
 
 EARTH_RADIUS = 6378137 #Earth radius in meters
 
@@ -25,15 +26,12 @@ def merc_y(lat):
   y=0-r_major*math.log(ts)
   return y
 
-def mercator(lon, ele, lat):
+def mercator(lon, lat, ele):
     x = EARTH_RADIUS * math.radians(lon)
     y =  math.log(math.tan(math.pi/4.0 + lat * (math.pi/180.0)/2.0)) * EARTH_RADIUS
+    return x, y, ele # lon:x, lat:y
 
-    # lon:x, lat:y
-    return x, ele, y
-
-def lonlat_from_mercator(x, ele, y):
+def lonlat_from_mercator(x, y, ele):
     lon = math.degrees(x/EARTH_RADIUS)
     lat = (math.atan(math.exp(y/EARTH_RADIUS)) - math.pi/4.0)/((math.pi/180.0)/2.0)
-    # x: lon, y: lat
-    return lon, ele, lat
+    return lon, lat, ele

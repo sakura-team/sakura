@@ -34,9 +34,8 @@ class spacetimecubeOperator(Operator):
         cols = src.select_columns(  self.id_column_param.col_index,
                                     self.dat_column_param.col_index,
                                     self.lng_column_param.col_index,
-                                    self.lng_column_param.col_index,
+                                    self.lat_column_param.col_index,
                                     self.ele_column_param.col_index)
-
         for ch in cols.chunks():
             self.ogl_app.handler.load_data(chunk=ch)
 

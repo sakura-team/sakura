@@ -250,11 +250,11 @@ class projector:
                             0,      0,      0,      1  ])
 
     def rotate_h(self, v):
-        '''Horizontal rotation around viewpoint, v in radians'''
+        '''Horizontal rotation around up axis, pivot = viewpoint, v in radians'''
         self.position = rotate(self.position, self.up, v, pivot = self.viewpoint)
 
     def rotate_v(self, v):
-        '''Vertical rotation around viewpoint, v in radians'''
+        '''Vertical rotation around right axis, pivot = viewpoint, v in radians'''
         self.compute_direction()
         x = normalize(cross(self.direction, self.up))
         self.position = rotate(self.position, x, v, pivot = self.viewpoint)
