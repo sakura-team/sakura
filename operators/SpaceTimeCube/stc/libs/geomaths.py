@@ -3,8 +3,7 @@
 #Michael ORTEGA - for STEAMER/LIG/CNRS- 29/01/2018
 
 import numpy as np
-import math
-import copy
+import math, copy, random
 
 def limit(a, min, max):
     if a < min:
@@ -235,3 +234,8 @@ def spiral(mat, seed):
             dir = turn_right[dir]
 
     return final
+
+def random_color():
+    return np.array([   random.randint(0, 255),
+                        random.randint(0, 255),
+                        random.randint(0, 255)])/255.

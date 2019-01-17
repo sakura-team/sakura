@@ -68,6 +68,7 @@ class SpaceTimeCube:
         self.sh_cube            = sh.shader()
         self.sh_shadows         = sh.shader()
         self.sh_back_shadows    = sh.shader()
+        self.sh_trajects        = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
@@ -158,10 +159,10 @@ class SpaceTimeCube:
             sh.bind(self.vbo_trajects_colors, self.trajects_colors, self.attr_trajects_colors, 4, GL_FLOAT)
         self.sh_shadows.update_arrays = _update_trajects_arrays
 
-        def trajects_display():
+        def shadows_display():
             self.sh_shadows.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
-        self.sh_shadows.display = trajects_display
+        self.sh_shadows.display = shadows_display
         ## CALLBACKS -------
         self.sh_shadows.update_arrays()
 
@@ -185,11 +186,11 @@ class SpaceTimeCube:
         ## CALLBACKS -------
         self.sh_back_shadows.update_arrays = _update_trajects_arrays
 
-        def trajects_display():
+        def back_shadows_display():
             self.sh_back_shadows.update_uniforms()
             self.sh_back_shadows.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
-        self.sh_back_shadows.display = trajects_display
+        self.sh_back_shadows.display = back_shadows_display
 
         def update_uni_back_shadows():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
@@ -216,6 +217,34 @@ class SpaceTimeCube:
         if not self.sh_back_shadows.sh: exit(1)
         print('\tOk')
         sys.stdout.flush()
+        #-----------------------------------------------
+
+        #-----------------------------------------------
+        # Main trajectories
+        ## CALLBACKS -------
+        self.sh_trajects.update_arrays = _update_trajects_arrays
+
+        def trajects_display():
+            self.sh_trajects.update_projections(self.projo.projection(), self.projo.modelview())
+            glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
+        self.sh_trajects.display = trajects_display
+        ## CALLBACKS -------
+        self.sh_trajects.update_arrays()
+
+        # Loading shader files
+        print('\t\33[1;32mTrajects shader...\33[m', end='')
+        sys.stdout.flush()
+        self.sh_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/trajects.vert'),
+                                        None,
+                                        str(self.spacetimecube_dir / 'shaders/trajects.frag'),
+                                        [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                        ['in_vertex', 'in_color'],
+                                        glsl_version)
+
+        if not self.sh_trajects.sh: exit(1)
+        print('\tOk')
+        sys.stdout.flush()
+
         #-----------------------------------------------
 
     def load_data(self, chunk=[], file=''):
@@ -250,7 +279,7 @@ class SpaceTimeCube:
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-        sh.display_list([self.sh_cube, self.sh_back_shadows, self.sh_shadows])
+        sh.display_list([self.sh_cube, self.sh_back_shadows, self.sh_shadows, self.sh_trajects])
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]

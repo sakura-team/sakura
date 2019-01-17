@@ -35,9 +35,11 @@ class data:
                 first_time = True
                 self.trajects_ids = [c[0]]
                 self.trajects = np.append(self.trajects, trajectory(id=len(self.trajects)-1))
+                self.trajects[-1].color = np.array([*gm.random_color(), 1])
             elif c[0] not in self.trajects_ids:
                 self.trajects_ids.append(c[0])
                 self.trajects = np.append(self.trajects, trajectory(id=len(self.trajects)-1))
+                self.trajects[-1].color = np.array([*gm.random_color(), 1])
 
             ind = self.trajects_ids.index(c[0])
             m = mrc.mercator(c[2], c[3], c[4])
@@ -77,7 +79,7 @@ class data:
             colors.append([0,0,0,0])
             for p in t.points:
                 vertices.append(p)
-                colors.append([1,1,1,1])
+                colors.append(t.color)
             vertices.append(t.points[-1])
             colors.append([0,0,0,0])
 
