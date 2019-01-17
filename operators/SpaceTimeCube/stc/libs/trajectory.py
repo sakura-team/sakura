@@ -70,9 +70,15 @@ class data:
         print('\tCube size:\t\t'+str(self.maxs[1:] - self.mins[1:] )+'\n')
 
     def compute_geometry(self):
-        vertices = []
+        vertices    = []
+        colors      = []
         for t in self.trajects:
+            vertices.append(t.points[0])
+            colors.append([0,0,0,0])
             for p in t.points:
                 vertices.append(p)
-        mid = (self.maxs+self.mins)/2
-        return np.array(vertices)-mid
+                colors.append([1,1,1,1])
+            vertices.append(t.points[-1])
+            colors.append([0,0,0,0])
+
+        return np.array(vertices)-(self.maxs+self.mins)/2, colors

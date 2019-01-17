@@ -73,7 +73,8 @@ class SpaceTimeCube:
 
         #Global display data
         self.cube_vertices      = np.array(wire_cube([0,0,0], 1))
-        self.trajects_vertices  = np.array([[0,-1000,0,0], [0,1000,0,0]]) #[time, lon, lat, ele]
+        self.trajects_vertices  = np.array([[0,-1000,0,0], [0,0,1000,0], [0,1000,0,0]]) #[time, lon, lat, ele]
+        self.trajects_colors     = np.array([[0,0,0,0], [1,1,1,1], [1,1,1,1]])
 
     def init(self):
         self.mouse = [ 0, 0 ]
@@ -111,10 +112,12 @@ class SpaceTimeCube:
 
         ##########################
         # VBOS & attributes
-        self.vbo_cube                = glGenBuffers(1)
-        self.vbo_trajects            = glGenBuffers(1)
-        self.attr_cube_vertices      = sh.new_attribute_index()
-        self.attr_trajects_vertices  = sh.new_attribute_index()
+        self.vbo_cube               = glGenBuffers(1)
+        self.vbo_trajects_vertices  = glGenBuffers(1)
+        self.vbo_trajects_colors    = glGenBuffers(1)
+        self.attr_cube_vertices     = sh.new_attribute_index()
+        self.attr_trajects_vertices = sh.new_attribute_index()
+        self.attr_trajects_colors   = sh.new_attribute_index()
 
         ##########################
         # Shaders
@@ -149,7 +152,8 @@ class SpaceTimeCube:
         # Shadows
         ## CALLBACKS -------
         def _update_trajects_arrays():
-            sh.bind(self.vbo_trajects, self.trajects_vertices, self.attr_trajects_vertices, 4, GL_FLOAT)
+            sh.bind(self.vbo_trajects_vertices, self.trajects_vertices, self.attr_trajects_vertices, 4, GL_FLOAT)
+            sh.bind(self.vbo_trajects_colors, self.trajects_colors, self.attr_trajects_colors, 4, GL_FLOAT)
         self.sh_shadows.update_arrays = _update_trajects_arrays
 
         def trajects_display():
@@ -165,8 +169,8 @@ class SpaceTimeCube:
         self.sh_shadows.sh = sh.create( str(self.spacetimecube_dir / 'shaders/shadows.vert'),
                                         None,
                                         str(self.spacetimecube_dir / 'shaders/shadows.frag'),
-                                        [self.attr_trajects_vertices],
-                                        ['in_vertex'],
+                                        [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                        ['in_vertex', 'in_color'],
                                         glsl_version)
 
         if not self.sh_shadows.sh: exit(1)
@@ -196,8 +200,7 @@ class SpaceTimeCube:
         sys.stdout.flush()
 
         self.data.print_meta()
-        self.trajects_vertices = np.array(self.data.compute_geometry())
-        print(self.trajects_vertices[0])
+        self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.sh_shadows.update_arrays()
         self.resize_cube()
 
