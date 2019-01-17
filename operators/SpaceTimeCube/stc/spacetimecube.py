@@ -65,8 +65,9 @@ class SpaceTimeCube:
         self.label = "3D cube"
 
         #Shaders
-        self.sh_cube    = sh.shader()
-        self.sh_shadows = sh.shader()
+        self.sh_cube            = sh.shader()
+        self.sh_shadows         = sh.shader()
+        self.sh_back_shadows    = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
@@ -178,6 +179,42 @@ class SpaceTimeCube:
         sys.stdout.flush()
         #-----------------------------------------------
 
+        #-----------------------------------------------
+        # Back Shadows
+        ## CALLBACKS -------
+        self.sh_back_shadows.update_arrays = _update_trajects_arrays
+
+        def trajects_display():
+            self.sh_back_shadows.update_projections(self.projo.projection(), self.projo.modelview())
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
+        self.sh_back_shadows.display = trajects_display
+
+        '''
+        def update_uni_back_shadows():
+            w, h = self.projo.nears()
+            self.sh_back_shadows.set_uniform("pixel_size", float(h/(self.height/2.0)), 'f')
+            self.sh_back_shadows.set_uniform("camera_near", camera.near, 'f')
+
+        self.sh_back_shadows.update_uniforms = update_uni_back_shadows
+        '''
+        ## CALLBACKS -------
+        self.sh_back_shadows.update_arrays()
+
+        # Loading shader files
+        print('\t\33[1;32mBack shadows shader...\33[m', end='')
+        sys.stdout.flush()
+        self.sh_back_shadows.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_shadows.vert'),
+                                            str(self.spacetimecube_dir / 'shaders/back_shadows.geom'),
+                                            str(self.spacetimecube_dir / 'shaders/back_shadows.frag'),
+                                            [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                            ['in_vertex', 'in_color'],
+                                            glsl_version)
+
+        if not self.sh_back_shadows.sh: exit(1)
+        print('\tOk')
+        sys.stdout.flush()
+        #-----------------------------------------------
+
     def load_data(self, chunk=[], file=''):
         if len(chunk) >0:
             self.data.add(chunk)
@@ -210,7 +247,7 @@ class SpaceTimeCube:
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-        sh.display_list([self.sh_cube, self.sh_shadows])
+        sh.display_list([self.sh_cube, self.sh_back_shadows, self.sh_shadows])
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
