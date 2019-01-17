@@ -31,11 +31,20 @@
                 alert('bad event');
         };
         window.onload = function(event) {
-            w3IncludeHTML();
-            var a = window.location.href.split("#");
+            let a = window.location.href.split("#");
             if (a.length>1) {
-                showDiv(event,a[1]);
+                // permalink
+                cb = function() {
+                    // when the page is completely loaded,
+                    // look for the div and show it.
+                    showDiv(event,a[1]);
+                };
             }
+            else {
+                // nothing to do
+                cb = function() {};
+            }
+            w3IncludeHTML(cb);
         }
     </script>
     </head>

@@ -111,26 +111,40 @@ function w3DisplayData(id, data) {
         a.innerHTML = a.innerHTML.replace(r, result);
     }
 }
-function w3IncludeHTML() {
-  var z, i, elmnt, file, xhttp;
-  z = document.getElementsByTagName("*");
-  for (i = 0; i < z.length; i++) {
-    elmnt = z[i];
-    file = elmnt.getAttribute("w3-include-html");
-    if (file) {
-      xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          elmnt.innerHTML = this.responseText;
-          elmnt.removeAttribute("w3-include-html");
-          w3IncludeHTML();}}      
-	  if (window.location.href.split("#").length>1) { // adaptation Sakura pour forcer le telechargement de la page complete en vue d'acceder a un permalien
-	    xhttp.open("GET", file, false);}              // adaptation Sakura 
-	  else {                                          // adaptation Sakura 
-	    xhttp.open("GET", file, true);}
-      xhttp.send();
-      return;}}}
-	  
+
+/* This function was improved for sakura:
+   we know give a callback as the 1st parameter, and this callback
+   is called when all elements have been loaded. */
+function w3IncludeHTML(cb) {
+    var z, i, elmnt, file, xhttp;
+    if (!cb.hasOwnProperty('counter')) {
+        cb.counter = 0;
+    }
+    z = document.getElementsByTagName("*");
+    for (i = 0; i < z.length; i++) {
+        elmnt = z[i];
+        file = elmnt.getAttribute("w3-include-html");
+        if (file) {
+            cb.counter += 1;
+            xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    elmnt.innerHTML = this.responseText;
+                    elmnt.removeAttribute("w3-include-html");
+                    cb.counter -= 1;
+                    w3IncludeHTML(cb);
+                }
+            }
+            xhttp.open("GET", file, true);
+            xhttp.send();
+            return;
+        }
+    }
+    if (cb.counter == 0) {
+        cb();
+    }
+}
+
 function w3Http(target, readyfunc, xml, method) {
     var httpObj;
     if (!method) {method = "GET"; }
