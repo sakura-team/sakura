@@ -104,11 +104,11 @@ class projector:
         self.viewpoint      = [0, 0, 0]
         self.direction      = None
         self.up             = [0, 1, 0]
-        self.near           = 1
+        self.near           = .1
         self.far            = 1000
         self.width          = width
         self.height         = height
-        self.v_angle        = 45*math.pi/180.0          #60degrees
+        self.v_angle        = 45*math.pi/180.0          #radians
 
         #wiggling params
         self.wiggle             = False
@@ -131,6 +131,16 @@ class projector:
         self.right  = w
         self.top    = h
         self.bottom = -h
+
+    def near_sizes(self):
+
+        #######BAD: SHOULD FIND A SOLUTION !!!!!!!!!!
+        magic_number = 3/4.0  #######BAD: SHOULD FIND A SOLUTION !!!!!!!!!!
+        #######BAD: SHOULD FIND A SOLUTION !!!!!!!!!!
+
+        h = self.near*math.tan(self.v_angle/2.0)*magic_number
+        return h * self.ratio, h
+
 
     def read(self, f_name):
         """Reads projector params from a file which name is f_name"""

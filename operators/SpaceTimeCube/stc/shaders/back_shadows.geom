@@ -7,13 +7,15 @@ in  vec4 vert_color[];
 in  vec4 vert_cam_pos[];
 out vec4 geom_color;
 
-//uniform float pixel_size;
-const int nb_pixels = 8;
+uniform float pixel_size;
+uniform float cam_near;
+uniform int nb_pixels;
 
 void main() {
 
     //float thickness = gl_in[1].gl_Position.z*pixel_size*nb_pixels/camera_near;
-    float thickness = (gl_in[1].gl_Position.z - vert_cam_pos[1].z)/100;
+    float d = gl_in[1].gl_Position.z - vert_cam_pos[1].z;
+    float thickness = nb_pixels*pixel_size*d/cam_near;
 
     vec2 v1 = gl_in[2].gl_Position.xy - gl_in[1].gl_Position.xy;
     vec2 n1 = normalize(vec2(-v1.y, v1.x));

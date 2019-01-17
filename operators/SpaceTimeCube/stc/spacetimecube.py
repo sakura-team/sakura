@@ -75,7 +75,8 @@ class SpaceTimeCube:
         #Global display data
         self.cube_vertices      = np.array(wire_cube([0,0,0], 1))
         self.trajects_vertices  = np.array([[0,-1000,0,0], [0,0,1000,0], [0,1000,0,0]]) #[time, lon, lat, ele]
-        self.trajects_colors     = np.array([[0,0,0,0], [1,1,1,1], [1,1,1,1]])
+        self.trajects_colors    = np.array([[1,0,0,1], [0,1,0,1], [0,0,1,1]])
+        self.thickness_of_backs  = 8 #pixels
 
     def init(self):
         self.mouse = [ 0, 0 ]
@@ -191,6 +192,11 @@ class SpaceTimeCube:
         self.sh_back_shadows.display = trajects_display
 
         def update_uni_back_shadows():
+            h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
+            p_size  = h*2/(self.height)
+            self.sh_back_shadows.set_uniform("pixel_size", p_size, 'f')
+            self.sh_back_shadows.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
+            self.sh_back_shadows.set_uniform("cam_near", self.projo.near, 'f')
             self.sh_back_shadows.set_uniform("cam_pos", self.projo.position, '3fv')
         self.sh_back_shadows.update_uniforms = update_uni_back_shadows
 
