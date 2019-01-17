@@ -185,18 +185,15 @@ class SpaceTimeCube:
         self.sh_back_shadows.update_arrays = _update_trajects_arrays
 
         def trajects_display():
+            self.sh_back_shadows.update_uniforms()
             self.sh_back_shadows.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
         self.sh_back_shadows.display = trajects_display
 
-        '''
         def update_uni_back_shadows():
-            w, h = self.projo.nears()
-            self.sh_back_shadows.set_uniform("pixel_size", float(h/(self.height/2.0)), 'f')
-            self.sh_back_shadows.set_uniform("camera_near", camera.near, 'f')
-
+            self.sh_back_shadows.set_uniform("cam_pos", self.projo.position, '3fv')
         self.sh_back_shadows.update_uniforms = update_uni_back_shadows
-        '''
+
         ## CALLBACKS -------
         self.sh_back_shadows.update_arrays()
 

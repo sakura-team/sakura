@@ -58,7 +58,7 @@ class shader:
             elif type == 'f':
                 glUniform1f(w, value)
             elif type == '3fv':
-                glUniform3fv(w, value)
+                glUniform3fv(w, 1, value)
             else:
                 print("Error in setting Uniform: Unknown type")
 
