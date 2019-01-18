@@ -121,6 +121,7 @@ class projector:
         self.wiggle_angle       = 0
 
         self.change_ratio(width/height)
+        self.compute_direction()
 
     def change_ratio(self, new_ratio):
         self.ratio = new_ratio
@@ -234,43 +235,28 @@ class projector:
 
         return np.array(m_mult(T, R)).reshape((4,4)).T
 
-    def viewport(self):
-        '''
-        M=  [w/2        0           0               sx + w/2]
-            [0          h/2         0               sy + h/2]
-            [0          0           (f-n)/2         (f+n)/2]
-            [0          0           0               1]
-        Warning !!! Here we consider that we use the whole screen, so sx = sy = 0
-        '''
-        '''
-        m00 = self.width/2.0
-        m03 = 0 + self.width/2.0
-        m11 = self.height/2.0
-        m13 = 0 + self.height/2.0
-        m22 = (self.far - self.near)/2.0
-        m23 = (self.far + self.near)/2.0
-        return np.array([   m00,   0,      0,       m03,
-                            0,     m11,    0,       m13,
-                            0,     0,      m22,     m23,
-                            0,     0,      0,       1  ]).reshape((4,4)).T
-        '''
-        return np.array([   1,      0,      0,      0,
-                            0,      1,      0,      0,
-                            0,      0,      1,      0,
-                            0,      0,      0,      1  ])
-
-    def rotate_h(self, v):
-        '''Horizontal rotation around up axis, pivot = viewpoint, v in radians'''
-        self.position = rotate(self.position, self.up, v, pivot = self.viewpoint)
-
-    def rotate_v(self, v):
-        '''Vertical rotation around right axis, pivot = viewpoint, v in radians'''
-        self.compute_direction()
-        x = normalize(cross(self.direction, self.up))
-        self.position = rotate(self.position, x, v, pivot = self.viewpoint)
-
-        self.compute_direction()
+    def compute_up(self):
+        x = normalize(cross(self.direction, [0,1,0]))
         self.up = normalize(cross(x, self.direction))
+
+    def get_right(self):
+        return np.array(gm.normalize(gm.cross(self.direction, self.up)))
+
+    def h_rotation(self, angle):
+        '''angle is in degrees. In map navigation, horizontal rotation is around a vertical axis'''
+        self.position = np.array(gm.rotate(self.position, [0,1,0], angle, self.viewpoint))
+        self.compute_direction()
+        self.compute_up()
+
+    def v_rotation(self, angle):
+        '''angle is in degrees'''
+        position = np.array(gm.rotate(self.position, self.get_right(), angle, self.viewpoint))
+        v = gm.normalize(position - self.viewpoint)
+
+        if v[1] < 0.95 and v[1] > .001:
+            self.position = position
+            self.compute_direction()
+            self.compute_up()
 
     def wiggle_next(self):
         t = time.time()

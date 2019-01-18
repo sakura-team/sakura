@@ -58,7 +58,7 @@ class SpaceTimeCube:
 
         self.projo = pr.projector(position = [0, 0, 2])
         self.projo.wiggle = True
-        self.projo.rotate_v(-math.pi/4.)
+        self.projo.v_rotation(-45.)
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
@@ -315,8 +315,8 @@ class SpaceTimeCube:
     def on_mouse_motion(self, x, y):
         if self.imode == 'rotation':
             dx, dy = x - self.mouse[0], y - self.mouse[1]
-            self.projo.rotate_h(-dx/self.width*math.pi)
-            self.projo.rotate_v(-dy/self.height*math.pi)
+            self.projo.h_rotation(-dx/self.width*math.pi*2)
+            self.projo.v_rotation(-dy/self.height*math.pi*2)
         self.mouse = [x, y]
 
     def on_key_press(self, key, x, y):
