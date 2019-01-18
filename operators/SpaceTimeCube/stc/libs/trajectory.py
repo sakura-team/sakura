@@ -82,5 +82,4 @@ class data:
                 colors.append(t.color)
             vertices.append(t.points[-1])
             colors.append([0,0,0,0])
-
-        return np.array(vertices)-(self.maxs+self.mins)/2, colors
+        return np.array(vertices), colors

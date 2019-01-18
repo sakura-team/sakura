@@ -58,7 +58,7 @@ class SpaceTimeCube:
 
         self.projo = pr.projector(position = [0, 0, 2])
         self.projo.wiggle = True
-        self.projo.rotate_v(-math.pi/15)
+        self.projo.rotate_v(-math.pi/4.)
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
@@ -74,7 +74,7 @@ class SpaceTimeCube:
         self.data = tr.data()
 
         #Global display data
-        self.cube_vertices      = np.array(wire_cube([0,0,0], 1))
+        self.cube_vertices      = np.array(wire_cube([0,.5,0], 1))
         self.trajects_vertices  = np.array([[0,-1000,0,0], [0,0,1000,0], [0,1000,0,0]]) #[time, lon, lat, ele]
         self.trajects_colors    = np.array([[1,0,0,1], [0,1,0,1], [0,0,1,1]])
         self.thickness_of_backs  = 8 #pixels
@@ -160,9 +160,15 @@ class SpaceTimeCube:
         self.sh_shadows.update_arrays = _update_trajects_arrays
 
         def shadows_display():
+            self.sh_shadows.update_uniforms()
             self.sh_shadows.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
         self.sh_shadows.display = shadows_display
+
+        def update_uni_shadows():
+            self.sh_shadows.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
+        self.sh_shadows.update_uniforms = update_uni_shadows
         ## CALLBACKS -------
         self.sh_shadows.update_arrays()
 
@@ -199,6 +205,8 @@ class SpaceTimeCube:
             self.sh_back_shadows.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
             self.sh_back_shadows.set_uniform("cam_near", self.projo.near, 'f')
             self.sh_back_shadows.set_uniform("cam_pos", self.projo.position, '3fv')
+            self.sh_back_shadows.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_back_shadows.set_uniform("mins", self.data.mins, '4fv')
         self.sh_back_shadows.update_uniforms = update_uni_back_shadows
 
         ## CALLBACKS -------
@@ -225,11 +233,19 @@ class SpaceTimeCube:
         self.sh_trajects.update_arrays = _update_trajects_arrays
 
         def trajects_display():
+            self.sh_trajects.update_uniforms()
             self.sh_trajects.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
         self.sh_trajects.display = trajects_display
+
+        def update_uni_trajects():
+            self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
+        self.sh_trajects.update_uniforms = update_uni_trajects
+
         ## CALLBACKS -------
         self.sh_trajects.update_arrays()
+
 
         # Loading shader files
         print('\t\33[1;32mTrajects shader...\33[m', end='')
@@ -268,7 +284,7 @@ class SpaceTimeCube:
         print('\t\tOk')
         sys.stdout.flush()
 
-        self.data.print_meta()
+        #self.data.print_meta()
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.sh_shadows.update_arrays()
         self.resize_cube()
@@ -279,7 +295,10 @@ class SpaceTimeCube:
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
-        sh.display_list([self.sh_cube, self.sh_back_shadows, self.sh_shadows, self.sh_trajects])
+        sh.display_list([   self.sh_cube,
+                            self.sh_back_shadows,
+                            self.sh_shadows,
+                            self.sh_trajects])
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
