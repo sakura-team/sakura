@@ -99,9 +99,9 @@ def projectPointOnPlane(p0,p,n):
 
 class projector:
     """Parametres extrinseques et intrinseques d'un projecteur"""
-    def __init__(self, position = [1000, 1000, 1000], width = 800, height = 600):
+    def __init__(self, viewpoint= [0,0,0], position = [1000, 1000, 1000], width = 800, height = 600):
         self.position       = position
-        self.viewpoint      = [0, 0, 0]
+        self.viewpoint      = viewpoint
         self.direction      = None
         self.up             = [0, 1, 0]
         self.near           = .1
@@ -258,12 +258,16 @@ class projector:
             self.compute_direction()
             self.compute_up()
 
+    def translate(self, dir):
+        '''dir should be given with only two value [dx, dy]'''
+        right = np.array(gm.normalize(gm.cross(self.direction, [0,1,0])))
+        front = dir[1]*np.array(gm.normalize(gm.cross([0,1,0], right)))
+        self.position       += dir[0]*right + front
+        self.viewpoint      += dir[0]*right + front
+        self.wiggle_pivot   += dir[0]*right + front
+
     def wiggle_next(self):
-        t = time.time()
-        dt = self.wiggle_time - t
-
-        self.wiggle_angle = (math.sin(dt*self.wiggle_speed))*self.wiggle_arc/2.0
-
-        self.wiggle_position = gm.rotate(self.position, self.up, self.wiggle_angle, self.wiggle_pivot)
-        self.wiggle_look_at = gm.rotate(self.viewpoint, self.up, self.wiggle_angle, self.wiggle_pivot)
-        #self.compute_projections()
+        dt = self.wiggle_time - time.time()
+        self.wiggle_angle       = (math.sin(dt*self.wiggle_speed))*self.wiggle_arc/2.0
+        self.wiggle_position    = gm.rotate(self.position, self.up, self.wiggle_angle, self.wiggle_pivot)
+        self.wiggle_viewpoint   = gm.rotate(self.viewpoint, self.up, self.wiggle_angle, self.wiggle_pivot)

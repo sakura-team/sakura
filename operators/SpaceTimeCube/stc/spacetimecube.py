@@ -57,7 +57,7 @@ class SpaceTimeCube:
         self.height = 100
 
         self.projo = pr.projector(position = [0, 0, 2])
-        self.projo.wiggle = True
+        #self.projo.wiggle = True
         self.projo.v_rotation(-45.)
 
         self.fps_limitation = 60    #Hz
@@ -309,14 +309,20 @@ class SpaceTimeCube:
         UP = 1
         if button == LEFT_BUTTON and state == DOWN:
             self.imode = 'rotation'
-        elif button == LEFT_BUTTON and state == UP:
+        elif button == RIGHT_BUTTON and state == DOWN:
+            self.imode = 'translation'
+        elif state == UP:
             self.imode = 'none'
 
     def on_mouse_motion(self, x, y):
+        dx, dy = x - self.mouse[0], y - self.mouse[1]
         if self.imode == 'rotation':
-            dx, dy = x - self.mouse[0], y - self.mouse[1]
             self.projo.h_rotation(-dx/self.width*math.pi*2)
             self.projo.v_rotation(-dy/self.height*math.pi*2)
+        elif self.imode == 'translation':
+            d = np.linalg.norm(np.array(self.projo.viewpoint) - np.array(self.projo.position))
+            self.projo.translate([-dx*d/1000, dy*d/1000])
+
         self.mouse = [x, y]
 
     def on_key_press(self, key, x, y):
