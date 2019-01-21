@@ -5,6 +5,15 @@ uniform mat4 modelview_mat;
 
 in vec3 in_vertex;
 
+uniform vec4 maxs;
+uniform vec4 mins;
+
 void main() {
-    gl_Position = projection_mat * modelview_mat * vec4(in_vertex, 1.0);
+    vec2 size = maxs.yz - mins.yz;
+    vec4 v = vec4(in_vertex, 1.0);
+    if (size.x > size.y)
+        v.z *= size.y/size.x;
+    else
+        v.x *= size.x/size.y;
+    gl_Position = projection_mat * modelview_mat * v;
 }

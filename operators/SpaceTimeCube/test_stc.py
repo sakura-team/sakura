@@ -13,5 +13,6 @@ oapp.handler.debug = True
 
 oapp.init(800, 600)
 oapp.plan_periodic_task(oapp.handler.animation, .01)
+oapp.handler.clean_data()
 oapp.handler.load_data(file=sys.argv[1])
 oapp.loop()

@@ -76,13 +76,15 @@ class SpaceTimeCube:
 
         #Trajectory data
         self.data = tr.data()
+        #self.data.add([ [0,0,-1,0,0],
+        #                [0,1,0,-1,0],
+        #                [0,2,1,0,0]])
+        self.data.add([])
+        self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
 
         #Global display data
         self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
                                             np.array([.5,1,.5]))
-        self.trajects_vertices  = np.array([[0,-1,0,0],
-                                            [0,1,0,0]])#[time, lon, lat, ele]
-        self.trajects_colors    = np.array([[0,0,0,1], [0,0,0,1]])
         self.thickness_of_backs  = 8 #pixels
 
         self.debug = False
@@ -145,9 +147,15 @@ class SpaceTimeCube:
         self.update_cube_arrays = _update_cube_arrays
 
         def cube_display():
+            self.sh_cube.update_uniforms()
             self.sh_cube.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINES, 0, len(self.cube_vertices))
         self.sh_cube.display = cube_display
+
+        def update_uni_cube():
+            self.sh_cube.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_cube.set_uniform("mins", self.data.mins, '4fv')
+        self.sh_cube.update_uniforms = update_uni_cube
 
         ## CALLBACKS -------
         self.update_cube_arrays()
@@ -186,6 +194,8 @@ class SpaceTimeCube:
             self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
         self.sh_shadows.update_uniforms = update_uni_shadows
         ## CALLBACKS -------
+
+        self.update_trajects_arrays()
 
         # Loading shader files
         if self.debug:
@@ -315,10 +325,12 @@ class SpaceTimeCube:
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+
         sh.display_list([   self.sh_cube,
                             self.sh_back_shadows,
                             self.sh_shadows,
-                            self.sh_trajects])
+                            self.sh_trajects
+                            ])
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
