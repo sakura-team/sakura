@@ -9,6 +9,8 @@ if len(sys.argv) < 2:
     sys.exit()
 
 oapp = OpenglApp(SpaceTimeCube())
+oapp.handler.debug = True
+
 oapp.init(800, 600)
 oapp.plan_periodic_task(oapp.handler.animation, .01)
 oapp.handler.load_data(file=sys.argv[1])

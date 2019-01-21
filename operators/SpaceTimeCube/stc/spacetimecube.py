@@ -85,6 +85,8 @@ class SpaceTimeCube:
         self.trajects_colors    = np.array([[0,0,0,1], [0,0,0,1]])
         self.thickness_of_backs  = 8 #pixels
 
+        self.debug = False
+
     def init(self):
         self.mouse = [ 0, 0 ]
         self.imode = 'none'
@@ -92,10 +94,12 @@ class SpaceTimeCube:
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        print('\n-------------------------')
-        print('Inits')
+        if self.debug:
+            print('\n-------------------------')
+            print('Inits')
         self.init_shaders()
-        print('-------------------------')
+        if self.debug:
+            print('-------------------------')
 
     def init_shaders(self):
 
@@ -104,12 +108,14 @@ class SpaceTimeCube:
 
         ##########################
         # general vertex array object
-        print('\t\33[1;32mGenerating vao...\33[m', end='')
+        if self.debug:
+            print('\t\33[1;32mGenerating vao...\33[m', end='')
         sys.stdout.flush()
         try:
             vao = glGenVertexArrays(1)
             glBindVertexArray(vao)
-            print('\tOk')
+            if self.debug:
+                print('\tOk')
             sys.stdout.flush()
         except ValueError:
             print()
@@ -147,7 +153,8 @@ class SpaceTimeCube:
         self.update_cube_arrays()
 
         # Loading shader files
-        print('\t\33[1;32mCube shader...\33[m', end='')
+        if self.debug:
+            print('\t\33[1;32mCube shader...\33[m', end='')
         sys.stdout.flush()
         self.sh_cube.sh = sh.create(str(self.spacetimecube_dir / 'shaders/cube.vert'),
                                     None,
@@ -155,7 +162,8 @@ class SpaceTimeCube:
                                     [self.attr_cube_vertices], ['in_vertex'],
                                     glsl_version)
         if not self.sh_cube.sh: exit(1)
-        print('\t\tOk')
+        if self.debug:
+            print('\t\tOk')
         sys.stdout.flush()
         #-----------------------------------------------
 
@@ -180,7 +188,8 @@ class SpaceTimeCube:
         ## CALLBACKS -------
 
         # Loading shader files
-        print('\t\33[1;32mShadows shader...\33[m', end='')
+        if self.debug:
+            print('\t\33[1;32mShadows shader...\33[m', end='')
         sys.stdout.flush()
         self.sh_shadows.sh = sh.create( str(self.spacetimecube_dir / 'shaders/shadows.vert'),
                                         None,
@@ -190,7 +199,8 @@ class SpaceTimeCube:
                                         glsl_version)
 
         if not self.sh_shadows.sh: exit(1)
-        print('\tOk')
+        if self.debug:
+            print('\tOk')
         sys.stdout.flush()
         #-----------------------------------------------
 
@@ -216,7 +226,8 @@ class SpaceTimeCube:
         ## CALLBACKS -------
 
         # Loading shader files
-        print('\t\33[1;32mBack shadows shader...\33[m', end='')
+        if self.debug:
+            print('\t\33[1;32mBack shadows shader...\33[m', end='')
         sys.stdout.flush()
         self.sh_back_shadows.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_shadows.vert'),
                                             str(self.spacetimecube_dir / 'shaders/back_shadows.geom'),
@@ -226,7 +237,8 @@ class SpaceTimeCube:
                                             glsl_version)
 
         if not self.sh_back_shadows.sh: exit(1)
-        print('\tOk')
+        if self.debug:
+            print('\tOk')
         sys.stdout.flush()
         #-----------------------------------------------
 
@@ -246,7 +258,8 @@ class SpaceTimeCube:
         ## CALLBACKS -------
 
         # Loading shader files
-        print('\t\33[1;32mTrajects shader...\33[m', end='')
+        if self.debug:
+            print('\t\33[1;32mTrajects shader...\33[m', end='')
         sys.stdout.flush()
         self.sh_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/trajects.vert'),
                                         None,
@@ -256,7 +269,8 @@ class SpaceTimeCube:
                                         glsl_version)
 
         if not self.sh_trajects.sh: exit(1)
-        print('\tOk')
+        if self.debug:
+            print('\tOk')
         sys.stdout.flush()
 
         #-----------------------------------------------
@@ -265,7 +279,8 @@ class SpaceTimeCube:
         if len(chunk) >0:
             self.data.add(chunk)
         elif file != '':
-            print('\t\33[1;32mReading data...\33[m', end='')
+            if self.debug:
+                print('\t\33[1;32mReading data...\33[m', end='')
             sys.stdout.flush()
             big_chunk = np.recfromcsv(file, delimiter=',', encoding='utf-8')
             if type(big_chunk[0][1]) != int:
@@ -278,13 +293,21 @@ class SpaceTimeCube:
                                                 ('elevation', big_chunk.dtype[4])])
             self.data.add(big_chunk[ : int(len(big_chunk)/2)])
             self.data.add(big_chunk[int(len(big_chunk)/2) : ])
-            print('\t\tOk')
+            if self.debug:
+                print('\t\tOk')
         sys.stdout.flush()
 
         #self.data.print_meta()
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.update_trajects_arrays()
         self.update_cube()
+
+    def clean_data(self):
+        if self.debug:
+            print('\33[1;32m\tCleaning data...\33[m', end='')
+        self.data.clean()
+        if self.debug:
+            print('\tOk')
 
     def update_cube(self):
         self.update_cube_arrays()
@@ -325,12 +348,11 @@ class SpaceTimeCube:
         if key == b'\x1b':
             sys.exit()
         elif key == b't':
-            print('test', x, y)
+            self.clean_data()
         elif key == b'w':
             self.projo.wiggle = not self.projo.wiggle
 
     def on_resize(self, w, h):
-        print('resize ' + str((w, h)))
         glViewport(0,  0,  w,  h);
         self.projo.change_ratio(w/float(h))
         self.width, self.height = w, h

@@ -26,6 +26,9 @@ class data:
         self.maxs           = [1, 1, 1, 1]         #[time, lon, lat, ele]
         self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
 
+    def clean(self):
+        self.init()
+
     def add(self, chunk):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''
         nd = []

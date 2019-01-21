@@ -32,9 +32,15 @@ class spacetimecubeOperator(Operator):
         self.ogl_app.mouse_move_reporting = getattr(self.ogl_app.handler,
                                                     "mouse_move_reporting",
                                                     MouseMoveReporting.ALWAYS)
+        self.ogl_app.handler.debug = True
         self.register_opengl_app(self.ogl_app)
 
     def init_op_data(self):
+
+        # Cleaning data first
+        self.ogl_app.handler.clean_data()
+
+        # Sending new data now
         src = self.input_plug.source
         cols = src.select_columns(  self.id_column_param.col_index,
                                     self.dat_column_param.col_index,
@@ -45,4 +51,7 @@ class spacetimecubeOperator(Operator):
             self.ogl_app.handler.load_data(chunk=ch)
 
     def handle_event(self, ev_type, **info):
-        self.init_op_data()
+        if ev_type == 'onload':
+            self.init_op_data()
+        else:
+            print('\33[1;31m!!!Unknown Event', ev_type, '!!!\33[m')
