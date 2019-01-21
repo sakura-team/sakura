@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 from sakura.client import api
-import code, readline, os.path, atexit, rlcompleter
+from sakura.common.errors import APIRequestError
+import sys, code, readline, os.path, atexit, rlcompleter
+
+# avoid a full traceback in case of APIRequestError
+saved_excepthook = sys.excepthook
+def quiet_excepthook(t, value, traceback):
+    if t is APIRequestError:
+        print('ERROR: ' + str(value))
+    else:
+        saved_excepthook(t, value, traceback)
+sys.excepthook = quiet_excepthook
 
 def handle_cmd_history():
     # Persistent command history.
@@ -17,7 +27,7 @@ def enable_completion(env):
     readline.parse_and_bind('tab:complete')
 
 def run():
-    env = dict(api = api)
+    env = dict(api = api, sys = sys)
     handle_cmd_history()
     enable_completion(env)
     # read-eval-loop
