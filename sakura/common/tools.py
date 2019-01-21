@@ -135,12 +135,12 @@ class ObservableEvent:
         for cb in self.observer_callbacks:
             cb(*args, **kwargs)
 
-def run_cmd(cmd, cwd=None):
+def run_cmd(cmd, cwd=None, **options):
     if cwd is not None:
         saved_cwd = Path.cwd()
         os.chdir(str(cwd))
     print(str(Path.cwd()) + ': ' + cmd)
-    status = run(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
+    status = run(cmd, shell=True, stdout=PIPE, stderr=STDOUT, **options)
     if status.returncode != 0:
         print(status.stdout)
         raise Exception(cmd + ' failed!')
