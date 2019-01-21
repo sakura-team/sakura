@@ -23,8 +23,8 @@ class data:
         self.trajects       = []
         self.trajects_ids   = []
         self.trajects_ind   = []                # indices of each trajectory in the whole array of geometric data
-        self.maxs           = [1, 1, 1]         #[time, lon, lat, ele]
-        self.mins           = [-1, -1, -1]      #[time, lon, lat, ele]
+        self.maxs           = [1, 1, 1, 1]         #[time, lon, lat, ele]
+        self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
 
     def add(self, chunk):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''

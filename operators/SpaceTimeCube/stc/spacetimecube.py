@@ -17,34 +17,38 @@ from .libs import shader        as sh
 from .libs import projector     as pr
 from .libs import trajectory    as tr
 
-def wire_cube(pos, edge):
-    e = edge/2.
-    return [    [pos + np.array([-e, -e, e])],
-                [pos + np.array([e, -e, e])],
-                [pos + np.array([e, -e, e])],
-                [pos + np.array([e, e, e])],
-                [pos + np.array([e, e, e])],
-                [pos + np.array([-e, e, e])],
-                [pos + np.array([-e, e, e])],
-                [pos + np.array([-e, -e, e])],
+def wire_cube(mins, maxs):
+    size = np.fabs(maxs - mins)
+    return np.array(
+            [   mins,
+                mins + np.array([size[0], 0, 0]),
+                mins + np.array([size[0], 0, 0]),
+                mins + np.array([size[0], size[0], 0]),
+                mins + np.array([size[0], size[0], 0]),
+                mins + np.array([0, size[0], 0]),
+                mins + np.array([0, size[0], 0]),
+                mins,
 
-                [pos + np.array([-e, -e, -e])],
-                [pos + np.array([e, -e, -e])],
-                [pos + np.array([e, -e, -e])],
-                [pos + np.array([e, e, -e])],
-                [pos + np.array([e, e, -e])],
-                [pos + np.array([-e, e, -e])],
-                [pos + np.array([-e, e, -e])],
-                [pos + np.array([-e, -e, -e])],
+                maxs,
+                maxs - np.array([size[0], 0, 0]),
+                maxs - np.array([size[0], 0, 0]),
+                maxs - np.array([size[0], size[0], 0]),
+                maxs - np.array([size[0], size[0], 0]),
+                maxs - np.array([0, size[0], 0]),
+                maxs - np.array([0, size[0], 0]),
+                maxs,
 
-                [pos + np.array([-e, -e, -e])],
-                [pos + np.array([-e, -e, e])],
-                [pos + np.array([e, -e, -e])],
-                [pos + np.array([e, -e, e])],
-                [pos + np.array([e, e, -e])],
-                [pos + np.array([e, e, e])],
-                [pos + np.array([-e, e, -e])],
-                [pos + np.array([-e, e, e])]    ]
+                mins,
+                mins + np.array([0, 0, size[0]]),
+                mins + np.array([0, size[0], 0]),
+                mins + np.array([0, size[0], size[0]]),
+
+                maxs,
+                maxs - np.array([0, 0, size[0]]),
+                maxs - np.array([0, size[0], 0]),
+                maxs - np.array([0, size[0], size[0]])
+                ]
+            )
 
 
 class SpaceTimeCube:
@@ -57,12 +61,12 @@ class SpaceTimeCube:
         self.height = 100
 
         self.projo = pr.projector(position = [0, 0, 2])
-        #self.projo.wiggle = True
+        self.projo.wiggle = True
         self.projo.v_rotation(-45.)
 
         self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
-        self.label = "3D cube"
+        self.label          = "3D cube"
 
         #Shaders
         self.sh_cube            = sh.shader()
@@ -74,9 +78,11 @@ class SpaceTimeCube:
         self.data = tr.data()
 
         #Global display data
-        self.cube_vertices      = np.array(wire_cube([0,.5,0], 1))
-        self.trajects_vertices  = np.array([[0,-1000,0,0], [0,0,1000,0], [0,1000,0,0]]) #[time, lon, lat, ele]
-        self.trajects_colors    = np.array([[1,0,0,1], [0,1,0,1], [0,0,1,1]])
+        self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
+                                            np.array([.5,1,.5]))
+        self.trajects_vertices  = np.array([[0,-1,0,0],
+                                            [0,1,0,0]])#[time, lon, lat, ele]
+        self.trajects_colors    = np.array([[0,0,0,1], [0,0,0,1]])
         self.thickness_of_backs  = 8 #pixels
 
     def init(self):
@@ -93,7 +99,8 @@ class SpaceTimeCube:
 
     def init_shaders(self):
 
-        glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8").replace('.', '')
+        glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8")
+        glsl_version = glsl_version.replace('.', '')
 
         ##########################
         # general vertex array object
@@ -129,14 +136,15 @@ class SpaceTimeCube:
         ## CALLBACKS -------
         def _update_cube_arrays():
             sh.bind(self.vbo_cube, self.cube_vertices, self.attr_cube_vertices, 3, GL_FLOAT)
-        self.sh_cube.update_arrays = _update_cube_arrays
+        self.update_cube_arrays = _update_cube_arrays
 
         def cube_display():
             self.sh_cube.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINES, 0, len(self.cube_vertices))
         self.sh_cube.display = cube_display
+
         ## CALLBACKS -------
-        self.sh_cube.update_arrays()
+        self.update_cube_arrays()
 
         # Loading shader files
         print('\t\33[1;32mCube shader...\33[m', end='')
@@ -157,7 +165,7 @@ class SpaceTimeCube:
         def _update_trajects_arrays():
             sh.bind(self.vbo_trajects_vertices, self.trajects_vertices, self.attr_trajects_vertices, 4, GL_FLOAT)
             sh.bind(self.vbo_trajects_colors, self.trajects_colors, self.attr_trajects_colors, 4, GL_FLOAT)
-        self.sh_shadows.update_arrays = _update_trajects_arrays
+        self.update_trajects_arrays = _update_trajects_arrays
 
         def shadows_display():
             self.sh_shadows.update_uniforms()
@@ -170,7 +178,6 @@ class SpaceTimeCube:
             self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
         self.sh_shadows.update_uniforms = update_uni_shadows
         ## CALLBACKS -------
-        self.sh_shadows.update_arrays()
 
         # Loading shader files
         print('\t\33[1;32mShadows shader...\33[m', end='')
@@ -190,8 +197,6 @@ class SpaceTimeCube:
         #-----------------------------------------------
         # Back Shadows
         ## CALLBACKS -------
-        self.sh_back_shadows.update_arrays = _update_trajects_arrays
-
         def back_shadows_display():
             self.sh_back_shadows.update_uniforms()
             self.sh_back_shadows.update_projections(self.projo.projection(), self.projo.modelview())
@@ -208,9 +213,7 @@ class SpaceTimeCube:
             self.sh_back_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_back_shadows.set_uniform("mins", self.data.mins, '4fv')
         self.sh_back_shadows.update_uniforms = update_uni_back_shadows
-
         ## CALLBACKS -------
-        self.sh_back_shadows.update_arrays()
 
         # Loading shader files
         print('\t\33[1;32mBack shadows shader...\33[m', end='')
@@ -230,8 +233,6 @@ class SpaceTimeCube:
         #-----------------------------------------------
         # Main trajectories
         ## CALLBACKS -------
-        self.sh_trajects.update_arrays = _update_trajects_arrays
-
         def trajects_display():
             self.sh_trajects.update_uniforms()
             self.sh_trajects.update_projections(self.projo.projection(), self.projo.modelview())
@@ -242,10 +243,7 @@ class SpaceTimeCube:
             self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
         self.sh_trajects.update_uniforms = update_uni_trajects
-
         ## CALLBACKS -------
-        self.sh_trajects.update_arrays()
-
 
         # Loading shader files
         print('\t\33[1;32mTrajects shader...\33[m', end='')
@@ -266,7 +264,6 @@ class SpaceTimeCube:
     def load_data(self, chunk=[], file=''):
         if len(chunk) >0:
             self.data.add(chunk)
-            print(chunk[0])
         elif file != '':
             print('\t\33[1;32mReading data...\33[m', end='')
             sys.stdout.flush()
@@ -281,16 +278,16 @@ class SpaceTimeCube:
                                                 ('elevation', big_chunk.dtype[4])])
             self.data.add(big_chunk[ : int(len(big_chunk)/2)])
             self.data.add(big_chunk[int(len(big_chunk)/2) : ])
-        print('\t\tOk')
+            print('\t\tOk')
         sys.stdout.flush()
 
         #self.data.print_meta()
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
-        self.sh_shadows.update_arrays()
-        self.resize_cube()
+        self.update_trajects_arrays()
+        self.update_cube()
 
-    def resize_cube(self):
-        pass
+    def update_cube(self):
+        self.update_cube_arrays()
 
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
@@ -322,7 +319,6 @@ class SpaceTimeCube:
         elif self.imode == 'translation':
             d = np.linalg.norm(np.array(self.projo.viewpoint) - np.array(self.projo.position))
             self.projo.translate([-dx*d/1000, dy*d/1000])
-
         self.mouse = [x, y]
 
     def on_key_press(self, key, x, y):

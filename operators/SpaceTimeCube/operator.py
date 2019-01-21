@@ -3,6 +3,8 @@ from sakura.daemon.processing.operator import Operator
 from sakura.common.gpu.openglapp import OpenglApp
 from sakura.daemon.processing.parameter import TagBasedColumnSelection
 from .stc.spacetimecube import SpaceTimeCube
+from sakura.common.gpu.openglapp import MouseMoveReporting
+
 
 class spacetimecubeOperator(Operator):
     NAME = "Space-Time Cube"
@@ -27,6 +29,9 @@ class spacetimecubeOperator(Operator):
         # opengl app
         self.ogl_app = OpenglApp(SpaceTimeCube())
         self.ogl_app.plan_periodic_task(self.ogl_app.handler.animation, .01)
+        self.ogl_app.mouse_move_reporting = getattr(self.ogl_app.handler,
+                                                    "mouse_move_reporting",
+                                                    MouseMoveReporting.ALWAYS)
         self.register_opengl_app(self.ogl_app)
 
     def init_op_data(self):
