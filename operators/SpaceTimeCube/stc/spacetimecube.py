@@ -362,7 +362,7 @@ class SpaceTimeCube:
         elif key == b't':
             self.clean_data()
         elif key == b'w':
-            self.projo.wiggle = not self.projo.wiggle
+            self.toggle_wiggle()
 
     def on_resize(self, w, h):
         glViewport(0,  0,  w,  h);
@@ -372,3 +372,6 @@ class SpaceTimeCube:
     def animation(self):
         if self.projo.wiggle:
             self.projo.wiggle_next()
+
+    def toggle_wiggle(self):
+        self.projo.wiggle = not self.projo.wiggle
