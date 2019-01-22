@@ -9,3 +9,8 @@ function init() {
         sakura.apis.operator.fire_event("wiggle");
     }
 }
+
+function floor_darkness() {
+    var val = document.getElementById('darkness_range').value/100;
+    sakura.apis.operator.fire_event("floor_darkness", {'value': val}).then( function(result) {});
+}

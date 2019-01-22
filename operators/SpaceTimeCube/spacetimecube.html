@@ -11,7 +11,15 @@
         <script src='js/spacetimecube.js'></script>
     </head>
     <body onload="init();">
-        <button id="wiggle_btn">Wiggle</button>
+        <table>
+            <tr>
+                <td>
+                    <button id="wiggle_btn">Wiggle</button>
+                <td>
+                    <div class="slidecontainer">
+                        <input type="range" min="0" max="100" value="50" class="slider" step=10 id="darkness_range" onchange="floor_darkness();">
+                    </div>
+        </table>
         <img id="ogl-img"/>
     </body>
 </html>

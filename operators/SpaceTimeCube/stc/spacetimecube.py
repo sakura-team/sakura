@@ -5,6 +5,7 @@
 import sys, math, time, inspect, datetime
 import numpy as np
 from pathlib import Path
+from PIL import Image
 
 try:
     from OpenGL.GL      import *
@@ -16,6 +17,7 @@ except:
 from .libs import shader        as sh
 from .libs import projector     as pr
 from .libs import trajectory    as tr
+from .libs import floor         as fl
 
 def wire_cube(mins, maxs):
     size = np.fabs(maxs - mins)
@@ -83,6 +85,11 @@ class SpaceTimeCube:
         self.data.add([])
         self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
 
+        #floor
+        self.floor = fl.floor()
+        self.floor_text_coords = np.array([ [0.,0.], [0.,1.], [1.,1.],
+                                            [0.,0.], [1.,1.], [1.,0.]])
+
         #Global display data
         self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
                                             np.array([.5,1,.5]))
@@ -90,6 +97,7 @@ class SpaceTimeCube:
         self.floor_vertices     = np.array([[-.5, 0, -.5], [-.5, 0, .5], [.5, 0, .5],
                                             [-.5, 0, -.5], [.5, 0, .5], [.5, 0, -.5]])
         self.thickness_of_backs  = 8 #pixels
+        self.floor_darkness      = .1
 
         self.debug = False
 
@@ -100,6 +108,7 @@ class SpaceTimeCube:
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
         glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         if self.debug:
             print('\n-------------------------')
             print('Inits')
@@ -138,13 +147,14 @@ class SpaceTimeCube:
         self.attr_cube_vertices     = sh.new_attribute_index()
 
         self.vbo_trajects_vertices  = glGenBuffers(1)
-        self.attr_trajects_vertices = sh.new_attribute_index()
         self.vbo_trajects_colors    = glGenBuffers(1)
+        self.attr_trajects_vertices = sh.new_attribute_index()
         self.attr_trajects_colors   = sh.new_attribute_index()
 
         self.vbo_floor_vertices     = glGenBuffers(1)
+        self.vbo_floor_text_coords  = glGenBuffers(1)
         self.attr_floor_vertices    = sh.new_attribute_index()
-
+        self.attr_floor_text_coords = sh.new_attribute_index()
 
         ##########################
         # Shaders
@@ -302,6 +312,7 @@ class SpaceTimeCube:
         ## CALLBACKS -------
         def _update_floor_arrays():
             sh.bind(self.vbo_floor_vertices, self.floor_vertices, self.attr_floor_vertices, 3, GL_FLOAT)
+            sh.bind(self.vbo_floor_text_coords, self.floor_text_coords, self.attr_floor_text_coords, 2, GL_FLOAT)
         self.update_floor_arrays = _update_floor_arrays
 
         def floor_display():
@@ -314,9 +325,42 @@ class SpaceTimeCube:
             self.sh_floor.set_uniform("mins", self.data.mins, '4fv')
             self.sh_floor.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             self.sh_floor.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+            self.sh_floor.set_uniform("floor_texture", 0, 'i')
         self.sh_floor.update_uniforms = update_uni_floor
+
+        self.sh_floor.texture_id = glGenTextures(1)
+        def u_texture(init = False):
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, self.sh_floor.texture_id);
+
+            w = self.floor.img.width
+            h = self.floor.img.height
+
+            '''
+            while w > 4096 or h > 4096:
+                w /=2
+                h /=2
+
+            w, h = int(w), int(h)
+            '''
+
+            black = Image.new('RGB', (w, h), (0, 0, 0))
+            f = self.floor.img.resize((w, h), Image.ANTIALIAS)
+            final = Image.blend(f, black, self.floor_darkness)
+
+            arr = np.fromstring(final.tobytes(), np.uint8)
+            #arr = np.fromstring(self.floor.img.tobytes(), np.uint8)
+            glTexImage2D(   GL_TEXTURE_2D, 0, GL_RGB,
+                            final.width,
+                            final.height,
+                            0, GL_RGB, GL_UNSIGNED_BYTE, arr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+        self.sh_floor.update_texture = u_texture
         ## CALLBACKS -------
 
+        self.sh_floor.update_texture()
         self.update_floor_arrays()
 
         # Loading shader files
@@ -326,13 +370,13 @@ class SpaceTimeCube:
         self.sh_floor.sh = sh.create(str(self.spacetimecube_dir / 'shaders/floor.vert'),
                                         None,
                                         str(self.spacetimecube_dir / 'shaders/floor.frag'),
-                                        [self.attr_floor_vertices],
-                                        ['in_vertex'],
+                                        [self.attr_floor_vertices, self.attr_floor_text_coords],
+                                        ['in_vertex', 'in_text_coords'],
                                         glsl_version)
 
         if not self.sh_floor.sh: exit(1)
         if self.debug:
-            print('\tOk')
+            print('\t\tOk')
         sys.stdout.flush()
 
         #-----------------------------------------------
@@ -362,7 +406,9 @@ class SpaceTimeCube:
         #self.data.print_meta()
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.update_trajects_arrays()
+        self.update_floor()
         self.update_cube()
+
 
     def clean_data(self):
         if self.debug:
@@ -373,6 +419,9 @@ class SpaceTimeCube:
 
     def update_cube(self):
         self.update_cube_arrays()
+
+    def update_floor(self):
+        pass
 
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
@@ -423,6 +472,10 @@ class SpaceTimeCube:
             self.projo.zoom(1)
         elif key == b'-':
             self.projo.zoom(-1)
+        elif key == b'D':
+            self.set_floor_darkness(self.floor_darkness+.1)
+        elif key == b'd':
+            self.set_floor_darkness(self.floor_darkness-.1)
         else:
             print('\33[1;32m\tUnknown key\33[m', key)
 
@@ -437,3 +490,12 @@ class SpaceTimeCube:
 
     def toggle_wiggle(self):
         self.projo.wiggle = not self.projo.wiggle
+
+    def set_floor_darkness(self, value):
+        if value > 1.0:
+            self.floor_darkness = 1.0
+        elif value < 0.0:
+            self.floor_darkness = 0.0
+        else:
+            self.floor_darkness = value
+        self.sh_floor.update_texture()

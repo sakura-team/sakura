@@ -51,10 +51,13 @@ class spacetimecubeOperator(Operator):
             self.ogl_app.handler.load_data(chunk=ch)
 
     def handle_event(self, ev_type, **info):
+
         if ev_type == 'onload':
             self.init_op_data()
         elif ev_type == 'wiggle':
             #TODO: implement a 'unplan' periodic task
             self.ogl_app.handler.toggle_wiggle()
+        elif ev_type == 'floor_darkness':
+            self.ogl_app.handler.set_floor_darkness(info['value'])
         else:
             print('\33[1;31m!!!Unknown Event', ev_type, '!!!\33[m')
