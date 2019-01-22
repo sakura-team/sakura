@@ -5,6 +5,7 @@ from sakura.daemon.db.database import Database
 from sakura.common.io import pack
 from sakura.common.access import GRANT_LEVELS
 from sakura.common.password import decode_password
+from sakura.common.cache import cache_result
 
 class DataStoreProber:
     def __init__(self, datastore):
@@ -70,6 +71,7 @@ class DataStore:
         if self._online is None:
             self.refresh()
         return self._online
+    @cache_result(2)
     def refresh(self):
         try:
             prober = DataStoreProber(self)
@@ -81,6 +83,8 @@ class DataStore:
                     (self.driver_label, self.host, str(exc).strip()))
             self._online = False
     def pack(self):
+        if self._online is False:
+            self.refresh()
         res = dict(
             host = self.host,
             driver_label = self.driver_label,

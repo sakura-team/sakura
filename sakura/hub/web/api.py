@@ -155,10 +155,12 @@ class GuiToHubAPI:
     # Databases
     @property
     def datastores(self):
+        self.context.datastores.refresh_offline_datastores()
         return self.context.datastores.filter_for_current_user()
 
     @property
     def databases(self):
+        self.context.datastores.refresh_offline_datastores()
         return self.context.databases.filter_for_current_user()
 
     @api.datastores.list

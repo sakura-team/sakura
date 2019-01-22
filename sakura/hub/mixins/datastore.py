@@ -1,5 +1,6 @@
 from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
 from sakura.common.errors import APIRequestErrorOfflineDatastore
+from sakura.common.cache import cache_result
 from sakura.hub.exceptions import DaemonDataError, \
                               DaemonDataExceptionIgnoreObject
 from sakura.hub.mixins.column import STANDARD_COLUMN_TAGS
@@ -24,7 +25,7 @@ class DatastoreMixin(BaseMixin):
 
     @property
     def online(self):
-        return self.id in DatastoreMixin.ONLINE_DATASTORES
+        return self.id in DatastoreMixin.ONLINE_DATASTORES and self.daemon.connected
 
     @online.setter
     def online(self, value):
@@ -39,15 +40,27 @@ class DatastoreMixin(BaseMixin):
             driver_label = self.driver_label,
             host = self.host
         )
+
+    @cache_result(2)
+    def refresh(self):
+        try:
+            ds_info = self.raw_remote_instance.pack()
+            get_context().datastores.restore_datastore(self.daemon, **ds_info)
+        except BaseException as exc:
+            self.online = False
+
     def assert_online(self):
         if not self.online:
             raise APIRequestErrorOfflineDatastore('Datastore is offline!')
+    @property
+    def raw_remote_instance(self):
+        return self.daemon.api.datastores[(self.host, self.driver_label)]
     @property
     def remote_instance(self):
         self.assert_grant_level(GRANT_LEVELS.read,
                     'You are not allowed to explore this datastore.')
         self.assert_online()
-        return self.daemon.api.datastores[(self.host, self.driver_label)]
+        return self.raw_remote_instance
     def list_expected_columns_tags(self):
         # list tags already seen on this datastore
         datastore_tags = set()
@@ -58,6 +71,8 @@ class DatastoreMixin(BaseMixin):
         datastore_tags = tuple(sorted(datastore_tags))
         return STANDARD_COLUMN_TAGS + (("others", datastore_tags),)
     def pack(self):
+        if self.online is False:
+            self.refresh()   # just in case
         return dict(
             daemon_id = self.daemon.id,
             datastore_id = self.id,
@@ -132,3 +147,8 @@ class DatastoreMixin(BaseMixin):
                     login, GRANT_LEVELS.value(grant_name))
         # update in hub.db
         super().update_grant(login, grant_name)
+    @classmethod
+    def refresh_offline_datastores(cls):
+        for ds in cls.select():
+            if not ds.online:
+                ds.refresh()
