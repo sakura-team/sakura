@@ -148,13 +148,14 @@ class SpaceTimeCube:
 
         def cube_display():
             self.sh_cube.update_uniforms()
-            self.sh_cube.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINES, 0, len(self.cube_vertices))
         self.sh_cube.display = cube_display
 
         def update_uni_cube():
             self.sh_cube.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_cube.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_cube.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_cube.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_cube.update_uniforms = update_uni_cube
 
         ## CALLBACKS -------
@@ -185,13 +186,14 @@ class SpaceTimeCube:
 
         def shadows_display():
             self.sh_shadows.update_uniforms()
-            self.sh_shadows.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
         self.sh_shadows.display = shadows_display
 
         def update_uni_shadows():
             self.sh_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_shadows.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_shadows.update_uniforms = update_uni_shadows
         ## CALLBACKS -------
 
@@ -219,7 +221,6 @@ class SpaceTimeCube:
         ## CALLBACKS -------
         def back_shadows_display():
             self.sh_back_shadows.update_uniforms()
-            self.sh_back_shadows.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
         self.sh_back_shadows.display = back_shadows_display
 
@@ -232,6 +233,8 @@ class SpaceTimeCube:
             self.sh_back_shadows.set_uniform("cam_pos", self.projo.position, '3fv')
             self.sh_back_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_back_shadows.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_back_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_back_shadows.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_back_shadows.update_uniforms = update_uni_back_shadows
         ## CALLBACKS -------
 
@@ -257,13 +260,14 @@ class SpaceTimeCube:
         ## CALLBACKS -------
         def trajects_display():
             self.sh_trajects.update_uniforms()
-            self.sh_trajects.update_projections(self.projo.projection(), self.projo.modelview())
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
         self.sh_trajects.display = trajects_display
 
         def update_uni_trajects():
             self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_trajects.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_trajects.update_uniforms = update_uni_trajects
         ## CALLBACKS -------
 
@@ -363,6 +367,8 @@ class SpaceTimeCube:
             self.clean_data()
         elif key == b'w':
             self.toggle_wiggle()
+        else:
+            print('\33[1;32m\tUnknown key\33[m', key)
 
     def on_resize(self, w, h):
         glViewport(0,  0,  w,  h);

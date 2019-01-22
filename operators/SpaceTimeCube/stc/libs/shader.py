@@ -37,6 +37,9 @@ class shader:
         self.update_texture     = None
         self.update_arrays      = None
 
+        self.uniform_names      = []
+        self.uniform_handlers    = []
+
     def update_projections(self, matp, matm):
 
         #projection * view * model
@@ -47,7 +50,15 @@ class shader:
         glUniformMatrix4fv(unif_m, 1, False, matm.T)
 
     def set_uniform(self, name, value, type):
-        w = glGetUniformLocation(self.sh, name)
+        w = None
+        try:
+            ind = self.uniform_names.index(name)
+            w = self.uniform_handlers[ind]
+        except:
+            w = glGetUniformLocation(self.sh, name)
+            self.uniform_names.append(name)
+            self.uniform_handlers.append(w)
+
         if w == -1:
             print("Pb with getting uniform location: ", name, "does not correspond to an active uniform!!")
         elif w in [GL_INVALID_VALUE, GL_INVALID_OPERATION]:
@@ -61,6 +72,8 @@ class shader:
                 glUniform3fv(w, 1, value)
             elif type == '4fv':
                 glUniform4fv(w, 1, value)
+            elif type == 'm4fv':
+                glUniformMatrix4fv(w, 1, False, value)
             else:
                 print("Error in setting Uniform: Unknown type")
 
