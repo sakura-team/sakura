@@ -134,11 +134,12 @@ function release_tabs(id) {
 
 function params_onChange(op_id, param_index, select_id) {
 
-    var index = document.getElementById(select_id).selectedIndex;
+    let index = document.getElementById(select_id).selectedIndex;
     let hub_remote_op = sakura.apis.hub.operators[parseInt(op_id.split("_")[2])];
-    hub_remote_op.info().then(function (result) {
-        var param_value = index;
+    hub_remote_op.info().then(function (instance_info) {
+        let param_value = index;
         hub_remote_op.parameters[param_index].set_value(param_value).then(function (result2) {
+            current_instance_info = instance_info;
             if (result2)
                 console.log(result2);
             else {
