@@ -115,6 +115,11 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
             update_mouse_reports();
         }, false);
 
+        img.addEventListener('wheel', function(evt) {
+            evt.preventDefault();
+            remote_app.fire_event('on_wheel', evt.deltaY);
+        }, false);
+
         // initialize
         update_mouse_reports();
         do_resize();

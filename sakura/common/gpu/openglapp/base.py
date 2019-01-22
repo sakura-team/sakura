@@ -68,6 +68,11 @@ class OpenglAppBase:
         self.handler.on_mouse_click(button, state, x, y)
         self.notify_change()
 
+    def on_wheel(self, delta):
+        self.make_current()
+        self.handler.on_wheel(delta)
+        self.notify_change()
+
     def display(self):
         self.make_current()
         self.prepare_display()
@@ -132,4 +137,3 @@ class OpenglAppBase:
     def __del__(self):
         for g_task in self.greenlets:
             g_task.kill()
-
