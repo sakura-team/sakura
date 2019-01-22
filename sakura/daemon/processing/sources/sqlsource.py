@@ -6,11 +6,14 @@ class SQLSourceIterator:
     def __init__(self, stream, chunk_size, offset):
         self.chunk_size = chunk_size
         self.dtype = stream.get_dtype()
-        self.released = False
+        self.db_conn, self.cursor = None, None
         self.db_conn = stream.db.connect()
         self.cursor = stream.open_cursor(self.db_conn, offset)
         if self.chunk_size == None:
             self.chunk_size = self.cursor.arraysize
+    @property
+    def released(self):
+        return self.db_conn is None and self.cursor is None
     def __iter__(self):
         return self
     def __next__(self):
@@ -24,10 +27,12 @@ class SQLSourceIterator:
             raise StopIteration
         return NumpyChunk.create(chunk_data, self.dtype)
     def release(self):
-        if not self.released:
+        if self.cursor is not None:
             self.cursor.close()
+            self.cursor = None
+        if self.db_conn is not None:
             self.db_conn.close()
-            self.released = True
+            self.db_conn = None
     def __del__(self):
         self.release()
 

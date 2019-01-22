@@ -6,6 +6,7 @@ from sakura.common.io import pack
 from sakura.common.access import GRANT_LEVELS
 from sakura.common.password import decode_password
 from sakura.common.cache import cache_result
+from sakura.common.errors import APIRequestErrorOfflineDatastore
 
 class DataStoreProber:
     def __init__(self, datastore):
@@ -55,7 +56,12 @@ class DataStore:
             )
         if db_name is not None:
             info.update(dbname = db_name)
-        return self.driver.connect(**info)
+        try:
+            return self.driver.connect(**info)
+        except BaseException as e:
+            print(str(e))
+            self._online = False
+            raise APIRequestErrorOfflineDatastore('Datastore is down!')
     @property
     def grants(self):
         if self._grants is None:
