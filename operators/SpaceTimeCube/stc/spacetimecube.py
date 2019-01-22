@@ -73,6 +73,7 @@ class SpaceTimeCube:
         self.sh_shadows         = sh.shader()
         self.sh_back_shadows    = sh.shader()
         self.sh_trajects        = sh.shader()
+        self.sh_floor           = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
@@ -85,6 +86,9 @@ class SpaceTimeCube:
         #Global display data
         self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
                                             np.array([.5,1,.5]))
+
+        self.floor_vertices     = np.array([[-.5, 0, -.5], [-.5, 0, .5], [.5, 0, .5],
+                                            [-.5, 0, -.5], [.5, 0, .5], [.5, 0, -.5]])
         self.thickness_of_backs  = 8 #pixels
 
         self.debug = False
@@ -131,11 +135,16 @@ class SpaceTimeCube:
         ##########################
         # VBOS & attributes
         self.vbo_cube               = glGenBuffers(1)
-        self.vbo_trajects_vertices  = glGenBuffers(1)
-        self.vbo_trajects_colors    = glGenBuffers(1)
         self.attr_cube_vertices     = sh.new_attribute_index()
+
+        self.vbo_trajects_vertices  = glGenBuffers(1)
         self.attr_trajects_vertices = sh.new_attribute_index()
+        self.vbo_trajects_colors    = glGenBuffers(1)
         self.attr_trajects_colors   = sh.new_attribute_index()
+
+        self.vbo_floor_vertices     = glGenBuffers(1)
+        self.attr_floor_vertices    = sh.new_attribute_index()
+
 
         ##########################
         # Shaders
@@ -286,6 +295,45 @@ class SpaceTimeCube:
         if self.debug:
             print('\tOk')
         sys.stdout.flush()
+        #-----------------------------------------------
+
+        #-----------------------------------------------
+        # Floor
+        ## CALLBACKS -------
+        def _update_floor_arrays():
+            sh.bind(self.vbo_floor_vertices, self.floor_vertices, self.attr_floor_vertices, 3, GL_FLOAT)
+        self.update_floor_arrays = _update_floor_arrays
+
+        def floor_display():
+            self.sh_floor.update_uniforms()
+            glDrawArrays(GL_TRIANGLES, 0, len(self.floor_vertices))
+        self.sh_floor.display = floor_display
+
+        def update_uni_floor():
+            self.sh_floor.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_floor.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_floor.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_floor.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        self.sh_floor.update_uniforms = update_uni_floor
+        ## CALLBACKS -------
+
+        self.update_floor_arrays()
+
+        # Loading shader files
+        if self.debug:
+            print('\t\33[1;32mFloor shader...\33[m', end='')
+        sys.stdout.flush()
+        self.sh_floor.sh = sh.create(str(self.spacetimecube_dir / 'shaders/floor.vert'),
+                                        None,
+                                        str(self.spacetimecube_dir / 'shaders/floor.frag'),
+                                        [self.attr_floor_vertices],
+                                        ['in_vertex'],
+                                        glsl_version)
+
+        if not self.sh_floor.sh: exit(1)
+        if self.debug:
+            print('\tOk')
+        sys.stdout.flush()
 
         #-----------------------------------------------
 
@@ -330,7 +378,8 @@ class SpaceTimeCube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        sh.display_list([   self.sh_cube,
+        sh.display_list([   self.sh_floor,
+                            self.sh_cube,
                             self.sh_back_shadows,
                             self.sh_shadows,
                             self.sh_trajects
