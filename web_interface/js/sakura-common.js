@@ -71,6 +71,46 @@ sakura.internal.default_error_callback = function (msg) {
     alert(msg);
 }
 
+/* this wrapper around the Promise object allows to
+   make sure uncaught exceptions are handled by
+   our default_error_callback. */
+sakura.internal.PromiseWrapper = function (cb) {
+    let _resolve_func = null;
+    let _reject_func = null;
+    // start a real async promise, and when it will be completed,
+    // resolve and reject handlers will be have been set appropriately
+    // by then() and catch() methods defined below.
+    let p = new Promise(cb).then(function(res){
+      if (_resolve_func !== null) {
+        _resolve_func(res);
+      };
+    }).catch(function(res){
+      if (_reject_func === null) {
+        sakura.internal.default_error_callback(res);
+      }
+      else {
+        _reject_func(res);
+      };
+    });
+    // then() method
+    this.then = function(resolve_cb) {
+      if (_resolve_func !== null) {
+        console.error('ERROR: PromiseWrapper cannot handle chaining then() callbacks, sorry!');
+      }
+      _resolve_func = resolve_cb;
+      return this;
+    };
+    // catch() method
+    this.catch = function(reject_cb) {
+      if (_reject_func !== null) {
+        console.error('ERROR: PromiseWrapper cannot handle chaining catch() callbacks, sorry!');
+      }
+      _reject_func = reject_cb;
+      return this;
+    };
+    return this;
+};
+
 sakura.internal.onmessage = function (evt) {
     sakura.internal.debug('sakura.internal.onmessage called');
     IO_TRANSFERED = 0;
@@ -93,7 +133,9 @@ sakura.internal.onmessage = function (evt) {
     }
     if (json[1] == IO_REQUEST_ERROR)
     {   // backend returned an error, pass it to error_callback
-        req.error_callback(json[2]);
+        err_cls_name = json[2]
+        err_msg = json[3]
+        req.error_callback(err_cls_name + ': ' + err_msg);
         return;
     }
     console.error('Bug: result of ws_request() got unknown status: ' + json[1]);
@@ -211,7 +253,7 @@ sakura.internal.hub_api_send = function(path, args) {
         }
     }
 
-    return new Promise(function(resolve, reject) {
+    return new sakura.internal.PromiseWrapper(function(resolve, reject) {
         sakura.internal.ws_request(path, posit_args, named_args, resolve, reject);
     });
 };

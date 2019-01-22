@@ -38,7 +38,8 @@ function set_tab_urls(id, url_formatter) {
                 iframe.attr('src', tab_url);
                 index++;
             });
-        }).then(resolve);
+            resolve();
+        });
     });
 }
 
