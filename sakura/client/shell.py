@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from sakura.client import api
-from sakura.common.errors import APIRequestError
+from sakura.common.errors import APIReturningError
 import sys, code, readline, os.path, atexit, rlcompleter
 
-# avoid a full traceback in case of APIRequestError
+# avoid a full traceback in case of APIReturningError
 saved_excepthook = sys.excepthook
 def quiet_excepthook(t, value, traceback):
-    if t is APIRequestError:
+    if issubclass(t, APIReturningError):
         print('ERROR: ' + str(value))
     else:
         saved_excepthook(t, value, traceback)

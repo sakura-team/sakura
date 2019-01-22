@@ -4,8 +4,9 @@ from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored
-from sakura.common.errors import APIRequestError, APIRemoteError, \
+from sakura.common.errors import APIReturningError, APIRemoteError, \
                                  IOHoldException, APIInvalidRequest
+from sakura.common import errors
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 #DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
@@ -135,8 +136,8 @@ class LocalAPIHandler(object):
                 out = (IO_TRANSFERED, res)
             except StopIteration:
                 out = (IO_STOP_ITERATION,)
-            except APIRequestError as e:
-                out = (IO_REQUEST_ERROR, str(e))
+            except APIReturningError as e:
+                out = (IO_REQUEST_ERROR, e.__class__.__name__, str(e))
             # send response
             try:
                 self.protocol.dump((req_id,) + out, self.f)
@@ -242,7 +243,9 @@ class AttrCallAggregator(object):
         if res[0] == IO_STOP_ITERATION:
             raise StopIteration
         if res[0] == IO_REQUEST_ERROR:
-            raise APIRequestError(res[1])
+            cls_name, msg = res[1:]
+            cls = getattr(errors, cls_name)
+            raise cls(msg)
         if res[0] == IO_HELD:
             # result was held remotely (not transferable)
             remote_held_id, origin = res[1], res[2:]
