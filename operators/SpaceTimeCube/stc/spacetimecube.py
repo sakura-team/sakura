@@ -409,6 +409,9 @@ class SpaceTimeCube:
             self.projo.translate([-dx*d/1000, dy*d/1000])
         self.mouse = [x, y]
 
+    def on_wheel(self, delta):
+        self.projo.zoom(-delta/10.)
+
     def on_key_press(self, key, x, y):
         if key == b'\x1b':
             sys.exit()
@@ -416,6 +419,10 @@ class SpaceTimeCube:
             self.clean_data()
         elif key == b'w':
             self.toggle_wiggle()
+        elif key == b'+':
+            self.projo.zoom(1)
+        elif key == b'-':
+            self.projo.zoom(-1)
         else:
             print('\33[1;32m\tUnknown key\33[m', key)
 

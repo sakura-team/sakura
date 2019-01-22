@@ -28,7 +28,7 @@ class spacetimecubeOperator(Operator):
         self.register_tab('STC', 'spacetimecube.html')
         # opengl app
         self.ogl_app = OpenglApp(SpaceTimeCube())
-        self.ogl_app.plan_periodic_task(self.ogl_app.handler.animation, .01)
+        self.ogl_app.plan_periodic_task(self.ogl_app.handler.animation, 1/60.)
         self.ogl_app.mouse_move_reporting = getattr(self.ogl_app.handler,
                                                     "mouse_move_reporting",
                                                     MouseMoveReporting.ALWAYS)

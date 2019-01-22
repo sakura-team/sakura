@@ -176,7 +176,7 @@ class projector:
         print('Ok')
 
     def compute_direction(self):
-        self.direction = normalize([x-y for x, y in zip(self.viewpoint, self.position)])
+        self.direction = np.array(normalize([x-y for x, y in zip(self.viewpoint, self.position)]))
 
     def print_params(self):
         print("Projector params :")
@@ -265,6 +265,14 @@ class projector:
         self.position       += dir[0]*right + front
         self.viewpoint      += dir[0]*right + front
         self.wiggle_pivot   += dir[0]*right + front
+
+    def zoom(self, dir):
+        n_pos = self.position + np.array(self.direction)*dir
+        dist = gm.norm(self.viewpoint - n_pos)
+
+        d = dot(self.direction, normalize(self.viewpoint - n_pos))
+        if dist >= .2 and d > 0:
+            self.position = n_pos
 
     def wiggle_next(self):
         dt = self.wiggle_time - time.time()
