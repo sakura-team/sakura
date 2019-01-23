@@ -1,6 +1,6 @@
 import sys, sakura.daemon.conf as conf
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import ParameterException
+from sakura.daemon.processing.parameter import InputUncompatible
 from sakura.daemon.loading import load_operator_classes, \
                                 load_datastores
 
@@ -33,7 +33,7 @@ class DaemonEngine(object):
         op = op_cls(op_id)
         op.api = self.hub.operator_apis[op_id]
         op.construct()
-        op.auto_fill_parameters(permissive=True)
+        op.auto_fill_parameters()
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (cls_name, op_id))
     def delete_operator_instance(self, op_id):
@@ -86,7 +86,7 @@ class DaemonEngine(object):
                     dst_op.auto_fill_parameters(plug = dst_input_plug)
                     # if we are here, this link is possible
                     links.append((src_out_id, dst_in_id))
-                except ParameterException:
+                except InputUncompatible:
                     pass
                 self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
         return links

@@ -4,7 +4,6 @@ from sakura.common.io import pack
 from sakura.daemon.processing.plugs.input import InputPlug
 from sakura.daemon.processing.plugs.output import OutputPlug
 from sakura.daemon.processing.tab import Tab
-from sakura.daemon.processing.parameter import ParameterException
 from gevent.lock import Semaphore
 
 class Operator:
@@ -81,19 +80,12 @@ class Operator:
             tabs = self.tabs,
             opengl_apps = tuple(app.label for app in self.opengl_apps)
         ))
-    def auto_fill_parameters(self, permissive = False, plug = None):
-        if permissive:
-            ignored_exception = ParameterException
-        else:
-            ignored_exception = ()  # do not ignore any exception
+    def auto_fill_parameters(self, plug = None):
         for param in self.parameters:
             # restrict to parameters concerning the specified plug if any
             if plug != None and not param.is_linked_to_plug(plug):
                 continue
-            try:
-                param.auto_fill()
-            except ignored_exception:
-                pass
+            param.auto_fill()
     def unselect_parameters(self, plug = None):
         for param in self.parameters:
             # restrict to parameters concerning the specified plug if any

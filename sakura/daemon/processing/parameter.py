@@ -1,13 +1,12 @@
 import numpy as np
 from enum import Enum
 
-Issue = Enum('ParameterIssue',
-        'InputNotConnected NotSelected NoPossibleValues')
-
 class ParameterException(Exception):
     def get_issue_name(self):
-        # get the name of the Issue enum
-        return self.args[0].name
+        return self.__class__.__name__  # subclass name
+
+class InputUncompatible(ParameterException):
+    pass
 
 # Parameter implementation.
 class Parameter(object):
@@ -77,9 +76,8 @@ class ComboParameter(Parameter):
     def auto_fill(self):
         if not self.selected():
             possible = self.get_possible_values()
-            if len(possible) == 0:
-                raise ParameterException(Issue.NoPossibleValues)
-            self.set_value(0)
+            if len(possible) > 0:
+                self.set_value(0)
     def recheck(self):
         if self.value is not None:
             # value is selected...
@@ -99,12 +97,16 @@ class ColumnSelectionParameter(ComboParameter):
     def is_linked_to_plug(self, plug):
         return self.plug == plug
     def matching_columns(self):
+        if not self.plug.connected():
+            return
+        input_plug_ok = False
         for col_idx, column_info in enumerate(self.plug.get_columns_info()):
             if self.condition(*column_info):
+                input_plug_ok = True
                 yield (col_idx,) + column_info
+        if not input_plug_ok:
+            raise InputUncompatible()
     def get_possible_values(self):
-        if not self.plug.connected():
-            raise ParameterException(Issue.InputNotConnected)
         return list('%s (of %s)' % (col_label, self.plug.label) \
                     for col_idx, col_label, col_type, col_tags in \
                         self.matching_columns())
