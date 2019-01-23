@@ -1,5 +1,7 @@
 import numpy as np
 from enum import Enum
+from sakura.common.tools import ObservableEvent
+from sakura.common.cache import cache_result
 
 class ParameterException(Exception):
     def get_issue_name(self):
@@ -14,13 +16,14 @@ class Parameter(object):
         self.gui_type = gui_type
         self.label = label
         self.value = None
-        self.on_change = lambda: None
+        self.on_change = ObservableEvent()
+        self.requested_value = None
 
     def selected(self):
-        self.recheck()
         return self.value != None
 
     def pack_base(self):
+        self.recheck()
         info = dict(
             gui_type = self.gui_type,
             label = self.label
@@ -43,20 +46,33 @@ class Parameter(object):
         print('is_linked_to_plug() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
-    # override in subclass if needed.
-    def set_value(self, value):
-        self.value = value
-        self.recheck()
-        self.on_change()
-
-    # override in subclass if needed.
-    def unset_value(self):
-        self.value = None
-        self.on_change()
-
-    # override in subclass if needed.
+    @cache_result(2)    # do not call too often
     def recheck(self):
-        pass
+        # if we can now set the value requested by the user, do it
+        if self.requested_value is not None and self.requested_value != self.value:
+            if self.check_valid(self.requested_value):
+                self.set_value(self.requested_value, user_request=False)
+                return
+        # if current value became invalid, unset it
+        if not self.check_valid(self.value):
+            self.unset_value(user_request=False)
+        # if value is not set, try to set it automatically
+        if self.value is None:
+            self.auto_fill()
+
+    def set_value(self, value, user_request=True):
+        if user_request:
+            self.requested_value = value
+        if value != self.value and self.check_valid(value):
+            self.value = value
+            self.on_change.notify()
+
+    def unset_value(self, user_request=True):
+        self.set_value(None, user_request=user_request)
+
+    # override in subclass if needed.
+    def check_valid(self, value):
+        return True
 
     # override in subclass if needed.
     def get_value_serializable(self):
@@ -77,14 +93,15 @@ class ComboParameter(Parameter):
         if not self.selected():
             possible = self.get_possible_values()
             if len(possible) > 0:
-                self.set_value(0)
-    def recheck(self):
-        if self.value is not None:
-            # value is selected...
-            if self.value >= len(self.get_possible_values()):
-                # ... but it became invalid
-                # (e.g. the value of another parameter changed the set of possible values)
-                self.unset_value()
+                self.set_value(0, user_request = False)
+    def check_valid(self, value):
+        if value is None:
+            return True
+        if value < len(self.get_possible_values()):
+            return True
+        # value may have became invalid
+        # (e.g. the value of another parameter changed the set of possible values)
+        return False
     def get_possible_values(self):
         print('get_possible_values() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError

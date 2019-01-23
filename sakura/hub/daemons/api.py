@@ -19,9 +19,11 @@ class OperatorToHubAPI:
         self.context = context
     @property
     def databases(self):
+        self.context.datastores.refresh_offline_datastores()
         return self.context.databases.filter_for_current_user()
     @property
     def tables(self):
+        self.context.datastores.refresh_offline_datastores()
         return self.context.tables.filter_for_current_user()
     def list_readable_databases(self):
         result = []
