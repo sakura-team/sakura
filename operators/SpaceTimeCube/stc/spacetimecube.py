@@ -18,6 +18,8 @@ from .libs import shader        as sh
 from .libs import projector     as pr
 from .libs import trajectory    as tr
 from .libs import floor         as fl
+from .libs import mercator      as mc
+from .libs import tilenames     as tn
 
 def wire_cube(mins, maxs):
     size = np.fabs(maxs - mins)
@@ -97,7 +99,7 @@ class SpaceTimeCube:
         self.floor_vertices     = np.array([[-.5, 0, -.5], [-.5, 0, .5], [.5, 0, .5],
                                             [-.5, 0, -.5], [.5, 0, .5], [.5, 0, -.5]])
         self.thickness_of_backs  = 8 #pixels
-        self.floor_darkness      = .1
+        self.floor_darkness      = .5
 
         self.debug = False
 
@@ -336,20 +338,11 @@ class SpaceTimeCube:
             w = self.floor.img.width
             h = self.floor.img.height
 
-            '''
-            while w > 4096 or h > 4096:
-                w /=2
-                h /=2
-
-            w, h = int(w), int(h)
-            '''
-
             black = Image.new('RGB', (w, h), (0, 0, 0))
             f = self.floor.img.resize((w, h), Image.ANTIALIAS)
             final = Image.blend(f, black, self.floor_darkness)
 
             arr = np.fromstring(final.tobytes(), np.uint8)
-            #arr = np.fromstring(self.floor.img.tobytes(), np.uint8)
             glTexImage2D(   GL_TEXTURE_2D, 0, GL_RGB,
                             final.width,
                             final.height,
@@ -406,9 +399,8 @@ class SpaceTimeCube:
         #self.data.print_meta()
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.update_trajects_arrays()
-        self.update_floor()
+        #self.update_floor()
         self.update_cube()
-
 
     def clean_data(self):
         if self.debug:
@@ -419,9 +411,6 @@ class SpaceTimeCube:
 
     def update_cube(self):
         self.update_cube_arrays()
-
-    def update_floor(self):
-        pass
 
     def display(self):
         glClearColor(.31,.63,1.0,1.0)
@@ -465,7 +454,7 @@ class SpaceTimeCube:
         if key == b'\x1b':
             sys.exit()
         elif key == b't':
-            self.clean_data()
+            self.update_floor()
         elif key == b'w':
             self.toggle_wiggle()
         elif key == b'+':
@@ -498,4 +487,22 @@ class SpaceTimeCube:
             self.floor_darkness = 0.0
         else:
             self.floor_darkness = value
+        self.sh_floor.update_texture()
+
+    def update_floor(self):
+        lon_min, lat_min = mc.lonlat_from_mercator( self.data.mins[1],
+                                                    self.data.mins[2])
+        lon_max, lat_max = mc.lonlat_from_mercator( self.data.maxs[1],
+                                                    self.data.maxs[2])
+        z = tn.depth_from_size((lon_max - lon_min))-1
+        (s,w,n,e) = self.floor.download_tile(lon_min, lat_min, z)
+        lon_min, lat_min = mc.mercator(w, s)
+        lon_max, lat_max = mc.mercator(e, n)
+        self.floor_vertices = np.array([[lon_min, 0, lat_min],
+                                        [lon_min, 0, lat_max],
+                                        [lon_max, 0, lat_max],
+                                        [lon_min, 0, lat_min],
+                                        [lon_max, 0, lat_max],
+                                        [lon_max, 0, lat_min]])
+        self.update_floor_arrays()
         self.sh_floor.update_texture()

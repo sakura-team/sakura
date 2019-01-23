@@ -90,12 +90,12 @@ def tileLayerBase(layer):
         abc = 'a'
 
     layers = { \
-        "WaterColor": "http://c.tile.stamen.com/watercolor/",
-        "OpenStreetMap": "http://"+abc+".tile.openstreetmap.org/",
-        "OpenTopoMap": "http://"+abc+".tile.opentopomap.org/",
+        "WaterColor": "https://c.tile.stamen.com/watercolor/",
+        "OpenStreetMap": "https://"+abc+".tile.openstreetmap.org/",
+        "OpenTopoMap": "https://"+abc+".tile.opentopomap.org/",
         #"shade": "http://c.tiles.wmflabs.org/hillshading/",
-        "ThunderForest": "http://a.tile.thunderforest.com/landscape/",
-        "Toner": "http://a.tile.stamen.com/toner/"
+        "ThunderForest": "https://a.tile.thunderforest.com/landscape/",
+        "Toner": "https://a.tile.stamen.com/toner/"
     }
     return(layers[layer])
 

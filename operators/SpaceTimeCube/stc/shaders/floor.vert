@@ -10,13 +10,13 @@ in  vec2 in_text_coords;
 out vec2 v_text_coords;
 
 void main() {
+    vec2 midl = (maxs.yz + mins.yz)/2.0;
     vec2 size = maxs.yz - mins.yz;
-    vec4 v = vec4(in_vertex, 1.0);
-    if (size.x > size.y)
-        v.z *= size.y/size.x;
-    else
-        v.x *= size.x/size.y;
-    v.y -= .5;
+    float msize = max(size.x, size.y);
+    vec4 v = vec4((in_vertex.x - midl.x)/msize,
+                  -.501,
+                  -(in_vertex.z - midl.y)/msize,
+                  1.0);
     gl_Position = projection_mat * modelview_mat * v;
 
     v_text_coords = in_text_coords;

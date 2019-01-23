@@ -26,12 +26,14 @@ def merc_y(lat):
   y=0-r_major*math.log(ts)
   return y
 
-def mercator(lon, lat, ele):
+def mercator(lon, lat, ele=None):
     x = EARTH_RADIUS * math.radians(lon)
     y =  math.log(math.tan(math.pi/4.0 + lat * (math.pi/180.0)/2.0)) * EARTH_RADIUS
+    if ele == None:
+        return x, y
     return x, y, ele # lon:x, lat:y
 
-def lonlat_from_mercator(x, y, ele):
+def lonlat_from_mercator(x, y):
     lon = math.degrees(x/EARTH_RADIUS)
     lat = (math.atan(math.exp(y/EARTH_RADIUS)) - math.pi/4.0)/((math.pi/180.0)/2.0)
-    return lon, lat, ele
+    return lon, lat
