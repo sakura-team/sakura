@@ -7,10 +7,9 @@ class OutputPlug:
     @property
     def source(self):
         if self._source is None:
-            #raise Exception('No datasource given to output plug!')
-            # until GUI is updated to read 'is_ready' flag,
-            # return a fake source.
-            print('WARNING: fake output source returned (not ready!)')
+            # not_ready, return a fake source.
+            # the GUI should be updated to read the "ready" flag.
+            print('note: fake output source returned (not ready)')
             output_source = ComputedSource('Fake output',
                 lambda: (yield ('output is not ready!',))
             )
@@ -25,8 +24,7 @@ class OutputPlug:
         return self._source is not None
     def pack(self):
         info = dict(ready = self.is_ready(), label = 'Output')
-        if self.is_ready():
-            info.update(**self.source.pack())
+        info.update(**self.source.pack())
         if self._label is not None:
             info.update(label = self._label)
         return info
