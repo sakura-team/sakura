@@ -26,6 +26,7 @@ def rpc_client_manager(context, daemon_name, sock_file):
     remote_api = RemoteAPIForwarder(sock_file, pickle)
     with db_session_wrapper():
         daemon = context.get_daemon_from_name(daemon_name)
+        context.attach_api_exception_handlers(remote_api)
         daemon.save_api(remote_api)
         # We will have to run daemon.on_connect()
         # but this greenlet cannot handle it because it may involve

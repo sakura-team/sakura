@@ -1,5 +1,12 @@
 class APIReturningError(ValueError):
-    pass
+    @property
+    def data(self):
+        if not hasattr(self, '_data'):
+            self._data = {}
+        return self._data
+    @data.setter
+    def data(self, value):
+        self._data = value
 
 class APIRequestError(APIReturningError):
     pass

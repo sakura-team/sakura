@@ -123,3 +123,12 @@ class TransactionMixin:
         return self
     def __exit__(self, type, value, traceback):
         self.rollback()
+
+class ObservableEvent:
+    def __init__(self):
+        self.observer_callbacks = []
+    def subscribe(self, cb):
+        self.observer_callbacks.append(cb)
+    def notify(self, *args, **kwargs):
+        for cb in self.observer_callbacks:
+            cb(*args, **kwargs)

@@ -61,7 +61,9 @@ class DataStore:
         except BaseException as e:
             print(str(e))
             self._online = False
-            raise APIRequestErrorOfflineDatastore('Datastore is down!')
+            exc = APIRequestErrorOfflineDatastore('Datastore is down!')
+            exc.data = dict(host = self.host, driver_label = self.driver_label)
+            raise exc
     @property
     def grants(self):
         if self._grants is None:

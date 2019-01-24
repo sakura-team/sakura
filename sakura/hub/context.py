@@ -1,6 +1,7 @@
 import bottle
 from gevent.local import local
 from sakura.common.bottle import PicklableFileRequest
+from sakura.common.errors import APIRequestErrorOfflineDatastore
 from sakura.hub.secrets import TemporarySecretsRegistry
 from sakura.hub.web.transfers import Transfer
 
@@ -107,3 +108,11 @@ class HubContext(object):
             del self.transfers[transfer_id]
         else:
             self.transfers[transfer_id].abort()
+    def attach_api_exception_handlers(self, daemon_api):
+        daemon_api.on_remote_exception.subscribe(self.on_api_exception)
+    def on_api_exception(self, exc):
+        if isinstance(exc, APIRequestErrorOfflineDatastore):
+            # datastore offline exception, refresh the status we have here at the hub
+            ds_host, ds_driver_label = exc.data['host'], exc.data['driver_label']
+            datastore = self.datastores.get(host = ds_host, driver_label = ds_driver_label)
+            datastore.refresh()

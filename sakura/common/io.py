@@ -3,7 +3,7 @@ import gc, pickle, numpy as np
 from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
-from sakura.common.tools import monitored
+from sakura.common.tools import monitored, ObservableEvent
 from sakura.common.errors import APIReturningError, APIRemoteError, \
                                  IOHoldException, APIInvalidRequest
 from sakura.common import errors
@@ -137,7 +137,7 @@ class LocalAPIHandler(object):
             except StopIteration:
                 out = (IO_STOP_ITERATION,)
             except APIReturningError as e:
-                out = (IO_REQUEST_ERROR, e.__class__.__name__, str(e))
+                out = (IO_REQUEST_ERROR, e.__class__.__name__, str(e), e.data)
             # send response
             try:
                 self.protocol.dump((req_id,) + out, self.f)
@@ -196,11 +196,12 @@ class LocalAPIHandler(object):
 void_result_interpreter = lambda x: x
 
 class AttrCallAggregator(object):
-    def __init__(self, request_cb, path = (),
+    def __init__(self, top_level_api, path = (),
                         origin = None,
                         delete_callback = None):
         self.path = path
-        self.request = request_cb
+        self.top_level_api = top_level_api
+        self.request = top_level_api.request
         self.delete_callback = delete_callback
         self.__origin__ = origin
     def __getattr__(self, attr):
@@ -208,7 +209,7 @@ class AttrCallAggregator(object):
         if attr.startswith('_'):
             return self.__io_request__(IO_ATTR, path)
         else:
-            return AttrCallAggregator(self.request, path, self.__origin__)
+            return AttrCallAggregator(self.top_level_api, path, self.__origin__)
     def __str__(self):
         path = self.path + ('__str__',)
         return 'REMOTE(' + self.__io_request__(IO_FUNC, path, (), {}) + ')'
@@ -224,7 +225,7 @@ class AttrCallAggregator(object):
     def __delete_held__(self, remote_held_id):
         self.request(IO_FUNC, ('__delete_held__',), (remote_held_id,), {})
     def __getitem__(self, index):
-        return AttrCallAggregator(self.request, self.path + ((index,),), self.__origin__)
+        return AttrCallAggregator(self.top_level_api, self.path + ((index,),), self.__origin__)
     def __call__(self, *args, **kwargs):
         return self.__io_request__(IO_FUNC, self.path, args, kwargs)
     def __len__(self):
@@ -243,9 +244,12 @@ class AttrCallAggregator(object):
         if res[0] == IO_STOP_ITERATION:
             raise StopIteration
         if res[0] == IO_REQUEST_ERROR:
-            cls_name, msg = res[1:]
+            cls_name, msg, data = res[1:]
             cls = getattr(errors, cls_name)
-            raise cls(msg)
+            exc = cls(msg)
+            exc.data = data
+            self.top_level_api.on_remote_exception.notify(exc)
+            raise exc
         if res[0] == IO_HELD:
             # result was held remotely (not transferable)
             remote_held_id, origin = res[1], res[2:]
@@ -261,7 +265,7 @@ class AttrCallAggregator(object):
                 # return the object
                 return obj
             remote_held_path = ('__held_objects__', (remote_held_id,))
-            return AttrCallAggregator(self.request, remote_held_path, origin,
+            return AttrCallAggregator(self.top_level_api, remote_held_path, origin,
                     delete_callback=lambda : self.__delete_held__(remote_held_id))
 
 class AttrCallRunner(object):
@@ -292,12 +296,13 @@ class AttrCallRunner(object):
 
 class RemoteAPIForwarder(AttrCallAggregator):
     def __init__(self, f, protocol, sync=False):
-        super().__init__(self.request)
+        super().__init__(self)
         self.f = f
         self.protocol = protocol
         self.reqs = {}
         self.req_ids = itertools.count()
         self.sync = sync
+        self.on_remote_exception = ObservableEvent()
     def request(self, *req):
         req_id = self.req_ids.__next__()
         async_res = AsyncResult()
