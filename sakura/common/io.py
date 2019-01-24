@@ -260,6 +260,7 @@ class AttrCallAggregator(object):
                 # we can short out those bounces and use the object directly.
                 # first, retrieve a reference to this object
                 obj = HeldObjectsStore.get()[origin_held_id]
+                print_debug('shortcut:', obj, 'is actually local.')
                 # tell the remote end it can release it
                 self.__delete_held__(remote_held_id)
                 # return the object

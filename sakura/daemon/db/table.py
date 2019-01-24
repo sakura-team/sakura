@@ -10,12 +10,11 @@ class DBTable:
         self.primary_key = []
         self.foreign_keys = []
         self.count_estimate = 0
-        self._stream = None
-    @property
-    def stream(self):
-        if self._stream is None:
-            self._stream = SQLTableSource(self.name, self)
-        return self._stream
+        self._source = None
+    def source(self):
+        if self._source is None:
+            self._source = SQLTableSource(self.name, self)
+        return self._source
     def add_column(self, *col_info, **params):
         col = DBColumn(self, *col_info, **params)
         self.columns.append(col)
@@ -25,7 +24,7 @@ class DBTable:
                     foreign_keys = self.foreign_keys,
                     count_estimate = self.count_estimate)
     def get_range(self, row_start, row_end):
-        return self.stream.get_range(row_start, row_end)
+        return self.source().get_range(row_start, row_end)
     def add_rows(self, rows):
         value_wrappers = tuple(col.value_wrapper for col in self.columns)
         with self.db.connect() as db_conn:
@@ -40,6 +39,6 @@ class DBTable:
         return self.count_estimate
     def stream_csv(self, gzip_compression=False):
         header_labels = tuple(col.col_name for col in self.columns)
-        stream = self.stream.chunks()
+        stream = self.source().chunks()
         yield from stream_csv(
                     header_labels, stream, gzip_compression)

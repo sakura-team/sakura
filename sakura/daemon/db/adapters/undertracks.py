@@ -27,7 +27,7 @@ class UTExperimentAsDB:
         if description_tb_name not in self.ds.databases['undertracks'].tables:
             return
         description_tb = self.ds.databases['undertracks'].tables[description_tb_name]
-        description_row = tuple(description_tb.stream)[0]
+        description_row = tuple(description_tb.source())[0]
         #print("** " + self.exp_name)
         #print(tuple((c.col_name, description_row[idx]) for idx, c in enumerate(description_tb.columns)))
         for idx, c in enumerate(description_tb.columns):
@@ -90,7 +90,7 @@ class UTDatastoreOverride:
         return self.known_emails[email]
     def ut_experiments(self):
         metadata_tb = self.ds.databases['undertracks'].tables['metadata']
-        for exp_name, owner_email, viewers in metadata_tb.stream.select_columns(0, 3, 6):
+        for exp_name, owner_email, viewers in metadata_tb.source().select_columns(0, 3, 6):
             grants = self.parse_viewers(viewers)
             owner_login = self.get_login_from_email(owner_email)
             if owner_login is not None:

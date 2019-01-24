@@ -42,7 +42,7 @@ class OperatorToHubAPI:
         table = self.tables[table_id]
         if not table.readable:
             return None
-        return table.remote_instance.stream
+        return table.remote_instance.source()
 
 class WrappedOperatorToHubAPI:
     def __init__(self, op_api, op_id):
