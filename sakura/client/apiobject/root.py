@@ -1,5 +1,6 @@
 from sakura.client.apiobject.opclasses import get_op_classes
 from sakura.client.apiobject.dataflows import get_dataflows
+from sakura.client.apiobject.databases import get_databases
 from sakura.client.apiobject.base import APIObjectBase
 
 class APIRoot:
@@ -15,6 +16,9 @@ class APIRoot:
             @property
             def dataflows(self):
                 return get_dataflows(remote_api)
+            @property
+            def databases(self):
+                return get_databases(remote_api)
             def _close(self):
                 ws.close()
         return APIRootImpl()

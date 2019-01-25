@@ -64,7 +64,11 @@ class APIObjectBase:
 def APIObjectRegistry(d):
     class APIObjectRegistryImpl(APIObjectBase):
         def __getitem__(self, k):
-            return d[k]
+            try:
+                return d[k]
+            except KeyError:
+                pass
+            raise KeyError('Sorry, no object at key "%s"' % str(k))
         def __doc_subitems__(self):
             return d.items()
     return APIObjectRegistryImpl
