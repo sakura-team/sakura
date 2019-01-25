@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #Michael ORTEGA - 07/April/2017
 
-import time, datetime, PIL, requests
+import time, datetime, PIL, requests, os, pickle
 import  numpy as np
 from    PIL import Image
 from . import geomaths as gm
@@ -11,43 +11,36 @@ from . import tilenames   as  tn
 
 class floor:
     def __init__(self):
+        self.layer = 'OpenStreetMap'
         self.width = 100
         self.height = 100
         self.img = Image.new('RGB', (self.width,self.height), (255, 255, 255))
 
     def download_tile(self, lon, lat, z):
-        x, y = tn.tileXY(lat, lon, z)
-        url = tn.tileURL(x, y, z, 'OpenStreetMap')
-        self.img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
-        return tn.tileEdges(x,y,z)
-
-        '''
+        # cache directory
         if not os.path.isdir("./tiles_cache/"):
-            print("Creating tiles_cache folder")
+            print("\33[1;32m\tCreating tiles folder...\33[m", end='')
             os.makedirs("./tiles_cache/")
+            print("Ok (tiles_cache)")
 
-        info = current_tile['url_info']
-        fdir    =   "./tiles_cache/" +info['type']        +"/"+ \
-                                str(info['depth'])  +"/"+ \
-                                str(info['x'])      +"/"
-        fname   = fdir + str(info['y']) + '.pytile'
+        x, y = tn.tileXY(lat, lon, z)
+
+        # tile file
+        fdir    = "./tiles_cache/" + self.layer + "/" + str(z) + "/"
+        fname   = fdir + str(x) + "_" + str(y) + ".pytile"
+
         if not os.path.exists(fname):
-            url = tn.tileURL(   info['x'],
-                                info['y'],
-                                info['depth'],
-                                info['type'])
-
-            current_tile['img'] = Image.open(requests.get(url, stream=True).raw)
+            url = tn.tileURL(x, y, z, self.layer)
+            self.img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
             if not os.path.isdir(fdir):
                 os.makedirs(fdir)
 
             o = open(fname, 'wb')
-            pickle.dump(current_tile['img'], o)
+            pickle.dump(self.img, o)
             o.close()
         else:
             o = open(fname, 'rb')
-            current_tile['img'] = pickle.load(o)
+            self.img = pickle.load(o)
             o.close()
 
-        current_tile['status'] = 'done'
-        '''
+        return tn.tileEdges(x,y,z)

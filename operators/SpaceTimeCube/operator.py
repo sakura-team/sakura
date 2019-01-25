@@ -49,6 +49,7 @@ class spacetimecubeOperator(Operator):
                                     self.ele_column_param.col_index)
         for ch in cols.chunks():
             self.ogl_app.handler.load_data(chunk=ch)
+        self.ogl_app.handler.update_floor()
 
     def handle_event(self, ev_type, **info):
 

@@ -96,8 +96,8 @@ class SpaceTimeCube:
         self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
                                             np.array([.5,1,.5]))
 
-        self.floor_vertices     = np.array([[-.5, 0, -.5], [-.5, 0, .5], [.5, 0, .5],
-                                            [-.5, 0, -.5], [.5, 0, .5], [.5, 0, -.5]])
+        self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
+                                            [0, 0, 0], [1, 0, 1], [1, 0, 0]])
         self.thickness_of_backs  = 8 #pixels
         self.floor_darkness      = .5
 
@@ -117,6 +117,7 @@ class SpaceTimeCube:
         self.init_shaders()
         if self.debug:
             print('-------------------------')
+            print('Running')
 
     def init_shaders(self):
 
@@ -465,6 +466,8 @@ class SpaceTimeCube:
             self.set_floor_darkness(self.floor_darkness+.1)
         elif key == b'd':
             self.set_floor_darkness(self.floor_darkness-.1)
+        elif key == b'p':
+            self.data.print_meta()
         else:
             print('\33[1;32m\tUnknown key\33[m', key)
 
@@ -490,6 +493,9 @@ class SpaceTimeCube:
         self.sh_floor.update_texture()
 
     def update_floor(self):
+        if self.debug:
+            print('\t\33[1;32mUpdating floor...\33[m', end='')
+        sys.stdout.flush()
         lon_min, lat_min = mc.lonlat_from_mercator( self.data.mins[1],
                                                     self.data.mins[2])
         lon_max, lat_max = mc.lonlat_from_mercator( self.data.maxs[1],
@@ -506,3 +512,6 @@ class SpaceTimeCube:
                                         [lon_max, 0, lat_min]])
         self.update_floor_arrays()
         self.sh_floor.update_texture()
+        if self.debug:
+            print('\tOk')
+        sys.stdout.flush()

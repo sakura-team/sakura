@@ -72,6 +72,10 @@ class data:
     def print_meta(self):
         print('\ndata info')
         print('\tNb trajectories:\t'+ str(len(self.trajects)))
+        tpt = 0
+        for t in self.trajects:
+            tpt += len(t.points)
+        print('\t\tTotal points:\t'+ str(tpt))
         print('\ttime duration:\t'+ str(datetime.timedelta(seconds=(self.maxs[0] - self.mins[0]))))
         print('\tCube size:\t\t'+str(self.maxs[1:] - self.mins[1:] )+'\n')
 
