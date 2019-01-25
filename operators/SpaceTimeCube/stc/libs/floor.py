@@ -19,9 +19,7 @@ class floor:
     def download_tile(self, x, y, z, img_x, img_y):
         # cache directory
         if not os.path.isdir("./tiles_cache/"):
-            print("\33[1;32m\tCreating tiles folder...\33[m", end='')
             os.makedirs("./tiles_cache/")
-            print("Ok (tiles_cache)")
 
         # tile file
         fdir    = "./tiles_cache/" + self.layer + "/" + str(z) + "/"

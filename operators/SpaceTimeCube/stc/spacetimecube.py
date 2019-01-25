@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 #Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-import sys, math, time, inspect, datetime
-import numpy as np
-from pathlib import Path
-from PIL import Image
+import sys, math, time, inspect, datetime, gevent, threading
+import numpy    as      np
+from pathlib    import  Path
+from PIL        import  Image
+from gevent     import  Greenlet
 
 try:
     from OpenGL.GL      import *
@@ -77,6 +78,7 @@ class SpaceTimeCube:
         self.sh_shadows         = sh.shader()
         self.sh_back_shadows    = sh.shader()
         self.sh_trajects        = sh.shader()
+        self.sh_back_trajects   = sh.shader()
         self.sh_floor           = sh.shader()
 
         #Trajectory data
@@ -98,8 +100,9 @@ class SpaceTimeCube:
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
-        self.thickness_of_backs  = 8 #pixels
-        self.floor_darkness      = .5
+        self.thickness_of_backs = 8 #pixels
+        self.floor_darkness     = .5
+        self.green_floor        = None
 
         self.debug = False
 
@@ -311,6 +314,45 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
+        # Back Shadows
+        ## CALLBACKS -------
+        def back_trajects_display():
+            self.sh_back_shadows.update_uniforms()
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
+        self.sh_back_trajects.display = back_trajects_display
+
+        def update_uni_back_trajects():
+            h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
+            p_size  = h*2/(self.height)
+            self.sh_back_trajects.set_uniform("pixel_size", p_size, 'f')
+            self.sh_back_trajects.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
+            self.sh_back_trajects.set_uniform("cam_near", self.projo.near, 'f')
+            self.sh_back_trajects.set_uniform("cam_pos", self.projo.position, '3fv')
+            self.sh_back_trajects.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_back_trajects.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_back_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_back_trajects.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        self.sh_back_trajects.update_uniforms = update_uni_back_trajects
+        ## CALLBACKS -------
+
+        # Loading shader files
+        if self.debug:
+            print('\t\33[1;32mBack trajects shader...\33[m', end='')
+        sys.stdout.flush()
+        self.sh_back_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_trajects.vert'),
+                                            str(self.spacetimecube_dir / 'shaders/back_trajects.geom'),
+                                            str(self.spacetimecube_dir / 'shaders/back_trajects.frag'),
+                                            [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                            ['in_vertex', 'in_color'],
+                                            glsl_version)
+
+        if not self.sh_back_trajects.sh: exit(1)
+        if self.debug:
+            print('\tOk')
+        sys.stdout.flush()
+        #-----------------------------------------------
+
+        #-----------------------------------------------
         # Floor
         ## CALLBACKS -------
         def _update_floor_arrays():
@@ -417,9 +459,14 @@ class SpaceTimeCube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
+        glDisable(GL_DEPTH_TEST)
         sh.display_list([   self.sh_floor,
                             self.sh_cube,
                             self.sh_back_shadows,
+                            self.sh_back_trajects
+                            ])
+        glEnable(GL_DEPTH_TEST)
+        sh.display_list([   self.sh_cube,
                             self.sh_shadows,
                             self.sh_trajects
                             ])
@@ -468,6 +515,8 @@ class SpaceTimeCube:
             self.set_floor_darkness(self.floor_darkness-.1)
         elif key == b'p':
             self.data.print_meta()
+        elif key == b'f':
+            self.update_floor()
         else:
             print('\33[1;32m\tUnknown key\33[m', key)
 
@@ -494,7 +543,7 @@ class SpaceTimeCube:
 
     def update_floor(self):
         if self.debug:
-            print('\t\33[1;32mUpdating floor...\33[m', end='')
+            print('\t\33[1;32mUpdating floor...\33[m', flush = True)
         sys.stdout.flush()
 
         # longitude and latitude of the cube corners
@@ -519,10 +568,6 @@ class SpaceTimeCube:
                 coords.append({'lon': lon, 'lat': lat, 'img_x': lo, 'img_y': la })
 
         self.floor.img = self.floor.img.resize(((size[0])*256, (size[1])*256) )
-
-        for c in coords:
-            self.floor.download_tile(c['lon'], c['lat'], z, c['img_x'], c['img_y'])
-
         lon_min, lat_min = mc.mercator(edges[0]['w'], edges[0]['s'])
         lon_max, lat_max = mc.mercator(edges[-1]['e'], edges[-1]['n'])
         self.floor_vertices = np.array([[lon_min, 0, lat_min],
@@ -531,8 +576,23 @@ class SpaceTimeCube:
                                         [lon_min, 0, lat_min],
                                         [lon_max, 0, lat_max],
                                         [lon_max, 0, lat_min]])
-        self.update_floor_arrays()
-        self.sh_floor.update_texture()
         if self.debug:
-            print('\tOk')
-        sys.stdout.flush()
+            print('\t\t\33[1;32mDownloading tiles 0%\33[m', end='', flush = True)
+
+        for i in range(len(coords)):
+            self.download_tile(coords[i], z, str(int((i+1)*100/len(coords))))
+            self.update_floor_arrays()
+            self.sh_floor.update_texture()
+        if self.debug:
+            print('\tOk', flush = True)
+
+    def download_tile(self, coords, z, perc):
+        self.floor.download_tile(   coords['lon'],
+                                    coords['lat'],
+                                    z,
+                                    coords['img_x'],
+                                    coords['img_y'])
+        if self.debug:
+            print(  '\r\t\t\33[1;32mDownloading tiles '+perc+'%\33[m',
+                    end='',
+                    flush = True)

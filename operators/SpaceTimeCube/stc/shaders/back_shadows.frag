@@ -5,5 +5,5 @@ in  vec4 geom_color;
 out vec4 fragColor;
 
 void main() {
-    fragColor = vec4(1, 1, 1, geom_color.w);
+    fragColor = vec4(.2, .2, .2, geom_color.w);
 }
