@@ -1,4 +1,6 @@
 from sakura.client.apiobject.plugs import APIOperatorInput, APIOperatorOutput
+from sakura.client.apiobject.parameters import APIOperatorParameter
+from sakura.client.apiobject.base import APIObjectBase
 
 class APIOperator:
     _deleted = set()
@@ -9,28 +11,33 @@ class APIOperator:
                 raise ReferenceError('Remote object was deleted!')
             else:
                 return remote_obj
-        class APIOperatorImpl:
+        class APIOperatorImpl(APIObjectBase):
+            __doc__ = 'Sakura ' + remote_obj.info()['cls_name'] + ' Operator'
             @property
             def inputs(self):
-                return {
-                    in_info['label']: APIOperatorInput(remote_api, op_id, in_id) \
-                        for in_id, in_info in enumerate(get_remote_obj().info()['inputs'])
-                }
+                return [ APIOperatorInput(remote_api, op_id, in_id) \
+                         for in_id in range(len(get_remote_obj().info()['inputs']))
+                ]
             @property
             def outputs(self):
-                return {
-                    out_info['label']: APIOperatorOutput(remote_api, op_id, out_id) \
-                        for out_id, out_info in enumerate(get_remote_obj().info()['outputs'])
-                }
+                return [ APIOperatorOutput(remote_api, op_id, out_id) \
+                        for out_id in range(len(get_remote_obj().info()['outputs']))
+                ]
+            @property
+            def parameters(self):
+                return [ APIOperatorParameter(remote_api, op_id, param_id) \
+                        for param_id in range(len(get_remote_obj().info()['parameters']))
+                ]
             def delete(self):
+                """Delete this operator"""
                 get_remote_obj().delete()
                 APIOperator._deleted.add(remote_obj)
+            def __doc_attrs__(self):
+                return get_remote_obj().info().items()
             def __getattr__(self, attr):
                 info = get_remote_obj().info()
                 if attr in info:
                     return info[attr]
                 else:
                     raise AttributeError('No such attribute "%s"' % attr)
-            def __repr__(self):
-                return '<Sakura ' + self.cls_name + ' Operator>'
         return APIOperatorImpl()

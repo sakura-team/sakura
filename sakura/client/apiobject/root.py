@@ -1,9 +1,11 @@
 from sakura.client.apiobject.opclasses import get_op_classes
 from sakura.client.apiobject.dataflows import get_dataflows
+from sakura.client.apiobject.base import APIObjectBase
 
 class APIRoot:
     def __new__(cls, remote_api, ws):
-        class APIRootImpl:
+        class APIRootImpl(APIObjectBase):
+            "Sakura API root"
             @property
             def __ap__(self):
                 return remote_api
@@ -15,6 +17,4 @@ class APIRoot:
                 return get_dataflows(remote_api)
             def _close(self):
                 ws.close()
-            def __repr__(self):
-                return '<Sakura client API object>'
         return APIRootImpl()
