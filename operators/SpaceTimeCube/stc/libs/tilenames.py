@@ -58,7 +58,7 @@ def lonEdges(x,z):
 def tileEdges(x,y,z):
   lat1,lat2 = latEdges(y,z)
   lon1,lon2 = lonEdges(x,z)
-  return((lat2, lon1, lat1, lon2)) # S,W,N,E
+  return {'s': lat2, 'w': lon1, 'n': lat1, 'e': lon2}
 
 def mercatorToLat(mercatorY):
   return(degrees(atan(sinh(mercatorY))))

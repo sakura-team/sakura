@@ -16,31 +16,29 @@ class floor:
         self.height = 100
         self.img = Image.new('RGB', (self.width,self.height), (255, 255, 255))
 
-    def download_tile(self, lon, lat, z):
+    def download_tile(self, x, y, z, img_x, img_y):
         # cache directory
         if not os.path.isdir("./tiles_cache/"):
             print("\33[1;32m\tCreating tiles folder...\33[m", end='')
             os.makedirs("./tiles_cache/")
             print("Ok (tiles_cache)")
 
-        x, y = tn.tileXY(lat, lon, z)
-
         # tile file
         fdir    = "./tiles_cache/" + self.layer + "/" + str(z) + "/"
         fname   = fdir + str(x) + "_" + str(y) + ".pytile"
 
+        img = None
         if not os.path.exists(fname):
             url = tn.tileURL(x, y, z, self.layer)
-            self.img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
+            img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
             if not os.path.isdir(fdir):
                 os.makedirs(fdir)
 
             o = open(fname, 'wb')
-            pickle.dump(self.img, o)
+            pickle.dump(img, o)
             o.close()
         else:
             o = open(fname, 'rb')
-            self.img = pickle.load(o)
+            img = pickle.load(o)
             o.close()
-
-        return tn.tileEdges(x,y,z)
+        self.img.paste(img, box= (img_x*256, img_y*256))

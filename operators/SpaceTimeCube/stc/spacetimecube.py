@@ -496,14 +496,35 @@ class SpaceTimeCube:
         if self.debug:
             print('\t\33[1;32mUpdating floor...\33[m', end='')
         sys.stdout.flush()
-        lon_min, lat_min = mc.lonlat_from_mercator( self.data.mins[1],
-                                                    self.data.mins[2])
-        lon_max, lat_max = mc.lonlat_from_mercator( self.data.maxs[1],
-                                                    self.data.maxs[2])
-        z = tn.depth_from_size((lon_max - lon_min))-1
-        (s,w,n,e) = self.floor.download_tile(lon_min, lat_min, z)
-        lon_min, lat_min = mc.mercator(w, s)
-        lon_max, lat_max = mc.mercator(e, n)
+
+        # longitude and latitude of the cube corners
+        lon_min, lat_min = mc.lonlat_from_mercator( self.data.mins[1],self.data.mins[2])
+        lon_max, lat_max = mc.lonlat_from_mercator( self.data.maxs[1],self.data.maxs[2])
+
+        # computing the higher depth that gives a tile smaller than the cube size
+        z = tn.depth_from_size(lon_max - lon_min)+1
+
+        # coordinates of the tiles
+        lon_t_min, lat_t_min = tn.tileXY(lat_min, lon_min, z)
+        lon_t_max, lat_t_max = tn.tileXY(lat_max, lon_max, z)
+
+        edges = []
+        coords = []
+        size = [lon_t_max - lon_t_min + 1, lat_t_min - lat_t_max + 1]
+        for lo in range(size[0]):
+            for la in range(size[1]):
+                lon = lon_t_min + lo
+                lat = lat_t_min - la
+                edges.append(tn.tileEdges(lon, lat , z))
+                coords.append({'lon': lon, 'lat': lat, 'img_x': lo, 'img_y': la })
+
+        self.floor.img = self.floor.img.resize(((size[0])*256, (size[1])*256) )
+
+        for c in coords:
+            self.floor.download_tile(c['lon'], c['lat'], z, c['img_x'], c['img_y'])
+
+        lon_min, lat_min = mc.mercator(edges[0]['w'], edges[0]['s'])
+        lon_max, lat_max = mc.mercator(edges[-1]['e'], edges[-1]['n'])
         self.floor_vertices = np.array([[lon_min, 0, lat_min],
                                         [lon_min, 0, lat_max],
                                         [lon_max, 0, lat_max],
