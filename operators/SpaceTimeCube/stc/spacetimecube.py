@@ -61,6 +61,7 @@ class SpaceTimeCube:
         # import local libs
         spacetimecube_py_path = Path(inspect.getabsfile(self.__class__))
         self.spacetimecube_dir = spacetimecube_py_path.parent
+
         # display attributes
         self.width = 100
         self.height = 100
@@ -69,7 +70,6 @@ class SpaceTimeCube:
         self.projo.wiggle = True
         self.projo.v_rotation(-45.)
 
-        self.fps_limitation = 60    #Hz
         self.last_time      = time.time()
         self.label          = "3D cube"
 
@@ -103,6 +103,8 @@ class SpaceTimeCube:
         self.thickness_of_backs = 8 #pixels
         self.floor_darkness     = .5
         self.green_floor        = None
+
+        self.cube_height        = 1.
 
         self.debug = False
 
@@ -177,6 +179,7 @@ class SpaceTimeCube:
         self.sh_cube.display = cube_display
 
         def update_uni_cube():
+            self.sh_cube.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_cube.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_cube.set_uniform("mins", self.data.mins, '4fv')
             self.sh_cube.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -289,6 +292,7 @@ class SpaceTimeCube:
         self.sh_trajects.display = trajects_display
 
         def update_uni_trajects():
+            self.sh_trajects.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
             self.sh_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -317,13 +321,14 @@ class SpaceTimeCube:
         # Back Shadows
         ## CALLBACKS -------
         def back_trajects_display():
-            self.sh_back_shadows.update_uniforms()
+            self.sh_back_trajects.update_uniforms()
             glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
         self.sh_back_trajects.display = back_trajects_display
 
         def update_uni_back_trajects():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
             p_size  = h*2/(self.height)
+            self.sh_back_trajects.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_back_trajects.set_uniform("pixel_size", p_size, 'f')
             self.sh_back_trajects.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
             self.sh_back_trajects.set_uniform("cam_near", self.projo.near, 'f')
@@ -461,13 +466,17 @@ class SpaceTimeCube:
 
         glDisable(GL_DEPTH_TEST)
         sh.display_list([   self.sh_floor,
-                            self.sh_cube,
                             self.sh_back_shadows,
-                            self.sh_back_trajects
                             ])
         glEnable(GL_DEPTH_TEST)
+
+        sh.display_list([   self.sh_shadows])
+
+        glDisable(GL_DEPTH_TEST)
+        sh.display_list([   self.sh_back_trajects]);
+        glEnable(GL_DEPTH_TEST)
+
         sh.display_list([   self.sh_cube,
-                            self.sh_shadows,
                             self.sh_trajects
                             ])
 
@@ -513,6 +522,10 @@ class SpaceTimeCube:
             self.set_floor_darkness(self.floor_darkness+.1)
         elif key == b'd':
             self.set_floor_darkness(self.floor_darkness-.1)
+        elif key == b'c':
+            self.set_cube_height(self.cube_height-.1)
+        elif key == b'C':
+            self.set_cube_height(self.cube_height+.1)
         elif key == b'p':
             self.data.print_meta()
         elif key == b'f':
@@ -540,6 +553,14 @@ class SpaceTimeCube:
         else:
             self.floor_darkness = value
         self.sh_floor.update_texture()
+
+    def set_cube_height(self, value):
+        if value > 1.0:
+            self.cube_height = 1.0
+        elif value < 0.0:
+            self.cube_height = 0.0
+        else:
+            self.cube_height = value
 
     def update_floor(self):
         if self.debug:

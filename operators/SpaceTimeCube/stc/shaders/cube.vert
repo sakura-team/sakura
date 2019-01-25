@@ -8,10 +8,12 @@ in vec2 in_text_coords;
 
 uniform vec4 maxs;
 uniform vec4 mins;
+uniform float cube_height;
 
 void main() {
     vec2 size = maxs.yz - mins.yz;
     vec4 v = vec4(in_vertex, 1.0);
+    v.y *= cube_height;
     if (size.x > size.y)
         v.z *= size.y/size.x;
     else
