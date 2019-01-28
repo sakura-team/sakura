@@ -62,6 +62,7 @@ class GlutApp(OpenglAppBase):
         glut.glutKeyboardFunc(self.on_key_press)
         glut.glutMouseFunc(self.on_mouse_click)
         glut.glutMotionFunc(self.on_mouse_motion)
+        glut.glutPassiveMotionFunc(self.on_mouse_motion)
         glut.glutReshapeFunc(self.on_resize)
 
         self.last_glut_idle_time = time.time()
