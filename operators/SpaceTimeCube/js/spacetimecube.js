@@ -16,7 +16,10 @@ function init() {
     });
 
     var val = document.getElementById('darkness_range').value/100;
-    sakura.apis.operator.fire_event("floor_darkness", {'value': .5});
+    sakura.apis.operator.fire_event("floor_darkness", {'value': val});
+
+    var val = document.getElementById('height_range').value/100;
+    sakura.apis.operator.fire_event("cube_height", {'value': val});
 
     $('#wiggle_checkbox').prop('checked', true);
     $('#wiggle_checkbox').change(function () {
@@ -30,6 +33,12 @@ function floor_darkness() {
     var val = document.getElementById('darkness_range').value/100;
     sakura.apis.operator.fire_event("floor_darkness", {'value': val});
 }
+
+function cube_height() {
+    var val = document.getElementById('height_range').value/100;
+    sakura.apis.operator.fire_event("cube_height", {'value': val});
+}
+
 
 function select_trajectory(id) {
     console.log(id);

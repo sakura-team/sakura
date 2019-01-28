@@ -61,5 +61,7 @@ class spacetimecubeOperator(Operator):
             self.ogl_app.handler.toggle_wiggle(info['value'])
         elif ev_type == 'floor_darkness':
             self.ogl_app.handler.set_floor_darkness(info['value'])
+        elif ev_type == 'cube_height':
+            self.ogl_app.handler.set_cube_height(info['value'])
         else:
             print('\33[1;31m!!!Unknown Event', ev_type, '!!!\33[m')
