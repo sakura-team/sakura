@@ -4,13 +4,14 @@
 
 import time, datetime
 import  numpy as np
+import copy
 from . import geomaths as gm
 from . import mercator as mrc
 
 
 class trajectory:
     def __init__(self, id=0):
-        self.id                         = id            # we identify the trajectories by a factice color facilitating opengl selection
+        #self.id                         = id            # we identify the trajectories by a factice color facilitating opengl selection
         self.points                     = []            # points that define a trajectory: (long, elevation, -lat, time)
         self.color                      = np.array([])  # color
         self.zones                      = np.array([])  # a zone is defined by [gps position, radius, starting date, ending date]
@@ -22,6 +23,7 @@ class data:
     def init(self):
         self.selected       = []
         self.trajects       = []
+        self.trajects_names = []
         self.trajects_ids   = []
         self.trajects_ind   = []                # indices of each trajectory in the whole array of geometric data
         self.maxs           = [1, 1, 1, 1]         #[time, lon, lat, ele]
@@ -35,17 +37,27 @@ class data:
         nd = []
         first_time = False
         for c in chunk:
-            if len(self.trajects_ids) == 0:
+            if len(self.trajects_names) == 0:
                 first_time = True
-                self.trajects_ids = [c[0]]
+                self.trajects_names = [c[0]]
                 self.trajects = np.append(self.trajects, trajectory(id=len(self.trajects)-1))
                 self.trajects[-1].color = np.array([*gm.random_color(), 1])
-            elif c[0] not in self.trajects_ids:
-                self.trajects_ids.append(c[0])
-                self.trajects = np.append(self.trajects, trajectory(id=len(self.trajects)-1))
-                self.trajects[-1].color = np.array([*gm.random_color(), 1])
+                self.trajects_ids = [gm.color_to_id(copy.copy(self.trajects[-1].color))]
 
-            ind = self.trajects_ids.index(c[0])
+            elif c[0] not in self.trajects_names:
+                self.trajects_names.append(c[0])
+                self.trajects = np.append(self.trajects, trajectory(id=len(self.trajects)-1))
+
+                color = [*gm.random_color(), 1]
+                id = gm.color_to_id(np.array(color))
+                while id in self.trajects_ids:
+                    color = [*gm.random_color(), 1]
+                    id = gm.color_to_id(np.array(color))
+
+                self.trajects[-1].color = color
+                self.trajects_ids.append(id)
+
+            ind = self.trajects_names.index(c[0])
             m = mrc.mercator(c[2], c[3], c[4])
             self.trajects[ind].points.append([c[1], *m])
             nd.append([c[1], *m])

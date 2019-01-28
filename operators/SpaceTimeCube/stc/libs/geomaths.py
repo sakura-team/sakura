@@ -239,3 +239,34 @@ def random_color():
     return np.array([   random.randint(0, 255),
                         random.randint(0, 255),
                         random.randint(0, 255)])/255.
+
+def id_to_color(id):
+    if id < 255:
+        return [0, 0, id/255.0, 1.0]
+    elif id < 255*255:
+        v = int(id/255)
+        b = id - v*255
+        return [0, v/255.0, b/255.0, 1.0]
+    elif id < 255*255*255:
+        r = int(id/(255*255))
+        v = int((id - r*(255*255))/255)
+        b = (id - r*255*255 - v*255)
+        return [r/255.0, v/255.0, b/255.0, 1.0]
+    return [0, 0, 0, 0.0]
+
+def color_to_id(color):
+    color *= 255
+    if color[0] == 0 and color[1] == 0:
+        return int(color[2])
+    elif color[0] == 0:
+        return int(color[2] + color[1]*255)
+    else:
+        return int(color[2] + color[1]*255 + color[0]*255*255)
+
+def pt_in_frame(p, mins, maxs):
+    if  p[0] >= mins[0] and \
+        p[0] <= maxs[0] and \
+        p[1] >= mins[1] and \
+        p[1] <= maxs[1]:
+        return True
+    return False

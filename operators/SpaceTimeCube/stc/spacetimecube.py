@@ -21,6 +21,8 @@ from .libs import trajectory    as tr
 from .libs import floor         as fl
 from .libs import mercator      as mc
 from .libs import tilenames     as tn
+from .libs import geomaths      as gm
+
 
 def wire_cube(mins, maxs):
     size = np.fabs(maxs - mins)
@@ -451,7 +453,7 @@ class SpaceTimeCube:
         self.update_cube()
 
     def get_trajectories(self):
-        return self.data.trajects_ids
+        return self.data.trajects_names
 
     def clean_data(self):
         if self.debug:
@@ -463,7 +465,46 @@ class SpaceTimeCube:
     def update_cube(self):
         self.update_cube_arrays()
 
+    def closest_trajectory(self, edge_size):
+        pixels = glReadPixels(self.mouse[0]-edge_size/2, self.height-self.mouse[1]-edge_size/2, edge_size, edge_size, GL_RGB, GL_UNSIGNED_BYTE)
+        pixels = np.reshape(bytearray(pixels), (edge_size,edge_size,3))
+        cp  = []
+        cpo = []
+        white = gm.color_to_id(np.array([1,1,1]))
+        for i in range(0,edge_size):
+            for j in range(0,edge_size):
+                if gm.color_to_id(pixels[i][j]/255.0) < white:
+                    cp.append([i,j])
+                    cpo.append([edge_size/2, edge_size/2])
+
+        if len(cp) == 0:
+            return -1
+
+        xs, ys = (np.array(cp) - np.array(cpo)).T
+        pos = cp[np.argmin(np.hypot(xs,ys))]
+        id = gm.color_to_id(np.append(pixels[pos[0]][pos[1]],1)/255.0)
+        try:
+            return self.data.trajects_ids.index(id)
+        except:
+            return -1
+
+
+    def compute_selection(self):
+        glClearColor(1.0,1.0,1.0,1.0)
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+
+        glDisable(GL_MULTISAMPLE)
+        sh.display_list([self.sh_shadows, self.sh_trajects])
+        id = self.closest_trajectory(10)
+        if id != -1:
+            print('closest trajectory', id)
+        glEnable(GL_MULTISAMPLE)
+
     def display(self):
+
+        if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]):
+            self.compute_selection()
+
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
@@ -482,7 +523,6 @@ class SpaceTimeCube:
         sh.display_list([   self.sh_cube,
                             self.sh_trajects
                             ])
-
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
         LEFT_BUTTON = 0
