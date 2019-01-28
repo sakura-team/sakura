@@ -55,9 +55,10 @@ class spacetimecubeOperator(Operator):
 
         if ev_type == 'onload':
             self.init_op_data()
+            return self.ogl_app.handler.get_trajectories()
         elif ev_type == 'wiggle':
             #TODO: implement a 'unplan' periodic task
-            self.ogl_app.handler.toggle_wiggle()
+            self.ogl_app.handler.toggle_wiggle(info['value'])
         elif ev_type == 'floor_darkness':
             self.ogl_app.handler.set_floor_darkness(info['value'])
         else:

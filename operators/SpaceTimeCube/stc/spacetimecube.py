@@ -450,6 +450,9 @@ class SpaceTimeCube:
         #self.update_floor()
         self.update_cube()
 
+    def get_trajectories(self):
+        return self.data.trajects_ids
+
     def clean_data(self):
         if self.debug:
             print('\33[1;32m\tCleaning data...\33[m', end='')
@@ -513,7 +516,7 @@ class SpaceTimeCube:
         elif key == b't':
             self.update_floor()
         elif key == b'w':
-            self.toggle_wiggle()
+            self.toggle_wiggle(not self.projo.wiggle)
         elif key == b'+':
             self.projo.zoom(1)
         elif key == b'-':
@@ -542,8 +545,8 @@ class SpaceTimeCube:
         if self.projo.wiggle:
             self.projo.wiggle_next()
 
-    def toggle_wiggle(self):
-        self.projo.wiggle = not self.projo.wiggle
+    def toggle_wiggle(self, bool):
+        self.projo.wiggle = bool
 
     def set_floor_darkness(self, value):
         if value > 1.0:
