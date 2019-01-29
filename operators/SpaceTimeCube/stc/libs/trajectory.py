@@ -11,10 +11,10 @@ from . import mercator as mrc
 
 class trajectory:
     def __init__(self, id=0):
-        #self.id                         = id            # we identify the trajectories by a factice color facilitating opengl selection
         self.points                     = []            # points that define a trajectory: (long, elevation, -lat, time)
         self.color                      = np.array([])  # color
         self.zones                      = np.array([])  # a zone is defined by [gps position, radius, starting date, ending date]
+        self.display_indice             = 0             # indice of begining of the trajectory in the whole array of data display
 
 class data:
     def  __init__(self):
@@ -24,9 +24,9 @@ class data:
         self.selected       = []
         self.trajects       = []
         self.trajects_names = []
-        self.trajects_ids   = []
+        self.trajects_ids   = []                # we identify the trajectories by a factice color facilitating opengl selection
         self.trajects_ind   = []                # indices of each trajectory in the whole array of geometric data
-        self.maxs           = [1, 1, 1, 1]         #[time, lon, lat, ele]
+        self.maxs           = [1, 1, 1, 1]      #[time, lon, lat, ele]
         self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
 
     def clean(self):
@@ -95,6 +95,7 @@ class data:
         vertices    = []
         colors      = []
         for t in self.trajects:
+            t.display_indice =  len(vertices)
             vertices.append(t.points[0])
             colors.append([0,0,0,0])
             for p in t.points:

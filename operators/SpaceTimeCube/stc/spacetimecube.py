@@ -102,13 +102,15 @@ class SpaceTimeCube:
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
+
+        #Display params
         self.thickness_of_backs = 8 #pixels
         self.floor_darkness     = .5
         self.green_floor        = None
-
         self.cube_height        = 1.
+        self.hovered_target     = -1
 
-        self.debug = False
+        self.debug              = False
 
     def init(self):
         self.mouse = [ 0, 0 ]
@@ -495,15 +497,42 @@ class SpaceTimeCube:
 
         glDisable(GL_MULTISAMPLE)
         sh.display_list([self.sh_shadows, self.sh_trajects])
-        id = self.closest_trajectory(10)
-        if id != -1:
-            print('closest trajectory', id)
+        t_indice = self.closest_trajectory(10)
         glEnable(GL_MULTISAMPLE)
+        return t_indice
+
+    def update_transparency(self, indice, value):
+        t_ind = self.data.trajects[indice].display_indice
+        t_len = len(self.data.trajects[indice].points)
+        arr = self.trajects_colors[t_ind+1: t_ind +1+ t_len]
+        arr[:, 3] = value
+        self.trajects_colors[t_ind+1: t_ind +1+ t_len] = arr
 
     def display(self):
 
         if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]):
-            self.compute_selection()
+            t_indice = self.compute_selection()
+            #print(t_indice)
+
+            if t_indice != -1:
+                if self.hovered_target == -1:
+                    self.update_transparency(t_indice, 0.5)
+                    self.update_trajects_arrays()
+
+                elif self.hovered_target != t_indice:
+                    self.update_transparency(self.hovered_target, 1.0)
+                    self.update_transparency(t_indice, 0.5)
+                    self.update_trajects_arrays()
+
+                self.hovered_target =  t_indice
+
+            elif self.hovered_target != -1:
+                self.update_transparency(self.hovered_target, 1.0)
+                self.hovered_target =  -1
+                self.update_trajects_arrays()
+
+
+
 
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -523,6 +552,7 @@ class SpaceTimeCube:
         sh.display_list([   self.sh_cube,
                             self.sh_trajects
                             ])
+
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
         LEFT_BUTTON = 0

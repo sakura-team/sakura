@@ -5,5 +5,8 @@ in  vec4 vert_color;
 out vec4 fragColor;
 
 void main() {
-    fragColor = vert_color;
+    if (vert_color.w != 0.5)
+        fragColor = vert_color;
+    else
+        fragColor = vec4(vert_color.xyz, 1.0);
 }
