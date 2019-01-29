@@ -57,7 +57,6 @@ def wire_cube(mins, maxs):
                 ]
             )
 
-
 class SpaceTimeCube:
     def __init__(self):
         # import local libs
@@ -109,7 +108,8 @@ class SpaceTimeCube:
         self.green_floor        = None
         self.cube_height        = 1.
         self.hovered_target     = -1
-
+        self.selected_trajects  = []
+        self.new_selections     = []
         self.debug              = False
 
     def init(self):
@@ -510,11 +510,12 @@ class SpaceTimeCube:
 
     def display(self):
 
+        # Hovering
         if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]):
             t_indice = self.compute_selection()
-            #print(t_indice)
 
-            if t_indice != -1:
+
+            if t_indice != -1 and not t_indice in self.selected_trajects:
                 if self.hovered_target == -1:
                     self.update_transparency(t_indice, 0.5)
                     self.update_trajects_arrays()
@@ -531,9 +532,20 @@ class SpaceTimeCube:
                 self.hovered_target =  -1
                 self.update_trajects_arrays()
 
+        #Selection
+        if len(self.new_selections):
+            while len(self.new_selections):
+                i = self.new_selections[0]
+                if i not in self.selected_trajects:
+                    self.update_transparency(i, 0.5)
+                    self.selected_trajects.append(self.new_selections.pop(0))
+                else:
+                    self.update_transparency(i, 1.0)
+                    index = self.selected_trajects.index(self.new_selections.pop(0))
+                    self.selected_trajects.pop(index)
+            self.update_trajects_arrays()
 
-
-
+        # Main display
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
@@ -603,6 +615,11 @@ class SpaceTimeCube:
             self.data.print_meta()
         elif key == b'f':
             self.update_floor()
+        elif int(key) in range(0,10):
+            if not int(key) in self.selected_trajects:
+                self.select_trajectories([int(key)])
+            else:
+                self.unselect_trajectories([int(key)])
         else:
             print('\33[1;32m\tUnknown key\33[m', key)
 
@@ -619,21 +636,31 @@ class SpaceTimeCube:
         self.projo.wiggle = bool
 
     def set_floor_darkness(self, value):
-        if value > 1.0:
-            self.floor_darkness = 1.0
-        elif value < 0.0:
-            self.floor_darkness = 0.0
-        else:
-            self.floor_darkness = value
+        if value > 1.0:     self.floor_darkness = 1.0
+        elif value < 0.0:   self.floor_darkness = 0.0
+        else:               self.floor_darkness = value
         self.sh_floor.update_texture()
 
     def set_cube_height(self, value):
-        if value > 1.0:
-            self.cube_height = 1.0
-        elif value < 0.0:
-            self.cube_height = 0.0
-        else:
-            self.cube_height = value
+        if value > 1.0:     self.cube_height = 1.0
+        elif value < 0.0:   self.cube_height = 0.0
+        else:               self.cube_height = value
+
+    def select_trajectories(self, l):
+        for i in l:
+            if i >= 0 and i < len(self.data.trajects):
+                if i not in self.selected_trajects:
+                    self.new_selections.append(i)
+            else:
+                print('\t\33[1;31mTrajectory index out of range !!!\33[m')
+
+    def unselect_trajectories(self, l):
+        for i in l:
+            if i >= 0 and i < len(self.data.trajects):
+                if i in self.selected_trajects:
+                    self.new_selections.append(i)
+            else:
+                print('\t\33[1;31mTrajectory index out of range !!!\33[m')
 
     def update_floor(self):
         if self.debug:

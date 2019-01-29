@@ -1,19 +1,22 @@
 // Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
+var nb_trajectories = 0
+
 function init() {
     sakura.apis.operator.attach_opengl_app(0, 'ogl-img');
 
     sakura.apis.operator.fire_event("onload").then( function(result) {
-      var tdd = $('#trajectories_dropdown')
-      console.log(tdd);
+      nb_trajectories = result.length;
+      var tdd = $('#trajectories_dropdown');
+
+      var table = $("<table width = 100%>");
+      table.append("<tr><td><input type='checkbox' id='traj_checkbox_all' onclick='check_trajectory(-1);'></td><td>All</td></tr>");
+      tdd.append(table);
       result.forEach( function(traj, index) {
-            var nli = $('<li>');
-            var na = $("<a onclick='select_trajectory("+index+");'>"+traj+"</a>");
-            na.css('cursor', 'pointer');
-            nli.append(na);
-            tdd.append(nli);
-        });
+          table.append("<tr><td><input type='checkbox' id='traj_checkbox_"+index+"' onclick='check_trajectory("+index+");'></td><td>"+traj+"</td></tr>");
+      });
     });
+
 
     var val = document.getElementById('darkness_range').value/100;
     sakura.apis.operator.fire_event("floor_darkness", {'value': val});
@@ -39,7 +42,35 @@ function cube_height() {
     sakura.apis.operator.fire_event("cube_height", {'value': val});
 }
 
+function check_trajectory(index) {
+    if (index != -1) {
+        var val = $('#traj_checkbox_'+index).is(":checked");
+        if (val)
+            sakura.apis.operator.fire_event("select_trajectories", {'value': [index]});
+        else
+            sakura.apis.operator.fire_event("unselect_trajectories", {'value': [index]});
+    }
+    else {
+        //display
+        var l = [];
+        for (i=0; i< nb_trajectories;i++) {
+            var cb = $('#traj_checkbox_'+i);
+            if ($('#traj_checkbox_all').is(':checked')) {
+                cb.each(function(){ this.checked = true; });
+                l.push(i);
+            }
+            else {
+                cb.each(function(){ this.checked = false; });
+                l.push(i);
+            }
+        }
+        //sending to operator
+        if ($('#traj_checkbox_all').is(':checked')) {
+            sakura.apis.operator.fire_event("select_trajectories", {'value': l});
+        }
+        else {
+            sakura.apis.operator.fire_event("unselect_trajectories", {'value': l});
+        }
 
-function select_trajectory(id) {
-    console.log(id);
+    }
 }
