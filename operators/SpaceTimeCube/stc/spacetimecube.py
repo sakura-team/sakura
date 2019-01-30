@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 #Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-import sys, math, time, inspect, datetime, gevent, threading
+import sys, math, time, inspect, datetime, copy
 import numpy    as      np
 from pathlib    import  Path
 from PIL        import  Image
-from gevent     import  Greenlet
 
 try:
     from OpenGL.GL      import *
@@ -63,15 +62,9 @@ class SpaceTimeCube:
         spacetimecube_py_path = Path(inspect.getabsfile(self.__class__))
         self.spacetimecube_dir = spacetimecube_py_path.parent
 
-        # display attributes
-        self.width = 100
-        self.height = 100
-
         self.projo = pr.projector(position = [0, 0, 2])
-        self.projo.wiggle = True
         self.projo.v_rotation(-45.)
 
-        self.last_time      = time.time()
         self.label          = "3D cube"
 
         #Shaders
@@ -102,7 +95,16 @@ class SpaceTimeCube:
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
 
+        #Array used for point selection
+        self.basic_colors_list = []
+        for i in range(255*255*10):
+            self.basic_colors_list.append(gm.id_to_color(i))
+        self.basic_colors_list = np.array(self.basic_colors_list)
+
         #Display params
+        self.width = 100
+        self.height = 100
+        self.projo.wiggle = True
         self.thickness_of_backs = 8 #pixels
         self.floor_darkness     = .5
         self.green_floor        = None
@@ -113,7 +115,7 @@ class SpaceTimeCube:
         self.debug              = False
 
     def init(self):
-        self.mouse = [ 0, 0 ]
+        self.mouse = [ -1, -1 ]
         self.imode = 'none'
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
@@ -467,7 +469,9 @@ class SpaceTimeCube:
     def update_cube(self):
         self.update_cube_arrays()
 
-    def closest_trajectory(self, edge_size):
+    def compute_closest_color(self, edge_size):
+        '''Reads a square from the framebuffer,
+            and returns id of the closest color'''
         pixels = glReadPixels(self.mouse[0]-edge_size/2, self.height-self.mouse[1]-edge_size/2, edge_size, edge_size, GL_RGB, GL_UNSIGNED_BYTE)
         pixels = np.reshape(bytearray(pixels), (edge_size,edge_size,3))
         cp  = []
@@ -486,20 +490,47 @@ class SpaceTimeCube:
         pos = cp[np.argmin(np.hypot(xs,ys))]
         id = gm.color_to_id(np.append(pixels[pos[0]][pos[1]],1)/255.0)
         try:
-            return self.data.trajects_ids.index(id)
+            return id
         except:
             return -1
 
-
-    def compute_selection(self):
+    def compute_hovered_target(self):
         glClearColor(1.0,1.0,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         glDisable(GL_MULTISAMPLE)
         sh.display_list([self.sh_shadows, self.sh_trajects])
-        t_indice = self.closest_trajectory(10)
+        ccolor = self.compute_closest_color(10)
+        t_indice = -1
+        if ccolor != -1:
+            t_indice = self.data.trajects_ids.index(ccolor)
         glEnable(GL_MULTISAMPLE)
         return t_indice
+
+    def compute_hovered_point(self, traject):
+        '''Here we compute the closest trajectory point from the mouse'''
+        glClearColor(1.0,1.0,1.0,1.0)
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+        glDisable(GL_MULTISAMPLE)
+
+        #extracting arrays
+        t_ind = self.data.trajects[traject].display_indice
+        t_len = len(self.data.trajects[traject].points)
+        cop_vertices = copy.copy(self.trajects_vertices)
+        cop_colors = copy.copy(self.trajects_colors)
+        self.trajects_vertices = self.trajects_vertices[t_ind +1: t_ind +t_len +1]
+        self.trajects_colors = self.basic_colors_list[0: len(self.trajects_vertices)]
+        self.update_trajects_arrays()
+        sh.display_list([self.sh_shadows, self.sh_trajects])
+        p_indice = self.compute_closest_color(10)
+
+        self.trajects_vertices = copy.copy(cop_vertices)
+        self.trajects_colors = copy.copy(cop_colors)
+        self.update_trajects_arrays()
+
+        glEnable(GL_MULTISAMPLE)
+        return p_indice
+
 
     def update_transparency(self, indice, value):
         t_ind = self.data.trajects[indice].display_indice
@@ -509,12 +540,11 @@ class SpaceTimeCube:
         self.trajects_colors[t_ind+1: t_ind +1+ t_len] = arr
 
     def display(self):
-
         # Hovering
-        if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]):
-            t_indice = self.compute_selection()
+        if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]) and self.imode == 'none':
+            t_indice = self.compute_hovered_target()
 
-
+            #Highlighting the trajectory
             if t_indice != -1 and not t_indice in self.selected_trajects:
                 if self.hovered_target == -1:
                     self.update_transparency(t_indice, 0.5)
@@ -531,6 +561,14 @@ class SpaceTimeCube:
                 self.update_transparency(self.hovered_target, 1.0)
                 self.hovered_target =  -1
                 self.update_trajects_arrays()
+
+            #Computing the closest point
+            if t_indice != -1 and self.imode == 'none':
+                p_indice = self.compute_hovered_point(t_indice)
+                if p_indice != -1:
+                    pt = self.data.trajects[t_indice].points[p_indice]
+                    lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
+                    print(lon, lat)
 
         #Selection
         if len(self.new_selections):
