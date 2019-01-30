@@ -19,9 +19,7 @@ img {
   position: absolute;
   width: 100%;
   z-index: 1;
-  //background-color: rgba(255,255,0,1);
 }
-
 .navbar-nav > li > a, .navbar-brand {
     padding-top:5px;
     padding-bottom:0;

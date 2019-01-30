@@ -16,76 +16,57 @@
         <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="css/spacetimecube.css">
     </head>
-    <!--
-    <body onload="init();">
-        <table>
-            <tr>
-                <td>
-                    <button id="wiggle_btn">Wiggle</button>
-                <td>
-                    <div class="slidecontainer">
-                        <input type="range" min="0" max="100" value="50" class="slider" step=5 id="darkness_range" onchange="floor_darkness();">
-                        <datalist id="darkness_range">
-                            <option value="0" label="0%">
-                            <option value="100" label="100%">
-                        </datalist>
-                    </div>
-        </table>
-        <img id="ogl-img"/>
 
-    </body>
-    -->
     <body onload="init();">
-      <nav class="navbar navbar-inverse" width=100%>
-        <div class="container-fluid">
-          <ul class="nav navbar-nav">
-            <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">Display
-                <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu" style="width: 300px">
-                <table>
-                  <tr>
-                    <td> Wiggle </td>
-                    <td> <input type="checkbox" class="custom-control-input" id="wiggle_checkbox"></td>
+      <nav class="navbar navbar-default">
+      <!-- Navbar content -->
+        <ul class="nav navbar-nav">
+          <li class="nav-item">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Display
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" style="width: 300px">
+              <table>
+                <tr>
+                  <td> Wiggle </td>
+                  <td> <input type="checkbox" class="custom-control-input" id="wiggle_checkbox"></td>
+                <tr>
+                  <td>
+                    Floor darkness
+                  </td>
+                  <td>
+                    <div class="slidecontainer" style="width: 100%">
+                              <input type="range" min="0" max="100" value="50" class="slider" step=5 id="darkness_range" onchange="floor_darkness();">
+                              <datalist id="darkness_range">
+                                <option value="0" label="0%">
+                                <option value="100" label="100%">
+                              </datalist>
+                    </div>
+                  </td>
                   <tr>
                     <td>
-                      Floor darkness
+                      Cube height
                     </td>
                     <td>
                       <div class="slidecontainer" style="width: 100%">
-                                <input type="range" min="0" max="100" value="50" class="slider" step=5 id="darkness_range" onchange="floor_darkness();">
-                                <datalist id="darkness_range">
-                                  <option value="0" label="0%">
-                                  <option value="100" label="100%">
+                                <input type="range" min="0" max="100" value="100" class="slider" step=5 id="height_range" onchange="cube_height();">
+                                <datalist id="height_range">
+                                  <option value="0" label="0">
+                                  <option value="100" label="1">
                                 </datalist>
                       </div>
                     </td>
-                    <tr>
-                      <td>
-                        Cube height
-                      </td>
-                      <td>
-                        <div class="slidecontainer" style="width: 100%">
-                                  <input type="range" min="0" max="100" value="100" class="slider" step=5 id="height_range" onchange="cube_height();">
-                                  <datalist id="height_range">
-                                    <option value="0" label="0">
-                                    <option value="100" label="1">
-                                  </datalist>
-                        </div>
-                      </td>
-                </table>
-              </ul>
-            </li>
-            <li class="dropdown">
-              <a class="dropdown-toggle" data-toggle="dropdown" href="#">Trajectories
-                <span class="caret"></span>
-              </a>
-              <ul class="dropdown-menu" id="trajectories_dropdown">
-              </ul>
-            </li>
-          </ul>
-        </div>
+              </table>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Trajectories
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" id="trajectories_dropdown" overflow: auto">
+            </ul>
+          </li>
+        </ul>
       </nav>
       <img id="ogl-img"/>
     </body>
