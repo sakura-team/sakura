@@ -26,9 +26,8 @@ class DBTable:
     def get_range(self, row_start, row_end):
         return self.source().get_range(row_start, row_end)
     def add_rows(self, rows):
-        value_wrappers = tuple(col.value_wrapper for col in self.columns)
         with self.db.connect() as db_conn:
-            self.db.dbms.driver.add_rows(db_conn, self.name, value_wrappers, rows)
+            self.db.dbms.driver.add_rows(db_conn, self.name, self.columns, rows)
     def register_primary_key(self, pk_col_names):
         self.primary_key = pk_col_names
     def register_foreign_key(self, **fk_info):

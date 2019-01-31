@@ -36,6 +36,18 @@ TYPES_SAKURA_TO_PG = {
     'date':     'timestamp with time zone'
 }
 
+TYPES_SAKURA_TO_PG_INPUT = {
+    'int8':     'smallint',
+    'int16':    'smallint',
+    'int32':    'integer',
+    'int64':    'bigint',
+    'float32':  'real',
+    'float64':  'double precision',
+    'string':   'text',
+    'bool':     'boolean',
+    'date':     'double precision'
+}
+
 TYPES_PG_TO_SAKURA = {
     'smallint':                 'int16',
     'integer':                  'int32',
@@ -428,15 +440,24 @@ class PostgreSQLDBDriver:
         except psycopg2.Error as e:
             raise APIRequestError(e.pgerror)
     @staticmethod
-    def add_rows(db_conn, table_name, value_wrappers, rows):
+    def add_rows(db_conn, table_name, columns, rows):
         try:
             if len(rows) == 0:
                 return  # nothing to do
-            tuple_pattern = '(' + ','.join(value_wrappers) + ')'
+            num_cols = len(columns)
+            col_names = tuple(esc(col.col_name) for col in columns)
+            value_wrappers = tuple(col.value_wrapper for col in columns)
+            pg_input_types = tuple(TYPES_SAKURA_TO_PG_INPUT[col.col_type] for col in columns)
+            enumerated_cols = '(' + ', '.join(col_names) + ')'
+            values_template = ','.join(['%s'] * len(rows))
+            wrapped_cols = ', '.join(w % (n + "::" + t) for w, n, t in \
+                            zip(value_wrappers, col_names, pg_input_types))
+            query = \
+            "WITH __temp_data" + enumerated_cols + " AS (VALUES " + values_template + ") " + \
+            "INSERT INTO " + esc(table_name) + " " + \
+            "SELECT " + wrapped_cols + " FROM __temp_data;"
             with db_conn.cursor() as cursor:
-                args_str = b','.join(cursor.mogrify(tuple_pattern, row) for row in rows)
-                cursor.execute(b"INSERT INTO " + cursor.mogrify(esc(table_name)) + \
-                               b" VALUES " + args_str, ())
+                cursor.execute(query, list(tuple(row) for row in rows))
             db_conn.commit()
         except psycopg2.Error as e:
             raise APIRequestError(e.pgerror)
