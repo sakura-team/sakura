@@ -39,7 +39,9 @@ class APIDataflowDict:
             """Sakura dataflows registry"""
             def create(self, name):
                 """Create a new dataflow"""
-                return remote_api.dataflows.create(name = name)
+                dataflow_id = remote_api.dataflows.create(name = name)
+                info = remote_api.dataflows[dataflow_id].info()
+                return APIDataflow(remote_api, info)
         return APIDataflowDictImpl()
 
 def get_dataflows(remote_api):
