@@ -177,6 +177,7 @@ sakura.internal.create = function (cb) {
     sakura.internal.debug('sakura.internal.create called');
     let ws_url = sakura.internal.get_url();
     let ws = new WebSocket(ws_url);
+    let cb_called = false;
     ws.onmessage = sakura.internal.onmessage;
     ws.onopen = function() {
         sakura.internal.debug('ws.onopen called');
@@ -184,6 +185,7 @@ sakura.internal.create = function (cb) {
         sakura.internal.debug('+1 (ws just created!!) *** ' + sakura.internal.free_ws.length);
         sakura.internal.debug('new ws ready!');
         // ready, call cb()
+        cb_called = true;
         cb();
     }
     ws.onerror = function() {
@@ -197,6 +199,10 @@ sakura.internal.create = function (cb) {
             return free_ws != ws;
         });
         sakura.internal.debug('-1?(ws was closed....) *** ' + sakura.internal.free_ws.length);
+        if (!cb_called) {
+            // retry
+            sakura.internal.create(cb);
+        }
     }
 }
 
