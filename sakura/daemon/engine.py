@@ -3,12 +3,11 @@ from pathlib import Path
 from sakura.common.errors import InputUncompatible
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.loading import load_datastores
-from sakura.daemon.code.git import get_worktree, is_updatable, list_remote_code_refs
+from sakura.daemon.code.git import get_worktree, list_code_revisions
 from sakura.daemon.code.loading import load_op_class
 
 class DaemonEngine(object):
     def __init__(self):
-        self.op_classes = {}
         self.datastores = {}
         for ds in load_datastores(self):
             ds = ds.adapter.adapt(self, ds)
@@ -27,8 +26,8 @@ class DaemonEngine(object):
     def get_daemon_info_serializable(self):
         return dict(name=self.name,
                     datastores=tuple(ds.pack() for ds in self.datastores.values()))
-    def create_operator_instance(self, code_url, code_ref, code_subdir, op_id):
-        op_cls = self.op_classes[(code_url, code_ref, code_subdir)]
+    def create_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
+        op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
         op = op_cls(op_id)
         op.api = self.hub.operator_apis[op_id]
         op.construct()
@@ -36,8 +35,12 @@ class DaemonEngine(object):
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
     def delete_operator_instance(self, op_id):
-        print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
-        del self.op_instances[op_id]
+        if op_id in self.op_instances:
+            print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
+            del self.op_instances[op_id]
+    def reload_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
+        self.delete_operator_instance(op_id)
+        self.create_operator_instance(op_id, code_url, code_ref, commit_hash, code_subdir)
     def is_foreign_operator(self, op_id):
         return op_id not in self.op_instances
     def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id,
@@ -89,15 +92,11 @@ class DaemonEngine(object):
                     pass
                 self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
         return links
-    def fetch_op_class(self, code_url, code_ref, code_subdir, update=False):
-        worktree_dir = get_worktree(self.code_workdir, code_url, code_ref, update=update)
-        op_cls = load_op_class(worktree_dir / code_subdir)
-        commit_hash = op_cls.COMMIT_INFO['commit_hash']
-        static_code_ref = 'commit:' + commit_hash
-        self.op_classes[(code_url, static_code_ref, code_subdir)] = op_cls
-        return static_code_ref
-    def get_op_class_metadata(self, code_url, static_code_ref, code_subdir):
-        op_cls = self.op_classes[(code_url, static_code_ref, code_subdir)]
+    def load_op_class(self, code_url, code_ref, commit_hash, code_subdir):
+        worktree_dir = get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
+        return load_op_class(worktree_dir / code_subdir)
+    def get_op_class_metadata(self, code_url, code_ref, commit_hash, code_subdir):
+        op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
         return dict(
             name = op_cls.NAME,
             tags = op_cls.TAGS,
@@ -105,8 +104,7 @@ class DaemonEngine(object):
             svg = op_cls.ICON,
             commit_metadata = op_cls.COMMIT_INFO
         )
-    def is_op_class_updatable(self, code_url, static_code_ref, target_code_ref):
-        worktree_dir = get_worktree(self.code_workdir, code_url, static_code_ref)
-        return is_updatable(worktree_dir, target_code_ref)
-    def list_remote_code_refs(self, repo_url):
-        return list_remote_code_refs(repo_url)
+    def prefetch_code(self, code_url, code_ref, commit_hash):
+        get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
+    def list_code_revisions(self, repo_url):
+        return list_code_revisions(repo_url)

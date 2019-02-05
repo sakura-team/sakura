@@ -72,7 +72,6 @@ class Operator:
     def pack(self):
         return pack(dict(
             op_id = self.op_id,
-            cls_name = self.NAME,
             parameters = self.parameters,
             inputs = self.input_plugs,
             outputs = self.output_plugs,

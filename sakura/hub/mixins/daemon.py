@@ -1,5 +1,5 @@
 from sakura.hub.context import get_context
-from sakura.common.errors import APIRequestError, APIRequestErrorOfflineDaemon
+from sakura.common.errors import APIRequestErrorOfflineDaemon
 
 class DaemonMixin:
     APIS = {}
@@ -53,9 +53,17 @@ class DaemonMixin:
             get_context().db.commit()
         return daemon
 
-    def fetch_op_classes(self):
+    def prefetch_code(self):
+        commit_refs = set()
         for op_cls in get_context().op_classes.select():
-            self.api.fetch_op_class(op_cls.code_url, op_cls.static_code_ref, op_cls.code_subdir)
+            # code of operator instances
+            for op in op_cls.op_instances:
+                commit_refs.add((op_cls.code_url, op.code_ref, op.commit_hash))
+            # default code ref of op_class
+            commit_refs.add((op_cls.code_url, op_cls.default_code_ref, op_cls.default_commit_hash))
+        # fetch all this
+        for ref in commit_refs:
+            self.api.prefetch_code(*ref)
 
     def instanciate_op_instances(self):
         # re-instantiate instances on daemon
@@ -87,8 +95,8 @@ class DaemonMixin:
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
-        # ensure op classes are fetched on daemon
-        self.fetch_op_classes()
+        # ensure source code of op classes is fetched on daemon
+        self.prefetch_code()
         # re-instanciate op instances and related objects (links, parameters)
         self.instanciate_op_instances()
 
@@ -97,10 +105,3 @@ class DaemonMixin:
         for daemon in cls.select():
             if daemon.connected:
                 return daemon
-
-    @classmethod
-    def list_remote_code_refs(cls, repo_url):
-        daemon = cls.any_connected()
-        if daemon is None:
-            raise APIRequestError('Unable to proceed because no daemon is connected.')
-        return daemon.api.list_remote_code_refs(repo_url)

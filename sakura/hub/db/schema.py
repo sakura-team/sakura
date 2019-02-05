@@ -52,15 +52,18 @@ def define_schema(db):
 
     class OpClass(db.Entity, OpClassMixin):
         code_url = Required(str)
-        code_ref = Required(str)
         code_subdir = Required(str)
+        default_code_ref = Required(str)
+        default_commit_hash = Required(str)
         metadata = Optional(Json, default = {})
         op_instances = Set('OpInstance')
-        UNIQUE(code_url, code_ref, code_subdir)
+        UNIQUE(code_url, code_subdir)
 
     class OpInstance(db.Entity, OpInstanceMixin):
         daemon = Required(Daemon)
         dataflow = Required(Dataflow)
+        code_ref = Required(str)
+        commit_hash = Required(str)
         op_class = Required(OpClass)
         gui_data = Optional(str)
         uplinks = Set('Link')
