@@ -20,7 +20,7 @@ sakura = {
 // debugging
 // ---------
 // uncomment / comment to activate debug
-//sakura.internal.debug = function (s) { console.log("" + new Date().getTime() + " -- " + s); };
+//sakura.internal.debug_time = 0; sakura.internal.debug = function (s) { let now = new Date().getTime(); console.log("" + ((sakura.internal.debug_time==0)?" ":(now-sakura.internal.debug_time)) + " -- " + s); sakura.internal.debug_time = now; };
 sakura.internal.debug = function (s) { };
 
 sakura.internal.debug('Loading sakura-common.js');
@@ -249,6 +249,7 @@ sakura.internal.hub_api_send = function(path, args) {
     let named_args = {};
     let posit_args = args;
 
+    sakura.internal.debug('sakura.internal.hub_api_send called');
     /* a dictionary of named arguments may be passed as the last
        positional argument */
     if (args.length > 0) {
