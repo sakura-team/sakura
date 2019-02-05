@@ -5,6 +5,8 @@ def short_repr(obj):
         return obj.__repr__(level=1)
     elif isinstance(obj, list):
         return '[' + ', '.join(short_repr(elem) for elem in obj) + ']'
+    elif isinstance(obj, Exception):
+        return '<' + str(obj) + '>'
     else:
         res = repr(obj)
         if len(res) > 70:
@@ -21,15 +23,26 @@ def get_attrs_desc(obj):
     for attr_name, attr_val in inspect.getmembers(obj.__class__, inspect.isdatadescriptor):
         if attr_name.startswith('_'):
             continue
-        attrs[attr_name] = getattr(obj, attr_name)
+        try:
+            attrs[attr_name] = getattr(obj, attr_name)
+        except Exception as e:
+            attrs[attr_name] = e
     if len(attrs) == 0:
-        return ''
-    return '\n  attributes:\n' + '\n'.join(
-            '  - self.' + str(k) + ': ' + short_repr(v) for k, v in sorted(attrs.items())) + '\n'
+        return (), ''
+    return attrs.keys(), '\n  attributes:\n' + '\n'.join(
+        '  - self.' + str(k) + ': ' + short_repr(v) for k, v in sorted(attrs.items())) + '\n'
 
-def get_methods_desc(obj):
-    method_names = tuple(info[0] for info in inspect.getmembers(obj, inspect.ismethod) \
-                        if not info[0].startswith('_'))
+def get_methods_desc(obj, excluded_attrs):
+    # we cannot directly use inspect.getmembers(obj, inspect.ismethod)
+    # because it would cause evaluation of properties, and evaluation of properties
+    # may throw exceptions.
+    method_names = []
+    for attr in obj.__dir__():
+        if attr.startswith('_') or attr in excluded_attrs:
+            continue
+        val = getattr(obj, attr)
+        if inspect.ismethod(val):
+            method_names.append(attr)
     res = ''
     if len(method_names) > 0:
         res += '\n  methods:\n'
@@ -54,9 +67,10 @@ class APIObjectBase:
         if level == 1:
             return '<' + short_desc + '>'
         elif level == 0:
+            attr_names, attr_desc = get_attrs_desc(self)
             res = '< -- ' + short_desc + ' --\n'
-            res += get_attrs_desc(self)
-            res += get_methods_desc(self)
+            res += attr_desc
+            res += get_methods_desc(self, excluded_attrs = attr_names)
             res += get_subitems_desc(self)
             res += '>'
         return res

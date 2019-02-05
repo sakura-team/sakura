@@ -14,12 +14,9 @@ class APIOpClass:
                     return info[attr]
                 else:
                     raise AttributeError('No such attribute "%s"' % attr)
-            def is_updatable(self):
-                """Check if code can be updated for this operator class"""
-                return remote_obj.is_updatable()
-            def update(self):
-                """Pull updated code for this operator class"""
-                return remote_obj.update()
+            def update_default_revision(self, code_ref, commit_hash):
+                """Update default code revision of this operator class"""
+                return remote_obj.update_default_revision(code_ref, commit_hash)
             def create(self, dataflow):
                 """Create a new operator of this class in specified dataflow"""
                 op_info = remote_api.operators.create(dataflow.dataflow_id, cls_id)
@@ -31,9 +28,10 @@ class APIOpClassDict:
     def __new__(cls, remote_api, d):
         class APIOpClassDictImpl(APIObjectRegistry(d)):
             """Sakura operator classes registry"""
-            def register(self, repo_url, repo_ref, repo_subdir='/'):
+            def register(self, repo_url, default_code_ref, default_commit_hash, repo_subdir='/'):
                 """Registration of a new operator class"""
-                cls_info = remote_api.op_classes.register(repo_url, repo_ref, repo_subdir)
+                cls_info = remote_api.op_classes.register( \
+                        repo_url, default_code_ref, default_commit_hash, repo_subdir)
                 return APIOpClass(remote_api, cls_info['id'])
         return APIOpClassDictImpl()
 
