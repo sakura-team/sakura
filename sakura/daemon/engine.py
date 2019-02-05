@@ -94,7 +94,7 @@ class DaemonEngine(object):
         return links
     def load_op_class(self, code_url, code_ref, commit_hash, code_subdir):
         worktree_dir = get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
-        return load_op_class(worktree_dir / code_subdir)
+        return load_op_class(worktree_dir, code_subdir)
     def get_op_class_metadata(self, code_url, code_ref, commit_hash, code_subdir):
         op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
         return dict(
