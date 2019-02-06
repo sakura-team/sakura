@@ -85,4 +85,15 @@ def APIObjectRegistry(d):
             raise KeyError('Sorry, no object at key "%s"' % str(k))
         def __doc_subitems__(self):
             return d.items()
+        def __iter__(self):
+            return iter(d)
+        def items(self):
+            "Iterate over key & value pairs this registry contains"
+            return d.items()
+        def keys(self):
+            "Iterate over keys this registry contains"
+            return d.keys()
+        def values(self):
+            "Iterate over values this registry contains"
+            return d.values()
     return APIObjectRegistryImpl
