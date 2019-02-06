@@ -1,10 +1,12 @@
-import sys, sakura.daemon.conf as conf
+import sys, traceback, sakura.daemon.conf as conf
 from pathlib import Path
 from sakura.common.errors import InputUncompatible
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.loading import load_datastores
 from sakura.daemon.code.git import get_worktree, list_code_revisions
 from sakura.daemon.code.loading import load_op_class
+from sakura.common.errors import APIOperatorError
+from sakura.common.io import ORIGIN_LOCATION_ID
 
 class DaemonEngine(object):
     def __init__(self):
@@ -16,6 +18,7 @@ class DaemonEngine(object):
         self.hub = None
         self.name = conf.daemon_desc
         self.code_workdir = Path(conf.work_dir) / 'code'
+        self.origin_id = ORIGIN_LOCATION_ID
     def fire_data_issue(self, issue, should_fail=True):
         if should_fail:
             raise Exception(issue)
@@ -25,13 +28,19 @@ class DaemonEngine(object):
         self.hub = hub_api
     def get_daemon_info_serializable(self):
         return dict(name=self.name,
-                    datastores=tuple(ds.pack() for ds in self.datastores.values()))
+                    datastores=tuple(ds.pack() for ds in self.datastores.values()),
+                    origin_id = self.origin_id)
     def create_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
-        op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
-        op = op_cls(op_id)
-        op.api = self.hub.operator_apis[op_id]
-        op.construct()
-        op.auto_fill_parameters()
+        try:
+            op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
+            op = op_cls(op_id)
+            op.api = self.hub.operator_apis[op_id]
+            op.construct()
+            op.auto_fill_parameters()
+        except BaseException as e:
+            print('Operator ERROR detected!')
+            traceback.print_exc()
+            raise APIOperatorError(str(e))
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
     def delete_operator_instance(self, op_id):

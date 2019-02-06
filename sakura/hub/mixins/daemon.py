@@ -89,9 +89,10 @@ class DaemonMixin:
                 for param in sorted(op.params, key=lambda param: param.param_id):
                     param.update_on_daemon()
 
-    def restore(self, name, datastores, **kwargs):
+    def restore(self, name, origin_id, datastores, **kwargs):
         context = get_context()
         # update metadata
+        self.origin_id = origin_id
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
@@ -101,7 +102,12 @@ class DaemonMixin:
         self.instanciate_op_instances()
 
     @classmethod
-    def any_connected(cls):
+    def all_connected(cls):
         for daemon in cls.select():
             if daemon.connected:
-                return daemon
+                yield daemon
+
+    @classmethod
+    def any_connected(cls):
+        for daemon in cls.all_connected():
+            return daemon   # return first

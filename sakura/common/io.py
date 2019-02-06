@@ -1,12 +1,13 @@
-import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
-import gc, pickle, builtins, numpy as np
-from os import getpid
+import collections, itertools, io, sys, contextlib, traceback, builtins, numbers, random
+import gc, pickle, numpy as np
 from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored, ObservableEvent
 from sakura.common.errors import APIReturningError, APIRemoteError, \
                                  IOHoldException, APIInvalidRequest
 from sakura.common import errors
+
+ORIGIN_LOCATION_ID = random.getrandbits(32)
 
 DEBUG_LEVEL = 0   # do not print messages exchanged
 #DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
@@ -147,7 +148,7 @@ class LocalAPIHandler(object):
             except IOHoldException:
                 # object will be held locally
                 held_id = self.api_runner.hold(res)
-                origin = getpid(), held_id
+                origin = ORIGIN_LOCATION_ID, held_id
                 if isinstance(res, AttrCallAggregator):
                     if res.get_origin() is not None:
                         origin = res.get_origin()
@@ -256,8 +257,8 @@ class AttrCallAggregator(object):
         if res[0] == IO_HELD:
             # result was held remotely (not transferable)
             remote_held_id, origin = res[1], res[2:]
-            origin_pid, origin_held_id = origin
-            if origin_pid == getpid():
+            origin_location_id, origin_held_id = origin
+            if origin_location_id == ORIGIN_LOCATION_ID:
                 # the object is actually a local object!
                 # (may occur in case of several bounces)
                 # we can short out those bounces and use the object directly.

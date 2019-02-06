@@ -11,13 +11,16 @@ class OpParamMixin:
         else:
             self.delete()
     def set_value(self, value):
-        # on remote instance
-        self.remote_param.set_value(value)
-        # refresh any other parameter linked to this one
-        self.op.remote_instance.auto_fill_parameters()
         # on local db
         self.value = value
         self._database_.commit()
+        # on remote instance
+        self.update_on_daemon()
+        # refresh any other parameter linked to this one
+        self.op.remote_instance.auto_fill_parameters()
+        # if needed, try to relocate the operator
+        if self.op._trigger_env_affinity_update():
+            self.op.move()
     @classmethod
     def lookup(cls, op, param_id):
         param = cls.get(op = op, param_id = param_id)

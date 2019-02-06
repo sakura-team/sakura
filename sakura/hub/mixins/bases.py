@@ -33,7 +33,7 @@ class BaseMixin:
         cleaned_up_grants = {}
         for login, grant in grants.items():
             if users.get(login = login) is None:
-                print('WARNING: user %s is unknown is Sakura. Ignored.' % login)
+                print('WARNING: user %s is unknown in Sakura. Ignored.' % login)
             else:
                 cleaned_up_grants[login] = grant
         self.grants = cleaned_up_grants

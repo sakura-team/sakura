@@ -11,6 +11,9 @@ class APIReturningError(ValueError):
 class APIRequestError(APIReturningError):
     pass
 
+class APIOperatorError(APIReturningError):
+    pass
+
 class APIObjectDeniedError(APIRequestError):
     pass
 
