@@ -84,9 +84,10 @@ class DaemonMixin:
         for op in self.op_instances:
             op.restore_links()
 
-    def restore(self, name, datastores, **kwargs):
+    def restore(self, name, origin_id, datastores, **kwargs):
         context = get_context()
         # update metadata
+        self.origin_id = origin_id
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)

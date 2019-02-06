@@ -1,12 +1,7 @@
 import itertools, gc
-from random import getrandbits
 from sakura.common.io.debug import print_debug
 from sakura.common.io.proxy import Proxy
-
-# uniquely identify this process among all sakura processes
-# in the network (os.getpid() might generate duplicate values
-# since processes are running on different machines).
-ORIGIN_ID = getrandbits(32)
+from sakura.common.io.origin import ORIGIN_ID
 
 class HeldObjectsStore:
     instance = None

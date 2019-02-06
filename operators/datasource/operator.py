@@ -71,3 +71,4 @@ class DataSourceOperator(Operator):
             self.output_plug.source = None
         else:
             self.output_plug.source = self.api.get_table_source(table_id)
+            self.move()

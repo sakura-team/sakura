@@ -14,6 +14,7 @@ class OpParamMixin:
     def set_value(self, gui_value):
         self.remote_param.set_requested_gui_value(gui_value)
         self.value = self.remote_param.recheck()
+        self.op.check_move()
     def retrieve_auto_filled(self):
         if self.value is None:
             value = self.remote_param.get_value()

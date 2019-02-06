@@ -1,5 +1,5 @@
 import numpy as np
-from sakura.common.io import pack
+from sakura.common.io import pack, ORIGIN_ID
 from sakura.common.cache import Cache
 from sakura.common.chunk import NumpyChunk
 from sakura.daemon.processing.tools import Registry
@@ -19,6 +19,7 @@ class SourceBase(Registry):
         self.label = label
         self.length = None
         self.range_iter_cache = Cache(10)
+        self.origin_id = ORIGIN_ID
     def add_column(self, col_label, col_type, col_tags=()):
         existing_col_names = set(col._label for col in self.columns)
         # avoid having twice the same column name
@@ -35,6 +36,8 @@ class SourceBase(Registry):
         return pack(dict(label = self.label,
                     columns = self.columns,
                     length = self.length))
+    def get_origin_id(self):
+        return self.origin_id
     def get_label(self):
         return self.label
     def get_length(self):

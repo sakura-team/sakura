@@ -60,7 +60,7 @@ def define_schema(db):
         UNIQUE(code_url, code_subdir)
 
     class OpInstance(db.Entity, OpInstanceMixin):
-        daemon = Required(Daemon)
+        daemon = Optional(Daemon)
         dataflow = Required(Dataflow)
         code_ref = Required(str)
         commit_hash = Required(str)

@@ -1,8 +1,10 @@
 from sakura.hub.context import get_context
 from sakura.hub.mixins.bases import BaseMixin
+from sakura.common.errors import APIOperatorError
 
 class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
+    MOVING = set()
     @property
     def daemon_api(self):
         return self.daemon.api
@@ -23,6 +25,15 @@ class OpInstanceMixin(BaseMixin):
         else:
             self.push_event('disabled')
             OpInstanceMixin.INSTANCIATED.discard(self.id)
+    @property
+    def moving(self):
+        return self.id in OpInstanceMixin.MOVING
+    @moving.setter
+    def moving(self, boolean):
+        if boolean:
+            OpInstanceMixin.MOVING.add(self.id)
+        else:
+            OpInstanceMixin.MOVING.discard(self.id)
     @property
     def disabled_message(self):
         return self.op_class.daemon.disabled_message
@@ -140,7 +151,7 @@ class OpInstanceMixin(BaseMixin):
                 return False
         return True
     @classmethod
-    def create_instance(cls, daemon, dataflow, op_cls_id, revision):
+    def create_instance(cls, dataflow, op_cls_id, revision):
         context = get_context()
         # if not provided, select a revision (commit hash) appropriate for this user:
         # - if he has already instanciated operators of this class, and all of them
@@ -157,12 +168,16 @@ class OpInstanceMixin(BaseMixin):
                 revision = context.op_classes[op_cls_id].default_revision
         code_ref, commit_hash = revision
         # create in local db
-        op = cls(daemon = daemon, dataflow = dataflow, op_class = op_cls_id,
+        op = cls(daemon = None, dataflow = dataflow, op_class = op_cls_id,
                  code_ref = code_ref, commit_hash = commit_hash)
         # refresh op id
         context.db.commit()
-        # create remotely
-        op.instanciate_on_daemon()
+        # run on most appropriate daemon
+        try:
+            op.move()
+        except:
+            op.delete()
+            raise
         # auto-set params when possible
         op.recheck_params()
         return op
@@ -181,6 +196,56 @@ class OpInstanceMixin(BaseMixin):
         # delete instance in local db
         self.delete()
         get_context().db.commit()
+    def check_move(self):
+        if self.moving:     # discard if already moving
+            return
+        if self.remote_instance.pop_pending_move_check():
+            self.move()
+    def move(self):
+        print('MOVE')
+        self.moving = True
+        affinities = {}
+        # list available daemons, current first
+        # (if self.daemon already has a value)
+        daemons = sorted(get_context().daemons.all_enabled(),
+                         key = lambda daemon: daemon != self.daemon)
+        # try available daemons
+        for daemon in daemons:
+            if daemon != self.daemon:   # if not already current
+                self.move_out()
+                try:
+                    self.move_in(daemon)
+                except: # not compatible
+                    continue
+            affinities[daemon] = self.env_affinity()
+        # check that we can move somewhere
+        if len(affinities) == 0:
+            self.moving = False
+            raise APIOperatorError('This operator is not compatible with available daemons!')
+        # check best affinity
+        best = (None, -1)
+        for daemon, score in affinities.items():
+            if score > best[1]:
+                best = (daemon, score)
+        # migrate to best match
+        if self.daemon != best[0]:
+            daemon = best[0]
+            self.move_out()
+            self.move_in(daemon)
+        self.moving = False
+    def move_out(self):
+        if self.enabled:
+            # disable links
+            for link in self.uplinks:
+                link.disable()
+            self.disable_downlinks()
+            # drop op
+            self.delete_on_daemon()
+    def move_in(self, daemon):
+        # associate
+        self.daemon = daemon
+        # recreate op
+        self.restore()
     def get_ouputplug_link_id(self, out_id):
         for l in self.downlinks:
             if l.src_out_id == out_id:

@@ -1,6 +1,7 @@
 import inspect
 from pathlib import Path
-from sakura.common.io import pack
+from sakura.common.io import pack, ORIGIN_ID
+from sakura.common.tools import ObservableEvent
 from sakura.daemon.processing.plugs.input import InputPlug
 from sakura.daemon.processing.plugs.output import OutputPlug
 from sakura.daemon.processing.tab import Tab
@@ -14,6 +15,24 @@ class Operator:
         self.root_dir = operator_py_path.parent
         self.event_lock = Semaphore()
         self.opengl_apps = []
+        self._last_sources_origins = (None, None)
+        self.pending_move_check = False
+    @property
+    def _sources_origins(self):
+        inputs_origins, outputs_origins = (), ()
+        for in_plug in self.input_plugs:
+            if in_plug.connected():
+                inputs_origins += (in_plug.source.get_origin_id(),)
+            else:
+                inputs_origins += (None,)
+        for out_plug in self.output_plugs:
+            if out_plug.enabled:
+                outputs_origins += (out_plug.source.get_origin_id(),)
+            else:
+                outputs_origins += (None,)
+        return inputs_origins, outputs_origins
+    def _trigger_env_affinity_update(self):
+        return self._sources_origins != self._last_sources_origins
     # overridable dynamic properties
     @property
     def input_plugs(self):
@@ -155,3 +174,20 @@ class Operator:
     def set_check_mode(self, check_mode):
         for parameter in self.parameters:
             parameter.set_check_mode(check_mode)
+    def env_affinity(self):
+        self._last_sources_origins = self._sources_origins
+        inputs_origins, outputs_origins = self._last_sources_origins
+        affinity = 0
+        # add 3 points per input source on this daemon
+        affinity += 3 * sum(map(lambda x: x == ORIGIN_ID, inputs_origins))
+        # add 1 point per output source on this daemon
+        affinity += 1 * sum(map(lambda x: x == ORIGIN_ID, outputs_origins))
+        return affinity
+    def move(self):
+        self.pending_move_check = True
+    def pop_pending_move_check(self):
+        if self.pending_move_check:
+            self.pending_move_check = False     # clear for next request
+            return True
+        else:
+            return False
