@@ -106,4 +106,9 @@ class data:
         return np.array(vertices), np.array(colors)
 
     def compute_line_vertices(self, pt):
-        return np.array([pt, [self.mins[0],*pt[1:]]])
+        return np.array([   pt, [self.mins[0],*pt[1:]],
+                            [pt[0], *self.mins[1:]],  [pt[0], self.maxs[1], *self.mins[2:]],
+                            [pt[0], *self.mins[1:]],  [pt[0], self.mins[1], self.maxs[2], self.mins[3]],
+                            [pt[0], *self.maxs[1:]],  [pt[0], self.mins[1], *self.maxs[2:]],
+                            [pt[0], *self.maxs[1:]],  [pt[0], self.maxs[1], *self.mins[2:]]
+                            ])
