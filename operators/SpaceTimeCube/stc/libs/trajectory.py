@@ -104,3 +104,6 @@ class data:
             vertices.append(t.points[-1])
             colors.append([0,0,0,0])
         return np.array(vertices), np.array(colors)
+
+    def compute_line_vertices(self, pt):
+        return np.array([pt, [self.mins[0],*pt[1:]]])

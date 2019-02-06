@@ -94,7 +94,7 @@ class SpaceTimeCube:
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
 
         #self.lines_vertices     = np.array([[-.5,0,-.5], [.5,1,.5]])
-        self.lines_vertices     = np.array([[0,0,0], [0,0,0]])
+        self.lines_vertices     = np.array([[0,0,0,0], [0,0,0,0]])
 
         #Array used for point selection
         self.basic_colors_list = []
@@ -218,7 +218,7 @@ class SpaceTimeCube:
         # lines
         ## CALLBACKS -------
         def _update_lines_arrays():
-            sh.bind(self.vbo_lines, self.lines_vertices, self.attr_lines_vertices, 3, GL_FLOAT)
+            sh.bind(self.vbo_lines, self.lines_vertices, self.attr_lines_vertices, 4, GL_FLOAT)
         self.update_lines_arrays = _update_lines_arrays
 
         def lines_display():
@@ -544,7 +544,7 @@ class SpaceTimeCube:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         glDisable(GL_MULTISAMPLE)
-        sh.display_list([self.sh_shadows, self.sh_trajects])
+        sh.display_list([self.sh_trajects])
         ccolor = self.compute_closest_color(10)
         t_indice = -1
         if ccolor != -1 and ccolor in self.data.trajects_ids:
@@ -607,12 +607,17 @@ class SpaceTimeCube:
                 self.hovered_target =  -1
                 self.update_trajects_arrays()
 
+            lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
             #Computing the closest point
             if t_indice != -1 and self.imode == 'none':
                 p_indice = self.compute_hovered_point(t_indice)
                 if p_indice != -1:
                     pt = self.data.trajects[t_indice].points[p_indice]
+                    lines_vertices = self.data.compute_line_vertices(pt)
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
+
+            self.lines_vertices = copy.copy(lines_vertices)
+            self.update_lines_arrays()
 
         #Selection
         if len(self.new_selections):
