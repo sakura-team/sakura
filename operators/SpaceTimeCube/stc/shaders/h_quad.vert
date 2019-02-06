@@ -2,12 +2,11 @@ precision highp float;
 
 uniform mat4 projection_mat;
 uniform mat4 modelview_mat;
-
-in vec3 in_vertex;
-
 uniform vec4 maxs;
 uniform vec4 mins;
 uniform float cube_height;
+
+in  vec3 in_vertex;
 
 void main() {
     vec2 midl = (maxs.yz + mins.yz)/2.0;
@@ -19,5 +18,4 @@ void main() {
                   -(in_vertex.z - midl.y)/msize,
                   1.0);
     gl_Position = projection_mat * modelview_mat * v;
-
 }

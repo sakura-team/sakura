@@ -75,6 +75,7 @@ class SpaceTimeCube:
         self.sh_back_trajects   = sh.shader()
         self.sh_floor           = sh.shader()
         self.sh_lines           = sh.shader()
+        self.sh_quad            = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
@@ -95,6 +96,7 @@ class SpaceTimeCube:
 
         #self.lines_vertices     = np.array([[-.5,0,-.5], [.5,1,.5]])
         self.lines_vertices     = np.array([[0,0,0,0], [0,0,0,0]])
+        self.quad_vertices      = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
 
         #Array used for point selection
         self.basic_colors_list = []
@@ -163,6 +165,9 @@ class SpaceTimeCube:
 
         self.vbo_lines              = glGenBuffers(1)
         self.attr_lines_vertices    = sh.new_attribute_index()
+
+        self.vbo_quad               = glGenBuffers(1)
+        self.attr_quad_vertices     = sh.new_attribute_index()
 
         self.vbo_trajects_vertices  = glGenBuffers(1)
         self.vbo_trajects_colors    = glGenBuffers(1)
@@ -251,6 +256,45 @@ class SpaceTimeCube:
             print('\t\tOk')
         sys.stdout.flush()
         #-----------------------------------------------
+
+        #-----------------------------------------------
+        # lines
+        ## CALLBACKS -------
+        def _update_quad_arrays():
+            sh.bind(self.vbo_quad, self.quad_vertices, self.attr_quad_vertices, 4, GL_FLOAT)
+        self.update_quad_arrays = _update_quad_arrays
+
+        def quad_display():
+            self.sh_quad.update_uniforms()
+            glDrawArrays(GL_TRIANGLES, 0, len(self.quad_vertices))
+        self.sh_quad.display = quad_display
+
+        def update_uni_quad():
+            self.sh_quad.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_quad.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_quad.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_quad.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_quad.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        self.sh_quad.update_uniforms = update_uni_quad
+
+        ## CALLBACKS -------
+        self.update_quad_arrays()
+
+        # Loading shader files
+        if self.debug:
+            print('\t\33[1;32mHQuad shader...\33[m', end='')
+        sys.stdout.flush()
+        self.sh_quad.sh = sh.create(str(self.spacetimecube_dir / 'shaders/h_quad.vert'),
+                                    None,
+                                    str(self.spacetimecube_dir / 'shaders/h_quad.frag'),
+                                    [self.attr_quad_vertices], ['in_vertex'],
+                                    glsl_version)
+        if not self.sh_quad.sh: exit(1)
+        if self.debug:
+            print('\t\tOk')
+        sys.stdout.flush()
+        #-----------------------------------------------
+
 
         #-----------------------------------------------
         # Shadows
@@ -608,16 +652,20 @@ class SpaceTimeCube:
                 self.update_trajects_arrays()
 
             lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
+            quad_vertices = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
             #Computing the closest point
             if t_indice != -1 and self.imode == 'none':
                 p_indice = self.compute_hovered_point(t_indice)
                 if p_indice != -1:
                     pt = self.data.trajects[t_indice].points[p_indice]
                     lines_vertices = self.data.compute_line_vertices(pt)
+                    quad_vertices = self.data.compute_quad_vertices(pt)
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
 
             self.lines_vertices = copy.copy(lines_vertices)
+            self.quad_vertices = copy.copy(quad_vertices)
             self.update_lines_arrays()
+            self.update_quad_arrays()
 
         #Selection
         if len(self.new_selections):
@@ -656,13 +704,10 @@ class SpaceTimeCube:
             glEnable(GL_DEPTH_TEST)
 
         sh.display_list([   self.sh_cube,
-                            self.sh_trajects
+                            self.sh_quad,
+                            self.sh_trajects,
+                            self.sh_lines,
                             ])
-
-        glDisable(GL_DEPTH_TEST)
-        sh.display_list([   self.sh_lines]);
-        glEnable(GL_DEPTH_TEST)
-
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]

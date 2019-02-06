@@ -4,7 +4,6 @@ uniform mat4 projection_mat;
 uniform mat4 modelview_mat;
 
 in vec3 in_vertex;
-in vec2 in_text_coords;
 
 uniform vec4 maxs;
 uniform vec4 mins;

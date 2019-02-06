@@ -112,3 +112,13 @@ class data:
                             [pt[0], *self.maxs[1:]],  [pt[0], self.mins[1], *self.maxs[2:]],
                             [pt[0], *self.maxs[1:]],  [pt[0], self.maxs[1], *self.mins[2:]]
                             ])
+
+    def compute_quad_vertices(self, pt):
+        return np.array([   [pt[0], *self.mins[1:]],
+                            [pt[0], self.maxs[1], *self.mins[2:]],
+                            [pt[0], self.mins[1], self.maxs[2], self.mins[3]],
+
+                            [pt[0], self.mins[1], self.maxs[2], self.mins[3]],
+                            [pt[0], self.maxs[1], *self.mins[2:]],
+                            [pt[0], *self.maxs[1:]]
+                            ])
