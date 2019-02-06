@@ -77,9 +77,6 @@ class SpaceTimeCube:
 
         #Trajectory data
         self.data = tr.data()
-        #self.data.add([ [0,0,-1,0,0],
-        #                [0,1,0,-1,0],
-        #                [0,2,1,0,0]])
         self.data.add([])
         self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
 
@@ -224,6 +221,7 @@ class SpaceTimeCube:
         self.sh_shadows.display = shadows_display
 
         def update_uni_shadows():
+            self.sh_shadows.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
             self.sh_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -261,6 +259,7 @@ class SpaceTimeCube:
         def update_uni_back_shadows():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
             p_size  = h*2/(self.height)
+            self.sh_back_shadows.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_back_shadows.set_uniform("pixel_size", p_size, 'f')
             self.sh_back_shadows.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
             self.sh_back_shadows.set_uniform("cam_near", self.projo.near, 'f')
@@ -377,6 +376,7 @@ class SpaceTimeCube:
         self.sh_floor.display = floor_display
 
         def update_uni_floor():
+            self.sh_floor.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_floor.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_floor.set_uniform("mins", self.data.mins, '4fv')
             self.sh_floor.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')

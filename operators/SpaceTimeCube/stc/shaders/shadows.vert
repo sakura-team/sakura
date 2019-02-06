@@ -6,6 +6,7 @@ uniform mat4 modelview_mat;
 in vec4 in_vertex;
 in vec4 in_color;
 out vec4 vert_color;
+uniform float cube_height;
 
 uniform vec4 maxs;
 uniform vec4 mins;
@@ -16,7 +17,7 @@ void main() {
     float msize = max(size.x, size.y);
 
     vec4 v = vec4((in_vertex.y - midl.x)/msize,
-                  -.5,
+                  -cube_height/2.0,
                   -(in_vertex.z - midl.y)/msize,
                   1.0);
     gl_Position = projection_mat * modelview_mat * v;

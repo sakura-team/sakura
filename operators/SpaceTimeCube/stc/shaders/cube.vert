@@ -18,6 +18,6 @@ void main() {
         v.z *= size.y/size.x;
     else
         v.x *= size.x/size.y;
-    v.y -= .5;
+    v.y -= cube_height/2;
     gl_Position = projection_mat * modelview_mat * v;
 }
