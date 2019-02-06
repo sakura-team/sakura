@@ -11,7 +11,7 @@ from . import tilenames   as  tn
 
 class floor:
     def __init__(self):
-        self.layer = 'OpenStreetMap'
+        self.layer = 'Toner'
         self.width = 100
         self.height = 100
         self.img = Image.new('RGB', (self.width,self.height), (255, 255, 255))
@@ -40,3 +40,6 @@ class floor:
             img = pickle.load(o)
             o.close()
         self.img.paste(img, box= (img_x*256, img_y*256))
+
+    def get_layers(self):
+        return tn.layers_names()

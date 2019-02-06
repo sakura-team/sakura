@@ -5,16 +5,26 @@ var nb_trajectories = 0
 function init() {
     sakura.apis.operator.attach_opengl_app(0, 'ogl-img');
 
+    //possible map layers
+    sakura.apis.operator.fire_event("get_map_layers", {}).then( function(layers) {
+        var tdd = $('#maps_dropdown');
+        var table = $("<table width = 100%>");
+        layers.forEach( function(map) {
+            table.append("<tr><td><a style='cursor: pointer;' onclick='change_map(\""+map+"\");'>"+map+"</a></td></tr>");
+        });
+        tdd.append(table);
+    });
+
     sakura.apis.operator.fire_event("onload").then( function(result) {
       nb_trajectories = result.length;
       var tdd = $('#trajectories_dropdown');
 
       var table = $("<table width = 100%>");
       table.append("<tr><td><input type='checkbox' id='traj_checkbox_all' onclick='check_trajectory(-1);'></td><td>All</td></tr>");
-      tdd.append(table);
       result.forEach( function(traj, index) {
           table.append("<tr><td><input type='checkbox' id='traj_checkbox_"+index+"' onclick='check_trajectory("+index+");'></td><td>"+traj+"</td></tr>");
       });
+      tdd.append(table);
     });
 
 
@@ -40,6 +50,12 @@ function floor_darkness() {
 function cube_height() {
     var val = document.getElementById('height_range').value/100;
     sakura.apis.operator.fire_event("cube_height", {'value': val});
+}
+
+function change_map(map) {
+    sakura.apis.operator.fire_event("set_map_layer", {'value': map}).then( function(result) {
+        if (result)   console.log(result);
+    });
 }
 
 function check_trajectory(index) {

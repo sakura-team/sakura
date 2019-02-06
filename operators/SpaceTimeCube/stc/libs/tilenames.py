@@ -12,6 +12,14 @@ from math import *
 
 abc = 'a'
 
+layers = { \
+    "WaterColor": "http://c.tile.stamen.com/watercolor/",
+    "OpenStreetMap": "https://"+abc+".tile.openstreetmap.org/",
+    "OpenTopoMap": "https://"+abc+".tile.opentopomap.org/",
+    "ThunderForest": "https://a.tile.thunderforest.com/landscape/",
+    "Toner": "http://a.tile.stamen.com/toner/"
+}
+
 def numTiles(z):
   return(pow(2,z))
 
@@ -89,18 +97,13 @@ def tileLayerBase(layer):
     else:
         abc = 'a'
 
-    layers = { \
-        "WaterColor": "https://c.tile.stamen.com/watercolor/",
-        "OpenStreetMap": "https://"+abc+".tile.openstreetmap.org/",
-        "OpenTopoMap": "https://"+abc+".tile.opentopomap.org/",
-        #"shade": "http://c.tiles.wmflabs.org/hillshading/",
-        "ThunderForest": "https://a.tile.thunderforest.com/landscape/",
-        "Toner": "https://a.tile.stamen.com/toner/"
-    }
     return(layers[layer])
 
 def tileURL(x,y,z,layer):
   return "%s%d/%d/%d.%s" % (tileLayerBase(layer),z,x,y,tileLayerExt(layer))
+
+def layers_names():
+    return [*layers]
 
 if __name__ == "__main__":
   for z in range(0,17):

@@ -693,6 +693,19 @@ class SpaceTimeCube:
         elif value < 0.0:   self.cube_height = 0.0
         else:               self.cube_height = value
 
+    def get_map_layers(self):
+        return self.floor.get_layers()
+
+    def set_map_layer(self, layer):
+        if layer in self.floor.get_layers():
+            self.floor.layer = layer
+        else:
+            return 'Unkown map layer !!!'
+
+        self.update_floor()
+
+        return
+
     def select_trajectories(self, l):
         for i in l:
             if i >= 0 and i < len(self.data.trajects):

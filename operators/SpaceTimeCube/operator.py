@@ -67,5 +67,9 @@ class spacetimecubeOperator(Operator):
             self.ogl_app.handler.select_trajectories(info['value'])
         elif ev_type == 'unselect_trajectories':
             self.ogl_app.handler.unselect_trajectories(info['value'])
+        elif ev_type == 'get_map_layers':
+            return self.ogl_app.handler.get_map_layers()
+        elif ev_type == 'set_map_layer':
+            return self.ogl_app.handler.set_map_layer(info['value'])
         else:
             print('\33[1;31m!!!Unknown Event', ev_type, '!!!\33[m')
