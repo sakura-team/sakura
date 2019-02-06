@@ -502,7 +502,7 @@ class SpaceTimeCube:
         sh.display_list([self.sh_shadows, self.sh_trajects])
         ccolor = self.compute_closest_color(10)
         t_indice = -1
-        if ccolor != -1:
+        if ccolor != -1 and ccolor in self.data.trajects_ids:
             t_indice = self.data.trajects_ids.index(ccolor)
         glEnable(GL_MULTISAMPLE)
         return t_indice
@@ -568,7 +568,6 @@ class SpaceTimeCube:
                 if p_indice != -1:
                     pt = self.data.trajects[t_indice].points[p_indice]
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
-                    print(lon, lat)
 
         #Selection
         if len(self.new_selections):
@@ -587,21 +586,31 @@ class SpaceTimeCube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        glDisable(GL_DEPTH_TEST)
-        sh.display_list([   self.sh_floor,
-                            self.sh_back_shadows,
-                            ])
-        glEnable(GL_DEPTH_TEST)
+        if self.cube_height > 0.00000000001:
+            glDisable(GL_DEPTH_TEST)
+            sh.display_list([   self.sh_floor,
+                                self.sh_back_shadows,
+                                ])
+            glEnable(GL_DEPTH_TEST)
 
-        sh.display_list([   self.sh_shadows])
+            sh.display_list([   self.sh_shadows])
 
-        glDisable(GL_DEPTH_TEST)
-        sh.display_list([   self.sh_back_trajects]);
-        glEnable(GL_DEPTH_TEST)
+            glDisable(GL_DEPTH_TEST)
+            sh.display_list([   self.sh_back_trajects]);
+            glEnable(GL_DEPTH_TEST)
 
-        sh.display_list([   self.sh_cube,
-                            self.sh_trajects
-                            ])
+            sh.display_list([   self.sh_cube,
+                                self.sh_trajects
+                                ])
+        else:
+            glDisable(GL_DEPTH_TEST)
+            sh.display_list([   self.sh_floor,
+                                self.sh_back_trajects]);
+            glEnable(GL_DEPTH_TEST)
+            sh.display_list([   self.sh_cube,
+                                self.sh_trajects
+                                ])
+
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
