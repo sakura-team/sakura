@@ -11,7 +11,7 @@ from . import tilenames   as  tn
 
 class floor:
     def __init__(self):
-        self.layer = 'Toner'
+        self.layer = 'OpenStreetMap'
         self.width = 100
         self.height = 100
         self.img = Image.new('RGB', (self.width,self.height), (255, 255, 255))

@@ -74,6 +74,7 @@ class SpaceTimeCube:
         self.sh_trajects        = sh.shader()
         self.sh_back_trajects   = sh.shader()
         self.sh_floor           = sh.shader()
+        self.sh_lines           = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
@@ -91,6 +92,9 @@ class SpaceTimeCube:
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
+
+        #self.lines_vertices     = np.array([[-.5,0,-.5], [.5,1,.5]])
+        self.lines_vertices     = np.array([[0,0,0], [0,0,0]])
 
         #Array used for point selection
         self.basic_colors_list = []
@@ -157,6 +161,9 @@ class SpaceTimeCube:
         self.vbo_cube               = glGenBuffers(1)
         self.attr_cube_vertices     = sh.new_attribute_index()
 
+        self.vbo_lines              = glGenBuffers(1)
+        self.attr_lines_vertices    = sh.new_attribute_index()
+
         self.vbo_trajects_vertices  = glGenBuffers(1)
         self.vbo_trajects_colors    = glGenBuffers(1)
         self.attr_trajects_vertices = sh.new_attribute_index()
@@ -202,6 +209,44 @@ class SpaceTimeCube:
                                     [self.attr_cube_vertices], ['in_vertex'],
                                     glsl_version)
         if not self.sh_cube.sh: exit(1)
+        if self.debug:
+            print('\t\tOk')
+        sys.stdout.flush()
+        #-----------------------------------------------
+
+        #-----------------------------------------------
+        # lines
+        ## CALLBACKS -------
+        def _update_lines_arrays():
+            sh.bind(self.vbo_lines, self.lines_vertices, self.attr_lines_vertices, 3, GL_FLOAT)
+        self.update_lines_arrays = _update_lines_arrays
+
+        def lines_display():
+            self.sh_lines.update_uniforms()
+            glDrawArrays(GL_LINES, 0, len(self.lines_vertices))
+        self.sh_lines.display = lines_display
+
+        def update_uni_lines():
+            self.sh_lines.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_lines.set_uniform("maxs", self.data.maxs, '4fv')
+            self.sh_lines.set_uniform("mins", self.data.mins, '4fv')
+            self.sh_lines.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_lines.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        self.sh_lines.update_uniforms = update_uni_lines
+
+        ## CALLBACKS -------
+        self.update_lines_arrays()
+
+        # Loading shader files
+        if self.debug:
+            print('\t\33[1;32mLines shader...\33[m', end='')
+        sys.stdout.flush()
+        self.sh_lines.sh = sh.create(str(self.spacetimecube_dir / 'shaders/lines.vert'),
+                                    None,
+                                    str(self.spacetimecube_dir / 'shaders/lines.frag'),
+                                    [self.attr_lines_vertices], ['in_vertex'],
+                                    glsl_version)
+        if not self.sh_lines.sh: exit(1)
         if self.debug:
             print('\t\tOk')
         sys.stdout.flush()
@@ -453,8 +498,7 @@ class SpaceTimeCube:
         #self.data.print_meta()
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.update_trajects_arrays()
-        #self.update_floor()
-        self.update_cube()
+        self.update_cube_and_lines()
 
     def get_trajectories(self):
         return self.data.trajects_names
@@ -466,8 +510,9 @@ class SpaceTimeCube:
         if self.debug:
             print('\tOk')
 
-    def update_cube(self):
+    def update_cube_and_lines(self):
         self.update_cube_arrays()
+        self.update_lines_arrays()
 
     def compute_closest_color(self, edge_size):
         '''Reads a square from the framebuffer,
@@ -599,17 +644,19 @@ class SpaceTimeCube:
             sh.display_list([   self.sh_back_trajects]);
             glEnable(GL_DEPTH_TEST)
 
-            sh.display_list([   self.sh_cube,
-                                self.sh_trajects
-                                ])
         else:
             glDisable(GL_DEPTH_TEST)
             sh.display_list([   self.sh_floor,
                                 self.sh_back_trajects]);
             glEnable(GL_DEPTH_TEST)
-            sh.display_list([   self.sh_cube,
-                                self.sh_trajects
-                                ])
+
+        sh.display_list([   self.sh_cube,
+                            self.sh_trajects
+                            ])
+
+        glDisable(GL_DEPTH_TEST)
+        sh.display_list([   self.sh_lines]);
+        glEnable(GL_DEPTH_TEST)
 
 
     def on_mouse_click(self, button, state, x, y):
@@ -703,7 +750,6 @@ class SpaceTimeCube:
             return 'Unkown map layer !!!'
 
         self.update_floor()
-
         return
 
     def select_trajectories(self, l):
