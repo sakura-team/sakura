@@ -136,7 +136,7 @@ class SpaceTimeCube:
     def init_shaders(self):
 
         glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8")
-        glsl_version = glsl_version.replace('.', '')
+        glsl_version = glsl_version.replace('.', '').split()[0]
 
         ##########################
         # general vertex array object
