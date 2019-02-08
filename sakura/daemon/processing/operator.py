@@ -145,5 +145,3 @@ class Operator:
         # (easier for the operator developer)
         with self.event_lock:
             return self.handle_event(*args, **kwargs)
-    def stream_jpeg_frames(self):
-        raise Exception('no video stream.')
