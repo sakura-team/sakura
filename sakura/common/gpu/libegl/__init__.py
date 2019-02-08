@@ -9,6 +9,14 @@ if os.environ.get('PYOPENGL_PLATFORM', 'undef') != 'egl':
         sys.exit()
 os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
+# fix broken EGL code in pyopengl (unless already fixed)
+# see https://github.com/mcfletch/pyopengl/commit/47493f26d4b26e3a66e4070651dbf60e1ccf37f1
+from OpenGL.raw.EGL._types import _EGLQuerier
+if isinstance(_EGLQuerier.prefix, str):
+    from OpenGL._bytes import as_8_bit
+    _EGLQuerier.prefix = as_8_bit('EGL_')
+    _EGLQuerier.version_prefix = as_8_bit('EGL_VERSION_EGL_')
+
 import OpenGL.EGL as egl
 import ctypes
 
