@@ -47,6 +47,21 @@ sakura.internal.get_mouse_pos = function(img, evt) {
     };
 }
 
+sakura.internal.ogl_monitor_events = function (remote_app, event_manager) {
+    var timeout = 2.0;
+    // wait for next event and process it
+    remote_app.next_event(timeout).then(function (evt) {
+        if (evt == null) {
+            // timeout, nothing happened
+        }
+        else {
+            event_manager(evt);
+        }
+        // re-call for next event
+        sakura.internal.ogl_monitor_events(remote_app, event_manager);
+    });
+}
+
 sakura.apis.operator = sakura.internal.get_operator_interface()
 sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
 
@@ -54,14 +69,27 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
     let remote_app = sakura.apis.operator.opengl_apps[opengl_app_id];
     let clicked_buttons = 0;
     let masks = { 'NONE': 0, 'LEFT_CLICKED': 1, 'RIGHT_CLICKED': 4, 'LEFT_OR_RIGHT_CLICKED': 5 };
-
     img.addEventListener('contextmenu', function(evt) {
         evt.preventDefault();
     }, false);
 
     remote_app.info().then(function (app_info) {
-        img.src = app_info.mjpeg_url;
         let mouse_move_reporting = app_info.mouse_move_reporting;
+
+        let reconnect = function() {
+            img.src = app_info.mjpeg_url;
+        }
+
+        sakura.internal.ogl_monitor_events(remote_app, function(evt) {
+            if (evt == 'browser_disconnect') {
+                // if we are still alive, this means the browser disconnected
+                // from the mjpeg stream unexpectedly. let's reconnect!
+                reconnect();
+            }
+            else {
+                console.log('Unexpected opengl_app event: ' + evt);
+            }
+        });
 
         // RESIZE EVENTS
         let do_resize = function(evt) {
@@ -72,7 +100,7 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
                 h = 50;
             }
             console.log('opengl_resize', w, h);
-            remote_app.fire_event('on_resize', w, h);
+            return remote_app.fire_event('on_resize', w, h);
         };
         window.addEventListener('resize', do_resize);
 
@@ -122,6 +150,6 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
 
         // initialize
         update_mouse_reports();
-        do_resize();
+        do_resize().then(reconnect);
     });
 }

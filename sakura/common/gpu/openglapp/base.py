@@ -25,24 +25,38 @@ class OpenglAppBase:
         self.url     = None
         if SAKURA_DISPLAY_STREAMING:
             self.streamed = True
-            self.change_queue   = Queue()
+            self.change_queue = Queue()
         else:
             self.streamed = False
         self.greenlets = []
+        self.event_queue = Queue()
+
+    def busy_display_loop(self):
+        return not self.change_queue.empty()
 
     def plan_periodic_task(self, callback, period):
         def task_loop():
             while True:
                 gevent.sleep(period)
-                self.make_current()
-                callback()
-                self.notify_change()
+                if not self.busy_display_loop():
+                    self.make_current()
+                    callback()
+                    self.notify_change()
         g_task = gevent.Greenlet.spawn(task_loop)
         self.greenlets.append(g_task)
 
     def pack(self):
         return { "mjpeg_url": self.url,
                  "mouse_move_reporting": self.mouse_move_reporting.name }
+
+    def next_event(self, timeout):
+        try:
+            return self.event_queue.get(timeout=timeout)
+        except Empty:
+            return None
+
+    def push_event(self, evt):
+        self.event_queue.put(evt)
 
     def on_resize(self, w, h):
         w, h = int(w), int(h)

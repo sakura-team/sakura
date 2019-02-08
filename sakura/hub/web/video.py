@@ -25,10 +25,15 @@ def serve_video_stream(context, op_id, ogl_id):
             yield (b'--boundary\r\n' +
                b'Content-Type: image/jpeg\r\n\r\n')
             i, frame = next(iterator)
-            print(i)
-            yield (frame + b'\r\n')
+            print(i, len(frame))
+            # send 1024-bytes chunks
+            for j in range((len(frame)-1)//1024 + 1):
+                yield frame[j*1024:(j+1)*1024]
+            yield b'\r\n'
     except APIObjectDeniedError as e:
         raise bottle.HTTPError(403, str(e))
     except APIRequestError as e:
         raise bottle.HTTPError(400, str(e))
+    except GeneratorExit as e:
+        opengl_app.push_event('browser_disconnect')
     print('stream ended')
