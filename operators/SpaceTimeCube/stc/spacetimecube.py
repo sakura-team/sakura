@@ -703,13 +703,16 @@ class SpaceTimeCube:
             glEnable(GL_DEPTH_TEST)
 
         else:
+            glDisable(GL_DEPTH_TEST)
             sh.display_list([   self.sh_floor,
                                 self.sh_back_trajects]);
+            glEnable(GL_DEPTH_TEST)
 
-        sh.display_list([   self.sh_cube,
-                            self.sh_quad,
-                            self.sh_trajects,
-                            ])
+
+        sh.display_list([   self.sh_cube])
+        if self.cube_height > 0.00000000001:
+            sh.display_list([   self.sh_quad])
+        sh.display_list([   self.sh_trajects])
 
         glDisable(GL_DEPTH_TEST)
         sh.display_list([ self.sh_lines])
