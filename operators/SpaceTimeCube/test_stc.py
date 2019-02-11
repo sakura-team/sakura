@@ -14,9 +14,9 @@ oapp.handler.debug = True
 
 oapp.init(800, 600)
 oapp.plan_periodic_task(oapp.handler.animation, .01)
-oapp.mouse_move_reporting = getattr(oapp.handler,
-                                    "mouse_move_reporting",
-                                    MouseMoveReporting.ALWAYS)
+#oapp.mouse_move_reporting = getattr(oapp.handler,
+#                                    "mouse_move_reporting",
+#                                    MouseMoveReporting.ALWAYS)
 oapp.handler.clean_data()
 oapp.handler.load_data(file=sys.argv[1])
 oapp.handler.update_floor()

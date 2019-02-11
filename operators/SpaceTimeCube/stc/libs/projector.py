@@ -187,25 +187,48 @@ class projector:
         print("\tUp                 : ",self.up)
         print("\tFrustum(l,r,t,b)   : ",self.left, self.right, self.top, self.bottom)
 
-    def projection(self):
+    def projection(self, model='perspective'):
+        if model == 'perspective':
+            return self.perspective()
+        elif model == 'orthographic':
+            return self.orthographic()
+
+    def perspective(self):
         '''
-        M=  [2n/(r-l)   0           (r+l)/(r-l)     0]
-            [0          2n/(t-b)    (t+b)/(t-b)     0]
+        M=  [2n/(r-l)   0           0     0]
+            [0          2n/(t-b)    0     0]
             [0          0           -(f+n)/(f-n)    -2(fn)/(f-n)]
             [0          0           -1              0]
         '''
 
         m00 = 2*self.near/(self.right - self.left)
-        m02 = (self.right + self.left)/(self.right - self.left)
         m11 = 2*self.near/(self.top - self.bottom)
-        m12 = (self.top + self.bottom)/(self.top - self.bottom)
         m22 = -(self.far+self.near)/(self.far-self.near)
         m23 = -2*(self.far*self.near)/(self.far-self.near)
 
-        return np.array([   m00,   0,      m02,    0,
-                            0,     m11,    m12,    0,
+        return np.array([   m00,   0,      0,    0,
+                            0,     m11,    0,    0,
                             0,     0,      m22,    m23,
                             0,     0,      -1,     0  ]).reshape((4,4))
+
+    def orthographic(self):
+        '''
+        M=  [10/(r-l)   0           0     0]
+            [0          10/(t-b)    0     0]
+            [0          0           -2/(f-n)    -(f+n)/(f-n)]
+            [0          0           0              1]
+        '''
+
+        m00 = 1
+        m11 = 1
+        m22 = -2/(self.far-self.near)
+        m23 = -(self.far+self.near)/(self.far-self.near)
+
+        return np.array([   m00,   0,      0,    0,
+                            0,     m11,    0,    0,
+                            0,     0,      m22,    m23,
+                            0,     0,      0,     1  ]).reshape((4,4))
+
 
     def modelview(self):
 
@@ -219,19 +242,19 @@ class projector:
         f   = normalize([   vie[0] - pos[0],
                             vie[1] - pos[1],
                             vie[2] - pos[2]  ])
-
         _up = normalize(self.up)
         s = cross(f, _up)
         u = cross(normalize(s), f)
+
         R = [   s[0],   u[0],   -f[0],  0,
                 s[1],   u[1],   -f[1],  0,
                 s[2],   u[2],   -f[2],  0,
                 0,      0,      0,      1   ]
-
+        p = pos
         T = [   1,      0,      0,      0,
                 0,      1,      0,      0,
                 0,      0,      1,      0,
-                -pos[0],-pos[1],-pos[2], 1 ]
+                -p[0],-p[1],-p[2], 1 ]
 
         return np.array(m_mult(T, R)).reshape((4,4)).T
 

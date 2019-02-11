@@ -116,6 +116,7 @@ class SpaceTimeCube:
         self.selected_trajects  = []
         self.new_selections     = []
         self.debug              = False
+        self.projection_type    = 'perspective'
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -180,9 +181,9 @@ class SpaceTimeCube:
         self.attr_floor_text_coords = sh.new_attribute_index()
 
         ##########################
-        # Shaders
+        # shaders
         #-----------------------------------------------
-        # Cube
+        # cube
         ## CALLBACKS -------
         def _update_cube_arrays():
             sh.bind(self.vbo_cube, self.cube_vertices, self.attr_cube_vertices, 3, GL_FLOAT)
@@ -197,7 +198,7 @@ class SpaceTimeCube:
             self.sh_cube.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_cube.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_cube.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_cube.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_cube.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_cube.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_cube.update_uniforms = update_uni_cube
 
@@ -235,7 +236,7 @@ class SpaceTimeCube:
             self.sh_lines.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_lines.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_lines.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_lines.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_lines.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_lines.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_lines.update_uniforms = update_uni_lines
 
@@ -258,7 +259,7 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
-        # lines
+        # quad
         ## CALLBACKS -------
         def _update_quad_arrays():
             sh.bind(self.vbo_quad, self.quad_vertices, self.attr_quad_vertices, 4, GL_FLOAT)
@@ -273,7 +274,7 @@ class SpaceTimeCube:
             self.sh_quad.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_quad.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_quad.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_quad.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_quad.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_quad.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_quad.update_uniforms = update_uni_quad
 
@@ -297,7 +298,7 @@ class SpaceTimeCube:
 
 
         #-----------------------------------------------
-        # Shadows
+        # shadows
         ## CALLBACKS -------
         def _update_trajects_arrays():
             sh.bind(self.vbo_trajects_vertices, self.trajects_vertices, self.attr_trajects_vertices, 4, GL_FLOAT)
@@ -313,7 +314,7 @@ class SpaceTimeCube:
             self.sh_shadows.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_shadows.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_shadows.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_shadows.update_uniforms = update_uni_shadows
         ## CALLBACKS -------
@@ -338,7 +339,7 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
-        # Back Shadows
+        # back shadows
         ## CALLBACKS -------
         def back_shadows_display():
             self.sh_back_shadows.update_uniforms()
@@ -355,7 +356,7 @@ class SpaceTimeCube:
             self.sh_back_shadows.set_uniform("cam_pos", self.projo.position, '3fv')
             self.sh_back_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_back_shadows.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_back_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_back_shadows.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_back_shadows.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_back_shadows.update_uniforms = update_uni_back_shadows
         ## CALLBACKS -------
@@ -378,7 +379,7 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
-        # Main trajectories
+        # main trajectories
         ## CALLBACKS -------
         def trajects_display():
             self.sh_trajects.update_uniforms()
@@ -389,7 +390,7 @@ class SpaceTimeCube:
             self.sh_trajects.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_trajects.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_trajects.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_trajects.update_uniforms = update_uni_trajects
         ## CALLBACKS -------
@@ -412,7 +413,7 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
-        # Back Shadows
+        # back trajectories
         ## CALLBACKS -------
         def back_trajects_display():
             self.sh_back_trajects.update_uniforms()
@@ -429,7 +430,7 @@ class SpaceTimeCube:
             self.sh_back_trajects.set_uniform("cam_pos", self.projo.position, '3fv')
             self.sh_back_trajects.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_back_trajects.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_back_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_back_trajects.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_back_trajects.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_back_trajects.update_uniforms = update_uni_back_trajects
         ## CALLBACKS -------
@@ -468,7 +469,7 @@ class SpaceTimeCube:
             self.sh_floor.set_uniform("cube_height", self.cube_height, 'f')
             self.sh_floor.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_floor.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_floor.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.sh_floor.set_uniform("projection_mat", self.projo.projection(model=self.projection_type).T, 'm4fv')
             self.sh_floor.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
             self.sh_floor.set_uniform("floor_texture", 0, 'i')
         self.sh_floor.update_uniforms = update_uni_floor
@@ -657,7 +658,11 @@ class SpaceTimeCube:
             if t_indice != -1 and self.imode == 'none':
                 p_indice = self.compute_hovered_point(t_indice)
                 if p_indice != -1:
-                    pt = self.data.trajects[t_indice].points[p_indice]
+                    try:
+                        pt = self.data.trajects[t_indice].points[p_indice]
+                    except:
+                        print(t_indice, len(self.data.trajects))
+                        print(p_indice, len(self.data.trajects[t_indice].points))
                     lines_vertices = self.data.compute_line_vertices(pt)
                     quad_vertices = self.data.compute_quad_vertices(pt)
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
@@ -698,16 +703,17 @@ class SpaceTimeCube:
             glEnable(GL_DEPTH_TEST)
 
         else:
-            glDisable(GL_DEPTH_TEST)
             sh.display_list([   self.sh_floor,
                                 self.sh_back_trajects]);
-            glEnable(GL_DEPTH_TEST)
 
         sh.display_list([   self.sh_cube,
                             self.sh_quad,
                             self.sh_trajects,
-                            self.sh_lines,
                             ])
+
+        glDisable(GL_DEPTH_TEST)
+        sh.display_list([ self.sh_lines])
+        glEnable(GL_DEPTH_TEST)
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
@@ -751,12 +757,17 @@ class SpaceTimeCube:
             self.set_floor_darkness(self.floor_darkness+.1)
         elif key == b'd':
             self.set_floor_darkness(self.floor_darkness-.1)
-        elif key == b'c':
+        elif key == b'h':
             self.set_cube_height(self.cube_height-.1)
-        elif key == b'C':
+        elif key == b'H':
             self.set_cube_height(self.cube_height+.1)
         elif key == b'p':
             self.data.print_meta()
+        elif key == b'o':
+            if self.projection_type == 'perspective':
+                self.projection_type = 'orthographic'
+            else:
+                self.projection_type = 'perspective'
         elif key == b'f':
             self.update_floor()
         elif int(key) in range(0,10):
