@@ -1,6 +1,6 @@
-#!/usr/bin/env python
 import OpenGL.EGL as egl
 from ctypes import pointer
+from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
 from sakura.common.gpu.libegl import devices, egl_convert_to_int_array
 from sakura.common.tools import TransactionMixin
 
@@ -56,15 +56,20 @@ class EGLContext(TransactionMixin):
         return True
     def get_config(self, egl_dpy, surface_type):
         egl_config_attribs = {
-            egl.EGL_RED_SIZE:           8,
-            egl.EGL_GREEN_SIZE:         8,
-            egl.EGL_BLUE_SIZE:          8,
-            egl.EGL_ALPHA_SIZE:         8,
-            egl.EGL_DEPTH_SIZE:         egl.EGL_DONT_CARE,
-            egl.EGL_STENCIL_SIZE:       egl.EGL_DONT_CARE,
-            egl.EGL_RENDERABLE_TYPE:    egl.EGL_OPENGL_BIT,
-            egl.EGL_SURFACE_TYPE:       surface_type,
+                egl.EGL_RED_SIZE:           8,
+                egl.EGL_GREEN_SIZE:         8,
+                egl.EGL_BLUE_SIZE:          8,
+                egl.EGL_ALPHA_SIZE:         8,
+                egl.EGL_DEPTH_SIZE:         8,
+                egl.EGL_STENCIL_SIZE:       egl.EGL_DONT_CARE,
+                egl.EGL_RENDERABLE_TYPE:    egl.EGL_OPENGL_BIT,
+                egl.EGL_SURFACE_TYPE:       surface_type
         }
+        if SAKURA_GPU_PERFORMANCE != 'low':
+            egl_config_attribs.update({
+                egl.EGL_SAMPLE_BUFFERS:     1,
+                egl.EGL_SAMPLES:            4
+            })
         egl_config_attribs = egl_convert_to_int_array(egl_config_attribs)
         egl_config = egl.EGLConfig()
         num_configs = egl.EGLint()

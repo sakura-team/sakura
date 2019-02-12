@@ -6,6 +6,7 @@ import sys, math, time, inspect, datetime, copy
 import numpy    as      np
 from pathlib    import  Path
 from PIL        import  Image
+from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
 
 try:
     from OpenGL.GL      import *
@@ -366,14 +367,15 @@ class SpaceTimeCube:
         if self.debug:
             print('\t\33[1;32mBack shadows shader...\33[m', end='')
         sys.stdout.flush()
-        self.sh_back_shadows.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_shadows.vert'),
-                                            str(self.spacetimecube_dir / 'shaders/back_shadows.geom'),
-                                            str(self.spacetimecube_dir / 'shaders/back_shadows.frag'),
-                                            [self.attr_trajects_vertices, self.attr_trajects_colors],
-                                            ['in_vertex', 'in_color'],
-                                            glsl_version)
+        if SAKURA_GPU_PERFORMANCE != 'low':
+            self.sh_back_shadows.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_shadows.vert'),
+                                                str(self.spacetimecube_dir / 'shaders/back_shadows.geom'),
+                                                str(self.spacetimecube_dir / 'shaders/back_shadows.frag'),
+                                                [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                                ['in_vertex', 'in_color'],
+                                                glsl_version)
 
-        if not self.sh_back_shadows.sh: exit(1)
+            if not self.sh_back_shadows.sh: exit(1)
         if self.debug:
             print('\tOk')
         sys.stdout.flush()
@@ -440,14 +442,15 @@ class SpaceTimeCube:
         if self.debug:
             print('\t\33[1;32mBack trajects shader...\33[m', end='')
         sys.stdout.flush()
-        self.sh_back_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_trajects.vert'),
-                                            str(self.spacetimecube_dir / 'shaders/back_trajects.geom'),
-                                            str(self.spacetimecube_dir / 'shaders/back_trajects.frag'),
-                                            [self.attr_trajects_vertices, self.attr_trajects_colors],
-                                            ['in_vertex', 'in_color'],
-                                            glsl_version)
+        if SAKURA_GPU_PERFORMANCE != 'low':
+            self.sh_back_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_trajects.vert'),
+                                                str(self.spacetimecube_dir / 'shaders/back_trajects.geom'),
+                                                str(self.spacetimecube_dir / 'shaders/back_trajects.frag'),
+                                                [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                                ['in_vertex', 'in_color'],
+                                                glsl_version)
 
-        if not self.sh_back_trajects.sh: exit(1)
+            if not self.sh_back_trajects.sh: exit(1)
         if self.debug:
             print('\tOk')
         sys.stdout.flush()
@@ -699,21 +702,29 @@ class SpaceTimeCube:
 
         if self.cube_height > 0.00000000001:
             glDisable(GL_DEPTH_TEST)
-            sh.display_list([   self.sh_floor,
-                                self.sh_back_shadows,
+            if SAKURA_GPU_PERFORMANCE == 'low':
+                sh.display_list([ self.sh_floor ])
+            else:
+                sh.display_list([   self.sh_floor,
+                                    self.sh_back_shadows,
                                 ])
             glEnable(GL_DEPTH_TEST)
 
             sh.display_list([   self.sh_shadows])
 
-            glDisable(GL_DEPTH_TEST)
-            sh.display_list([   self.sh_back_trajects]);
-            glEnable(GL_DEPTH_TEST)
+            if SAKURA_GPU_PERFORMANCE != 'low':
+                glDisable(GL_DEPTH_TEST)
+                sh.display_list([   self.sh_back_trajects]);
+                glEnable(GL_DEPTH_TEST)
 
         else:
             glDisable(GL_DEPTH_TEST)
-            sh.display_list([   self.sh_floor,
-                                self.sh_back_trajects]);
+            if SAKURA_GPU_PERFORMANCE == 'low':
+                sh.display_list([ self.sh_floor ])
+            else:
+                sh.display_list([   self.sh_floor,
+                                    self.sh_back_trajects
+                                ]);
             glEnable(GL_DEPTH_TEST)
 
 
