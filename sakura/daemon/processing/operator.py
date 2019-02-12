@@ -85,7 +85,7 @@ class Operator:
             # restrict to parameters concerning the specified plug if any
             if plug != None and not param.is_linked_to_plug(plug):
                 continue
-            param.auto_fill()
+            param.recheck()
     def unselect_parameters(self, plug = None):
         for param in self.parameters:
             # restrict to parameters concerning the specified plug if any

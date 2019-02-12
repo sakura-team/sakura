@@ -33,7 +33,6 @@ class DaemonEngine(object):
         op = op_cls(op_id)
         op.api = self.hub.operator_apis[op_id]
         op.construct()
-        op.auto_fill_parameters()
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (cls_name, op_id))
     def delete_operator_instance(self, op_id):
@@ -54,8 +53,12 @@ class DaemonEngine(object):
         dst_input_plug = dst_op.input_plugs[dst_in_id]
         dst_input_plug.connect(src_op.output_plugs[src_out_id])
         if auto_fill_params:
-            # auto select unselected parameters
-            dst_op.auto_fill_parameters(plug = dst_input_plug)
+            try:
+                # auto select unselected parameters
+                dst_op.auto_fill_parameters(plug = dst_input_plug)
+            except:
+                dst_input_plug.disconnect()     # revert
+                raise
         print("connected %s -> %s op_id=%d in%d" % \
                 (src_label, dst_op.NAME, dst_op_id, dst_in_id))
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
@@ -79,14 +82,13 @@ class DaemonEngine(object):
                 if dst_input_plug.connected():
                     # this entry is already connected with something else
                     continue
-                self.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id,
-                                        auto_fill_params = False)
                 try:
-                    # auto select parameters
-                    dst_op.auto_fill_parameters(plug = dst_input_plug)
+                    self.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id,
+                                        auto_fill_params = True)
                     # if we are here, this link is possible
                     links.append((src_out_id, dst_in_id))
+                    # revert
+                    self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
                 except InputUncompatible:
                     pass
-                self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
         return links

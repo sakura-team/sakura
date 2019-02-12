@@ -60,5 +60,16 @@ class DaemonMixin:
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
-        # restore op classes and re-instanciate related objects (instances, links, parameters)
+        # restore op classes
         self.op_classes = set(context.op_classes.restore_op_class(self, **cls) for cls in op_classes)
+        # re-instanciate op instances and their parameters
+        for op_cls in self.op_classes:
+            for op in op_cls.op_instances:
+                op.instanciate_on_daemon()
+                # restore params
+                for param in op.params:
+                    param.restore()
+        # re-instanciate links when possible
+        for op_cls in self.op_classes:
+            for op in op_cls.op_instances:
+                op.restore_links()

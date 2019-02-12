@@ -35,16 +35,47 @@ class OpInstanceMixin:
         if self.instanciated:
            res.update(**self.remote_instance.pack())
         return res
+    def resync_params(self):
+        # resync params in order (according to param_id)
+        for param in sorted(self.params, key=lambda param: param.param_id):
+            param.resync()
     def instanciate_on_daemon(self):
         self.daemon_api.create_operator_instance(self.op_class.name, self.id)
+        # resync number of parameters with what the daemon reports (possible source code change)
+        local_ids = set(param.param_id for param in self.params)
+        remote_ids = set(range(self.remote_instance.get_num_parameters()))
+        for param in self.params:
+            if param.param_id not in remote_ids:
+                param.delete()
+        context = get_context()
+        for param_id in (remote_ids - local_ids):
+            context.op_params(op = self, param_id = param_id) # instanciate in local db
+            context.db.commit()
+        # we have it instanciated
         self.instanciated = True
-        return self.remote_instance
     def delete_on_daemon(self):
         self.instanciated = False
         self.daemon_api.delete_operator_instance(self.id)
+    def disable_downlinks(self):
+        for link in self.downlinks:
+            link.disable()
+            link.dst_op.disable_downlinks()
     def on_daemon_disconnect(self):
         # daemon stopped
+        for link in self.uplinks:
+            link.disable()
+        self.disable_downlinks()
         self.instanciated = False
+    def ready(self):
+        if not self.instanciated:
+            return False
+        for link in self.uplinks:
+            if not link.enabled:
+                return False
+        for param in self.params:
+            if not param.is_valid:
+                return False
+        return True
     @classmethod
     def create_instance(cls, dataflow, op_cls_id):
         # create in local db
@@ -52,13 +83,19 @@ class OpInstanceMixin:
         # refresh op id
         get_context().db.commit()
         # create remotely
-        return op.instanciate_on_daemon()
+        op.instanciate_on_daemon()
+        # auto-set params when possible
+        op.resync_params()
+        return op
     def delete_instance(self):
-        # delete connected links
-        for l in self.uplinks:
-            l.delete_link()
-        for l in self.downlinks:
-            l.delete_link()
+        # the whole down-tree will be affected
+        self.disable_downlinks()
+        # remove 1-hop links (since these are connected to
+        # the operator instance we are removing)
+        for link in self.uplinks:
+            link.delete_link()
+        for link in self.downlinks:
+            link.delete_link()
         # delete instance remotely
         self.delete_on_daemon()
         # delete instance in local db
@@ -68,3 +105,27 @@ class OpInstanceMixin:
             if l.src_out_id == out_id:
                 return l.id
         return None     # not connected
+    def restore_links(self):
+        # restore uplinks if src is ok
+        altered = False
+        for link in self.uplinks:
+            if link.enabled:
+                continue    # nothing to do
+            if link.src_op.ready():
+                # ok, restore!
+                try:
+                    link.enable()
+                    altered = True
+                except:
+                    # this link is no longer valid
+                    # ex: DataSource -> Map, with
+                    # the table selected in DataSource no longer
+                    # valid (offline datastore)
+                    pass    # link is simply not enabled (for now)
+        # if we just got ready, recurse with operators
+        # on downlinks.
+        if altered or len(self.uplinks) == 0:
+            self.resync_params()
+            if self.ready():
+                for link in self.downlinks:
+                    link.dst_op.restore_links()

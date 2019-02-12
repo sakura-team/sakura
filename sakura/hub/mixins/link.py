@@ -1,8 +1,18 @@
 
 class LinkMixin:
+    ENABLED = set()
     @property
-    def dst_daemon_api(self):
-        return self.dst_op.op_class.daemon.api
+    def enabled(self):
+        return self.id in LinkMixin.ENABLED
+    @enabled.setter
+    def enabled(self, boolean):
+        if boolean:
+            LinkMixin.ENABLED.add(self.id)
+        else:
+            LinkMixin.ENABLED.discard(self.id)
+    @property
+    def dst_daemon(self):
+        return self.dst_op.op_class.daemon
     @property
     def link_args(self):
         return (self.src_op.id, self.src_out_id, self.dst_op.id, self.dst_in_id)
@@ -13,12 +23,16 @@ class LinkMixin:
             src_out_id = self.src_out_id,
             dst_id = self.dst_op.id,
             dst_in_id = self.dst_in_id,
-            gui_data = self.gui_data
+            gui_data = self.gui_data,
+            enabled = self.enabled
         )
-    def link_on_daemon(self):
-        self.dst_daemon_api.connect_operators(*self.link_args)
-    def unlink_on_daemon(self):
-        self.dst_daemon_api.disconnect_operators(*self.link_args)
+    def enable(self):
+        self.dst_daemon.api.connect_operators(*self.link_args)
+        self.enabled = True
+    def disable(self):
+        if self.dst_daemon.connected:
+            self.dst_daemon.api.disconnect_operators(*self.link_args)
+        self.enabled = False
     @classmethod
     def create_link(cls, src_op, src_out_id, dst_op, dst_in_id):
         # create in local db
@@ -27,10 +41,11 @@ class LinkMixin:
                     dst_op = dst_op,
                     dst_in_id = dst_in_id)
         # link remotely
-        link.link_on_daemon()
+        link.enable()
         return link
     def delete_link(self):
-        self.unlink_on_daemon() # remotely
+        if self.enabled:
+            self.disable() # remotely
         self.delete()           # in local db
     @classmethod
     def get_possible_links(cls, src_op, dst_op):

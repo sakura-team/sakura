@@ -2,22 +2,23 @@ class OpParamMixin:
     @property
     def remote_param(self):
         return self.op.remote_instance.parameters[self.param_id]
-    def update_on_daemon(self):
-        # if the operator has been modified, it may actually
-        # have less parameters than before.
-        num_params = self.op.remote_instance.get_num_parameters()
-        if self.param_id < num_params:
-            self.remote_param.set_value(self.value)
-        else:
-            self.delete()
+    def restore(self):
+        if self.value is not None:
+            self.remote_param.set_requested_value(self.value)
+        self.resync()
     def set_value(self, value):
         # on remote instance
-        self.remote_param.set_value(value)
-        # refresh any other parameter linked to this one
-        self.op.remote_instance.auto_fill_parameters()
+        self.remote_param.set_requested_value(value)
+        self.remote_param.resync()
         # on local db
         self.value = value
-        self._database_.commit()
+    def resync(self):
+        value = self.remote_param.resync()
+        if self.value is None and value is not None:
+            self.value = value
+    @property
+    def is_valid(self):
+        return self.remote_param.selected()
     @classmethod
     def lookup(cls, op, param_id):
         param = cls.get(op = op, param_id = param_id)

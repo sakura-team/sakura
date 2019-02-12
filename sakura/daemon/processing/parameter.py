@@ -39,29 +39,34 @@ class Parameter(object):
         print('is_linked_to_plug() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
-    @cache_result(2)    # do not call too often
+    def resync(self):
+        return self.recheck()
+
     def recheck(self):
+        print('recheck -- requested ' + str(self.requested_value) + ' -- value ' + str(self.value))
         # if we can now set the value requested by the user, do it
         if self.requested_value is not None and self.requested_value != self.value:
             if self.check_valid(self.requested_value):
-                self.set_value(self.requested_value, user_request=False)
+                self.set_value(self.requested_value)
                 return
         # if current value became invalid, unset it
         if not self.check_valid(self.value):
-            self.unset_value(user_request=False)
+            self.unset_value()
         # if value is not set, try to set it automatically
         if self.value is None:
             self.auto_fill()
+        return self.value
 
-    def set_value(self, value, user_request=True):
-        if user_request:
-            self.requested_value = value
+    def set_requested_value(self, value):
+        self.requested_value = value
+
+    def set_value(self, value):
         if value != self.value and self.check_valid(value):
             self.value = value
             self.on_change.notify()
 
-    def unset_value(self, user_request=True):
-        self.set_value(None, user_request=user_request)
+    def unset_value(self):
+        self.set_value(None)
 
     # override in subclass if needed.
     def check_valid(self, value):
@@ -86,7 +91,7 @@ class ComboParameter(Parameter):
         if not self.selected():
             possible = self.get_possible_values()
             if len(possible) > 0:
-                self.set_value(0, user_request = False)
+                self.set_value(0)
     def check_valid(self, value):
         if value is None:
             return True
