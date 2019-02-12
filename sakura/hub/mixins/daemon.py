@@ -31,11 +31,13 @@ class DaemonMixin:
         self.restore(**daemon_info)
 
     def on_disconnect(self):
+        # unregister api object
+        del DaemonMixin.APIS[self.name]
         # notify related objects
         for cls in self.op_classes:
             cls.on_daemon_disconnect()
-        # unregister api object
-        del DaemonMixin.APIS[self.name]
+        for ds in self.datastores:
+            ds.on_daemon_disconnect()
 
     def pack(self):
         return dict(

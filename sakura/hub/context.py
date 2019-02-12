@@ -2,6 +2,7 @@ import bottle
 from gevent.local import local
 from sakura.common.bottle import PicklableFileRequest
 from sakura.common.errors import APIRequestErrorOfflineDatastore
+from sakura.common.tools import ObservableEvent
 from sakura.hub.secrets import TemporarySecretsRegistry
 from sakura.hub.web.transfers import Transfer
 
@@ -14,6 +15,8 @@ def get_context():
 class HubContext(object):
     _instance = None
     PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
+    class global_events:
+        on_datastores_change = ObservableEvent()
     def __init__(self, db, planner):
         self.db = db
         self.planner = planner

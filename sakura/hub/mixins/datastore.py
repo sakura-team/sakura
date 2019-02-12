@@ -29,11 +29,20 @@ class DatastoreMixin(BaseMixin):
 
     @online.setter
     def online(self, value):
-        if value:   # set online
+        changed = False
+        if value and self.id not in DatastoreMixin.ONLINE_DATASTORES:
+            # set online
             DatastoreMixin.ONLINE_DATASTORES.add(self.id)
-        else:       # set offline
-            if self.id in DatastoreMixin.ONLINE_DATASTORES:
-                DatastoreMixin.ONLINE_DATASTORES.remove(self.id)
+            changed = True
+        elif not value and self.id in DatastoreMixin.ONLINE_DATASTORES:
+            # set offline
+            DatastoreMixin.ONLINE_DATASTORES.remove(self.id)
+            changed = True
+        if changed:
+            get_context().global_events.on_datastores_change.notify()
+
+    def on_daemon_disconnect(self):
+        self.online = False
 
     def describe(self):
         return "%(driver_label)s datastore at %(host)s" % dict(

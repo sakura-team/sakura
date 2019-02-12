@@ -43,6 +43,9 @@ class OperatorToHubAPI:
         if not table.readable:
             return None
         return table.remote_instance.source()
+    def subscribe_global_event(self, event_name, cb):
+        evt_manager = getattr(self.context.global_events, event_name)
+        evt_manager.subscribe(cb)
 
 class WrappedOperatorToHubAPI:
     def __init__(self, op_api, op_id):

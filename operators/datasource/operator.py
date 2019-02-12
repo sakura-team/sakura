@@ -10,7 +10,8 @@ class DatabaseSelectionParameter(ComboParameter):
     def __init__(self, label, api):
         super().__init__(label)
         self.api = api
-    @cache_result(2)    # this should be mostly constant
+    # this cannot be cached because it changes if a daemon linked
+    # to a datastore connects or disconnects
     def get_databases(self):
         return sorted(
                 self.api.list_readable_databases(),
@@ -29,7 +30,7 @@ class TableSelectionParameter(ComboParameter):
         super().__init__(label)
         self.api = api
         self.db_param = db_param
-    @cache_result(2)    # this should be mostly constant
+    @cache_result(2)    # list of tables for a db should be mostly constant
     def get_tables_of_db(self, database_id):
         return sorted(
                 self.api.list_readable_tables(database_id),
@@ -63,6 +64,7 @@ class DataSourceOperator(Operator):
         self.output_plug = self.register_output('Database table data')
         self.database_param.on_change.subscribe(self.update)
         self.table_param.on_change.subscribe(self.update)
+        self.api.subscribe_global_event('on_datastores_change', self.update)
         self.update()
 
     def update(self):
