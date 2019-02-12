@@ -1,3 +1,5 @@
+from sakura.common.errors import APIRequestError
+
 class InputPlug:
     def __init__(self, label):
         self.source_plug = None
@@ -14,7 +16,7 @@ class InputPlug:
     @property
     def source(self):
         if not self.connected():
-            raise Exception("No source: input plug is not connected!")
+            raise APIRequestError("No source: input plug is not connected or link is disabled!")
         return self.source_plug.source
     @property
     def columns(self):

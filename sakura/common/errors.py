@@ -26,5 +26,12 @@ class IOHoldException(Exception):
 class APIRemoteError(APIReturningError):
     pass
 
-class APIInvalidRequest(Exception):
+class APIInvalidRequest(APIReturningError):
+    pass
+
+class ParameterException(APIReturningError):
+    def get_issue_name(self):
+        return self.__class__.__name__  # subclass name
+
+class InputUncompatible(ParameterException):
     pass

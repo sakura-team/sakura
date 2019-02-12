@@ -1,14 +1,7 @@
 import numpy as np
-from enum import Enum
 from sakura.common.tools import ObservableEvent
 from sakura.common.cache import cache_result
-
-class ParameterException(Exception):
-    def get_issue_name(self):
-        return self.__class__.__name__  # subclass name
-
-class InputUncompatible(ParameterException):
-    pass
+from sakura.common.errors import ParameterException, InputUncompatible
 
 # Parameter implementation.
 class Parameter(object):

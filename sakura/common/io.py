@@ -1,5 +1,5 @@
 import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
-import gc, pickle, numpy as np
+import gc, pickle, builtins, numpy as np
 from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
@@ -136,8 +136,9 @@ class LocalAPIHandler(object):
                 out = (IO_TRANSFERED, res)
             except StopIteration:
                 out = (IO_STOP_ITERATION,)
-            except APIReturningError as e:
-                out = (IO_REQUEST_ERROR, e.__class__.__name__, str(e), e.data)
+            except BaseException as e:
+                data = getattr(e, 'data', {})
+                out = (IO_REQUEST_ERROR, e.__class__.__name__, str(e), data)
             # send response
             try:
                 self.protocol.dump((req_id,) + out, self.f)
@@ -245,7 +246,9 @@ class AttrCallAggregator(object):
             raise StopIteration
         if res[0] == IO_REQUEST_ERROR:
             cls_name, msg, data = res[1:]
-            cls = getattr(errors, cls_name)
+            cls = getattr(errors, cls_name, None)
+            if cls is None: cls = getattr(builtins, cls_name, None)
+            if cls is None: cls = APIReturningError
             exc = cls(msg)
             exc.data = data
             self.top_level_api.on_remote_exception.notify(exc)
@@ -282,16 +285,19 @@ class AttrCallRunner(object):
             obj = self
         else:
             obj = self.handler
-        for attr in path:
-            if isinstance(attr, str):
-                obj = getattr(obj, attr)
-            else:
-                obj = obj[attr[0]]  # getitem
-        if req_type == IO_ATTR:
-            return obj
-        elif req_type == IO_FUNC:
-            args, kwargs = req[2:4]
-            return obj(*args, **kwargs)
+        try:
+            for attr in path:
+                if isinstance(attr, str):
+                    obj = getattr(obj, attr)
+                else:
+                    obj = obj[attr[0]]  # getitem
+            if req_type == IO_ATTR:
+                return obj
+            elif req_type == IO_FUNC:
+                args, kwargs = req[2:4]
+                return obj(*args, **kwargs)
+        except AttributeError as e:
+            raise APIInvalidRequest(str(e))
     def __delete_held__(self, held_id):
         del self.__held_objects__[held_id]
 

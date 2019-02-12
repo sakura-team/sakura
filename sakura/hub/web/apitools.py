@@ -1,3 +1,6 @@
+import pony.orm
+from sakura.common.errors import APIInvalidRequest
+
 class APILevel:
     def __init__(self):
         self._type = 'level'
@@ -67,7 +70,10 @@ class APIStructureBuilder:
     def patch_function(self, instance, instance_api_table_path, orig_function):
         def patched_function(*args, **kwargs):
             args = [ api_table._item for api_table in instance_api_table_path ] + list(args)
-            return orig_function(instance, *args, **kwargs)
+            try:
+                return orig_function(instance, *args, **kwargs)
+            except pony.orm.ObjectNotFound as e:
+                raise APIInvalidRequest('No such object: ' + str(e))
         return patched_function
     def describe_entries(self, api_obj = None):
         if api_obj is None:

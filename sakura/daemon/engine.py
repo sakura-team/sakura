@@ -1,6 +1,6 @@
 import sys, sakura.daemon.conf as conf
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import InputUncompatible
+from sakura.common.errors import InputUncompatible
 from sakura.daemon.loading import load_operator_classes, \
                                 load_datastores
 
