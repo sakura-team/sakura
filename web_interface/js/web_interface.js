@@ -362,7 +362,7 @@ function showDiv(event, dir, div_id) {
     idDir = idDir.toLowerCase();
     if (dirs.length == 1)
         idDir += "_div";
-
+    console.log(idDir);
     document.getElementById(idDir).style.display='inline';
 
 
@@ -417,9 +417,12 @@ function showDiv(event, dir, div_id) {
             web_interface_current_object_type = 'datas';
         else if (dir.indexOf("Dataflows") != -1)
             web_interface_current_object_type = 'dataflows';
+        else if (dir.indexOf("Operators") != -1)
+            web_interface_current_object_type = 'operators';
 
         var obj = web_interface_current_object_type;
 
+        console.log(obj);
         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
         var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
         var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);

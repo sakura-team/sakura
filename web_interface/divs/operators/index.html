@@ -1,20 +1,13 @@
 <!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
-<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
+<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...-->
 
-<div style="display:none;" id="idDivOperators" class="classMainDiv">
-    
-    <div style="float:right;">
-        <img width="80px" height="80px" src="media/Octicons-gear.svg.png" alt="CC-BY-3.0 Wikipedia Gear"></img>
-        <br />
-        <br />
-        <button type="button" onclick="showDiv(event,'Operators/tmpOperator/Work');" class="btn btn-primary">Try it</button>
-    </div>
-    
+<!--
+<div style="display:none;" id="web_interface_operators_div" class="classMainDiv">
+
     <h2>Operators</h2>
     Process Data, Compute Indicators, Visualize.
-    <br />
-    <br />
-    
+
+
     <div class="row">
         <div class="col-md-10">
             <div class="panel panel-default panel-table">
@@ -33,7 +26,7 @@
                             <tr>
                                 <td>
                                     <a href="javascript:listRequestStub('idTableOperatorsToFullfill',10,'Operators/tmpOperator',false)" class="executeOnShow">
-                                    Looking for operators ... 
+                                    Looking for operators ...
                                     <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
                                     </a>
                                 </td>
@@ -56,6 +49,70 @@
                             </nav>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+
+<!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
+<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...-->
+
+<div style="display:none; width: 100%;" id="web_interface_operators_div" class="classMainDiv">
+
+    <h2>Operators</h2>
+    Process Data, Compute Indicators, Visualize.<br><br>
+
+    <div class="row">
+        <div>
+            <div class="panel panel-default panel-table">
+                <div class="panel-heading">
+                    <div class="row">
+                        <form class="form-search form-inline col-md-offset-6">
+                            <input id="web_interface_operators_inputSearch" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Operators');" />
+                        </form>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <table id="web_interface_operators_table_toFullfill" class="table table-striped table-bordered table-list" style="margin-bottom: 2px;">
+                        <thead>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <a href="javascript:listRequestStub('web_interface_operators_table_toFullfill',10,'Operators/tmpOperator',false)" class="executeOnShow">
+                                        Looking for operators ...
+                                        <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="pull-left" id="web_interface_operators_creation_button">
+                        &nbsp;
+                        <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#create_operator_modal" onclick="operators_update_creation_modal();">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASKING MODAL -->
+    <div id="operators_asking_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="operators_asking_header" class="panel-heading">
+                    <h3>Alert Title</h3>
+                </div>
+                <div id="operators_asking_body" class="modal-body">
+                    <p> Alert Text</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="operators_asking_button_yes"type="button" class="btn btn btn-sm" data-dismiss="modal">Yes</button>
+                    <button id="operators_asking_button_no" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">No</button>
                 </div>
             </div>
         </div>
