@@ -1,0 +1,51 @@
+<div style="display:none;" id="web_interface_operators_tmp_meta" class="classMainDiv">
+
+    <br>
+
+    <!--Information-->
+    <div class="panel panel-default">
+        <div class="panel-heading"><h4 style="margin-bottom: 0px; margin-top: 0px;">General</h4></div>
+        <div class="panel-body" id="web_interface_operators_metadata1"></div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+          <table>
+              <tr>
+                  <td>
+                      <h4 style="margin-bottom: 0px; margin-top: 0px; cursor: pointer;" data-toggle="collapse" href="#web_interface_operators_collapse" onclick="web_interface_access_collapse();">
+                          Access
+                      </h4>
+                  <td id="web_interface_operators_collapse_icon_cell">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label style="cursor: pointer;" class="glyphicon glyphicon-chevron-down" data-toggle="collapse" href="#web_interface_operators_collapse" onclick="web_interface_access_collapse();"/>
+          </table>
+        </div>
+        <div class="panel-body collapse" id="web_interface_operators_collapse">
+
+            <div class="row" id="web_interface_operators_metadata2">
+            </div>
+
+            <div class="panel panel-default" style="margin-top: 10px;">
+                  <div class="panel-heading"  style="padding-top: 3px; padding-bottom: 3px;">
+                      <h4 style="margin-top: 0px; margin-bottom: 0px;">Collaborators</h4>
+                  </div>
+                  <div class="panel-body" id="web_interface_operators_collaborators">
+                      <table width=100% style='margin-bottom: 0px;'>
+                          <tbody id="web_interface_operators_collaborators_table_body">
+                          </tbody>
+                      </table>
+                      <div id="web_interface_operators_collaborators_select_div" class="input-group input-group-sm" style="margin-top: 10px;">
+                          <select data-size="5" id="web_interface_operators_adding_collaborators_select" multiple class="selectpicker form-control" data-live-search="true" title="Please select one or several logins ...">
+                          </select>
+                          <span class="input-group-addon" style="cursor: pointer;" onclick="cleaning_collaborators();"><span class="glyphicon glyphicon-trash"></span></span>
+                          <span class="input-group-addon" style="cursor: pointer;" onclick="adding_collaborators();">Add Collaborators</span>
+                      </div>
+                  </div>
+            </div>
+        </div>
+
+    </div>
+
+    <textarea id='web_interface_operators_markdownarea'>
+    </textarea>
+</div>

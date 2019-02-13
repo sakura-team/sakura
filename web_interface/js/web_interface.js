@@ -60,11 +60,11 @@ function recursiveReplace(node, init_text, new_text) {
 
 function current_remote_api_object() {
     var api_objects = sakura.apis.hub.databases;
-
     if (web_interface_current_object_type == 'dataflows')
         api_objects = sakura.apis.hub.dataflows;
-
-    return api_objects[web_interface_current_id];
+    else if (web_interface_current_object_type == 'operators')
+        api_objects = sakura.apis.hub.op_classes;
+    return api_objects[web_interface_current_id]
 }
 
 function fill_work() {
@@ -82,7 +82,6 @@ function fill_work() {
 
 function fill_metadata() {
     current_remote_api_object().info().then(function(info) {
-
         web_interface_current_object_info = info;
 
         //General
@@ -225,8 +224,10 @@ function fill_metadata() {
 
         //Large Description
         var l_desc = '<span style="color:grey">*No description !';
-        if (info.large_desc)
+
+        if (info.large_desc) {
             l_desc = info.large_desc;
+        }
         else {
             if (l_desc, info.grant_level == 'own' || info.grant_level == 'write')
                 l_desc += ' Edit one by clicking on the eye';
@@ -265,7 +266,7 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
                 name: "preview",
                 action: function () {
                     if (!simplemde.isPreviewActive()) {
-                        web_interface_save_large_description(datatype, web_interface_current_id);
+                        web_interface_save_large_description(web_interface_current_id);
                     }
                     simplemde.togglePreview();
                   },
@@ -278,7 +279,7 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
               {
                 name: "save",
                 action: function () {
-                    web_interface_save_large_description(datatype, web_interface_current_id);
+                    web_interface_save_large_description(web_interface_current_id);
                   },
                 className: "glyphicon glyphicon-floppy-disk",
                 title: "Save description",
@@ -287,7 +288,6 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
 }
 
 function web_interface_create_large_description_area(datatype, area_id, description, toolbar) {
-
     //Erasing previous one
     if (simplemde)
         simplemde.toTextArea();
@@ -301,14 +301,13 @@ function web_interface_create_large_description_area(datatype, area_id, descript
     simplemde.togglePreview();
 }
 
-function web_interface_save_large_description(data_type, id) {
+function web_interface_save_large_description(id) {
     current_remote_api_object().update({'large_desc': simplemde.value()});
 }
 
 
 
 function showDiv(event, dir, div_id) {
-
     //set url
     if (event instanceof PopStateEvent) {
         // rien dans l'history
@@ -362,7 +361,6 @@ function showDiv(event, dir, div_id) {
     idDir = idDir.toLowerCase();
     if (dirs.length == 1)
         idDir += "_div";
-    console.log(idDir);
     document.getElementById(idDir).style.display='inline';
 
 
@@ -422,7 +420,6 @@ function showDiv(event, dir, div_id) {
 
         var obj = web_interface_current_object_type;
 
-        console.log(obj);
         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
         var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
         var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
@@ -447,6 +444,10 @@ function showDiv(event, dir, div_id) {
             if (web_interface_current_object_type == 'dataflows') {
                 n1 = 'Dataflows';
                 n2 = 'Dataflow';
+            }
+            else if (web_interface_current_object_type == 'operators') {
+                n1 = 'Operators';
+                n2 = 'Operator';
             }
             $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
             $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
@@ -479,6 +480,8 @@ function showDiv(event, dir, div_id) {
                 url = "/modules/datasets/index.html?database_id=";
             else if (aos.id == 'iframe_workflow')
                 url = "/modules/workflow/index.html?dataflow_id=";
+            else if (aos.id == 'iframe_operators')
+                url = "TODO!!!!";
             url += web_interface_current_id;
             aos.src = url;
         }
