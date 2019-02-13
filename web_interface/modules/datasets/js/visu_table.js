@@ -2,12 +2,13 @@
 //October, 10th, 2017
 
 
-var nb_rows     = 15; //temporary, should be put in a dom element. Soon !
+var nb_rows     = 50; //temporary, should be put in a dom element. Soon !
 var current_dataset_id = -1
 
 function datasets_visu_dataset(dataset_id) {
     var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
     current_dataset_id = dataset_id;
+
     //HEADER
     var header_txt  = "<h3>"+dataset.name+"</h3>";
     if (dataset.short_desc)
@@ -50,7 +51,6 @@ function datasets_visu_dataset(dataset_id) {
 
 
 function datasets_visu_table_fill_rows(body, rows, row_start, dataset) {
-
     var cols = dataset.columns;
     rows.forEach( function(row, r_index) {
         var new_b_row = $(body[0].insertRow());

@@ -342,7 +342,7 @@ function datasets_check_date_format(date, format_div, format_input, result_div, 
 
 
 function this_col_is_a_date(col) {
-    if (col[2].indexOf('timestamp') === -1)
+    if (col[1] != 'date')
         return false;
     return true;
 }
