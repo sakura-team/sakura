@@ -16,6 +16,7 @@ MAX_HIGH_QUALITY_DELAY = 2.0
 class OpenglAppBase:
     def __init__ (self, handler):
         self.handler = handler
+        self.handler.app = self
         self.width   = 0
         self.height  = 0
         self.label   = getattr(handler, "label", 'Unnamed 3D App')
@@ -55,8 +56,8 @@ class OpenglAppBase:
         except Empty:
             return None
 
-    def push_event(self, evt):
-        self.event_queue.put(evt)
+    def push_event(self, evt, *args, **kwargs):
+        self.event_queue.put((evt, args, kwargs))
 
     def on_resize(self, w, h):
         w, h = int(w), int(h)

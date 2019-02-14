@@ -3,7 +3,10 @@
 var nb_trajectories = 0
 
 function init() {
-    sakura.apis.operator.attach_opengl_app(0, 'ogl-img');
+    opengl_app = sakura.apis.operator.attach_opengl_app(0, 'ogl-img');
+    opengl_app.subscribe_event('hovered_gps_point', function(evt, lng, lat) {
+        console.log('**************', evt, lng, lat);
+    });
 
     //possible map layers
     sakura.apis.operator.fire_event("get_map_layers", {}).then( function(layers) {

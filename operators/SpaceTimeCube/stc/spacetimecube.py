@@ -666,6 +666,7 @@ class SpaceTimeCube:
                     lines_vertices = self.data.compute_line_vertices(pt)
                     quad_vertices = self.data.compute_quad_vertices(pt)
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
+                    self.app.push_event('hovered_gps_point', lon, lat)
 
             self.lines_vertices = copy.copy(lines_vertices)
             self.quad_vertices = copy.copy(quad_vertices)
