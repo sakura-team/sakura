@@ -68,9 +68,6 @@ class DaemonMixin:
         for op_cls in self.op_classes:
             for op in op_cls.op_instances:
                 op.instanciate_on_daemon()
-                # restore params
-                for param in op.params:
-                    param.restore()
         # re-instanciate links when possible
         for op_cls in self.op_classes:
             for op in op_cls.op_instances:

@@ -1,16 +1,17 @@
 from sakura.common.errors import APIRequestError
+from sakura.common.tools import ObservableEvent
 
 class InputPlug:
     def __init__(self, label):
         self.source_plug = None
         self.label = label
-        self.on_change = lambda: None
+        self.on_change = ObservableEvent()
     def connect(self, output_plug):
         self.source_plug = output_plug
-        self.on_change()
+        self.on_change.notify()
     def disconnect(self):
         self.source_plug = None
-        self.on_change()
+        self.on_change.notify()
     def connected(self):
         return self.source_plug != None
     @property

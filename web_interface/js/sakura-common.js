@@ -20,8 +20,8 @@ sakura = {
 // debugging
 // ---------
 // uncomment / comment to activate debug
-//sakura.internal.debug_time = 0; sakura.internal.debug = function (s) { let now = new Date().getTime(); console.log("" + ((sakura.internal.debug_time==0)?" ":(now-sakura.internal.debug_time)) + " -- " + s); sakura.internal.debug_time = now; };
-sakura.internal.debug = function (s) { };
+sakura.internal.debug_time = 0; sakura.internal.debug = function (s) { let now = new Date().getTime(); console.log("" + ((sakura.internal.debug_time==0)?" ":(now-sakura.internal.debug_time)) + " -- " + s); sakura.internal.debug_time = now; };
+//sakura.internal.debug = function (s) { };
 
 sakura.internal.debug('Loading sakura-common.js');
 

@@ -8,12 +8,22 @@ class Parameter(object):
     def __init__(self, gui_type, label):
         self.gui_type = gui_type
         self.label = label
-        self.value = None
         self.on_change = ObservableEvent()
+        self.on_auto_fill = ObservableEvent()
         self.requested_value = None
+        self.value = None
+
+    def get_value(self):
+        return self.value
 
     def selected(self):
         return self.value != None
+
+    def unset_value(self):
+        old_val = self.value
+        self.value = None
+        if old_val != None:
+            self.on_change.notify()
 
     def pack_base(self):
         self.recheck()
@@ -22,7 +32,7 @@ class Parameter(object):
             label = self.label
         )
         if self.selected():
-            info.update(value = self.get_value_serializable())
+            info.update(value = self.get_gui_value())
         else:
             info.update(value = None)
         return info
@@ -39,42 +49,57 @@ class Parameter(object):
         print('is_linked_to_plug() must be implemented in Parameter subclasses.')
         raise NotImplementedError
 
-    def resync(self):
-        return self.recheck()
+    def check_input_compatible(self):
+        print('check_input_compatible() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
+
+    def check_valid(self, value):
+        print('check_valid() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
+
+    def get_gui_value(self):
+        print('get_gui_value() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
+
+    def decode_gui_value(self, gui_value):
+        print('decode_gui_value() must be implemented in Parameter subclasses.')
+        raise NotImplementedError
 
     def recheck(self):
-        print('recheck -- requested ' + str(self.requested_value) + ' -- value ' + str(self.value))
         # if we can now set the value requested by the user, do it
         if self.requested_value is not None and self.requested_value != self.value:
             if self.check_valid(self.requested_value):
-                self.set_value(self.requested_value)
-                return
+                self.value = self.requested_value
+                print(self.__class__.__name__ + ' recheck -- setting value ' + str(self.value) + ' because of requested value')
+                self.on_change.notify()
+                return self.value
         # if current value became invalid, unset it
+        changed, auto_filled = False, False
         if not self.check_valid(self.value):
-            self.unset_value()
-        # if value is not set, try to set it automatically
-        if self.value is None:
-            self.auto_fill()
+            print(self.__class__.__name__ + ' recheck -- discarding value ' + str(self.value) + ' (invalid)')
+            self.value = None
+            changed = True
+        # if value is not set and no value was requested yet, try to set it automatically
+        if self.value is None and self.requested_value is None:
+            print(self.__class__.__name__ + ' recheck -- calling auto-fill')
+            if self.auto_fill():
+                changed, auto_filled = True, True
+        print(self.__class__.__name__ + ' recheck -- returning value ' + str(self.value))
+        if changed:
+            print(self.__class__.__name__ + ' notify change!')
+            self.on_change.notify()
+        if auto_filled:
+            print(self.__class__.__name__ + ' notify auto-fill!')
+            self.on_auto_fill.notify()
         return self.value
 
     def set_requested_value(self, value):
+        print(self.__class__.__name__ + ' set_requested_value ' + str(value))
         self.requested_value = value
 
-    def set_value(self, value):
-        if value != self.value and self.check_valid(value):
-            self.value = value
-            self.on_change.notify()
-
-    def unset_value(self):
-        self.set_value(None)
-
-    # override in subclass if needed.
-    def check_valid(self, value):
-        return True
-
-    # override in subclass if needed.
-    def get_value_serializable(self):
-        return self.value
+    def set_requested_gui_value(self, gui_value):
+        print(self.__class__.__name__ + ' set_requested_gui_value ' + str(gui_value))
+        self.requested_value = self.decode_gui_value(gui_value)
 
 class ComboParameter(Parameter):
     def __init__(self, label):
@@ -82,27 +107,41 @@ class ComboParameter(Parameter):
     def pack(self):
         info = self.pack_base()
         try:
-            possible_values = self.get_possible_values()
-            info.update(possible_values = possible_values)
+            info.update(possible_values = self.get_possible_labels())
         except ParameterException as e:
             info.update(issue = e.get_issue_name())
         return info
     def auto_fill(self):
-        if not self.selected():
-            possible = self.get_possible_values()
-            if len(possible) > 0:
-                self.set_value(0)
+        for value in self.get_possible_values():
+            self.value = value   # take first value if any
+            return True
+        return False
+    def get_possible_values(self):
+        return (value for value, label in self.get_possible_items())
+    def get_possible_labels(self):
+        return (label for value, label in self.get_possible_items())
     def check_valid(self, value):
         if value is None:
             return True
-        if value < len(self.get_possible_values()):
+        if value in self.get_possible_values():
             return True
-        # value may have became invalid
+        # value may have become invalid
         # (e.g. the value of another parameter changed the set of possible values)
         return False
-    def get_possible_values(self):
-        print('get_possible_values() must be implemented in ComboParameter subclasses.')
+    def get_possible_items(self):
+        print('get_possible_items() must be implemented in ComboParameter subclasses.')
         raise NotImplementedError
+    def get_gui_value(self):
+        # gui value is the index in the combo
+        if self.value is None:
+            return None
+        for i, val in enumerate(self.get_possible_values()):
+            if val == self.value:
+                return i
+    def decode_gui_value(self, gui_value):
+        for i, val in enumerate(self.get_possible_values()):
+            if i == gui_value:
+                return val
 
 class ColumnSelectionParameter(ComboParameter):
     def __init__(self, label, plug, condition):
@@ -111,6 +150,10 @@ class ColumnSelectionParameter(ComboParameter):
         self.condition = condition
     def is_linked_to_plug(self, plug):
         return self.plug == plug
+    def check_input_compatible(self):
+        for col_info in self.matching_columns():
+            return  # OK, we have at least one value
+        # otherwise self.matching_columns() will have raised an exception.
     def matching_columns(self):
         if not self.plug.connected():
             return
@@ -118,20 +161,21 @@ class ColumnSelectionParameter(ComboParameter):
         for col_idx, column_info in enumerate(self.plug.get_columns_info()):
             if self.condition(*column_info):
                 input_plug_ok = True
-                yield (col_idx,) + column_info
+                yield (col_idx,) + column_info + (str(column_info),)
         if not input_plug_ok:
             raise InputUncompatible()
-    def get_possible_values(self):
-        return list('%s (of %s)' % (col_label, self.plug.label) \
-                    for col_idx, col_label, col_type, col_tags in \
-                        self.matching_columns())
+    def get_possible_items(self):
+        for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
+            value = col_info_str
+            label = '%s (of %s)' % (col_label, self.plug.label)
+            yield value, label
     @property
     def col_index(self):
         if self.value is None:
             return None
-        # self.value is the index of the column in the possible values
-        # each possible value is a tuple whose first item is the col index
-        return tuple(self.matching_columns())[self.value][0]
+        for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
+            if col_info_str == self.value:
+                return col_idx
 
 class TagBasedColumnSelection(ColumnSelectionParameter):
     def __init__(self, label, plug, tag):

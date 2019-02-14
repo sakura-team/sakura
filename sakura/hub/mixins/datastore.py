@@ -39,6 +39,7 @@ class DatastoreMixin(BaseMixin):
             DatastoreMixin.ONLINE_DATASTORES.remove(self.id)
             changed = True
         if changed:
+            print("datastores change")
             get_context().global_events.on_datastores_change.notify()
 
     def on_daemon_disconnect(self):

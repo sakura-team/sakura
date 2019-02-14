@@ -1,9 +1,11 @@
 from sakura.daemon.processing.source import ComputedSource
+from sakura.common.tools import ObservableEvent
 
 class OutputPlug:
     def __init__(self, label=None, source=None):
         self._label = label
         self._source = source
+        self.on_change = ObservableEvent()
     @property
     def source(self):
         if self._source is None:
@@ -20,6 +22,7 @@ class OutputPlug:
     @source.setter
     def source(self, val):
         self._source = val
+        self.on_change.notify()
     def is_ready(self):
         return self._source is not None
     def pack(self):

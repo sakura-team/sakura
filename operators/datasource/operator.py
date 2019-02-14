@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import itertools, numpy as np, operator
-from sakura.common.cache import cache_result
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import ComboParameter, ParameterException
 from sakura.daemon.processing.source import SQLTableSource
@@ -10,44 +9,35 @@ class DatabaseSelectionParameter(ComboParameter):
     def __init__(self, label, api):
         super().__init__(label)
         self.api = api
-    # this cannot be cached because it changes if a daemon linked
-    # to a datastore connects or disconnects
-    def get_databases(self):
-        return sorted(
-                self.api.list_readable_databases(),
-                key = lambda db: (db['name'], db['database_id']))
-    def get_possible_values(self):
-        return tuple(db['name'] for db in self.get_databases())
+    def get_possible_items(self):
+        # combo label is database name
+        # combo identifier value is database_id
+        # combo ordering is based on (label, database_id)
+        return sorted([(db['database_id'], db['name']) for db in \
+                                self.api.list_readable_databases()],
+                      key = lambda db_tuple: db_tuple[::-1])
     @property
     def selected_database_id(self):
-        self.recheck()
-        if self.value is None:
-            return None
-        return self.get_databases()[self.value]['database_id']
+        return self.value
 
 class TableSelectionParameter(ComboParameter):
     def __init__(self, label, api, db_param):
         super().__init__(label)
         self.api = api
         self.db_param = db_param
-    @cache_result(2)    # list of tables for a db should be mostly constant
-    def get_tables_of_db(self, database_id):
-        return sorted(
-                self.api.list_readable_tables(database_id),
-                key = lambda t: (t['name'], t['table_id']))
-    def get_tables(self):
+    def get_possible_items(self):
         database_id = self.db_param.selected_database_id
         if database_id is None:
             return ()
-        return self.get_tables_of_db(database_id)
-    def get_possible_values(self):
-        return tuple(tbl['name'] for tbl in self.get_tables())
+        # combo label is table name
+        # combo identifier value is table_id
+        # combo ordering is based on (label, table_id)
+        return sorted([(tbl['table_id'], tbl['name']) for tbl in \
+                                self.api.list_readable_tables(database_id)],
+                      key = lambda tbl_tuple: tbl_tuple[::-1])
     @property
     def selected_table_id(self):
-        self.recheck()
-        if self.value is None:
-            return None
-        return self.get_tables()[self.value]['table_id']
+        return self.value
 
 class DataSourceOperator(Operator):
     NAME = "DataSource"
@@ -62,13 +52,22 @@ class DataSourceOperator(Operator):
                 TableSelectionParameter('Table', self.api, self.database_param))
         self.table_id = None
         self.output_plug = self.register_output('Database table data')
-        self.database_param.on_change.subscribe(self.update)
-        self.table_param.on_change.subscribe(self.update)
-        self.api.subscribe_global_event('on_datastores_change', self.update)
-        self.update()
+        self.api.subscribe_global_event('on_datastores_change', self.on_ds_change)
+        self.database_param.on_change.subscribe(self.on_db_change)
+        self.table_param.on_change.subscribe(self.on_tbl_change)
 
-    def update(self):
-        self.auto_fill_parameters()
+    def on_ds_change(self):
+        print('ds: on_ds_change')
+        self.database_param.recheck()
+
+    def on_db_change(self):
+        print('ds: on_db_change')
+        self.table_param.recheck()
+
+    def on_tbl_change(self):
+        print('ds: on_tbl_change')
         table_id = self.table_param.selected_table_id
-        if table_id is not None:
+        if table_id is None:
+            self.output_plug.source = None
+        else:
             self.output_plug.source = self.api.get_table_source(table_id)

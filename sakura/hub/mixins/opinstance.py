@@ -35,13 +35,13 @@ class OpInstanceMixin:
         if self.instanciated:
            res.update(**self.remote_instance.pack())
         return res
-    def resync_params(self):
-        # resync params in order (according to param_id)
+    def recheck_params(self):
+        # recheck params in order (according to param_id)
         for param in sorted(self.params, key=lambda param: param.param_id):
-            param.resync()
+            param.recheck()
     def instanciate_on_daemon(self):
         self.daemon_api.create_operator_instance(self.op_class.name, self.id)
-        # resync number of parameters with what the daemon reports (possible source code change)
+        # recheck number of parameters with what the daemon reports (possible source code change)
         local_ids = set(param.param_id for param in self.params)
         remote_ids = set(range(self.remote_instance.get_num_parameters()))
         for param in self.params:
@@ -49,8 +49,10 @@ class OpInstanceMixin:
                 param.delete()
         context = get_context()
         for param_id in (remote_ids - local_ids):
-            context.op_params(op = self, param_id = param_id) # instanciate in local db
+            param = context.op_params(op = self, param_id = param_id) # instanciate in local db
             context.db.commit()
+        for param in self.params:
+            param.setup()
         # we have it instanciated
         self.instanciated = True
     def delete_on_daemon(self):
@@ -85,7 +87,7 @@ class OpInstanceMixin:
         # create remotely
         op.instanciate_on_daemon()
         # auto-set params when possible
-        op.resync_params()
+        op.recheck_params()
         return op
     def delete_instance(self):
         # the whole down-tree will be affected
@@ -125,7 +127,7 @@ class OpInstanceMixin:
         # if we just got ready, recurse with operators
         # on downlinks.
         if altered or len(self.uplinks) == 0:
-            self.resync_params()
+            self.recheck_params()
             if self.ready():
                 for link in self.downlinks:
                     link.dst_op.restore_links()

@@ -2,20 +2,28 @@ class OpParamMixin:
     @property
     def remote_param(self):
         return self.op.remote_instance.parameters[self.param_id]
-    def restore(self):
+    def setup(self):
+        self.remote_param.on_auto_fill.subscribe(self.retrieve_auto_filled)
         if self.value is not None:
             self.remote_param.set_requested_value(self.value)
-        self.resync()
-    def set_value(self, value):
-        # on remote instance
-        self.remote_param.set_requested_value(value)
-        self.remote_param.resync()
-        # on local db
-        self.value = value
-    def resync(self):
-        value = self.remote_param.resync()
-        if self.value is None and value is not None:
-            self.value = value
+            self.remote_param.recheck()
+        else:
+            # the parameter may have auto-selected a default value
+            # before we subscribed to its on_auto_fill event.
+            self.retrieve_auto_filled()
+    def set_value(self, gui_value):
+        self.remote_param.set_requested_gui_value(gui_value)
+        self.value = self.remote_param.recheck()
+    def retrieve_auto_filled(self):
+        if self.value is None:
+            value = self.remote_param.get_value()
+            if value is not None:
+                self.value = value
+                # the parameter auto-selected a default value,
+                # record it to be able to restore it later
+                self.remote_param.set_requested_value(self.value)
+    def recheck(self):
+        return self.remote_param.recheck()
     @property
     def is_valid(self):
         return self.remote_param.selected()
