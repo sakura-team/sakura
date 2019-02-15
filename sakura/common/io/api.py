@@ -1,5 +1,4 @@
-import collections, itertools, io, sys, contextlib, traceback, builtins, numbers
-import gc, pickle, builtins, numpy as np
+import collections, itertools, io, sys, traceback, builtins
 from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
@@ -7,76 +6,11 @@ from sakura.common.tools import monitored, ObservableEvent
 from sakura.common.errors import APIReturningError, APIRemoteError, \
                                  IOHoldException, APIInvalidRequest
 from sakura.common import errors
-
-DEBUG_LEVEL = 0   # do not print messages exchanged
-#DEBUG_LEVEL = 1   # print requests and results, truncate if too verbose
-#DEBUG_LEVEL = 2   # print requests and results (slowest mode)
-
-IO_FUNC = 0
-IO_ATTR = 1
-
-IO_TRANSFERED = 0
-IO_HELD = 1
-IO_REQUEST_ERROR = 2
-IO_STOP_ITERATION = 3
-
-def print_debug(*args):
-    if DEBUG_LEVEL == 0:
-        return  # do nothing
-    OUT = io.StringIO()
-    print(*args, file=OUT)
-    if DEBUG_LEVEL == 1 and OUT.tell() > 110:
-        OUT.seek(110)
-        OUT.write('...\n')
-        OUT.truncate()
-    sys.stdout.write(OUT.getvalue())
-
-class HeldObjectsStore:
-    instance = None
-    @staticmethod
-    def get():
-        if HeldObjectsStore.instance is None:
-            HeldObjectsStore.instance = HeldObjectsStore()
-        return HeldObjectsStore.instance
-    def __init__(self):
-        self.__objects__ = {}
-        self.__held_ids__ = itertools.count()
-    def hold(self, obj):
-        # hold obj locally and return its id.
-        print_debug('held:', obj)
-        held_id = self.__held_ids__.__next__()
-        self.__objects__[held_id] = obj
-        return held_id
-    def __getitem__(self, held_id):
-        return self.__objects__[held_id]
-    def __delitem__(self, held_id):
-        del self.__objects__[held_id]
-        gc.collect()
-
-# obtain a serializable description of an object
-def pack(obj):
-    # some classes can pass unchanged
-    if isinstance(obj, str) or isinstance(obj, bytes) or \
-            isinstance(obj, np.ndarray):
-        return obj
-    # with other objects, try to be smart
-    if isinstance(obj, dict):
-        return { k: pack(v) for k, v in obj.items() }
-    elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
-        return tuple(pack(o) for o in obj.select())
-    elif hasattr(obj, 'pack'):
-        return pack(obj.pack())
-    elif hasattr(obj, '_asdict'):
-        return pack(obj._asdict())
-    elif isinstance(obj, list) or isinstance(obj, tuple) or \
-                hasattr(obj, '__iter__'):
-        return tuple(pack(o) for o in obj)
-    # object is probably a native type
-    return obj
-
-@contextlib.contextmanager
-def void_context_manager():
-    yield
+from sakura.common.io.debug import print_debug
+from sakura.common.io.held import HeldObjectsStore
+from sakura.common.io.tools import void_context_manager
+from sakura.common.io.const import IO_FUNC, IO_ATTR, \
+            IO_TRANSFERED, IO_HELD, IO_REQUEST_ERROR, IO_STOP_ITERATION
 
 class LocalAPIHandler(object):
     def __init__(self, f, protocol, local_api,
@@ -193,8 +127,6 @@ class LocalAPIHandler(object):
 # If you want to make a specific attribute accessible without a function
 # call, prepend a '_' to its name: for example, api_handler.my._attr
 # will be recognised as a remote attribute and handled correctly.
-
-void_result_interpreter = lambda x: x
 
 class AttrCallAggregator(object):
     def __init__(self, top_level_api, path = (),
@@ -349,21 +281,3 @@ class RemoteAPIForwarder(AttrCallAggregator):
     def loop(self):
         while self.receive():
             pass
-
-IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype) + \
-                   tuple(getattr(builtins, t) for t in ( \
-                        'bytearray', 'bytes', 'dict', 'frozenset', 'list',
-                        'set', 'str', 'tuple', 'BaseException', 'type'))
-
-class PickleLocalAPIProtocol:
-    @staticmethod
-    def load(f):
-        return pickle.load(f)
-    @staticmethod
-    def dump(res_info, f):
-        if res_info[1] == IO_TRANSFERED and \
-                not isinstance(res_info[2], IO_TRANSFERABLES):
-            # res probably should not be serialized,
-            # hold it locally.
-            raise IOHoldException
-        return pickle.dump(res_info, f)
