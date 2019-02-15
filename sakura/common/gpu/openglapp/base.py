@@ -33,7 +33,10 @@ class OpenglAppBase:
         self.event_queue = Queue()
 
     def busy_display_loop(self):
-        return not self.change_queue.empty()
+        if SAKURA_DISPLAY_STREAMING:
+            return not self.change_queue.empty()
+        else:
+            return False
 
     def plan_periodic_task(self, callback, period):
         def task_loop():
