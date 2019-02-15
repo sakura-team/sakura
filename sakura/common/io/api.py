@@ -1,4 +1,5 @@
 import collections, itertools, io, sys, traceback, builtins
+import gevent.pool
 from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
@@ -14,31 +15,22 @@ from sakura.common.io.const import IO_FUNC, IO_ATTR, \
 
 class LocalAPIHandler(object):
     def __init__(self, f, protocol, local_api,
-                greenlets_pool = None,
                 session_wrapper = void_context_manager):
         self.f = f
         self.protocol = protocol
         self.api_runner = AttrCallRunner(local_api)
         self.session_wrapper = session_wrapper
-        if greenlets_pool == None:
-            self.pool = None
-            self.handle_request = self.handle_request_base
-        else:
-            self.pool = greenlets_pool
-            self.handle_request = self.handle_request_pool
+        self.pool = gevent.pool.Group()
+        # redirect exceptions of all sub-greenlets to the same queue
+        self.do_loop = monitored(self.do_loop)
+        self.handle_request_base = monitored(
+                self.handle_request_base, self.do_loop.out_queue)
     def loop(self):
         try:
-            if self.pool is None:
-                self.do_loop()
-            else:
-                # redirect exceptions of all sub-greenlets to the same queue
-                self.do_loop = monitored(self.do_loop)
-                self.handle_request_base = monitored(
-                        self.handle_request_base, self.do_loop.out_queue)
-                # start
-                self.pool.spawn(self.do_loop)
-                # wait for an exception
-                self.do_loop.catch_issues()
+            # start
+            self.pool.spawn(self.do_loop)
+            # wait for an exception
+            self.do_loop.catch_issues()
         except (EOFError, ConnectionResetError):
             return  # leave the loop
     def do_loop(self):
@@ -60,7 +52,7 @@ class LocalAPIHandler(object):
             print('malformed request? Got exception:')
             traceback.print_exc()
             return False
-        self.handle_request(req_id, req)
+        self.pool.spawn(self.handle_request_base, req_id, req)
         return True
     def handle_request_base(self, req_id, req):
         with self.session_wrapper():
@@ -92,8 +84,6 @@ class LocalAPIHandler(object):
                 sys.last_traceback = None   # let garbage collector work
             except BaseException as e:
                 print('could not send response:', e)
-    def handle_request_pool(self, req_id, req):
-        self.pool.spawn(self.handle_request_base, req_id, req)
 
 # The following pair of classes allows to pass API calls efficiently
 # over a network socket.

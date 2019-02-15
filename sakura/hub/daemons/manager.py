@@ -1,5 +1,4 @@
 import pickle
-import gevent.pool
 from sakura.hub.db import db_session_wrapper
 from sakura.common.io import LocalAPIHandler, \
                 RemoteAPIForwarder, PickleLocalAPIProtocol
@@ -45,9 +44,8 @@ def rpc_client_manager(context, daemon_name, sock_file):
 
 def rpc_server_manager(context, daemon_name, sock_file):
     print('new rpc connection hub (server) <- %s (client).' % daemon_name)
-    pool = gevent.pool.Group()
     local_api = DaemonToHubAPI(context)
-    handler = LocalAPIHandler(sock_file, PickleLocalAPIProtocol, local_api, pool,
+    handler = LocalAPIHandler(sock_file, PickleLocalAPIProtocol, local_api,
                                 session_wrapper = db_session_wrapper)
     handler.loop()
     print('rpc connection hub (server) <- %s (client) disconnected.' % daemon_name)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pickle, gevent.pool
+import pickle
 from gevent import Greenlet
 from sakura.common.io import LocalAPIHandler, \
                 RemoteAPIForwarder, PickleLocalAPIProtocol
@@ -22,9 +22,8 @@ class RPCServerGreenlet(DaemonGreenlet):
         # as a RPC server (i.e. the hub should be client)
         self.write_request(sock_file, b'RPC_SERVER')
         # handle this RPC API
-        pool = gevent.pool.Group()
         self.handler = LocalAPIHandler(
-                sock_file, PickleLocalAPIProtocol, self.engine, pool)
+                sock_file, PickleLocalAPIProtocol, self.engine)
     def run(self):
         self.handler.loop()
 
