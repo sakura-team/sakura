@@ -4,8 +4,17 @@ var nb_trajectories = 0
 
 function init() {
     opengl_app = sakura.apis.operator.attach_opengl_app(0, 'ogl-img');
-    opengl_app.subscribe_event('hovered_gps_point', function(evt, lng, lat) {
-        console.log('**************', evt, lng, lat);
+    opengl_app.subscribe_event('hovered_gps_point', function(evt, tim, lng, lat, ele, tname) {
+        var idiv = $('#info_div');
+        idiv.empty();
+        if (tim != -1) {
+            t = moment.unix(parseInt(tim))._d.toUTCString();
+            idiv.append("<b>"+tname+" - </b>"+t+"<b> - lng:</b> "+lng.toFixed(4)+"<b> - lat: </b>"+lat.toFixed(4)+"<b> - ele: </b>"+parseInt(ele));
+        }
+        else {
+            idiv.append("...")
+        }
+        //console.log('**************', evt, lng, lat);
     });
 
     //possible map layers
@@ -37,12 +46,12 @@ function init() {
     var val = document.getElementById('height_range').value/100;
     sakura.apis.operator.fire_event("cube_height", {'value': val});
 
-    $('#wiggle_checkbox').prop('checked', true);
+    $('#wiggle_checkbox').prop('checked', false);
     $('#wiggle_checkbox').change(function () {
         var wcbv = $('#wiggle_checkbox').is(":checked");
         sakura.apis.operator.fire_event("wiggle", {'value': wcbv});
     });
-    sakura.apis.operator.fire_event("wiggle", {'value': true});
+    sakura.apis.operator.fire_event("wiggle", {'value': false});
 }
 
 function floor_darkness() {
