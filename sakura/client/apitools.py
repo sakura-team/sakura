@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
 import ssl, json, time, contextlib, pathlib
-from sakura.common.io import RemoteAPIForwarder
+from sakura.common.io import APIEndpoint
 from websocket import create_connection
 from sakura.client.apiobject.root import APIRoot
 
@@ -62,7 +60,7 @@ class FileWSock(object):
 def get_api_for_url(ws_url):
     ws = FileWSock(ws_url)
     ws.connect()
-    remote_api = RemoteAPIForwarder(ws, json, sync=True)
+    remote_api = APIEndpoint(ws, json, None, sync=True).proxy
     return APIRoot(remote_api, ws)
 
 def get_conf():

@@ -1,6 +1,6 @@
 import collections, json, numpy as np
 from contextlib import contextmanager
-from sakura.common.io import LocalAPIHandler
+from sakura.common.io import APIEndpoint
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.context import greenlet_env
@@ -79,6 +79,9 @@ class GUILocalAPIProtocol:
             print(e)
             raise Exception('Hub->GUI: Hub could not serialize object ' + \
                                 repr(res_info))
+    @staticmethod
+    def is_transferable(obj):
+        return True
 
 def rpc_manager(context, wsock):
     print('New GUI RPC connection.')
@@ -87,10 +90,13 @@ def rpc_manager(context, wsock):
     # manage api requests
     local_api = GuiToHubAPI(context)
     web_session_wrapper = get_web_session_wrapper(context.session.id)
-    handler = LocalAPIHandler(f, GUILocalAPIProtocol, local_api,
+    handler = APIEndpoint(f, GUILocalAPIProtocol, local_api,
                 session_wrapper = web_session_wrapper)
     context.session.num_ws += 1
-    handler.loop()
+    try:
+        handler.loop()
+    except BaseException as e:
+        pass    # hub must stay alive
     context.session.num_ws -= 1
     print('GUI RPC disconnected.')
 

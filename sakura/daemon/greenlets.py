@@ -1,41 +1,20 @@
-#!/usr/bin/env python3
-
 import pickle
 from gevent import Greenlet
-from sakura.common.io import LocalAPIHandler, \
-                RemoteAPIForwarder, PickleLocalAPIProtocol
+from sakura.common.io import APIEndpoint
 from sakura.daemon.tools import connect_to_hub
 
-class DaemonGreenlet:
+class HubRPCGreenlet:
     def __init__(self, engine):
         self.engine = engine
     def spawn(self):
         return Greenlet.spawn(self.run)
-    def write_request(self, sock_file, req):
-        pickle.dump((req, self.engine.name), sock_file)
+    def prepare(self):
+        sock_file = connect_to_hub()
+        pickle.dump(self.engine.name, sock_file)
         sock_file.flush()
-
-class RPCServerGreenlet(DaemonGreenlet):
-    def prepare(self):
-        sock_file = connect_to_hub()
-        # instruct the hub that we will manage this connection
-        # as a RPC server (i.e. the hub should be client)
-        self.write_request(sock_file, b'RPC_SERVER')
         # handle this RPC API
-        self.handler = LocalAPIHandler(
-                sock_file, PickleLocalAPIProtocol, self.engine)
+        self.endpoint = APIEndpoint(
+                sock_file, pickle, self.engine)
+        self.engine.register_hub_api(self.endpoint.proxy)
     def run(self):
-        self.handler.loop()
-
-class RPCClientGreenlet(DaemonGreenlet):
-    def prepare(self):
-        sock_file = connect_to_hub()
-        # instruct the hub that we will use this connection as
-        # a RPC client (i.e. the hub should be server)
-        self.write_request(sock_file, b'RPC_CLIENT')
-        # this greenlet should forward API calls over
-        # the connection towards the hub.
-        self.remote_api = RemoteAPIForwarder(sock_file, pickle)
-        self.engine.register_hub_api(self.remote_api)
-    def run(self):
-        self.remote_api.loop()
+        self.endpoint.loop()

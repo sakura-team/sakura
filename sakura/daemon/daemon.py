@@ -4,8 +4,7 @@ from gevent import Greenlet
 from sakura.common.tools import set_unbuffered_stdout, \
                                 wait_greenlets
 from sakura.daemon.engine import DaemonEngine
-from sakura.daemon.greenlets import \
-            RPCServerGreenlet, RPCClientGreenlet
+from sakura.daemon.greenlets import HubRPCGreenlet
 from sakura.common.planner import PlannerGreenlet
 from sakura.common.cache import Cache
 
@@ -18,15 +17,13 @@ def run():
         engine = DaemonEngine()
 
         # instanciate greenlets
-        server_greenlet = RPCServerGreenlet(engine)
-        client_greenlet = RPCClientGreenlet(engine)
+        hub_greenlet = HubRPCGreenlet(engine)
         planner_greenlet = PlannerGreenlet()
 
         # prepare greenlets
         #try:
         if True:
-            server_greenlet.prepare()
-            client_greenlet.prepare()
+            hub_greenlet.prepare()
             Cache.plan_cleanup(planner_greenlet)
         #except Exception as e:
         #    sys.stderr.write('ERROR: %s\nAborting.\n' % str(e))
@@ -34,8 +31,7 @@ def run():
 
         print('Started.')
         # spawn them and wait until they end.
-        wait_greenlets( server_greenlet.spawn(),
-                        client_greenlet.spawn(),
+        wait_greenlets( hub_greenlet.spawn(),
                         planner_greenlet.spawn())
     except KeyboardInterrupt:
         pass    # python already writes 'KeyboardInterrupt' on stdout

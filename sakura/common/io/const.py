@@ -1,8 +1,13 @@
+import builtins, numbers, numpy as np
 
-IO_FUNC = 0
-IO_ATTR = 1
+IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype) + \
+                   tuple(getattr(builtins, t) for t in ( \
+                        'bytearray', 'bytes', 'dict', 'frozenset', 'list',
+                        'set', 'str', 'tuple', 'BaseException', 'type'))
 
-IO_TRANSFERED = 0
-IO_HELD = 1
-IO_REQUEST_ERROR = 2
-IO_STOP_ITERATION = 3
+IO_REQ_FUNC_CALL = 0
+IO_REQ_ATTR = 1
+IO_RESP_TRANSFERED = 2
+IO_RESP_HELD = 3
+IO_RESP_REQUEST_ERROR = 4
+IO_RESP_STOP_ITERATION = 5

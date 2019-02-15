@@ -113,8 +113,8 @@ sakura.internal.PromiseWrapper = function (cb) {
 
 sakura.internal.onmessage = function (evt) {
     sakura.internal.debug('sakura.internal.onmessage called');
-    IO_TRANSFERED = 0;
-    IO_REQUEST_ERROR = 2;
+    IO_TRANSFERED = 2;
+    IO_REQUEST_ERROR = 4;
     // parse the message
     var json = JSON.parse(evt.data);
     var req_idx = json[0];
@@ -168,7 +168,7 @@ sakura.internal.send = function (func_path, args, kwargs, callback, error_callba
         'error_callback': error_callback
     };
     // prepare the message and send it
-    var msg = JSON.stringify([ req_idx, [ IO_FUNC, func_path, args, kwargs ]]);
+    var msg = JSON.stringify([ req_idx, IO_FUNC, func_path, args, kwargs ]);
     sakura.internal.debug('ws_request sent: ' + msg);
     ws.send(msg);
 }
@@ -241,7 +241,7 @@ sakura.internal.prepare = function (cb) {
 sakura.internal.ws_request = function (func_path, args, kwargs, callback, error_callback) {
     sakura.internal.debug('sakura.internal.ws_request called');
     sakura.internal.prepare(function() {
-        sakura.internal.send(func_path, args, kwargs, callback, error_callback);
+        sakura.internal.send(['local_api'].concat(func_path), args, kwargs, callback, error_callback);
     });
 };
 

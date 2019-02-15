@@ -1,14 +1,9 @@
 import pickle
 from sakura.hub.db import db_session_wrapper
-from sakura.common.io import LocalAPIHandler, \
-                RemoteAPIForwarder, PickleLocalAPIProtocol
 from sakura.hub.daemons.api import DaemonToHubAPI
 from sakura.hub.exceptions import DaemonDataError
 from sakura.common.errors import APIRemoteError
-
-def dump_to_sock_file(sock_file, **kwargs):
-    pickle.dump(kwargs, sock_file)
-    sock_file.flush()
+from sakura.common.io import APIEndpoint
 
 def on_daemon_connect(context, daemon_id):
     with db_session_wrapper():
@@ -20,33 +15,26 @@ def on_daemon_connect(context, daemon_id):
         except APIRemoteError as e:
             print('on_daemon_connect() remote exception: ' + str(e))
 
-def rpc_client_manager(context, daemon_name, sock_file):
-    print('new rpc connection hub (client) -> %s (server).' % daemon_name)
-    remote_api = RemoteAPIForwarder(sock_file, pickle)
+def rpc_manager(context, daemon_name, sock_file):
+    print('new rpc connection %s -> hub.' % daemon_name)
+    local_api = DaemonToHubAPI(context)
+    endpoint = APIEndpoint(sock_file, pickle, local_api,
+                                session_wrapper = db_session_wrapper)
     with db_session_wrapper():
         daemon = context.get_daemon_from_name(daemon_name)
-        context.attach_api_exception_handlers(remote_api)
-        daemon.save_api(remote_api)
+        context.attach_api_exception_handlers(endpoint)
+        daemon.save_api(endpoint.proxy)
         # We will have to run daemon.on_connect()
         # but this greenlet cannot handle it because it may involve
-        # IO messages on this remote_api we have to manage.
+        # IO messages on this endpoint we have to manage.
         # So we delegate this to the planner greenlet, and this greenlet
-        # can focus on managing this remote_api.
+        # can focus on managing this endpoint.
         daemon_id = daemon.id
         context.planner.run_once(
                lambda: on_daemon_connect(context, daemon_id))
-    # start remote_api management loop
-    remote_api.loop()
+    # start endpoint management loop
+    endpoint.loop()
     # loop has ended => daemon is disconnected!
     with db_session_wrapper():
         context.daemons[daemon_id].on_disconnect()
-    print('rpc connection hub (client) -> %s (server) disconnected.' % daemon_name)
-
-def rpc_server_manager(context, daemon_name, sock_file):
-    print('new rpc connection hub (server) <- %s (client).' % daemon_name)
-    local_api = DaemonToHubAPI(context)
-    handler = LocalAPIHandler(sock_file, PickleLocalAPIProtocol, local_api,
-                                session_wrapper = db_session_wrapper)
-    handler.loop()
-    print('rpc connection hub (server) <- %s (client) disconnected.' % daemon_name)
-
+    print('rpc connection %s -> hub disconnected.' % daemon_name)
