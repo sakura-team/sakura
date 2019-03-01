@@ -12,7 +12,7 @@ from sakura.common.io.held import HeldObjectsStore
 from sakura.common.io.tools import void_context_manager, traverse
 from sakura.common.io.const import IO_REQ_FUNC_CALL, IO_REQ_ATTR, \
         IO_RESP_TRANSFERED, IO_RESP_HELD, IO_RESP_REQUEST_ERROR, IO_RESP_STOP_ITERATION, \
-        IO_TRANSFERABLES
+        IO_ARG_HELD, IO_ARG_TRANSFERED, IO_TRANSFERABLES
 from sakura.common.io.proxy import Proxy
 
 class APIEndpoint:
@@ -107,7 +107,8 @@ class APIEndpoint:
             if req_type == IO_REQ_ATTR:
                 return obj
             elif req_type == IO_REQ_FUNC_CALL:
-                args, kwargs = more
+                protected_args, protected_kwargs = more
+                args, kwargs = self.parse_protected_args(protected_args, protected_kwargs)
                 return obj(*args, **kwargs)
         except AttributeError as e:
             raise APIInvalidRequest(str(e))
@@ -119,6 +120,38 @@ class APIEndpoint:
         return self.remote_call(IO_REQ_FUNC_CALL, path, args, kwargs)
     def attr_call(self, path):
         return self.remote_call(IO_REQ_ATTR, path)
+    def protect_args(self, args, kwargs):
+        protected_args = ()
+        for arg in args:
+            if self.is_transferable(arg):
+                protected_args += ((IO_ARG_TRANSFERED, arg),)
+            else:
+                held_info = self.hold(arg)
+                protected_args += ((IO_ARG_HELD, held_info),)
+        protected_kwargs = {}
+        for k, v in kwargs.items():
+            if self.is_transferable(v):
+                protected_kwargs[k] = (IO_ARG_TRANSFERED, v)
+            else:
+                held_info = self.hold(v)
+                protected_kwargs[k] = (IO_ARG_HELD, held_info)
+        return protected_args, protected_kwargs
+    def parse_protected_args(self, protected_args, protected_kwargs):
+        args = ()
+        for v1, v2 in protected_args:
+            if v1 == IO_ARG_TRANSFERED:
+                args += (v2,)
+            else:
+                held_info = v2
+                args += (HeldObjectsStore.get_proxy(self, held_info),)
+        kwargs = {}
+        for k, v in protected_kwargs.items():
+            if v[0] == IO_ARG_TRANSFERED:
+                kwargs[k] = v[1]
+            else:
+                held_info = v[1]
+                kwargs[k] = HeldObjectsStore.get_proxy(self, held_info)
+        return args, kwargs
     def remote_call(self, *req):
         res = self.remote_call_raw(*req)
         if res[0] == IO_RESP_TRANSFERED:
@@ -140,6 +173,9 @@ class APIEndpoint:
             held_info = res[1:]
             return HeldObjectsStore.get_proxy(self, held_info)
     def remote_call_raw(self, *req):
+        if req[0] == IO_REQ_FUNC_CALL:
+            args, kwargs = req[2], req[3]
+            req = req[0:2] + self.protect_args(args, kwargs)
         req_id = self.req_ids.__next__()
         async_res = AsyncResult()
         self.reqs[req_id] = async_res

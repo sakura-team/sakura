@@ -130,5 +130,16 @@ class ObservableEvent:
     def subscribe(self, cb):
         self.observer_callbacks.append(cb)
     def notify(self, *args, **kwargs):
-        for cb in self.observer_callbacks:
-            cb(*args, **kwargs)
+        # we work on a copy because running a callback
+        # might actually recursively call this method...
+        callbacks = set(self.observer_callbacks)
+        obsoletes = set()
+        for cb in callbacks:
+            try:
+                cb(*args, **kwargs)
+            except:
+                # obsolete callback
+                obsoletes.add(cb)
+        for cb in obsoletes:
+            if cb in self.observer_callbacks:
+                self.observer_callbacks.remove(cb)

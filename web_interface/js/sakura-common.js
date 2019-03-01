@@ -141,6 +141,17 @@ sakura.internal.onmessage = function (evt) {
     console.error('Bug: result of ws_request() got unknown status: ' + json[1]);
 }
 
+sakura.internal.protect_args = function(args, kwargs) {
+    /* our javascript code does not handle 'held objects'
+       (unlike hub <-> daemon communications).
+       so we just consider all args can be transfered here
+       (IO_ARG_TRANSFERED = 0).
+    */
+    let protected_args = args.map(arg => [0, arg]);
+    let protected_kwargs = Object.entries(kwargs).reduce((acc, [k, v]) => ({...acc, [k]: [0, v]}), {})
+    return [ protected_args, protected_kwargs ]
+}
+
 sakura.internal.send = function (func_path, args, kwargs, callback, error_callback) {
     sakura.internal.debug('sakura.internal.send called');
     IO_FUNC = 0;
@@ -168,7 +179,8 @@ sakura.internal.send = function (func_path, args, kwargs, callback, error_callba
         'error_callback': error_callback
     };
     // prepare the message and send it
-    var msg = JSON.stringify([ req_idx, IO_FUNC, func_path, args, kwargs ]);
+    let msg = [ req_idx, IO_FUNC, func_path ].concat(sakura.internal.protect_args(args, kwargs));
+    msg = JSON.stringify(msg);
     sakura.internal.debug('ws_request sent: ' + msg);
     ws.send(msg);
 }
