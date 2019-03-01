@@ -94,13 +94,9 @@ class APIEndpoint:
         if not self.is_transferable(res):
             # res should not be serialized,
             # hold it locally.
-            held_id = self.hold(res)
-            origin = getpid(), held_id
-            if isinstance(res, Proxy):
-                if res.__internals.get_origin() is not None:
-                    origin = res.__internals.get_origin()
+            held_info = self.hold(res)
             # notify remote end
-            return (IO_RESP_HELD, held_id) + origin
+            return (IO_RESP_HELD,) + held_info
         # let result be transfered
         return (IO_RESP_TRANSFERED, res)
     def hold(self, obj):
@@ -141,22 +137,8 @@ class APIEndpoint:
             raise exc
         if res[0] == IO_RESP_HELD:
             # result was held remotely (not transferable)
-            remote_held_id, origin = res[1], res[2:]
-            origin_pid, origin_held_id = origin
-            if origin_pid == getpid():
-                # the object is actually a local object!
-                # (may occur in case of several bounces)
-                # we can short out those bounces and use the object directly.
-                # first, retrieve a reference to this object
-                obj = HeldObjectsStore.get()[origin_held_id]
-                print_debug('shortcut:', obj, 'is actually local.')
-                # tell the remote end it can release it
-                self.delete_remotely_held(remote_held_id)
-                # return the object
-                return obj
-            remote_held_path = ('held_objects', (remote_held_id,))
-            return Proxy(self, remote_held_path, origin,
-                    delete_callback=lambda : self.delete_remotely_held(remote_held_id))
+            held_info = res[1:]
+            return HeldObjectsStore.get_proxy(self, held_info)
     def remote_call_raw(self, *req):
         req_id = self.req_ids.__next__()
         async_res = AsyncResult()
