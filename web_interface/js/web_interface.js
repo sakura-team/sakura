@@ -252,6 +252,8 @@ function web_interface_updating_metadata(a, params) {
         }).catch(
         function (error) {
             alert(error);
+            if (DEBUG) console.log("E1", error);
+            else console.log("TTTTT E1", error);
             a.html(empty_text);
         }
     );

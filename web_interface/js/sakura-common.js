@@ -69,6 +69,8 @@ sakura.internal.get_url = function () {
 
 sakura.internal.default_error_callback = function (msg) {
     alert(msg);
+    if (DEBUG) console.log("E2", error);
+    else console.log("TTTT E2", error);
 }
 
 /* this wrapper around the Promise object allows to

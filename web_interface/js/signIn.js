@@ -103,6 +103,7 @@ function registerUser(event = '') {
                 }).catch(
                 function (error_message) {
             	      alert(error_message);
+                    if (DEBUG) console.log("E3", error_message);
                 });
         }
         else {
@@ -145,11 +146,15 @@ function signInSubmitControl(event, login, passw) {
 
                 //Back to the current div
                 var url = window.location.href.split('#');
-                showDiv(event, url[1], '');
+                if (url.length > 1)
+                    showDiv(event, url[1], '');
+                else
+                    showDiv(event, '', '');
     	    		  return;
             }).catch(
   	        function (error_message) {
   	    	      alert(error_message);
+                if (DEBUG) console.log("E4", error_message);
             });
         } // end checking empty fields
         else {
@@ -187,6 +192,7 @@ function pwdRecoverySubmitControl(event) {
             }).catch(
 	        function (error_message) {
                   alert(error_message);
+                  if (DEBUG) console.log("E5", error_message);
             });
       }
 	  else {
@@ -230,6 +236,7 @@ function changePasswordSubmitControl(event) {
             }).catch(
     	      function (error_message) {
     	         alert(error_message);
+               if (DEBUG) console.log("E6", error_message);
             });
         }
         else {
