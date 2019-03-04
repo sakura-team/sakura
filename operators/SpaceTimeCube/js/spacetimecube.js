@@ -12,9 +12,16 @@ function init() {
             idiv.append("<b>"+tname+" - </b>"+t+"<b> - lng:</b> "+lng.toFixed(4)+"<b> - lat: </b>"+lat.toFixed(4)+"<b> - ele: </b>"+parseInt(ele));
         }
         else {
-            idiv.append("...")
+            idiv.append("...");
         }
-        //console.log('**************', evt, lng, lat);
+    });
+
+    opengl_app.subscribe_event('loading_data_start', function(evt) {
+        console.log('Loading start');
+    });
+
+    opengl_app.subscribe_event('loading_data_end', function(evt) {
+        console.log('Loading end');
     });
 
     //possible map layers
