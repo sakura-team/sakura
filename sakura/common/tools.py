@@ -145,3 +145,15 @@ class ObservableEvent:
         for cb in obsoletes:
             if cb in self.observer_callbacks:
                 self.observer_callbacks.remove(cb)
+
+def debug_ending_greenlets():
+    import gc, traceback, greenlet
+    for ob in gc.get_objects():
+        if not isinstance(ob, greenlet.greenlet):
+            continue
+        if not ob:
+            continue
+        print()
+        print('GREENLET:')
+        print(ob)
+        print(''.join(traceback.format_stack(ob.gr_frame)))

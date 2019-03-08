@@ -2,11 +2,13 @@
 import sys
 from gevent import Greenlet
 from sakura.common.tools import set_unbuffered_stdout, \
-                                wait_greenlets
+                                wait_greenlets, debug_ending_greenlets
 from sakura.daemon.engine import DaemonEngine
 from sakura.daemon.greenlets import HubRPCGreenlet
 from sakura.common.planner import PlannerGreenlet
 from sakura.common.cache import Cache
+
+DEBUG_ENDING_GREENLETS = False
 
 def run():
     try:
@@ -39,3 +41,5 @@ def run():
 
 if __name__ == "__main__":
     run()
+    if DEBUG_ENDING_GREENLETS:
+        debug_ending_greenlets()

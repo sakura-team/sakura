@@ -8,9 +8,11 @@ from sakura.hub.daemons.greenlet import daemons_greenlet
 from sakura.hub.cleanup import plan_cleanup
 from sakura.hub.db import instanciate_db
 from sakura.common.tools import set_unbuffered_stdout, \
-                                wait_greenlets
+                                wait_greenlets, debug_ending_greenlets
 from sakura.common.planner import PlannerGreenlet
 import sakura.hub.conf as conf
+
+DEBUG_ENDING_GREENLETS = False
 
 def run():
     try:
@@ -36,3 +38,5 @@ def run():
 
 if __name__ == "__main__":
     run()
+    if DEBUG_ENDING_GREENLETS:
+        debug_ending_greenlets()
