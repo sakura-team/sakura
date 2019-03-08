@@ -3,7 +3,8 @@ import sakura.hub.conf as conf
 from sakura.hub.db.schema import define_schema
 from pony.orm import Database as PonyDatabase,      \
                      commit as pony_commit,         \
-                     sql_debug, db_session,         \
+                     sql_debug,                     \
+                     db_session as pony_db_session, \
                      CommitException, sql_debug
 
 DEBUG=0
@@ -32,6 +33,7 @@ def commit():
 # With the following object, we ensure db updates are commited
 # when we leave a nested session.
 
+db_session = pony_db_session(optimistic = False)
 
 class MyDBSession:
     stack_size = 0
