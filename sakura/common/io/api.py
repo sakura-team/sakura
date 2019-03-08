@@ -61,6 +61,7 @@ class APIEndpoint:
                 print('malformed request? Got exception:')
                 traceback.print_exc()
             self.handle_receive_exception(e)
+            self.f.close()
             raise   # we should stop
         self.pool.spawn(self.handle_message, *msg)
     def handle_message(self, req_id, msg_type, *msg_args):
@@ -115,7 +116,9 @@ class APIEndpoint:
     def delete_held(self, held_id):
         del self.held_objects[held_id]
     def delete_remotely_held(self, remote_held_id):
-        self.remote_call_raw(IO_REQ_FUNC_CALL, ('delete_held',), (remote_held_id,), {})
+        # if remote end is down, there is no remote object to delete...
+        if not self.f.closed:
+            self.remote_call_raw(IO_REQ_FUNC_CALL, ('delete_held',), (remote_held_id,), {})
     def func_call(self, path, args=(), kwargs={}):
         return self.remote_call(IO_REQ_FUNC_CALL, path, args, kwargs)
     def attr_call(self, path):

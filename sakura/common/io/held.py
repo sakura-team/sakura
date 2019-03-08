@@ -15,7 +15,6 @@ class HeldObjectsStore:
         self.__held_ids__ = itertools.count()
     def hold(self, obj):
         # hold obj locally then return id and origin.
-        print('held:', obj)
         print_debug('held:', obj)
         held_id = self.__held_ids__.__next__()
         self.__objects__[held_id] = obj
@@ -28,7 +27,6 @@ class HeldObjectsStore:
     def __getitem__(self, held_id):
         return self.__objects__[held_id]
     def __delitem__(self, held_id):
-        print('released:', self.__objects__[held_id])
         print_debug('released:', self.__objects__[held_id])
         del self.__objects__[held_id]
         gc.collect()
@@ -42,7 +40,6 @@ class HeldObjectsStore:
             # we can short out those bounces and use the object directly.
             # first, retrieve a reference to this object
             obj = cls.get()[origin_held_id]
-            print('shortcut:', obj, 'is actually local.')
             print_debug('shortcut:', obj, 'is actually local.')
             # tell the remote end it can release it
             api_endpoint.delete_remotely_held(remote_held_id)

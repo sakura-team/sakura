@@ -8,7 +8,10 @@ def print_debug(*args):
     if DEBUG_LEVEL == 0:
         return  # do nothing
     OUT = io.StringIO()
-    print(*args, file=OUT)
+    try:
+        print(*args, file=OUT)
+    except:
+        OUT.write("<obj-to-str-exception>\n")
     if DEBUG_LEVEL == 1 and OUT.tell() > 110:
         OUT.seek(110)
         OUT.write('...\n')
