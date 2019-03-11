@@ -36,20 +36,13 @@ def commit():
 db_session = pony_db_session(optimistic = False)
 
 class MyDBSession:
-    stack_size = 0
-    def __init__(self):
-        self.session = None
+    ENV_DB_SESSION = None
     def __enter__(self):
-        if MyDBSession.stack_size == 0:
-            self.session = db_session.__enter__()
-        MyDBSession.stack_size += 1
-        return self.session
+        if MyDBSession.ENV_DB_SESSION is None:
+            MyDBSession.ENV_DB_SESSION = db_session.__enter__()
+        return MyDBSession.ENV_DB_SESSION
     def __exit__(self, type, value, traceback):
-        MyDBSession.stack_size -= 1
-        if MyDBSession.stack_size == 0:
-            db_session.__exit__(type, value, traceback)
-        else:
-            commit()
+        commit()
 
 def db_session_wrapper():
     return MyDBSession()
