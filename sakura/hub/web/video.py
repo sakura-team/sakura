@@ -32,8 +32,8 @@ def serve_video_stream(context, op_id, ogl_id):
             yield b'\r\n'
     except APIObjectDeniedError as e:
         raise bottle.HTTPError(403, str(e))
-    except APIRequestError as e:
-        raise bottle.HTTPError(400, str(e))
     except GeneratorExit as e:
         opengl_app.push_event('browser_disconnect')
+    except BaseException as e:
+        raise bottle.HTTPError(400, str(e))
     print('stream ended')
