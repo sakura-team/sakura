@@ -19,12 +19,25 @@ sakura = {
 
 // debugging
 // ---------
+sakura.internal.debug_time = 0;
+sakura.internal.debug_enabled = false;
+
+sakura.internal.debug = function (s) {
+    if (!sakura.internal.debug_enabled)
+        return;
+    let now = new Date().getTime();
+    console.log("" + ((sakura.internal.debug_time==0)?" ":(now-sakura.internal.debug_time)) + " -- " + s);
+    sakura.internal.debug_time = now;
+};
+
+sakura.tools.set_debug = function (is_enabled) {
+    sakura.internal.debug_enabled = is_enabled;
+};
+
 // uncomment / comment to activate debug
-sakura.internal.debug_time = 0; sakura.internal.debug = function (s) { let now = new Date().getTime(); console.log("" + ((sakura.internal.debug_time==0)?" ":(now-sakura.internal.debug_time)) + " -- " + s); sakura.internal.debug_time = now; };
-//sakura.internal.debug = function (s) { };
+//sakura.tools.set_debug(true);
 
 sakura.internal.debug('Loading sakura-common.js');
-
 
 // document ready state management
 // -------------------------------
@@ -68,9 +81,8 @@ sakura.internal.get_url = function () {
 }
 
 sakura.internal.default_error_callback = function (msg) {
+    sakura.internal.debug('io-error-callback ' + msg);
     alert(msg);
-    if (DEBUG) console.log("E2", error);
-    else console.log("TTTT E2", error);
 }
 
 /* this wrapper around the Promise object allows to
