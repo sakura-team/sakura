@@ -68,7 +68,6 @@ function current_dataflow() {
         global_ops_cl = JSON.parse(JSON.stringify(result));
         //Then we ask for the instance ids
         sakura.apis.hub.dataflows[current_dataflow_id].info().then(function (df_info) {
-            console.log(df_info);
             df_info.op_instances.forEach( function(opi) {
                 if (opi.gui_data) {
                     var jgui = eval("("+opi.gui_data+")");

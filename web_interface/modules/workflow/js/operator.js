@@ -136,8 +136,9 @@ function remove_operator_instance(id, on_hub) {
     //Remove from the list of instances
     global_ops_inst.splice(instance_index_from_id(hub_id), 1);
 
-    if (on_hub)
+    if (on_hub) {
         sakura.apis.hub.operators[hub_id].delete();
+    }
 }
 
 function remove_all_operators_instances() {

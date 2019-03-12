@@ -55,18 +55,6 @@ function tuple_in_array_of_tuples(arr, tuple) {
     return -1;
 }
 
-
-//returns a sub-array in which arr[row][col] == e for each row
-function sub_array_of_tuples(arr, col, e) {
-    var result = [];
-    for (var i = 0; i< arr.length; i++) {
-        if (arr[i][col] == e)
-            result.push(arr[i]);
-    }
-    return result;
-}
-
-
 function svg_round_square(id) {
     return '<svg width="24" height="24" viewBox="0 0 24 24" id="'+id+'" name="'+id+'"> \
                 <rect x="2" y="2" width="20" height="20" rx="4" ry="4" \

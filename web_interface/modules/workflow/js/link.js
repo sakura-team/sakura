@@ -8,7 +8,7 @@ var link_focus_id = null;
 
 
 function create_link(js_id, src_id, dst_id, js_connection) {
-    
+
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
         if (possible_links.length == 0) {
             alert("These two operators cannot be linked");
@@ -16,20 +16,20 @@ function create_link(js_id, src_id, dst_id, js_connection) {
             jsPlumb.repaintEverything();
             return false;
         }
-        else 
+        else
         {
             global_links.push({ id: js_id,
                         src: src_id,
                         dst: dst_id,
                         params: []});
-                        
+
             sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
                 sakura.apis.hub.operators[dst_id].info().then(function (target_inst_info) {
                         create_link_modal(  possible_links,
-                                            global_links[global_links.length - 1], 
-                                            instance_from_id(src_id).cl, 
-                                            instance_from_id(dst_id).cl, 
-                                            source_inst_info, 
+                                            global_links[global_links.length - 1],
+                                            instance_from_id(src_id).cl,
+                                            instance_from_id(dst_id).cl,
+                                            source_inst_info,
                                             target_inst_info,
                                             true);
                     js_connection._jsPlumb.hoverPaintStyle = { lineWidth: 7, strokeStyle: "#333333" };
@@ -42,21 +42,21 @@ function create_link(js_id, src_id, dst_id, js_connection) {
 
 
 function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui) {
-    
+
     var l = global_links.push({ 'id': js_id,
                                 'src': src_id,
                                 'dst': dst_id,
                                 'params': [],
                                 'modal': false});
-                                
+
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
         sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
             sakura.apis.hub.operators[dst_id].info().then(function (target_inst_info) {
                 create_link_modal(  possible_links,
-                                    global_links[l - 1], 
-                                    instance_from_id(src_id).cl, 
-                                    instance_from_id(dst_id).cl, 
-                                    source_inst_info, 
+                                    global_links[l - 1],
+                                    instance_from_id(src_id).cl,
+                                    instance_from_id(dst_id).cl,
+                                    source_inst_info,
                                     target_inst_info,
                                     false,
                                     out_id,
@@ -71,13 +71,13 @@ function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui)
 
 
 function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_inst_info, open_now, out_id, in_id, hub_id, gui) {
-    
+
     //Here we automatically connect tables into the link
     var auto_link = false;
     if (src_inst_info['outputs'].length == 1 && dst_inst_info['inputs'].length == src_inst_info['outputs'].length) {
         auto_link = true;
     }
-    
+
     for (var i=0; i < src_inst_info['outputs'].length; i++) {
         var found = false;
         p_links.forEach( function(item) {
@@ -93,7 +93,7 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
             src_inst_info['outputs'][i].drag  = 'false';
         }
     };
-    
+
     for (var i=0; i < dst_inst_info['inputs'].length; i++) {
         var found = false;
         p_links.forEach( function(item) {
@@ -109,7 +109,7 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
             dst_inst_info['inputs'][i].drag  = 'false';
         }
     };
-    
+
     var wrapper= document.createElement('div');
     load_from_template(
                     wrapper,
@@ -120,7 +120,7 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
                         // update the svg icon
                         $(modal).find("#td_src_svg").html(src_cl.svg);
                         $(modal).find("#td_dst_svg").html(dst_cl.svg);
-                        
+
                         var index = 0;
                         src_inst_info['outputs'].forEach( function (item) {
                             var found = false;
@@ -132,7 +132,7 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
                                 $(modal).find("#svg_modal_link_"+link.id+"_out_"+index).html(svg_round_square(""));
                             index ++;
                         });
-                        
+
                         var index = 0;
                         dst_inst_info['inputs'].forEach( function (item) {
                             var found = false;
@@ -144,14 +144,14 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
                                 $(modal).find("#svg_modal_link_"+link.id+"_in_"+index).html(svg_round_square(""));
                             index ++;
                         });
-                        
+
                         // append to main div
                         main_div.appendChild(modal);
                         if (open_now && !auto_link)
                             $(modal).modal();
                         else if (!open_now) {
-                            link.params.push({  'out_id': out_id, 
-                                                'in_id': in_id, 
+                            link.params.push({  'out_id': out_id,
+                                                'in_id': in_id,
                                                 'hub_id': hub_id,
                                                 'top': gui.top,
                                                 'left': gui.left,
@@ -194,7 +194,7 @@ function refresh_link_modal(link) {
                         div_square.attr('draggable', 'False');
                     }
                 }
-                
+
                 //destinations
                 for(var i=0; i<target_inst_info.inputs.length;i++) {
                     var found = false;
@@ -202,10 +202,10 @@ function refresh_link_modal(link) {
                     if (item[1] == i)
                         found = true;
                     });
-                    
+
                     var div_name = document.getElementById('modal_link_'+link.id+'_td_in_'+i);
                     var div_square = $("#svg_modal_link_"+link.id+'_in_'+i);
-                    
+
                     if (found) {
                         div_name.style.color = 'black';
                         if (div_square.html().indexOf('line') == -1)
@@ -227,17 +227,16 @@ function test_link(link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
-    if (link.params.length == 0) 
+    if (link.params.length == 0)
         remove_link(link)
 }
 
 
 function remove_link(link) {
-    
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
-    
+
     //We first send the removing commands to the hub
     if (link.params.length > 0)
         delete_link_params(link, true);
@@ -248,36 +247,36 @@ function remove_link(link) {
             if (item.id == link.id)
                 jsPConn = item;
         });
-        
+
         if (jsPConn) {
             jsPlumb.detach(jsPConn);
             jsPlumb.repaintEverything();
         }
-        
+
         //remove modal
         var mod = document.getElementById("modal_link_"+link.id);
         mod.outerHTML = "";
         delete mod;
         link_focus_id = null;
-        
+
         //Then to us :) (removing the modal and the link)
         var index = global_links.findIndex( function (e) {
             return e.id === link.id;
         });
         global_links.splice(index, 1);
     }
-    
+
     global_links.forEach( function (l) {
         refresh_link_modal(l);
     });
-    
+
 }
 
 
 function remove_connection(hub_id) {
-    var sub_array_links = sub_array_of_tuples(global_links, 2, hub_id).concat(sub_array_of_tuples(global_links, 3, hub_id));
-    sub_array_links.forEach( function (item) {
-        remove_link(item[0], true);
+    global_links.forEach( function(link) {
+        if (link.src == hub_id || link.dst == hub_id)
+            remove_link(link, true);
     });
 }
 
@@ -286,7 +285,7 @@ function delete_link_params(link, and_main_link) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
-    
+
     var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
     for (var i=0; i< link.params.length; i++) {
         var para = link.params[i];
@@ -298,11 +297,11 @@ function delete_link_params(link, and_main_link) {
         var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+para.out_id);
         var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
         var line    = document.getElementById("line_modal_link_"+link.id+"_"+para.out_id+"_"+para.in_id);
-        
+
         div_in.innerHTML = svg_round_square("");
         div_out.innerHTML = svg_round_square("");
         mdiv.removeChild(line);
-        
+
         if (i >= link.params.length -1) {
             link.params = [];
             if (and_main_link) {
@@ -314,11 +313,11 @@ function delete_link_params(link, and_main_link) {
 
 
 function delete_link_param(link, side, id) {
-    
+
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
-    
+
     var link_p = null;
     var index_p = 0;
     var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
@@ -342,7 +341,7 @@ function delete_link_param(link, side, id) {
         var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
         var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
         var line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
-        
+
         div_in.innerHTML = svg_round_square("");
         div_out.innerHTML = svg_round_square("");
         link.params.splice(index_p, 1);
@@ -356,21 +355,21 @@ function delete_link_param(link, side, id) {
 
 
 function create_link_line(link, _out, _in) {
-    
-    
+
+
     //Making a fake connection
     var mdiv = document.getElementById("modal_link_"+link.id+"_body");
     var svg_div = document.createElement('div');
     svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
     svg_div.style.position = 'absolute';
-    
+
     var rect0 = document.getElementById("modal_link_"+link.id+"_dialog").getBoundingClientRect();
     var rect1 = document.getElementById("svg_modal_link_"+link.id+'_out_'+_out).getBoundingClientRect();
     var rect2 = document.getElementById("svg_modal_link_"+link.id+'_in_'+_in).getBoundingClientRect();
-    
+
     var w = Math.abs(rect2.x-rect1.x-24+2);
     var h = Math.abs(rect2.y-rect1.y+2);
-    
+
     svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
     var svg = '';
     if (parseInt(rect2.y) - parseInt(rect1.y) >= 0) {
@@ -385,7 +384,7 @@ function create_link_line(link, _out, _in) {
                                 <line x1="1" y1="'+(h-1)+'" x2="'+(w-1)+'" y2="1" style="stroke:rgb(33,256,33);stroke-width:2" /> \
                             </svg> ';
     }
-    
+
     svg_div.innerHTML = svg;
     mdiv.appendChild(svg_div);
     return svg;
@@ -398,11 +397,11 @@ function copy_link_line(link, _out, _in, gui) {
     var svg_div = document.createElement('div');
     svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
     svg_div.style.position = 'absolute';
-    
+
     svg_div.style.left = gui.left;
     svg_div.style.top = gui.top;
     svg = gui.line;
-    
+
     svg_div.innerHTML = svg;
     mdiv.appendChild(svg_div);
     return svg;
