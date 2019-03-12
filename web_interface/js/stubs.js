@@ -43,7 +43,7 @@ function buildListStub(idDiv,result,elt) {
         var n_td1 = $('<td>');
         var n_td2 = $('<td align="right">');
 
-        if (row.name.indexOf('OFFLINE') === -1) {
+        if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
             var name = $('<a>');
             name.html(row.name);
             name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
