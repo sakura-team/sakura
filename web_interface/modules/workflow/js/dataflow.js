@@ -101,12 +101,21 @@ function current_dataflow() {
 
         //Filling accordion with panels
         var index = 0;
+        let filtered_global_op_panels = [];
         global_op_panels.forEach( function (panel) {
 
             var divs = []
+            let filtered_selected_ops = [];
             panel['selected_ops'].forEach( function(item) {
+                let cl = class_from_id(item);
+                if (cl == null) {
+                    return;
+                }
+                filtered_selected_ops.push(item);
                 divs.push(select_op_new_operator(item, false));
             });
+
+            panel['selected_ops'] = filtered_selected_ops;
 
             var tmp_el = document.createElement("div");
             tmp_el.appendChild(select_op_make_table(4, divs));
@@ -115,7 +124,10 @@ function current_dataflow() {
             index++;
 
             select_op_create_accordion(panel, tmp_el.innerHTML);
+            filtered_global_op_panels.push(panel);
         });
+
+        global_op_panels = filtered_global_op_panels;
 
         res.comments.forEach( function(com) {
             var ncom = comment_from(com);
