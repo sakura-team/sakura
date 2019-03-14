@@ -42,7 +42,7 @@ class DaemonEngine(object):
     def is_foreign_operator(self, op_id):
         return op_id not in self.op_instances
     def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id,
-                            auto_fill_params = True):
+                            check_mode = False):
         if self.is_foreign_operator(src_op_id):
             # the source is a remote operator.
             src_label = 'remote(op_id=%d,out%d)' % (src_op_id, src_out_id)
@@ -53,18 +53,16 @@ class DaemonEngine(object):
         dst_op = self.op_instances[dst_op_id]
         dst_input_plug = dst_op.input_plugs[dst_in_id]
         dst_input_plug.connect(src_op.output_plugs[src_out_id])
-        if auto_fill_params:
-            method = dst_op.auto_fill_parameters
-        else:   # just check, do not set parameters
-            method = dst_op.check_input_compatibility_parameters
-        # auto select (or just check) unselected parameters
-        try:
-            method(plug = dst_input_plug)
-        except:
-            dst_input_plug.disconnect()     # revert
-            raise
         print("connected %s -> %s op_id=%d in%d" % \
-                (src_label, dst_op.NAME, dst_op_id, dst_in_id))
+            (src_label, dst_op.NAME, dst_op_id, dst_in_id))
+        # auto select (or just check) unselected parameters
+        if check_mode:   # just check, do not set parameters
+            res = dst_op.check_input_compatibility_parameters(dst_input_plug)
+            dst_input_plug.disconnect()     # revert
+            return res
+        else:
+            dst_op.auto_fill_parameters(plug = dst_input_plug)
+            return True
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         dst_op = self.op_instances[dst_op_id]
         dst_input_plug = dst_op.input_plugs[dst_in_id]
@@ -86,13 +84,9 @@ class DaemonEngine(object):
                 if dst_input_plug.connected():
                     # this entry is already connected with something else
                     continue
-                try:
-                    self.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id,
-                                            auto_fill_params = False)
-                    # if we are here, this link is possible
+                checked = self.connect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id,
+                                                    check_mode = True)
+                if checked:
+                    # this link is possible
                     links.append((src_out_id, dst_in_id))
-                    # revert
-                    self.disconnect_operators(src_op_id, src_out_id, dst_op_id, dst_in_id)
-                except InputUncompatible:
-                    pass
         return links

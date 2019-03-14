@@ -152,18 +152,15 @@ class ColumnSelectionParameter(ComboParameter):
         return self.plug == plug
     def check_input_compatible(self):
         for col_info in self.matching_columns():
-            return  # OK, we have at least one value
-        # otherwise self.matching_columns() will have raised an exception.
+            return True # OK, we have at least one value
+        return False    # no matching column
     def matching_columns(self):
         if not self.plug.connected():
             return
-        input_plug_ok = False
         for col_idx, column_info in enumerate(self.plug.get_columns_info()):
             if self.condition(*column_info):
                 input_plug_ok = True
                 yield (col_idx,) + column_info + (str(column_info),)
-        if not input_plug_ok:
-            raise InputUncompatible()
     def get_possible_items(self):
         for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             value = col_info_str

@@ -86,11 +86,12 @@ class Operator:
             if plug != None and not param.is_linked_to_plug(plug):
                 continue
             param.recheck()
-    def check_input_compatibility_parameters(self, plug = None):
-        assert plug is not None, "plug should be specified!"
+    def check_input_compatibility_parameters(self, plug):
         for param in self.parameters:
             if param.is_linked_to_plug(plug):
-                param.check_input_compatible()
+                if not param.check_input_compatible():
+                    return False
+        return True
     def unselect_parameters(self, plug = None):
         for param in self.parameters:
             # restrict to parameters concerning the specified plug if any
