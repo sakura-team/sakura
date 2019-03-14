@@ -130,7 +130,8 @@ class ObservableEvent:
     def subscribe(self, cb):
         self.observer_callbacks.append(cb)
     def unsubscribe(self, cb):
-        self.observer_callbacks.remove(cb)
+        if cb in self.observer_callbacks:
+            self.observer_callbacks.remove(cb)
     def notify(self, *args, **kwargs):
         # we work on a copy because running a callback
         # might actually recursively call this method...
@@ -143,8 +144,7 @@ class ObservableEvent:
                 # obsolete callback
                 obsoletes.add(cb)
         for cb in obsoletes:
-            if cb in self.observer_callbacks:
-                self.observer_callbacks.remove(cb)
+            self.unsubscribe(cb)
 
 def debug_ending_greenlets():
     import gc, traceback, greenlet
