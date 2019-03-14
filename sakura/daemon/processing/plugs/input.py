@@ -1,4 +1,4 @@
-from sakura.common.errors import APIRequestError
+from sakura.common.errors import APIRequestError, APIRequestErrorOfflineDaemon
 from sakura.common.tools import ObservableEvent
 
 class InputPlug:
@@ -8,9 +8,18 @@ class InputPlug:
         self.on_change = ObservableEvent()
     def connect(self, output_plug):
         self.source_plug = output_plug
+        # if the source plug changes, propagate the change here
+        self.source_plug.on_change.subscribe(self.notify_source_change)
         self.on_change.notify()
     def disconnect(self):
+        try:
+            self.source_plug.on_change.unsubscribe(self.notify_source_change)
+        except APIRequestErrorOfflineDaemon:
+            # self.source_plug comes from a disconnected daemon => no event unsubscribe needed
+            pass
         self.source_plug = None
+        self.on_change.notify()
+    def notify_source_change(self):
         self.on_change.notify()
     def connected(self):
         return self.source_plug != None

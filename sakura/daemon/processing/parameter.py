@@ -148,6 +148,9 @@ class ColumnSelectionParameter(ComboParameter):
         super().__init__(label)
         self.plug = plug
         self.condition = condition
+        self.plug.on_change.subscribe(self.notify_input_plug_change)
+    def notify_input_plug_change(self):
+        self.recheck()
     def is_linked_to_plug(self, plug):
         return self.plug == plug
     def check_input_compatible(self):
