@@ -10,30 +10,31 @@ from sakura.hub.mixins.bases import BaseMixin
 
 class DatabaseMixin(BaseMixin):
     @property
-    def online(self):
-        return self.datastore.online and self.datastore.daemon.connected
+    def enabled(self):
+        return self.datastore.enabled
+    @property
+    def disabled_message(self):
+        return self.datastore.disabled_message
     @property
     def readable(self):
-        return self.online and self.get_grant_level() >= GRANT_LEVELS.read
+        return self.enabled and self.get_grant_level() >= GRANT_LEVELS.read
     @property
     def remote_instance(self):
-        self.datastore.assert_online()
+        self.datastore.assert_enabled()
         self.assert_grant_level(GRANT_LEVELS.read,
                     'You are not allowed to read data from this database.')
         ds_key = (self.datastore.host, self.datastore.driver_label)
         remote_ds = self.datastore.daemon.api.datastores[ds_key]
         return remote_ds.databases[self.name]
     def pack(self):
-        result = dict(
+        return dict(
             database_id = self.id,
             datastore_id = self.datastore.id,
             name = self.name,
-            online = self.online,
             **self.metadata,
-            **pack_gui_access_info(self)
+            **pack_gui_access_info(self),
+            **self.pack_status_info()
         )
-        result.update(**self.metadata)
-        return result
     def describe(self):
         return "%(name)s database (on %(ds)s)" % dict(
             name = self.name,
@@ -42,7 +43,7 @@ class DatabaseMixin(BaseMixin):
     def get_full_info(self):
         # start with general metadata
         result = self.pack()
-        # if online and sufficient grant, explore tables
+        # if enabled and sufficient grant, explore tables
         if self.readable:
             self.update_tables_from_daemon()
             result['tables'] = tuple(t.pack() for t in self.tables)

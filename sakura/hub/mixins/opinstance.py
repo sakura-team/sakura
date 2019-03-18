@@ -1,6 +1,7 @@
 from sakura.hub.context import get_context
+from sakura.hub.mixins.bases import BaseMixin
 
-class OpInstanceMixin:
+class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
     @property
     def daemon_api(self):
@@ -12,27 +13,31 @@ class OpInstanceMixin:
         # instanciate_on_daemon() below.
         return self.daemon_api.op_instances[self.id]
     @property
-    def instanciated(self):
+    def enabled(self):
         return self.id in OpInstanceMixin.INSTANCIATED
-    @instanciated.setter
-    def instanciated(self, boolean):
+    @enabled.setter
+    def enabled(self, boolean):
         if boolean:
             OpInstanceMixin.INSTANCIATED.add(self.id)
         else:
             OpInstanceMixin.INSTANCIATED.discard(self.id)
+    @property
+    def disabled_message(self):
+        return self.op_class.daemon.disabled_message
     def __getattr__(self, attr):
-        # if we cannot find the attr,
-        # let's look at the real operator
+        # find other attributes at the real operator
         # instance on the daemon side.
-        return getattr(self.remote_instance, attr)
+        if attr != 'warning_message':
+            return getattr(self.remote_instance, attr)
+        raise AttributeError
     def pack(self):
         res = dict(
             op_id = self.id,
             cls_id = self.op_class.id,
-            online = self.instanciated,
-            gui_data = self.gui_data
+            gui_data = self.gui_data,
+            **self.pack_status_info()
         )
-        if self.instanciated:
+        if self.enabled:
            res.update(**self.remote_instance.pack())
         return res
     def recheck_params(self):
@@ -54,9 +59,9 @@ class OpInstanceMixin:
         for param in self.params:
             param.setup()
         # we have it instanciated
-        self.instanciated = True
+        self.enabled = True
     def delete_on_daemon(self):
-        self.instanciated = False
+        self.enabled = False
         self.daemon_api.delete_operator_instance(self.id)
     def disable_downlinks(self):
         for link in self.downlinks:
@@ -67,9 +72,9 @@ class OpInstanceMixin:
         for link in self.uplinks:
             link.disable()
         self.disable_downlinks()
-        self.instanciated = False
+        self.enabled = False
     def ready(self):
-        if not self.instanciated:
+        if not self.enabled:
             return False
         for link in self.uplinks:
             if not link.enabled:

@@ -17,18 +17,26 @@ Daemon configuration says admin of %(driver_label)s datastore at %(host)s is non
 This user must be created in Sakura first."""
 
 class DatastoreMixin(BaseMixin):
-    # Property online is not stored in database.
+    # Property enabled is not stored in database.
     # It should be 'volatile'.
     # Each time the hub starts, it should consider all datastores
     # are offline, until daemons tell the contrary.
     ONLINE_DATASTORES = set()
 
     @property
-    def online(self):
-        return self.id in DatastoreMixin.ONLINE_DATASTORES and self.daemon.connected
+    def enabled(self):
+        return self.id in DatastoreMixin.ONLINE_DATASTORES and self.daemon.enabled
 
-    @online.setter
-    def online(self, value):
+    @property
+    def disabled_message(self):
+        if not self.daemon.enabled:
+            return self.daemon.disabled_message
+        if not self.id in DatastoreMixin.ONLINE_DATASTORES:
+            return 'Cannot reach %s!' % self.describe()
+        raise AttributeError
+
+    @enabled.setter
+    def enabled(self, value):
         changed = False
         if value and self.id not in DatastoreMixin.ONLINE_DATASTORES:
             # set online
@@ -43,7 +51,7 @@ class DatastoreMixin(BaseMixin):
             get_context().global_events.on_datastores_change.notify()
 
     def on_daemon_disconnect(self):
-        self.online = False
+        self.enabled = False
 
     def describe(self):
         return "%(driver_label)s datastore at %(host)s" % dict(
@@ -57,10 +65,10 @@ class DatastoreMixin(BaseMixin):
             ds_info = self.raw_remote_instance.pack()
             get_context().datastores.restore_datastore(self.daemon, **ds_info)
         except BaseException as exc:
-            self.online = False
+            self.enabled = False
 
-    def assert_online(self):
-        if not self.online:
+    def assert_enabled(self):
+        if not self.enabled:
             raise APIRequestErrorOfflineDatastore('Datastore is offline!')
     @property
     def raw_remote_instance(self):
@@ -69,7 +77,7 @@ class DatastoreMixin(BaseMixin):
     def remote_instance(self):
         self.assert_grant_level(GRANT_LEVELS.read,
                     'You are not allowed to explore this datastore.')
-        self.assert_online()
+        self.assert_enabled()
         return self.raw_remote_instance
     def list_expected_columns_tags(self):
         # list tags already seen on this datastore
@@ -81,16 +89,16 @@ class DatastoreMixin(BaseMixin):
         datastore_tags = tuple(sorted(datastore_tags))
         return STANDARD_COLUMN_TAGS + (("others", datastore_tags),)
     def pack(self):
-        if self.online is False:
+        if self.enabled is False:
             self.refresh()   # just in case
         return dict(
             daemon_id = self.daemon.id,
             datastore_id = self.id,
-            online = self.online and self.daemon.connected,
             host = self.host,
             driver_label = self.driver_label,
             **self.metadata,
-            **pack_gui_access_info(self)
+            **pack_gui_access_info(self),
+            **self.pack_status_info()
         )
     def restore_grants(self, grants):
         cleaned_up_grants = {}
@@ -143,8 +151,8 @@ class DatastoreMixin(BaseMixin):
     def restore_datastore(cls, daemon, host, driver_label,
                             grants = None, databases = None, **ds):
         datastore = cls.create_or_update(daemon, host, driver_label, **ds)
-        # if online, restore grants and related databases
-        if datastore.online:
+        # if enabled, restore grants and related databases
+        if datastore.enabled:
             # restore grants reported by daemon
             datastore.restore_grants(grants)
             datastore.restore_databases(databases)
@@ -160,5 +168,5 @@ class DatastoreMixin(BaseMixin):
     @classmethod
     def refresh_offline_datastores(cls):
         for ds in cls.select():
-            if not ds.online:
+            if not ds.enabled:
                 ds.refresh()

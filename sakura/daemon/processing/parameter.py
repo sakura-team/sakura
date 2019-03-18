@@ -1,10 +1,10 @@
 import numpy as np
-from sakura.common.tools import ObservableEvent
+from sakura.common.tools import ObservableEvent, StatusMixin
 from sakura.common.cache import cache_result
 from sakura.common.errors import ParameterException, InputUncompatible
 
 # Parameter implementation.
-class Parameter(object):
+class Parameter(StatusMixin):
     def __init__(self, gui_type, label):
         self.gui_type = gui_type
         self.label = label
@@ -29,13 +29,18 @@ class Parameter(object):
         self.recheck()
         info = dict(
             gui_type = self.gui_type,
-            label = self.label
+            label = self.label,
+            **self.pack_status_info()
         )
         if self.selected():
             info.update(value = self.get_gui_value())
         else:
             info.update(value = None)
         return info
+
+    @property
+    def enabled(self):
+        return True     # override in subclass if needed
 
     def pack(self):
         print('pack() must be implemented in Parameter subclasses.')
@@ -111,6 +116,29 @@ class ComboParameter(Parameter):
         except ParameterException as e:
             info.update(issue = e.get_issue_name())
         return info
+    @property
+    def enabled(self):
+        return self.at_least_one_possible_value()
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            raise AttributeError
+        return 'This parameter currently has no possible value.'
+    @property
+    def warning_message(self):
+        if self.value is not None:
+            # everything is fine => no warning message
+            raise AttributeError
+        if not self.at_least_one_possible_value():
+            # parameter is actually disabled, reason is given in self.disabled_message
+            raise AttributeError
+        if self.requested_value is not None:
+            return 'Previously selected value is no longer available!'
+        return 'No value is selected!'
+    def at_least_one_possible_value(self):
+        for value in self.get_possible_values():
+            return True
+        return False
     def auto_fill(self):
         for value in self.get_possible_values():
             self.value = value   # take first value if any
@@ -153,10 +181,16 @@ class ColumnSelectionParameter(ComboParameter):
         self.recheck()
     def is_linked_to_plug(self, plug):
         return self.plug == plug
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            raise AttributeError
+        if not self.plug.connected():
+            return 'Input is not connected.'
+        else:
+            return 'Input is not compatible.'
     def check_input_compatible(self):
-        for col_info in self.matching_columns():
-            return True # OK, we have at least one value
-        return False    # no matching column
+        return self.at_least_one_possible_value()
     def matching_columns(self):
         if not self.plug.connected():
             return

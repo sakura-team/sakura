@@ -1,7 +1,7 @@
 from sakura.daemon.processing.source import ComputedSource
-from sakura.common.tools import ObservableEvent
+from sakura.common.tools import ObservableEvent, StatusMixin
 
-class OutputPlug:
+class OutputPlug(StatusMixin):
     def __init__(self, label=None, source=None):
         self._label = label
         self._source = source
@@ -10,7 +10,7 @@ class OutputPlug:
     def source(self):
         if self._source is None:
             # not_ready, return a fake source.
-            # the GUI should be updated to read the "ready" flag.
+            # the GUI should be updated to read the "enabled" flag.
             print('note: fake output source returned (not ready)')
             output_source = ComputedSource('Fake output',
                 lambda: (yield ('output is not ready!',))
@@ -23,10 +23,22 @@ class OutputPlug:
     def source(self, val):
         self._source = val
         self.on_change.notify()
-    def is_ready(self):
+    @property
+    def enabled(self):
         return self._source is not None
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            raise AttributeError
+        return 'The operator could not publish output data yet.'
     def pack(self):
-        info = dict(ready = self.is_ready(), label = 'Output')
+        # caution, the label may be the default value 'Output',
+        # or the source label if provided, or a label provided
+        # as an __init__() parameter of this plug object.
+        # That's why the info dict is built with 3 steps below.
+        info = dict(
+                label = 'Output',
+                **self.pack_status_info())
         info.update(**self.source.pack())
         if self._label is not None:
             info.update(label = self._label)

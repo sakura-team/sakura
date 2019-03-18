@@ -230,7 +230,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
             plugs = sakura.apis.hub.operators[inst_id].outputs;
         }
         plugs[id_in_out].get_range(min, max).then(function (result_in_out) {
-            if (in_out == 'output' || result_info[in_out+'s'][id_in_out].connected) {
+            if (in_out == 'output' || result_info[in_out+'s'][id_in_out].enabled) {
                 var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
                 s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed; margin-bottom: 1px;">\n';
                 s += '<thead><tr>';

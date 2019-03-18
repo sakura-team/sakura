@@ -1,5 +1,6 @@
+from sakura.hub.mixins.bases import BaseMixin
 
-class LinkMixin:
+class LinkMixin(BaseMixin):
     ENABLED = set()
     @property
     def enabled(self):
@@ -10,6 +11,11 @@ class LinkMixin:
             LinkMixin.ENABLED.add(self.id)
         else:
             LinkMixin.ENABLED.discard(self.id)
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            raise AttributeError
+        return 'Output of source operator is not ready.'
     @property
     def dst_daemon(self):
         return self.dst_op.op_class.daemon
@@ -24,13 +30,13 @@ class LinkMixin:
             dst_id = self.dst_op.id,
             dst_in_id = self.dst_in_id,
             gui_data = self.gui_data,
-            enabled = self.enabled
+            **self.pack_status_info()
         )
     def enable(self):
         self.dst_daemon.api.connect_operators(*self.link_args)
         self.enabled = True
     def disable(self):
-        if self.dst_daemon.connected:
+        if self.dst_daemon.enabled:
             self.dst_daemon.api.disconnect_operators(*self.link_args)
         self.enabled = False
     @classmethod

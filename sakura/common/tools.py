@@ -157,3 +157,14 @@ def debug_ending_greenlets():
         print('GREENLET:')
         print(ob)
         print(''.join(traceback.format_stack(ob.gr_frame)))
+
+class StatusMixin:
+    def pack_status_info(self):
+        res = {}
+        if hasattr(self, 'enabled'):
+            res.update(enabled = self.enabled)
+            if not self.enabled:
+                res.update(disabled_message = self.disabled_message)
+        if getattr(self, 'enabled', True) and hasattr(self, 'warning_message'):
+            res.update(warning_message = self.warning_message)
+        return res

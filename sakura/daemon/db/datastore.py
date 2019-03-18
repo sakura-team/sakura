@@ -96,7 +96,7 @@ class DataStore:
         res = dict(
             host = self.host,
             driver_label = self.driver_label,
-            online = self.online,
+            enabled = self.online,
             access_scope = self.access_scope,
             admin = self.sakura_admin
         )

@@ -6,20 +6,26 @@ class DaemonMixin:
 
     @property
     def api(self):
-        if not self.connected:
+        if not self.enabled:
             raise APIRequestErrorOfflineDaemon('Daemon is offline!')
         return DaemonMixin.APIS[self.name]
+
+    @property
+    def disabled_message(self):
+        if self.enabled:
+            raise AttributeError
+        return 'Sakura daemon "%s" is disconnected!' % self.name
 
     @api.setter
     def api(self, value):
         DaemonMixin.APIS[self.name] = value
 
-    # Property 'connected' is not stored in database.
+    # Property 'enabled' is not stored in database.
     # It should be 'volatile'.
     # Each time the hub starts it considers all
     # daemons are disconnected (which is obviously true).
     @property
-    def connected(self):
+    def enabled(self):
         return self.name in DaemonMixin.APIS
 
     def save_api(self, api):
@@ -42,9 +48,9 @@ class DaemonMixin:
     def pack(self):
         return dict(
             name = self.name,
-            connected = self.connected,
             datastores = self.datastores,
-            op_classes = self.op_classes
+            op_classes = self.op_classes,
+            **self.pack_status_info()
         )
 
     @classmethod

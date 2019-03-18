@@ -1,5 +1,6 @@
 from sakura.common.errors import APIObjectDeniedError, APIRequestError
 from sakura.common.access import GRANT_LEVELS, ACCESS_TABLE
+from sakura.common.tools import StatusMixin
 from sakura.hub.access import parse_gui_access_info, find_owner, FilteredView, get_user_type
 from sakura.hub.context import get_context
 from sakura.hub.myemail import sendmail
@@ -20,7 +21,7 @@ Thanks.
 Sakura platform team.
 '''
 
-class BaseMixin:
+class BaseMixin(StatusMixin):
     @property
     def owner(self):
         return find_owner(self.grants)

@@ -7,13 +7,11 @@ from sakura.hub.mixins.bases import BaseMixin
 
 class DataflowMixin(BaseMixin):
     def pack(self):
-        result = dict(
+        return dict(
             dataflow_id = self.id,
             **self.metadata,
             **pack_gui_access_info(self)
         )
-        result.update(**self.metadata)
-        return result
     def get_full_info(self):
         # start with general metadata
         result = self.pack()

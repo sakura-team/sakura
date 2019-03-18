@@ -1,4 +1,12 @@
-class OpClassMixin:
+from sakura.hub.mixins.bases import BaseMixin
+
+class OpClassMixin(BaseMixin):
+    @property
+    def enabled(self):
+        return self.daemon.enabled
+    @property
+    def disabled_message(self):
+        return self.daemon.disabled_message
     def pack(self):
         return dict(
             daemon = self.daemon.name,
@@ -6,7 +14,8 @@ class OpClassMixin:
             name = self.name,
             short_desc = self.short_desc,
             tags = tuple(self.tags),
-            svg = self.icon
+            svg = self.icon,
+            **self.pack_status_info()
         )
     def on_daemon_disconnect(self):
         for op in self.op_instances:
