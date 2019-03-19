@@ -145,10 +145,10 @@ function listRequestStub(idDiv, n, elt, bd) {
             var result = new Array();
             databases.sort(databases_sort);
             databases.forEach( function(db) {
-                result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.online,
+                result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.enabled,
                                 'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
                                 'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
-                if (db.online)
+                if (db.enabled)
                     result_info['owner'] = db.owner;
                 else
                     result_info['name'] += ' <i>(OFFLINE)</i>';

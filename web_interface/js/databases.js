@@ -75,7 +75,7 @@ function datas_update_creation_modal() {
                                 style: "margin: 0px;"});
                 var txt = '<font color="white"><span style="margin: 0px;" class="glyphicon glyphicon-eye-close"></span> ';
                 txt += ds['driver_label']+" service on "+ds['host'];
-                if (!ds['online']) {
+                if (!ds['enabled']) {
                     txt += ' <i>(OFFLINE)</i>';
                 }
                 txt += "</font>";
@@ -86,7 +86,7 @@ function datas_update_creation_modal() {
                                 style: "margin: 0px;"});
                 var txt = '<span style="margin: 0px;" class="glyphicon glyphicon-eye-open"></span> ';
                 txt += ds['driver_label']+" service on "+ds['host'];
-                if (!ds['online']) {
+                if (!ds['enabled']) {
                     txt += ' <i>(OFFLINE)</i>';
                 }
                 p.append(txt);
