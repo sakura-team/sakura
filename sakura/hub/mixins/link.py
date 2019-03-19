@@ -1,4 +1,5 @@
 from sakura.hub.mixins.bases import BaseMixin
+from sakura.hub.context import get_context
 
 class LinkMixin(BaseMixin):
     ENABLED = set()
@@ -46,6 +47,7 @@ class LinkMixin(BaseMixin):
                     src_out_id = src_out_id,
                     dst_op = dst_op,
                     dst_in_id = dst_in_id)
+        get_context().db.commit() # ensure link id is set
         # link remotely
         link.enable()
         return link
