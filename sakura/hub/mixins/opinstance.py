@@ -5,7 +5,7 @@ class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
     @property
     def daemon_api(self):
-        return self.op_class.daemon.api
+        return self.daemon.api
     @property
     def remote_instance(self):
         # note: the following shortcut will become valid only after
@@ -32,11 +32,27 @@ class OpInstanceMixin(BaseMixin):
         if attr != 'warning_message' and not 'internal' in attr:
             return getattr(self.remote_instance, attr)
         raise AttributeError
+
+    def iterate_all_ops_of_cls(self):
+        """Iterates over all operators of this class the current user has."""
+        for op in self.op_class.op_instances:
+            if op.dataflow.owner == self.dataflow.owner:
+                yield op
+
+    @property
+    def num_ops_of_cls(self):
+        """Indicates how many instances of this class the user has."""
+        return len(tuple(self.iterate_all_ops_of_cls()))
+
     def pack(self):
         res = dict(
             op_id = self.id,
             cls_id = self.op_class.id,
+            cls_name = self.op_class.metadata['name'],
+            code_ref = self.code_ref,
+            commit_hash = self.commit_hash,
             gui_data = self.gui_data,
+            num_ops_of_cls = self.num_ops_of_cls,
             **self.pack_status_info()
         )
         if self.enabled:
@@ -46,9 +62,40 @@ class OpInstanceMixin(BaseMixin):
         # recheck params in order (according to param_id)
         for param in sorted(self.params, key=lambda param: param.param_id):
             param.recheck()
+
+    @property
+    def revision(self):
+        return self.code_ref, self.commit_hash
+
+    def update_revision(self, code_ref, commit_hash, all_ops_of_cls=False):
+        if all_ops_of_cls:
+            ops = self.iterate_all_ops_of_cls()
+        else:
+            ops = [ self ]
+        for op in ops:
+            old_revision = op.code_ref, op.commit_hash
+            op.code_ref, op.commit_hash = code_ref, commit_hash
+            try:
+                op.reload_on_daemon()
+            except:
+                # failed, restore
+                op.code_ref, op.commit_hash = old_revision
+                op.reload_on_daemon()
+                raise
+
     def instanciate_on_daemon(self):
-        self.daemon_api.create_operator_instance(self.op_class.name, self.id)
-        # recheck number of parameters with what the daemon reports (possible source code change)
+        self.daemon_api.create_operator_instance(
+            self.id,
+            self.op_class.code_url,
+            self.code_ref,
+            self.commit_hash,
+            self.op_class.code_subdir
+        )
+        self.resync_num_params()
+        # we have it instanciated
+        self.enabled = True
+    def resync_num_params(self):
+        # resync number of parameters with what the daemon reports (possible source code change)
         local_ids = set(param.param_id for param in self.params)
         remote_ids = set(range(self.remote_instance.get_num_parameters()))
         for param in self.params:
@@ -60,8 +107,6 @@ class OpInstanceMixin(BaseMixin):
             context.db.commit()
         for param in self.params:
             param.setup()
-        # we have it instanciated
-        self.enabled = True
     def delete_on_daemon(self):
         self.enabled = False
         self.daemon_api.delete_operator_instance(self.id)
@@ -69,6 +114,15 @@ class OpInstanceMixin(BaseMixin):
         for link in self.downlinks:
             link.disable()
             link.dst_op.disable_downlinks()
+    def reload_on_daemon(self):
+        self.daemon_api.reload_operator_instance(
+            self.id,
+            self.op_class.code_url,
+            self.code_ref,
+            self.commit_hash,
+            self.op_class.code_subdir
+        )
+        self.resync_num_params()
     def on_daemon_disconnect(self):
         # daemon stopped
         for link in self.uplinks:
@@ -86,11 +140,27 @@ class OpInstanceMixin(BaseMixin):
                 return False
         return True
     @classmethod
-    def create_instance(cls, dataflow, op_cls_id):
+    def create_instance(cls, daemon, dataflow, op_cls_id, revision):
+        context = get_context()
+        # if not provided, select a revision (commit hash) appropriate for this user:
+        # - if he has already instanciated operators of this class, and all of them
+        #   are linked to the same revision, re-use this revision
+        # - otherwise use the default revision defined for this class of operators
+        if revision is None:
+            revisions = set()
+            for op in cls.select():
+                if op.op_class.id == op_cls_id and op.dataflow.owner == context.user.login:
+                    revisions.add(op.revision)
+            if len(revisions) == 1:
+                revision = revisions.pop()
+            else:
+                revision = context.op_classes[op_cls_id].default_revision
+        code_ref, commit_hash = revision
         # create in local db
-        op = cls(dataflow = dataflow, op_class = op_cls_id)
+        op = cls(daemon = daemon, dataflow = dataflow, op_class = op_cls_id,
+                 code_ref = code_ref, commit_hash = commit_hash)
         # refresh op id
-        get_context().db.commit()
+        context.db.commit()
         # create remotely
         op.instanciate_on_daemon()
         # auto-set params when possible

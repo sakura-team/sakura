@@ -40,8 +40,8 @@ class DaemonMixin:
         # unregister api object
         del DaemonMixin.APIS[self.name]
         # notify related objects
-        for cls in self.op_classes:
-            cls.on_daemon_disconnect()
+        for op in self.op_instances:
+            op.on_daemon_disconnect()
         for ds in self.datastores:
             ds.on_daemon_disconnect()
 
@@ -49,7 +49,6 @@ class DaemonMixin:
         return dict(
             name = self.name,
             datastores = self.datastores,
-            op_classes = self.op_classes,
             **self.pack_status_info()
         )
 
@@ -62,19 +61,47 @@ class DaemonMixin:
             get_context().db.commit()
         return daemon
 
-    def restore(self, name, datastores, op_classes, **kwargs):
+    def prefetch_code(self):
+        commit_refs = set()
+        for op_cls in get_context().op_classes.select():
+            # code of operator instances
+            for op in op_cls.op_instances:
+                commit_refs.add((op_cls.code_url, op.code_ref, op.commit_hash))
+            # default code ref of op_class
+            commit_refs.add((op_cls.code_url, op_cls.default_code_ref, op_cls.default_commit_hash))
+        # fetch all this
+        for ref in commit_refs:
+            self.api.prefetch_code(*ref)
+
+    def instanciate_op_instances(self):
+        # re-instanciate op instances and their parameters
+        for op in self.op_instances:
+            op.instanciate_on_daemon()
+            # restore params
+            for param in op.params:
+                param.restore()
+        # re-instanciate links when possible
+        for op in self.op_instances:
+            op.restore_links()
+
+    def restore(self, name, datastores, **kwargs):
         context = get_context()
         # update metadata
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
-        # restore op classes
-        self.op_classes = set(context.op_classes.restore_op_class(self, **cls) for cls in op_classes)
-        # re-instanciate op instances and their parameters
-        for op_cls in self.op_classes:
-            for op in op_cls.op_instances:
-                op.instanciate_on_daemon()
-        # re-instanciate links when possible
-        for op_cls in self.op_classes:
-            for op in op_cls.op_instances:
-                op.restore_links()
+        # ensure source code of op classes is fetched on daemon
+        self.prefetch_code()
+        # re-instanciate op instances and related objects (links, parameters)
+        self.instanciate_op_instances()
+
+    @classmethod
+    def all_enabled(cls):
+        for daemon in cls.select():
+            if daemon.enabled:
+                yield daemon
+
+    @classmethod
+    def any_enabled(cls):
+        for daemon in cls.all_enabled():
+            return daemon   # return first

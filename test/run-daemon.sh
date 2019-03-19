@@ -2,7 +2,6 @@
 
 daemon_index="$1"
 shift
-operators=$*
 
 cd $(dirname $0)/..
 TMPDIR=$(mktemp -d /tmp/daemon$daemon_index.XXXXXXXX)
@@ -15,13 +14,6 @@ on_exit()
 
 # whatever happens, call at_exit() at the end.
 trap on_exit EXIT
-
-# prepare daemon conf and operators
-mkdir -p $TMPDIR/operators
-for operator in $operators
-do
-    ln -s $PWD/operators/$operator $TMPDIR/operators/$operator
-done
 
 CUSTOM_DATASTORES_CONF="$PWD/test/daemon${daemon_index}-datastores.conf"
 if [ -f "$CUSTOM_DATASTORES_CONF" ]
@@ -36,7 +28,7 @@ cat > $TMPDIR/daemon.conf << EOF
     "hub-host": "localhost",
     "hub-port": 10432,
     "daemon-desc": "daemon $daemon_index",
-    "operators-dir": "$TMPDIR/operators",
+    "work-dir": "$HOME/.sakura/daemon$daemon_index",
     "data-stores": $DATASTORES_CONF
 }
 EOF

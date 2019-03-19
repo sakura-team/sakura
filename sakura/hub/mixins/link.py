@@ -19,7 +19,7 @@ class LinkMixin(BaseMixin):
         return 'Output of source operator is not ready.'
     @property
     def dst_daemon(self):
-        return self.dst_op.op_class.daemon
+        return self.dst_op.daemon
     @property
     def link_args(self):
         return (self.src_op.id, self.src_out_id, self.dst_op.id, self.dst_in_id)
@@ -58,7 +58,7 @@ class LinkMixin(BaseMixin):
     @classmethod
     def get_possible_links(cls, src_op, dst_op):
         # list possible new links
-        possible_links = dst_op.op_class.daemon.api.get_possible_links(
+        possible_links = dst_op.daemon.api.get_possible_links(
                                 src_op.id, dst_op.id)
         # add existing links
         for l in src_op.downlinks:

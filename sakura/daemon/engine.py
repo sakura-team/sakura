@@ -1,12 +1,13 @@
 import sys, sakura.daemon.conf as conf
-from sakura.daemon.processing.operator import Operator
+from pathlib import Path
 from sakura.common.errors import InputUncompatible
-from sakura.daemon.loading import load_operator_classes, \
-                                load_datastores
+from sakura.daemon.processing.operator import Operator
+from sakura.daemon.loading import load_datastores
+from sakura.daemon.code.git import get_worktree, list_code_revisions
+from sakura.daemon.code.loading import load_op_class
 
 class DaemonEngine(object):
     def __init__(self):
-        self.op_classes = load_operator_classes()
         self.datastores = {}
         for ds in load_datastores(self):
             ds = ds.adapter.adapt(self, ds)
@@ -14,6 +15,7 @@ class DaemonEngine(object):
         self.op_instances = {}
         self.hub = None
         self.name = conf.daemon_desc
+        self.code_workdir = Path(conf.work_dir) / 'code'
     def fire_data_issue(self, issue, should_fail=True):
         if should_fail:
             raise Exception(issue)
@@ -22,23 +24,23 @@ class DaemonEngine(object):
     def register_hub_api(self, hub_api):
         self.hub = hub_api
     def get_daemon_info_serializable(self):
-        op_classes_desc = list(
-            Operator.descriptor(op_cls) for op_cls in self.op_classes.values()
-        )
         return dict(name=self.name,
-                    datastores=tuple(ds.pack() for ds in self.datastores.values()),
-                    op_classes=op_classes_desc)
-    def create_operator_instance(self, cls_name, op_id):
-        op_cls = self.op_classes[cls_name]
+                    datastores=tuple(ds.pack() for ds in self.datastores.values()))
+    def create_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
+        op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
         op = op_cls(op_id)
         op.api = self.hub.operator_apis[op_id]
         op.construct()
         self.op_instances[op_id] = op
-        print("created operator %s op_id=%d" % (cls_name, op_id))
+        print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
         op.auto_fill_parameters()
     def delete_operator_instance(self, op_id):
-        print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
-        del self.op_instances[op_id]
+        if op_id in self.op_instances:
+            print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
+            del self.op_instances[op_id]
+    def reload_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
+        self.delete_operator_instance(op_id)
+        self.create_operator_instance(op_id, code_url, code_ref, commit_hash, code_subdir)
     def is_foreign_operator(self, op_id):
         return op_id not in self.op_instances
     def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id,
@@ -92,3 +94,19 @@ class DaemonEngine(object):
                     links.append((src_out_id, dst_in_id))
         dst_op.set_check_mode(False)
         return links
+    def load_op_class(self, code_url, code_ref, commit_hash, code_subdir):
+        worktree_dir = get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
+        return load_op_class(worktree_dir / code_subdir)
+    def get_op_class_metadata(self, code_url, code_ref, commit_hash, code_subdir):
+        op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
+        return dict(
+            name = op_cls.NAME,
+            tags = op_cls.TAGS,
+            short_desc = op_cls.SHORT_DESC,
+            svg = op_cls.ICON,
+            commit_metadata = op_cls.COMMIT_INFO
+        )
+    def prefetch_code(self, code_url, code_ref, commit_hash):
+        get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
+    def list_code_revisions(self, repo_url):
+        return list_code_revisions(repo_url)

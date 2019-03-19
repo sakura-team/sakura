@@ -1,4 +1,5 @@
 from sakura.hub.web.apitools import api_init
+from sakura.hub.code import list_code_revisions
 
 api = api_init()
 
@@ -29,6 +30,15 @@ class GuiToHubAPI:
     def get_operator_class_info(self, cls_id):
         return self.context.op_classes[cls_id]
 
+    @api.op_classes.register
+    def register_op_class(self, code_url, default_code_ref, default_commit_hash, code_subdir):
+        return self.context.op_classes.register(self.context, code_url, \
+                            default_code_ref, default_commit_hash, code_subdir)
+
+    @api.op_classes.__getitem__.update_default_revision
+    def update_op_class_default_revision(self, cls_id, code_ref, commit_hash):
+        return self.context.op_classes[cls_id].update_default_revision(code_ref, commit_hash)
+
     # instantiate an operator and return the instance info
     @api.operators.create
     def create_operator_instance(self, dataflow_id, cls_id):
@@ -49,6 +59,10 @@ class GuiToHubAPI:
         # use the web session ID to uniquely identify this event listener
         return self.context.op_instances[op_id].next_events(
                         self.context.session.id, timeout)
+
+    @api.operators.__getitem__.update_revision
+    def update_op_revision(self, op_id, code_ref, commit_hash, all_ops_of_cls=False):
+        return self.context.op_instances[op_id].update_revision(code_ref, commit_hash, all_ops_of_cls)
 
     @api.operators.__getitem__.parameters.__getitem__.set_value
     def set_parameter_value(self, op_id, param_id, value):
@@ -345,3 +359,9 @@ class GuiToHubAPI:
     @api.transfers.__getitem__.abort
     def abort_transfer(self, transfer_id):
         return self.context.abort_transfer(transfer_id)
+
+    # Misc features
+    ###############
+    @api.misc.list_code_revisions
+    def list_code_revisions(self, repo_url, **opts):
+        return list_code_revisions(repo_url, **opts)

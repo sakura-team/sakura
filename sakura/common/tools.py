@@ -1,6 +1,8 @@
-import sys, gevent
+import os, sys, gevent
+from pathlib import Path
 from gevent.queue import Queue
 import ctypes
+from gevent.subprocess import run, PIPE, STDOUT
 
 class StdoutProxy(object):
     def __init__(self, stdout):
@@ -168,3 +170,16 @@ class StatusMixin:
         if getattr(self, 'enabled', True) and hasattr(self, 'warning_message'):
             res.update(warning_message = self.warning_message)
         return res
+
+def run_cmd(cmd, cwd=None, **options):
+    if cwd is not None:
+        saved_cwd = Path.cwd()
+        os.chdir(str(cwd))
+    print(str(Path.cwd()) + ': ' + cmd)
+    status = run(cmd, shell=True, stdout=PIPE, stderr=STDOUT, **options)
+    if status.returncode != 0:
+        print(status.stdout)
+        raise Exception(cmd + ' failed!')
+    if cwd is not None:
+        os.chdir(str(saved_cwd))
+    return status.stdout.decode(sys.stdout.encoding)
