@@ -275,3 +275,6 @@ class OpInstanceMixin(BaseMixin):
             if self.ready():
                 for link in self.downlinks:
                     link.dst_op.restore_links()
+    def restore(self):
+        self.instanciate_on_daemon()
+        self.restore_links()

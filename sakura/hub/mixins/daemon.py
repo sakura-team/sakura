@@ -73,16 +73,9 @@ class DaemonMixin:
         for ref in commit_refs:
             self.api.prefetch_code(*ref)
 
-    def instanciate_op_instances(self):
-        # re-instanciate op instances and their parameters
+    def restore_op_instances(self):
         for op in self.op_instances:
-            op.instanciate_on_daemon()
-            # restore params
-            for param in op.params:
-                param.restore()
-        # re-instanciate links when possible
-        for op in self.op_instances:
-            op.restore_links()
+            op.restore()
 
     def restore(self, name, origin_id, datastores, **kwargs):
         context = get_context()
@@ -94,7 +87,7 @@ class DaemonMixin:
         # ensure source code of op classes is fetched on daemon
         self.prefetch_code()
         # re-instanciate op instances and related objects (links, parameters)
-        self.instanciate_op_instances()
+        self.restore_op_instances()
 
     @classmethod
     def all_enabled(cls):
