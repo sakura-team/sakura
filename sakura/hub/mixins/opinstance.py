@@ -102,10 +102,10 @@ class OpInstanceMixin(BaseMixin):
             self.commit_hash,
             self.op_class.code_subdir
         )
-        self.resync_num_params()
+        self.resync_params()
         # we have it instanciated
         self.enabled = True
-    def resync_num_params(self):
+    def resync_params(self):
         # resync number of parameters with what the daemon reports (possible source code change)
         local_ids = set(param.param_id for param in self.params)
         remote_ids = set(range(self.remote_instance.get_num_parameters()))
@@ -116,6 +116,7 @@ class OpInstanceMixin(BaseMixin):
         for param_id in (remote_ids - local_ids):
             param = context.op_params(op = self, param_id = param_id) # instanciate in local db
             context.db.commit()
+        # send previously recorded param value, subscribe to remote events
         for param in self.params:
             param.setup()
     def delete_on_daemon(self):
@@ -133,7 +134,7 @@ class OpInstanceMixin(BaseMixin):
             self.commit_hash,
             self.op_class.code_subdir
         )
-        self.resync_num_params()
+        self.resync_params()
     def on_daemon_disconnect(self):
         # daemon stopped
         for link in self.uplinks:
