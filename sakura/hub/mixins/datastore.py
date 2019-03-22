@@ -170,3 +170,10 @@ class DatastoreMixin(BaseMixin):
         for ds in cls.select():
             if not ds.enabled:
                 ds.refresh()
+    def describe_col_tags(self):
+        ds_col_tags = {}
+        for db in self.databases:
+            db_col_tags = db.describe_col_tags()
+            if len(db_col_tags) > 0:
+                ds_col_tags[db.name] = db_col_tags
+        return ds_col_tags

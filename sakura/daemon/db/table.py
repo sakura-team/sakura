@@ -41,3 +41,10 @@ class DBTable:
         stream = self.source().chunks()
         yield from stream_csv(
                     header_labels, stream, gzip_compression)
+    @property
+    def col_tags_info(self):
+        if self.name not in self.db.col_tags_info:
+            self.db.col_tags_info[self.name] = [()] * len(self.columns)
+        return self.db.col_tags_info[self.name]
+    def set_col_tags(self, col_tags_info):
+        self.db.col_tags_info[self.name] = col_tags_info

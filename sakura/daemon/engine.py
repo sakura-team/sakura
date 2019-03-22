@@ -19,6 +19,7 @@ class DaemonEngine(object):
         self.name = conf.daemon_desc
         self.code_workdir = Path(conf.work_dir) / 'code'
         self.origin_id = ORIGIN_ID
+        self.col_tags_info = {}
     def fire_data_issue(self, issue, should_fail=True):
         if should_fail:
             raise Exception(issue)
@@ -119,3 +120,5 @@ class DaemonEngine(object):
         get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
     def list_code_revisions(self, repo_url):
         return list_code_revisions(repo_url)
+    def set_col_tags(self, col_tags_info):
+        self.col_tags_info = col_tags_info

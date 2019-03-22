@@ -140,3 +140,8 @@ class DataStore:
         with self.admin_connect() as admin_conn:
             self.driver.delete_db(admin_conn, db_name)
         self.refresh()
+    @property
+    def col_tags_info(self):
+        if (self.host, self.driver_label) not in self.engine.col_tags_info:
+            self.engine.col_tags_info[(self.host, self.driver_label)] = {}
+        return self.engine.col_tags_info[(self.host, self.driver_label)]

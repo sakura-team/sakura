@@ -7,12 +7,14 @@ STANDARD_COLUMN_TAGS = (
 
 class ColumnMixin:
     def pack(self):
+        return self.col_name, self.col_type, self.tags
+    @property
+    def tags(self):
         # TODO: we should not expose daemon tags here, they
         # should only be used for the processing on the daemon side.
         # on the daemon side, the abstract type (e.g. timestamp, etc.)
         # should be returned when probing, instead of native db type + tags.
-        tags = tuple(set(self.daemon_tags) | set(self.user_tags)) # union
-        return self.col_name, self.col_type, tags
+        return tuple(set(self.daemon_tags) | set(self.user_tags)) # union
     def pack_for_daemon(self):
         return self.col_name, self.col_type
     @classmethod

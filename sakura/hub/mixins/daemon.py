@@ -84,10 +84,20 @@ class DaemonMixin:
         self.set(**kwargs)
         # restore datastores and related components (databases, tables, columns)
         self.datastores = set(context.datastores.restore_datastore(self, **ds) for ds in datastores)
+        self.restore_col_tags()
         # ensure source code of op classes is fetched on daemon
         self.prefetch_code()
         # re-instanciate op instances and related objects (links, parameters)
         self.restore_op_instances()
+
+    def restore_col_tags(self):
+        daemon_col_tags = {}
+        for ds in self.datastores:
+            ds_col_tags = ds.describe_col_tags()
+            if len(ds_col_tags) > 0:
+                daemon_col_tags[(ds.host, ds.driver_label)] = ds_col_tags
+        if len(daemon_col_tags) > 0:
+            self.api.set_col_tags(daemon_col_tags)
 
     @classmethod
     def all_enabled(cls):

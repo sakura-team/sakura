@@ -73,3 +73,8 @@ class Database:
         self.dbms.driver.delete_table(db_conn, table_name)
         db_conn.close()
         self.refresh_tables()
+    @property
+    def col_tags_info(self):
+        if self.db_name not in self.dbms.col_tags_info:
+            self.dbms.col_tags_info[self.db_name] = {}
+        return self.dbms.col_tags_info[self.db_name]

@@ -134,3 +134,10 @@ class DatabaseMixin(BaseMixin):
         self.datastore.remote_instance.delete_database(self.name)
         # delete instance in local db
         self.delete()
+    def describe_col_tags(self):
+        db_col_tags = {}
+        for tbl in self.tables:
+            tbl_col_tags = tbl.describe_col_tags()
+            if max(map(len, tbl_col_tags)) > 0:
+                db_col_tags[tbl.name] = tbl_col_tags
+        return db_col_tags

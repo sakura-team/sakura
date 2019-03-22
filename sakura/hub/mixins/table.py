@@ -40,11 +40,16 @@ class TableMixin(BaseMixin):
                 remote_columns = fk_info['remote_columns'],
                 remote_table = remote_table.name
             ))
+        # create table on daemon
         self.database.remote_instance.create_table(
                 self.name,
                 tuple(c.pack_for_daemon() for c in self.ordered_columns),
                 self.primary_key,
                 fk)
+        # let daemon know about user-defined tags
+        tbl_col_tags = self.describe_col_tags()
+        if max(map(len, tbl_col_tags)) > 0:
+            self.remote_instance.set_col_tags(tbl_col_tags)
     def delete_table(self):
         self.database.assert_grant_level(GRANT_LEVELS.write,
                     'You are not delete a table of this database.')
@@ -121,3 +126,8 @@ class TableMixin(BaseMixin):
             transfer.notify_status(rows_transfered, rows_estimate, bytes_transfered)
             yield s
         transfer.notify_done()
+    def describe_col_tags(self):
+        tbl_col_tags = []
+        for col in self.ordered_columns:
+            tbl_col_tags.append(col.user_tags)
+        return tbl_col_tags
