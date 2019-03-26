@@ -91,7 +91,7 @@ function fill_params(id) {
         else {
             result['parameters'].forEach( function (item) {
                 index++;
-                
+
                 if (item['gui_type'] == 'COMBO') {
                     var ndiv = document.createElement('div');
                     ndiv.setAttribute('align', 'center');
@@ -115,12 +115,20 @@ function fill_params(id) {
                         warn_icon.style = 'color:red;';
                     }
                     else {
-                        for (var i =0; i< item['possible_values'].length; i++) {
+                        for (var i =0; i <item['possible_values'].length; i++) {
                             var pvalue = item['possible_values'][i];
                             if (pvalue.length > 40)
                                 pvalue = pvalue.substring(0,37) + '...';
-                            select.options[i] = new Option(pvalue);
+                            select.add(new Option(pvalue));
+                            if (i == item['value']) {
+                                select.selectedIndex = i;
+                            }
                         }
+                        if (item['Value'] == 'None') {
+                            select.add(new Option('None'));
+                            select.selectedIndex = item['possible_values'].length;
+                        }
+
                         if (item['warning_message']) {
                             warn_icon.title = item['warning_message'];
                             warn_icon.style = 'color:orange;';
