@@ -78,49 +78,68 @@ function fill_tabs(id) {
 
 function fill_params(id) {
     sakura.apis.hub.operators[parseInt(id.split("_")[2])].info().then(function (result) {
-            var d = document.getElementById('modal_'+id+'_tab_params');
-            while (d.firstChild) {
-                d.removeChild(d.firstChild);
-            }
+        var d = document.getElementById('modal_'+id+'_tab_params');
+        while (d.firstChild) {
+            d.removeChild(d.firstChild);
+        }
 
-            var index = -1;
+        var index = -1;
 
-            if (result['parameters'].length == 0) {
-                d.innerHTML = '<br><p align="center"> No Params</p>';
-            }
-
+        if (result['parameters'].length == 0) {
+            d.innerHTML = '<br><p align="center"> No Params</p>';
+        }
+        else {
             result['parameters'].forEach( function (item) {
                 index++;
+                
+                if (item['gui_type'] == 'COMBO') {
+                    var ndiv = document.createElement('div');
+                    ndiv.setAttribute('align', 'center');
+                    ndiv.id = 'modal_'+id+'_tab_params_'+index;
 
-                if (item['issue']) {
-                    d.innerHTML = '<br><p align="center">'+item['issue']+'</p>';
+                    var label = document.createElement('label');
+                    label.innerHTML = item['label']+'&nbsp;'+'&nbsp;'+'&nbsp;';
+
+                    var select      = document.createElement('select');
+                    select.id       = 'modal_'+id+'_tab_params_select_'+index;
+                    select.onchange = function(){
+                        params_onChange(id, index, select.id);
+                    };
+
+                    var warn_icon = document.createElement("span");
+                    warn_icon.className ="glyphicon glyphicon-warning-sign icon-large";
+
+                    if (!item['enabled']) {
+                        select.disabled = true;
+                        warn_icon.title = item['disabled_message'];
+                        warn_icon.style = 'color:red;';
+                    }
+                    else {
+                        for (var i =0; i< item['possible_values'].length; i++) {
+                            var pvalue = item['possible_values'][i];
+                            if (pvalue.length > 40)
+                                pvalue = pvalue.substring(0,37) + '...';
+                            select.options[i] = new Option(pvalue);
+                        }
+                        if (item['warning_message']) {
+                            warn_icon.title = item['warning_message'];
+                            warn_icon.style = 'color:orange;';
+                        }
+                    }
+
+                    ndiv.appendChild(document.createElement('br'));
+                    ndiv.appendChild(label);
+                    ndiv.appendChild(select);
+                    if (!item['enabled'] || item['warning_message']) {
+                        ndiv.appendChild(warn_icon);
+                    }
+                    d.appendChild(ndiv);
                 }
                 else {
-                    if (item['gui_type'] == 'COMBO') {
-                        var ndiv = document.createElement('div');
-                        ndiv.setAttribute('align', 'center');
-                        ndiv.id = 'modal_'+id+'_tab_params_'+index;
-                        var select_id = 'modal_'+id+'_tab_params_select_'+index;
-                        var s = '<br>'+item['label']+' <select id="'+select_id+'" onChange="params_onChange(\''+id+'\', '+index+',\''+select_id+'\');">';
-
-                        //adding possible values in combo
-                        for (var i =0; i< item['possible_values'].length; i++) {
-                            var label = item['possible_values'][i];
-                            if (label.length > 40)
-                                label = label.substring(0,37) + '...';
-                            if (i == item['value'])
-                                s += ' <option selected> '+label+'</option>';
-                            else
-                                s += ' <option> '+label+'</option>';
-                        };
-                        s += ' </select>';
-                        ndiv.innerHTML = s;
-                        d.appendChild(ndiv);
-                    }
-                    else
-                        console.log("Ouch !!!");
+                    console.log("Ouch !!!");
                 }
             });
+        }
     });
 }
 
