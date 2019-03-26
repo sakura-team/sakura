@@ -102,6 +102,8 @@ function fill_params(id) {
                         ndiv.id = 'modal_'+id+'_tab_params_'+index;
                         var select_id = 'modal_'+id+'_tab_params_select_'+index;
                         var s = '<br>'+item['label']+' <select id="'+select_id+'" onChange="params_onChange(\''+id+'\', '+index+',\''+select_id+'\');">';
+
+                        //adding possible values in combo
                         for (var i =0; i< item['possible_values'].length; i++) {
                             var label = item['possible_values'][i];
                             if (label.length > 40)
@@ -138,10 +140,10 @@ function params_onChange(op_id, param_index, select_id) {
     let hub_remote_op = sakura.apis.hub.operators[parseInt(op_id.split("_")[2])];
     hub_remote_op.info().then(function (instance_info) {
         let param_value = index;
-        hub_remote_op.parameters[param_index].set_value(param_value).then(function (result2) {
+        hub_remote_op.parameters[param_index].set_value(param_value).then(function (result) {
             current_instance_info = instance_info;
-            if (result2)
-                console.log(result2);
+            if (result)
+                console.log(result);
             else {
                 fill_in_out('output', op_id);
                 var index = 0;
@@ -150,6 +152,7 @@ function params_onChange(op_id, param_index, select_id) {
                     iframe.src = iframe.src;
                     index += 1;
                 });
+
                 // value change on one param may change possible values of another one.
                 fill_params(op_id);
             }

@@ -66,6 +66,7 @@ function current_dataflow() {
     //Now we ask for the operator classes
     sakura.apis.hub.op_classes.list().then(function (result) {
         global_ops_cl = JSON.parse(JSON.stringify(result));
+
         //Then we ask for the instance ids
         sakura.apis.hub.dataflows[current_dataflow_id].info().then(function (df_info) {
             df_info.op_instances.forEach( function(opi) {

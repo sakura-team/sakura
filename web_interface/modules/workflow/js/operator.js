@@ -71,10 +71,11 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
     ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
 
-
     ndiv.style.left     = drop_x+"px";
     ndiv.style.top      = drop_y+"px";
-    ndiv.ondblclick     = open_op_modal;
+    if (info['enabled']) {
+        ndiv.ondblclick     = open_op_modal;
+    }
     ndiv.oncontextmenu  = open_op_menu;
     ndiv.onmouseenter   = op_mouse_enter;
     ndiv.onmouseleave   = op_mouse_leave;
@@ -105,7 +106,8 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                                                 });
 
     //Now the modal for parameters/creation/visu/...
-    create_op_modal(main_div, ndiv.id, parseInt(id), info.tabs);
+    if (info['enabled'])
+        create_op_modal(main_div, ndiv.id, parseInt(id), info.tabs);
 
     global_ops_inst.push({  hub_id      : info.op_id,
                             cl          : class_from_id(parseInt(id)),

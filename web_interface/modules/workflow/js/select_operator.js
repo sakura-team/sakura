@@ -195,15 +195,33 @@ function select_op_on_change() {
 
 
 function select_op_new_operator(id, removable) {
+
     var cl = class_from_id(id);
     var ndiv = document.createElement('div');
     var s = '';
+    var svg = cl.svg;
+    if (!cl.enabled) {
+        var v0 = cl.svg.indexOf('<svg');
+        if (v0 == -1)
+            v0 = cl.svg.indexOf('< svg');
+        var v1 = cl.svg.indexOf('>', v0);
+        var v2 = cl.svg.lastIndexOf('</');
+        var v3 = cl.svg.lastIndexOf('>');
+        var head  = cl.svg.substring(0, v1+1);
+        var end   = cl.svg.substring( v2, v3+1);
+        var middle= cl.svg.substring(v1+1, v2);
+
+        var new_layer = '<rect x="-500" y="-500" fill-opacity="0.4" fill="white" width="1000" height="1000"/> \
+                        <rect x="-500" y="0" fill="white" width="1000" height="15"/> \
+                        <text x="0" y="13" font-size="10"> disabled</text>';
+        svg = head+middle+new_layer+end;
+    }
     if (removable) {
         ndiv.id = "select_op_selected_"+cl.id+'_rem';
         s = '   <div> \
                     <table> \
                         <tr> \
-                            <td align="center">'+cl.svg+ ' \
+                            <td align="center">'+svg+ ' \
                             <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+cl.id+'\');" style="cursor: pointer;"/> \
                         <tr>';
     }
@@ -215,7 +233,7 @@ function select_op_new_operator(id, removable) {
         s = '   <div> \
                     <table> \
                         <tr> \
-                            <td align="center">'+cl.svg+ ' \
+                            <td align="center">'+svg+ ' \
                         <tr>';
     }
 
@@ -275,7 +293,6 @@ function select_op_add_panel() {
         title  = "Panel 0";
         var cpt = 0;
         global_op_panels.forEach( function (p) {
-            console.log(p);
             if (p['title'] == title) {
                  cpt += 1;
             }
