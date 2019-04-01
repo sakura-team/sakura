@@ -16,6 +16,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         ndiv.setAttribute('draggable', 'false');
         ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
         ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
+        ndiv.childNodes[1].childNodes[3].id = ndiv.id+"_warning";
 
         ndiv.style.left     = drop_x+"px";
         ndiv.style.top      = drop_y+"px";
@@ -70,6 +71,7 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     ndiv.setAttribute('draggable', 'false');
     ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
     ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
+    ndiv.childNodes[1].childNodes[3].id = ndiv.id+"_warning";
 
     ndiv.style.left     = drop_x+"px";
     ndiv.style.top      = drop_y+"px";
