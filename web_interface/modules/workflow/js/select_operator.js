@@ -195,7 +195,6 @@ function select_op_on_change() {
 
 
 function select_op_new_operator(id, removable) {
-
     var cl = class_from_id(id);
     var ndiv = document.createElement('div');
     var s = '';
@@ -227,7 +226,9 @@ function select_op_new_operator(id, removable) {
     }
     else {
         ndiv.id = "select_op_selected_"+cl.id+"_static";
-        ndiv.setAttribute('draggable', 'true');
+        if (cl.enabled) {
+            ndiv.setAttribute('draggable', 'true');
+        }
         ndiv.style.zIndex = '2';
         ndiv.classList.add("sakura_static_operator");
         s = '   <div> \
