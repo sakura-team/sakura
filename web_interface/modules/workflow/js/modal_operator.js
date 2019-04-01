@@ -205,6 +205,13 @@ function fill_in_out(in_out, id) {
             d.innerHTML = '<br><p align="center"> No '+in_out+'s</p>';
             return;
         }
+        /*else {
+            result_info[in_out+'s'].forEach( function(elt) {
+                if (!elt.enabled) {
+                    d.innerHTML = '<br><p align="center">'+elt.disabled_message+'</p>';
+                }
+            });
+        }*/
 
         var div_tab = document.createElement('div');
         div_tab.className = 'modal-body';
@@ -231,12 +238,12 @@ function fill_in_out(in_out, id) {
         div_tab.appendChild(tab_content);
         d.appendChild(div_tab);
 
-        fill_one_in_out(in_out, id, 0, 0, current_nb_rows);
+        fill_one_in_out(in_out, id, 0, 0, current_nb_rows, );
     });
 }
 
 
-function fill_one_in_out(in_out, id, id_in_out, min, max) {
+function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
     var d = document.getElementById(id+'_'+in_out+'_'+id_in_out);
     var inst_id = parseInt(id.split("_")[2]);
 
@@ -363,6 +370,10 @@ function fill_one_in_out(in_out, id, id_in_out, min, max) {
                 butt.append('&nbsp;Download');
                 s+= '<table width="100%"><tr><td>'+ul+'<td align="right">'+butt.get(0).outerHTML+'</table>';
                 d.innerHTML = s;
+            }
+            else {
+                console.log(plugs);
+                d.innerHTML = '<br><p align="center">'+result_info[in_out+'s'][id_in_out].disabled_message+'</p>';
             }
         });
     });
