@@ -273,14 +273,20 @@ function remove_link(link) {
     global_links.forEach( function (l) {
         refresh_link_modal(l);
     });
-
+    sakura.apis.hub.operators[link.src].info().then(function (source_inst_info) {
+        sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
+            check_operator(source_inst_info);
+            check_operator(target_inst_info);
+        });
+    });
 }
 
 
 function remove_connection(hub_id) {
     global_links.forEach( function(link) {
-        if (link.src == hub_id || link.dst == hub_id)
+        if (link.src == hub_id || link.dst == hub_id) {
             remove_link(link, true);
+        }
     });
 }
 

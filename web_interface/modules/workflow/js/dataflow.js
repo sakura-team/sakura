@@ -76,6 +76,9 @@ function current_dataflow() {
                 }
             });
             create_dataflow_links(df_info.links);
+            df_info.op_instances.forEach( function(opi) {
+                check_operator(opi);
+            });
         });
     });
 
