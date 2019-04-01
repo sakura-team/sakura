@@ -75,9 +75,9 @@ main_div.addEventListener("drop", function( e ) {
                 div_out.innerHTML = svg_round_square_crossed("");
 
                 currently_dragged = null;
-
                 save_dataflow();
                 refresh_link_modal(link);
+
             });
         }
         else {

@@ -173,6 +173,7 @@ function refresh_link_modal(link) {
     sakura.apis.hub.links.list_possible(link.src, link.dst).then(function (p_links) {
         sakura.apis.hub.operators[link.src].info().then(function (source_inst_info) {
             sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
+
                 //sources
                 for(var i=0; i<source_inst_info.outputs.length;i++) {
                     var found = false;
@@ -218,6 +219,9 @@ function refresh_link_modal(link) {
                         div_square.attr('draggable', 'False');
                     }
                 }
+
+                check_operator(source_inst_info);
+                check_operator(target_inst_info);
             });
         });
     });
@@ -355,7 +359,6 @@ function delete_link_param(link, side, id) {
 
 
 function create_link_line(link, _out, _in) {
-
 
     //Making a fake connection
     var mdiv = document.getElementById("modal_link_"+link.id+"_body");

@@ -118,6 +118,42 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                             });
 }
 
+function check_operator(op) {
+    var disabled  = false;
+    var warning   = false;
+    var d_message = '';
+    var w_message = '';
+
+    op.inputs.forEach( function(inp) {
+        if (!inp.enabled) {
+            disabled = true;
+            d_message = inp.disabled_message;
+        }
+        else if (inp.warning_message) {
+            console.log('Warn', inp.warning_message)
+            warning = true;
+            w_message = inp.warning_message;
+        }
+    });
+
+    var inst = global_ops_inst[instance_index_from_id(op.op_id)];
+    var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
+    w_div = document.getElementById(id+"_warning");
+
+    if (disabled) {
+        w_div.style.color       = 'red';
+        w_div.title             = d_message;
+        w_div.style.visibility  = "visible";
+    }
+    else if (warning) {
+        w_div.style.color       = 'orange';
+        w_div.title             = w_message;
+        w_div.style.visibility  = "visible";
+    }
+    else {
+        w_div.style.visibility  = "hidden";
+    }
+}
 
 function remove_operator_instance(id, on_hub) {
 
