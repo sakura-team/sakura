@@ -117,17 +117,25 @@ function fill_params(id) {
             d.innerHTML = '<br><p align="center"> No Params</p>';
         }
         else {
+            var tbl   = document.createElement("table");
+            tbl.align = 'center';
+
             result['parameters'].forEach( function (item) {
                 index++;
 
                 if (item['gui_type'] == 'COMBO') {
-                    var ndiv = document.createElement('div');
-                    ndiv.setAttribute('align', 'center');
-                    ndiv.id = 'modal_'+id+'_tab_params_'+index;
+                    var tr   = document.createElement("tr");
+                    var td1   = document.createElement("td");
+                    var td2   = document.createElement("td");
+                    var td3   = document.createElement("td");
+                    td3.style.padding = '3px';
 
-                    var label = document.createElement('label');
-                    label.innerHTML = item['label']+'&nbsp;'+'&nbsp;'+'&nbsp;';
+                    //Label
+                    td2.innerHTML = item['label']+'&nbsp;'+'&nbsp;'+'&nbsp;';
+                    if (!item['enabled'] || item['warning_message'])
+                        td2.innerHTML = '&nbsp;'+'&nbsp;'+'&nbsp;'+item['label']+'&nbsp;'+'&nbsp;'+'&nbsp;';
 
+                    //Select & warn icon
                     var select      = document.createElement('select');
                     select.id       = 'modal_'+id+'_tab_params_select_'+index;
                     select.onchange = function(){
@@ -162,19 +170,23 @@ function fill_params(id) {
                             warn_icon.style = 'color:orange;';
                         }
                     }
+                    td3.appendChild(select);
 
-                    ndiv.appendChild(document.createElement('br'));
-                    ndiv.appendChild(label);
-                    ndiv.appendChild(select);
                     if (!item['enabled'] || item['warning_message']) {
-                        ndiv.appendChild(warn_icon);
+                        td1.appendChild(warn_icon);
                     }
-                    d.appendChild(ndiv);
+
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    tr.appendChild(td3);
+                    tbl.appendChild(tr);
                 }
                 else {
                     console.log("Ouch !!!");
                 }
             });
+            d.appendChild(document.createElement('br'));
+            d.appendChild(tbl);
         }
     });
 }

@@ -59,6 +59,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
         //Now we add the current coordinates of the operator to the hub
         save_dataflow();
+        check_operator(result);
     });
 }
 
