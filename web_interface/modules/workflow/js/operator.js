@@ -90,27 +90,26 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
 
     var e_in = null;
     var e_out = null;
-    if ( info.inputs.length > 0) {
-        e_in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
-                                                isTarget:true,
-                                                uuid:"ep_"+ndiv.id+"_in",
-                                                cssClass:"sakura_endPoint",
-                                                paintStyle:{fillStyle:"black", radius:6},
-                                                hoverPaintStyle:{ fillStyle:"black", radius:10}
-                                                });
-    }
-    if (info.outputs.length > 0)
-        e_out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
-                                                isSource:true,
-                                                uuid:"ep_"+ndiv.id+"_out",
-                                                cssClass:"sakura_endPoint",
-                                                paintStyle:{fillStyle:"black", radius:6},
-                                                hoverPaintStyle:{ fillStyle:"black", radius:10}
-                                                });
-
-    //Now the modal for parameters/creation/visu/...
-    if (info['enabled'])
+    if (info.enabled) {
+        if ( info.inputs.length > 0) {
+            e_in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
+                                                    isTarget:true,
+                                                    uuid:"ep_"+ndiv.id+"_in",
+                                                    cssClass:"sakura_endPoint",
+                                                    paintStyle:{fillStyle:"black", radius:6},
+                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                    });
+        }
+        if (info.outputs.length > 0)
+            e_out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
+                                                    isSource:true,
+                                                    uuid:"ep_"+ndiv.id+"_out",
+                                                    cssClass:"sakura_endPoint",
+                                                    paintStyle:{fillStyle:"black", radius:6},
+                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                    });
         create_op_modal(main_div, ndiv.id, parseInt(id), info.tabs);
+    }
 
     global_ops_inst.push({  hub_id      : info.op_id,
                             cl          : class_from_id(parseInt(id)),
@@ -125,34 +124,36 @@ function check_operator(op) {
     var d_message = '';
     var w_message = '';
 
-    op.inputs.forEach( function(inp) {
-        if (!inp.enabled) {
-            disabled = true;
-            d_message = inp.disabled_message;
-        }
-        else if (inp.warning_message) {
-            console.log('Warn', inp.warning_message)
-            warning = true;
-            w_message = inp.warning_message;
-        }
-    });
+    if (op.enabled) {
+        op.inputs.forEach( function(inp) {
+            if (!inp.enabled) {
+                disabled = true;
+                d_message = inp.disabled_message;
+            }
+            else if (inp.warning_message) {
+                console.log('Warn', inp.warning_message)
+                warning = true;
+                w_message = inp.warning_message;
+            }
+        });
 
-    var inst = global_ops_inst[instance_index_from_id(op.op_id)];
-    var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
-    w_div = document.getElementById(id+"_warning");
+        var inst = global_ops_inst[instance_index_from_id(op.op_id)];
+        var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
+        w_div = document.getElementById(id+"_warning");
 
-    if (disabled) {
-        w_div.style.color       = 'red';
-        w_div.title             = d_message;
-        w_div.style.visibility  = "visible";
-    }
-    else if (warning) {
-        w_div.style.color       = 'orange';
-        w_div.title             = w_message;
-        w_div.style.visibility  = "visible";
-    }
-    else {
-        w_div.style.visibility  = "hidden";
+        if (disabled) {
+            w_div.style.color       = 'red';
+            w_div.title             = d_message;
+            w_div.style.visibility  = "visible";
+        }
+        else if (warning) {
+            w_div.style.color       = 'orange';
+            w_div.title             = w_message;
+            w_div.style.visibility  = "visible";
+        }
+        else {
+            w_div.style.visibility  = "hidden";
+        }
     }
 }
 
@@ -170,8 +171,10 @@ function remove_operator_instance(id, on_hub) {
 
     //remove modal
     var mod = document.getElementById("modal_"+id);
-    mod.outerHTML = "";
-    delete mod;
+    if (mod) {
+        mod.outerHTML = "";
+        delete mod;
+    }
     op_focus_id = null;
 
     //Remove from the list of instances

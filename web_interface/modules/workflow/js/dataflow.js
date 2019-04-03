@@ -14,37 +14,39 @@ function create_dataflow_links(df_links) {
 
     //Creating the links
     df_links.forEach( function (link) {
-        var lgui = eval("("+link.gui_data+")");
-        if (! link_exist(link.src_id, link.dst_id)) {
-            var src_inst = instance_from_id(link.src_id);
-            var dst_inst = instance_from_id(link.dst_id);
+        if (link.enabled) {
+            var lgui = eval("("+link.gui_data+")");
+            if (! link_exist(link.src_id, link.dst_id)) {
+                var src_inst = instance_from_id(link.src_id);
+                var dst_inst = instance_from_id(link.dst_id);
 
-            //jsPlumb creation
-            global_dataflow_jsFlag = false;
-            js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
-            global_dataflow_jsFlag = true;
+                //jsPlumb creation
+                global_dataflow_jsFlag = false;
+                js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
+                global_dataflow_jsFlag = true;
 
-            //our creation
-            create_link_from_hub(js_link.id, link.link_id, link.src_id, link.dst_id, link.src_out_id, link.dst_in_id, lgui);
-        }
-        else {
-            var link = link_from_instances(link.src_id, link.dst_id);
-            var interval_id = null;
-            var check_modal = function () {
-                if (link.modal) {
-                    link.params.push({  'out_id': link.src_out_id,
-                                        'in_id': link.dst_in_id,
-                                        'hub_id': link.link_id,
-                                        'top':    lgui.top,
-                                        'left':   lgui.left,
-                                        'line':  lgui.line});
-                    $("#svg_modal_link_"+link.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
-                    $("#svg_modal_link_"+link.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
-                    copy_link_line(link, link.src_out_id, link.dst_in_id, lgui);
-                    clearInterval(interval_id);
-                }
+                //our creation
+                create_link_from_hub(js_link.id, link.link_id, link.src_id, link.dst_id, link.src_out_id, link.dst_in_id, lgui);
             }
-            interval_id = setInterval(check_modal, 500);
+            else {
+                var link = link_from_instances(link.src_id, link.dst_id);
+                var interval_id = null;
+                var check_modal = function () {
+                    if (link.modal) {
+                        link.params.push({  'out_id': link.src_out_id,
+                                            'in_id': link.dst_in_id,
+                                            'hub_id': link.link_id,
+                                            'top':    lgui.top,
+                                            'left':   lgui.left,
+                                            'line':  lgui.line});
+                        $("#svg_modal_link_"+link.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
+                        $("#svg_modal_link_"+link.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
+                        copy_link_line(link, link.src_out_id, link.dst_in_id, lgui);
+                        clearInterval(interval_id);
+                    }
+                }
+                interval_id = setInterval(check_modal, 500);
+            }
         }
     });
 }
