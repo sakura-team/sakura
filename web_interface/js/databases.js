@@ -65,32 +65,42 @@ function datas_update_creation_modal() {
 
             var opt = $('<option>', { value: ds['datastore_id']});
             var p = $('<p>');
+            var txt = '';
             if (ds.grant_level == 'list') {
-                //txt1 += '<a onclick="not_yet()"; style="cursor: \'pointer\';"><span style="cursor: \'pointer\';" class="glyphicon glyphicon-eye-close"></span></a> ';
                 opt.attr('disabled', 'disabled');
                 opt.attr('style', 'cursor: pointer; background-color: rgba(255,0,0,.5);');
 
                 p = $('<p>',  { title: "Request Access",
                                 onclick: "web_interface_asking_access_open_modal(\'"+ds.host+"\','datastore',\'"+ds.id+"\','write',close_modal_datastores_other_modal);",
                                 style: "margin: 0px;"});
-                var txt = '<font color="white"><span style="margin: 0px;" class="glyphicon glyphicon-eye-close"></span> ';
+                txt = '<font color="white"><span style="margin: 0px;" class="glyphicon glyphicon-eye-close"></span> ';
                 txt += ds['driver_label']+" service on "+ds['host'];
                 if (!ds['enabled']) {
                     txt += ' <i>(OFFLINE)</i>';
                 }
                 txt += "</font>";
+
+                var w_icon = create_warn_icon(ds);
+                if (w_icon) {
+                    p.append(w_icon);
+                }
                 p.append(txt);
             }
             else {
                 p = $('<p>',  { title: "Select this datastore",
                                 style: "margin: 0px;"});
-                var txt = '<span style="margin: 0px;" class="glyphicon glyphicon-eye-open"></span> ';
+                txt = '<span style="margin: 0px;" class="glyphicon glyphicon-eye-open"></span> ';
                 txt += ds['driver_label']+" service on "+ds['host'];
                 if (!ds['enabled']) {
                     txt += ' <i>(OFFLINE)</i>';
                 }
-                p.append(txt);
+
             }
+            var w_icon = create_warn_icon(ds);
+            if (w_icon) {
+                p.append(w_icon);
+            }
+            p.append(txt);
 
 
             opt.html(p);

@@ -50,19 +50,9 @@ function buildListStub(idDiv,result,elt) {
             name.attr('title', 'Accessing '+elt_type.slice(0, -1));
             name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
 
-            var warn_icon = document.createElement("span");
-            warn_icon.className ="glyphicon glyphicon-warning-sign icon-large";
-            warn_icon.innerHTML = '&nbsp;';
-            if (row.disabled_message) {
-                warn_icon.title = row.disabled_message;
-                warn_icon.style = 'color:red;';
+            var warn_icon = create_warn_icon(row);
+            if (warn_icon)
                 n_td1.append(warn_icon);
-            }
-            else if (row.warning_message) {
-                    warn_icon.title = row.warning_message;
-                    warn_icon.style = 'color:orange;';
-                    n_td1.append(warn_icon);
-            }
 
             n_td1.append(name);
             if (row.grant_level == 'own') {
@@ -163,7 +153,6 @@ function listRequestStub(idDiv, n, elt, bd) {
                 result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.enabled,
                                 'shortDesc': db.short_desc, 'date': moment.unix(db.creation_date)._d,
                                 'tags': db.tags, 'modif': db.modification_date, 'grant_level': db.grant_level, 'access_scope': db.access_scope };
-                console.log(db);
                 if (db.enabled) {
                     result_info['owner'] = db.owner;
                     result_info['warning_message'] = db.warning_message;

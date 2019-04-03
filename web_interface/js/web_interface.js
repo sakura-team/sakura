@@ -860,3 +860,21 @@ function showDivCGU(event) {
     showDiv(event,"CGU");
 //    return; //dismisses the modal box, of course !
 }
+
+
+function create_warn_icon(obj) {
+    var warn_icon = document.createElement("span");
+    warn_icon.className ="glyphicon glyphicon-warning-sign icon-large";
+    warn_icon.innerHTML = '&nbsp;';
+    if (obj.disabled_message) {
+        warn_icon.title = obj.disabled_message;
+        warn_icon.style = 'color:red;';
+        return warn_icon;
+    }
+    else if (obj.warning_message) {
+            warn_icon.title = obj.warning_message;
+            warn_icon.style = 'color:orange;';
+            return warn_icon;
+    }
+    return null;
+}
