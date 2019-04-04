@@ -33,8 +33,10 @@ class Operator:
     # static properties
     def register_input(self, input_plug_label):
         return self.register('_input_plugs', InputPlug(input_plug_label))
-    def register_output(self, *args, **kwargs):
-        return self.register('_output_plugs', OutputPlug(*args, **kwargs))
+    def register_output(self, *args, condition = None, **kwargs):
+        if condition is None:
+            condition = self.is_ready
+        return self.register('_output_plugs', OutputPlug(*args, condition = condition, **kwargs))
     def register_internal_plug(self, *args, **kwargs):
         return self.register('_internal_plugs', OutputPlug(*args, **kwargs))
     def register_parameter(self, param):

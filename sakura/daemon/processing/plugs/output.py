@@ -2,9 +2,10 @@ from sakura.daemon.processing.source import ComputedSource
 from sakura.common.tools import ObservableEvent, StatusMixin
 
 class OutputPlug(StatusMixin):
-    def __init__(self, label=None, source=None):
+    def __init__(self, label=None, source=None, condition=None):
         self._label = label
         self._source = source
+        self._condition = condition
         self.on_change = ObservableEvent()
     @property
     def source(self):
@@ -25,6 +26,8 @@ class OutputPlug(StatusMixin):
         self.on_change.notify()
     @property
     def enabled(self):
+        if self._condition is not None and not self._condition():
+            return False
         return self._source is not None
     @property
     def disabled_message(self):
