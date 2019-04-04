@@ -277,7 +277,11 @@ function remove_link(link) {
         sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
             check_operator(source_inst_info);
             check_operator(target_inst_info);
+        }).catch( function (res) {
+            console.log('Destination does not exists anymore', res);
         });
+    }).catch( function(res) {
+        console.log('Source does not exists anymore', res);
     });
 }
 
