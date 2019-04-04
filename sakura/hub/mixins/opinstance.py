@@ -104,7 +104,8 @@ class OpInstanceMixin(BaseMixin):
         for link in self.downlinks:
             link.delete_link()
         # delete instance remotely
-        self.delete_on_daemon()
+        if self.enabled:
+            self.delete_on_daemon()
         # delete instance in local db
         self.delete()
         get_context().db.commit()
