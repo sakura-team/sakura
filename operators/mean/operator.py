@@ -10,17 +10,19 @@ class MeanOperator(Operator):
     def construct(self):
         # inputs
         self.input = self.register_input('Mean input data')
-        
+
         # outputs
         output_source = ComputedSource('Mean result', self.compute)
         output_source.add_column('Mean', float)
         output_source.length = 1
-        self.register_output('Mean result', output_source)
-        
+        self.register_output(
+                label = 'Mean result',
+                source = output_source)
+
         # parameters
         self.input_column_param = self.register_parameter(
                 NumericColumnSelection('Input column', self.input))
-                
+
     def compute(self):
         column_idx = self.input_column_param.col_index
         column = self.input.columns[column_idx]
