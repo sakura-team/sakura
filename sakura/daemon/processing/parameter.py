@@ -12,6 +12,10 @@ class Parameter(StatusMixin):
         self.on_auto_fill = ObservableEvent()
         self.requested_value = None
         self.value = None
+        self.check_mode = False
+
+    def set_check_mode(self, check_mode):
+        self.check_mode = check_mode
 
     def get_value(self):
         return self.value
@@ -22,7 +26,7 @@ class Parameter(StatusMixin):
     def unset_value(self):
         old_val = self.value
         self.value = None
-        if old_val != None:
+        if old_val != None and not self.check_mode:
             self.on_change.notify()
 
     def pack_base(self):
@@ -76,7 +80,8 @@ class Parameter(StatusMixin):
             if self.check_valid(self.requested_value):
                 self.value = self.requested_value
                 print(self.__class__.__name__ + ' recheck -- setting value ' + str(self.value) + ' because of requested value')
-                self.on_change.notify()
+                if not self.check_mode:
+                    self.on_change.notify()
                 return self.value
         # if current value became invalid, unset it
         changed, auto_filled = False, False
@@ -90,10 +95,10 @@ class Parameter(StatusMixin):
             if self.auto_fill():
                 changed, auto_filled = True, True
         print(self.__class__.__name__ + ' recheck -- returning value ' + str(self.value))
-        if changed:
+        if changed and not self.check_mode:
             print(self.__class__.__name__ + ' notify change!')
             self.on_change.notify()
-        if auto_filled:
+        if auto_filled and not self.check_mode:
             print(self.__class__.__name__ + ' notify auto-fill!')
             self.on_auto_fill.notify()
         return self.value

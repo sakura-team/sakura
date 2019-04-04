@@ -151,3 +151,6 @@ class Operator:
         # (easier for the operator developer)
         with self.event_lock:
             return self.handle_event(*args, **kwargs)
+    def set_check_mode(self, check_mode):
+        for parameter in self.parameters:
+            parameter.set_check_mode(check_mode)
