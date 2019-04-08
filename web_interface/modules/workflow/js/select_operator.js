@@ -250,8 +250,8 @@ function select_op_new_operator(id, removable) {
     s += '<div style="position: absolute; top:-5px; left: 32px;visibility: hidden;"> \
               <span class="glyphicon glyphicon-question-sign" style="cursor: pointer;"/> \
           </div>';
-          s += '<div style="position: absolute; font-size: 1.2em; top:6px; left: 11px;visibility: hidden;"> \
-                    <span class="glyphicon glyphicon-warning-sign" style="cursor: pointer;"/> \
+          s += '<div style="position: absolute; font-size: 1.2em; top:7px; left: 11px;visibility: hidden;"> \
+                    <span class="glyphicon glyphicon-exclamation-sign" style="cursor: pointer;"/> \
                 </div>';
 
     s += '</div>';

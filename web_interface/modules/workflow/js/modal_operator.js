@@ -143,7 +143,7 @@ function fill_params(id) {
                     };
 
                     var warn_icon = document.createElement("span");
-                    warn_icon.className ="glyphicon glyphicon-warning-sign icon-large";
+                    warn_icon.className ="glyphicon glyphicon-exclamation-sign icon-large";
 
                     if (!item['enabled']) {
                         select.disabled = true;
