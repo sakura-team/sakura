@@ -39,6 +39,8 @@ function set_tab_urls(id, url_formatter) {
                 index++;
             });
             resolve();
+        }).catch( function (error){
+            console.log('Error 2:', error)
         });
     });
 }
@@ -160,7 +162,7 @@ function fill_params(id) {
                                 select.selectedIndex = i;
                             }
                         }
-                        if (item['Value'] == 'None') {
+                        if ((item.value == 'None' || !item.value) && item.value !== 0) {
                             select.add(new Option('None'));
                             select.selectedIndex = item['possible_values'].length;
                         }
@@ -188,6 +190,8 @@ function fill_params(id) {
             d.appendChild(document.createElement('br'));
             d.appendChild(tbl);
         }
+    }).catch( function (error){
+        console.log('Error 5:', error)
     });
 }
 
@@ -224,6 +228,8 @@ function params_onChange(op_id, param_index, select_id) {
                 fill_params(op_id);
             }
         });
+    }).catch( function (error){
+        console.log('Error 3:', error)
     });
 }
 
@@ -272,6 +278,9 @@ function fill_in_out(in_out, id) {
         d.appendChild(div_tab);
 
         fill_one_in_out(in_out, id, 0, 0, current_nb_rows, );
+
+    }).catch( function (error){
+        console.log('Error 4:', error)
     });
 }
 
@@ -293,6 +302,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
 
     //infos
     sakura.apis.hub.operators[inst_id].info().then(function (result_info) {
+
         let plugs;
         if (in_out == 'input') {
             plugs = sakura.apis.hub.operators[inst_id].inputs;
@@ -406,7 +416,12 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
             butt.append('&nbsp;Download');
             s+= '<table width="100%"><tr><td>'+ul+'<td align="right">'+butt.get(0).outerHTML+'</table>';
             d.innerHTML = s;
+
+        }).catch (function(error) {
+            console.log('Error 8:', error);
         });
+    }).catch (function(error) {
+        console.log('Error 1:', error);
     });
 }
 

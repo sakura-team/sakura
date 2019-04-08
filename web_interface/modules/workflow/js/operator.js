@@ -60,6 +60,8 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         //Now we add the current coordinates of the operator to the hub
         save_dataflow();
         check_operator(result);
+    }).catch( function (error){
+        console.log('Error 7:', error)
     });
 }
 
@@ -125,17 +127,20 @@ function check_operator(op) {
     var w_message = '';
 
     if (op.enabled) {
-        op.inputs.forEach( function(inp) {
-            if (!inp.enabled) {
-                disabled = true;
-                d_message = inp.disabled_message;
-            }
-            else if (inp.warning_message) {
-                console.log('Warn', inp.warning_message)
-                warning = true;
-                w_message = inp.warning_message;
-            }
-        });
+
+        function check_elt(elt) {
+          if (!elt.enabled) {
+              disabled = true;
+              d_message = elt.disabled_message;
+          }
+          else if (elt.warning_message) {
+              warning = true;
+              w_message = elt.warning_message;
+          }
+        }
+
+        op.inputs.forEach( function(inp) { check_elt(inp); });
+        op.parameters.forEach( function(param) { check_elt(param); });
 
         var inst = global_ops_inst[instance_index_from_id(op.op_id)];
         var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
@@ -154,6 +159,8 @@ function check_operator(op) {
         else {
             w_div.style.visibility  = "hidden";
         }
+
+
     }
 }
 
@@ -236,7 +243,11 @@ function open_op_modal() {
     $('#'+modal_name).modal();
     // add on-close handler
     $('#'+modal_name).on('hide.bs.modal', function () {
-        release_all(modal_id).then(function(){});
+        release_all(modal_id).then(function(){
+
+            }).catch( function (error){
+                console.log('Error 6:', error)
+        });
     });
 }
 
