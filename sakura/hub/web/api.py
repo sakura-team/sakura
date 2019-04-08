@@ -85,8 +85,10 @@ class GuiToHubAPI:
         return self.context.op_instances[op_id].opengl_apps[ogl_id].fire_event(*args, **kwargs)
 
     @api.operators.__getitem__.opengl_apps.__getitem__.next_event
-    def fire_opengl_app_event(self, op_id, ogl_id, timeout):
-        return self.context.op_instances[op_id].opengl_apps[ogl_id].next_event(timeout)
+    def opengl_app_next_event(self, op_id, ogl_id, timeout):
+        # use the web session ID to uniquely identify this event listener
+        return self.context.op_instances[op_id].opengl_apps[ogl_id].next_event(
+                        self.context.session.id, timeout)
 
     ########################################
     # Operator files

@@ -1,5 +1,6 @@
 import io, gevent
 from gevent.queue import Queue, Empty
+from sakura.common.events import EventSourceMixin
 from sakura.common.gpu.tools import write_jpg
 from sakura.common.gpu.openglapp import \
                 MouseMoveReporting, SAKURA_DISPLAY_STREAMING
@@ -13,7 +14,7 @@ from sakura.common.gpu.openglapp import \
 MAX_LOW_QUALITY_DELAY =  0.1
 MAX_HIGH_QUALITY_DELAY = 2.0
 
-class OpenglAppBase:
+class OpenglAppBase(EventSourceMixin):
     def __init__ (self, handler):
         self.handler = handler
         self.handler.app = self
@@ -30,7 +31,6 @@ class OpenglAppBase:
         else:
             self.streamed = False
         self.greenlets = []
-        self.event_queue = Queue()
 
     def busy_display_loop(self):
         if SAKURA_DISPLAY_STREAMING:
@@ -52,15 +52,6 @@ class OpenglAppBase:
     def pack(self):
         return { "mjpeg_url": self.url,
                  "mouse_move_reporting": self.mouse_move_reporting.name }
-
-    def next_event(self, timeout):
-        try:
-            return self.event_queue.get(timeout=timeout)
-        except Empty:
-            return None
-
-    def push_event(self, evt, *args, **kwargs):
-        self.event_queue.put((evt, args, kwargs))
 
     def on_resize(self, w, h):
         w, h = int(w), int(h)

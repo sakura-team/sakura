@@ -291,33 +291,85 @@ sakura.internal.hub_api_send = function(path, args) {
     });
 };
 
+sakura.internal.monitor_remote_events = function (remote_obj) {
+    var timeout = 2.0;
+    // wait for next event and process it
+    remote_obj.next_event(timeout).then(function (evt) {
+        if (evt == null) {
+            // timeout, nothing happened
+        }
+        else {
+            let event_name = evt[0];
+            let event_args = evt[1];
+            let event_kwargs = evt[2];
+            let all_args = [event_name];
+            if (event_args != null) {
+                all_args = all_args.concat(event_args);
+            }
+            if (event_kwargs != null) {
+                all_args.push(event_kwargs);
+            }
+            let cb_list = remote_obj._event_managers[event_name];
+            if (cb_list != null) {
+                cb_list.forEach(function(cb) {
+                    cb(...all_args);
+                });
+            }
+        }
+        // re-call for next event
+        sakura.internal.monitor_remote_events(remote_obj);
+    });
+};
+
 /* This relies on Proxy features, see
    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
    We catch object property access (through get(), see below) to iterately build the API
    request path, up to the function call. The function call itself is catched by apply()
    function. */
 
+sakura.internal.proxy_get = function(proxy, prop) {
+    if (proxy._internal_attrs.hasOwnProperty(prop)) {
+        return proxy._internal_attrs[prop];
+    }
+    let new_path = proxy.path.slice();
+    let prop_as_int = parseInt(prop, 10);
+    if (!isNaN(prop_as_int)) {
+        new_path.push([ prop_as_int ]);
+    }
+    else {
+        new_path.push(prop);
+    }
+    return sakura.internal.get_hub_api(new_path);
+};
+
+sakura.internal.proxy_subscribe_event = function(proxy, evt, cb) {
+    if (!proxy._event_management_enabled) {
+        proxy._event_managers = {};
+        sakura.internal.monitor_remote_events(proxy);
+        proxy._event_management_enabled = true;
+    }
+    let cb_list = proxy._event_managers[evt];
+    if (cb_list == null) {
+        cb_list = [];
+    }
+    cb_list.push(cb);
+    proxy._event_managers[evt] = cb_list;
+};
+
 sakura.internal.get_hub_api = function(path) {
-    let _internal_attrs = {};
     return new Proxy(sakura.internal.hub_api_send, {
         path: path,
-        _internal_attrs: _internal_attrs,
+        _internal_attrs: {
+            _event_management_enabled: false,
+            subscribe_event: function(evt, cb) {
+                sakura.internal.proxy_subscribe_event(this, evt, cb);
+            }
+        },
         set: function(target, prop, value, receiver) {
-            _internal_attrs[prop] = value;
+            this._internal_attrs[prop] = value;
         },
         get: function(target, prop, receiver) {
-            if (_internal_attrs.hasOwnProperty(prop)) {
-                return _internal_attrs[prop];
-            }
-            let new_path = this.path.slice();
-            let prop_as_int = parseInt(prop, 10);
-            if (!isNaN(prop_as_int)) {
-                new_path.push([ prop_as_int ]);
-            }
-            else {
-                new_path.push(prop);
-            }
-            return sakura.internal.get_hub_api(new_path);
+            return sakura.internal.proxy_get(this, prop);
         },
         apply: function(target, this_arg, args) {
             return target(this.path, args);

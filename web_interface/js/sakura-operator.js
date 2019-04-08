@@ -47,36 +47,6 @@ sakura.internal.get_mouse_pos = function(img, evt) {
     };
 }
 
-sakura.internal.ogl_monitor_events = function (remote_app) {
-    var timeout = 2.0;
-    // wait for next event and process it
-    remote_app.next_event(timeout).then(function (evt) {
-        if (evt == null) {
-            // timeout, nothing happened
-        }
-        else {
-            let event_name = evt[0];
-            let event_args = evt[1];
-            let event_kwargs = evt[2];
-            let all_args = [event_name];
-            if (event_args != null) {
-                all_args = all_args.concat(event_args);
-            }
-            if (event_kwargs != null) {
-                all_args.push(event_kwargs);
-            }
-            let cb_list = remote_app.event_managers[event_name];
-            if (cb_list != null) {
-                cb_list.forEach(function(cb) {
-                    cb(...all_args);
-                });
-            }
-        }
-        // re-call for next event
-        sakura.internal.ogl_monitor_events(remote_app);
-    });
-}
-
 sakura.apis.operator = sakura.internal.get_operator_interface();
 
 sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
@@ -89,17 +59,6 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
         evt.preventDefault();
     }, false);
 
-    remote_app.event_managers = {};
-
-    remote_app.subscribe_event = function(evt, cb) {
-        let cb_list = remote_app.event_managers[evt];
-        if (cb_list == null) {
-            cb_list = [];
-        }
-        cb_list.push(cb);
-        remote_app.event_managers[evt] = cb_list;
-    };
-
     remote_app.info().then(function (app_info) {
         let mouse_move_reporting = app_info.mouse_move_reporting;
 
@@ -108,8 +67,6 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
         }
 
         remote_app.subscribe_event('browser_disconnect', reconnect);
-
-        sakura.internal.ogl_monitor_events(remote_app);
 
         // RESIZE EVENTS
         let do_resize = function(evt) {
