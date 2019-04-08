@@ -864,7 +864,7 @@ function showDivCGU(event) {
 
 function create_warn_icon(obj) {
     var warn_icon = document.createElement("span");
-    warn_icon.className ="glyphicon glyphicon-warning-sign icon-large";
+    warn_icon.className ="glyphicon glyphicon-exclamation-sign icon-large";
     warn_icon.innerHTML = '&nbsp;';
     if (obj.disabled_message) {
         warn_icon.title = obj.disabled_message;
