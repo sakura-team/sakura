@@ -82,57 +82,28 @@ function change_map(map) {
 }
 
 function check_trajectory(index) {
+
+    var l = [index];
+    var func = "hide_trajectories"
+
     //only one trajectory
     if (index != -1 && index != -2) {
-        var val = $('#traj_checkbox_'+index).is(":checked");
-        if (val)
-            sakura.apis.operator.fire_event("show_trajectories", {'value': [index]});
-        else
-            sakura.apis.operator.fire_event("hide_trajectories", {'value': [index]});
+        if ($('#traj_checkbox_'+index).is(":checked"))
+            func = "show_trajectories"
     }
     //hide all trajectories
-    else if (index == -1) {
-        var l = []
+    else {
+        var val = false;
+        if (index == -2) {
+            val = true;
+            func = "show_trajectories";
+        }
+        l = []
         for (var i=0; i< nb_trajectories;i++) {
-              var cb = $('#traj_checkbox_'+i);
-              cb.each(function(){ this.checked = false; });
+              $('#traj_checkbox_'+i).each(function(){ this.checked = val; });
               l.push(i);
         }
-        sakura.apis.operator.fire_event("hide_trajectories", {'value': l});
     }
-    //show all trajectories
-    else if (index == -2) {
-        var cb = $('#traj_checkbox_'+i);
-        cb.each(function(){ this.checked = true; });
-        var l = []
-        for (var i=0; i< nb_trajectories;i++) {
-              var cb = $('#traj_checkbox_'+i);
-              cb.each(function(){ this.checked = true; });
-            l.push(i);
-        }
-        sakura.apis.operator.fire_event("show_trajectories", {'value': l});
-    }
-    /*else {
-        //display
-        var l = [];
-        for (i=0; i< nb_trajectories;i++) {
-            var cb = $('#traj_checkbox_'+i);
-            if ($('#traj_checkbox_all').is(':checked')) {
-                cb.each(function(){ this.checked = true; });
-                l.push(i);
-            }
-            else {
-                cb.each(function(){ this.checked = false; });
-                l.push(i);
-            }
-        }
-        //sending to operator
-        if ($('#traj_checkbox_all').is(':checked')) {
-            sakura.apis.operator.fire_event("select_trajectories", {'value': l});
-        }
-        else {
-            sakura.apis.operator.fire_event("unselect_trajectories", {'value': l});
-        }
+    sakura.apis.operator.fire_event(func, {'value': l});
 
-    }*/
 }
