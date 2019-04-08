@@ -44,6 +44,12 @@ class GuiToHubAPI:
     def get_operator_instance_info(self, op_id):
         return self.context.op_instances[op_id]
 
+    @api.operators.__getitem__.next_event
+    def operator_instance_next_event(self, op_id, timeout):
+        # use the web session ID to uniquely identify this event listener
+        return self.context.op_instances[op_id].next_event(
+                        self.context.session.id, timeout)
+
     @api.operators.__getitem__.parameters.__getitem__.set_value
     def set_parameter_value(self, op_id, param_id, value):
         return self.context.op_params.lookup(op_id, param_id).set_value(value)

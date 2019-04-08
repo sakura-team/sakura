@@ -18,8 +18,10 @@ class OpInstanceMixin(BaseMixin):
     @enabled.setter
     def enabled(self, boolean):
         if boolean:
+            self.push_event('enabled')
             OpInstanceMixin.INSTANCIATED.add(self.id)
         else:
+            self.push_event('disabled')
             OpInstanceMixin.INSTANCIATED.discard(self.id)
     @property
     def disabled_message(self):
@@ -27,7 +29,7 @@ class OpInstanceMixin(BaseMixin):
     def __getattr__(self, attr):
         # find other attributes at the real operator
         # instance on the daemon side.
-        if attr != 'warning_message':
+        if attr != 'warning_message' and not 'internal' in attr:
             return getattr(self.remote_instance, attr)
         raise AttributeError
     def pack(self):
