@@ -65,10 +65,10 @@ class spacetimecubeOperator(Operator):
             self.ogl_app.handler.set_floor_darkness(info['value'])
         elif ev_type == 'cube_height':
             self.ogl_app.handler.set_cube_height(info['value'])
-        elif ev_type == 'select_trajectories':
-            self.ogl_app.handler.select_trajectories(info['value'])
-        elif ev_type == 'unselect_trajectories':
-            self.ogl_app.handler.unselect_trajectories(info['value'])
+        elif ev_type == 'show_trajectories':
+            self.ogl_app.handler.show_trajectories(info['value'])
+        elif ev_type == 'hide_trajectories':
+            self.ogl_app.handler.hide_trajectories(info['value'])
         elif ev_type == 'get_map_layers':
             return self.ogl_app.handler.get_map_layers()
         elif ev_type == 'set_map_layer':

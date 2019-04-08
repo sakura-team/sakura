@@ -22,6 +22,7 @@ class data:
 
     def init(self):
         self.selected       = []
+        self.displayed      = []
         self.trajects       = []
         self.trajects_names = []
         self.trajects_ids   = []                # we identify the trajectories by a factice color facilitating opengl selection
@@ -81,6 +82,8 @@ class data:
             self.maxs = np.amax(new_data, axis = 0)
             self.mins = np.amin(new_data, axis = 0)
 
+        self.displayed = list(range(len(self.trajects)))
+
     def print_meta(self):
         print('\ndata info')
         print('\tNb trajectories:\t'+ str(len(self.trajects)))
@@ -92,17 +95,19 @@ class data:
         print('\tCube size:\t\t'+str(self.maxs[1:] - self.mins[1:] )+'\n')
 
     def compute_geometry(self):
+
         vertices    = []
         colors      = []
-        for t in self.trajects:
-            t.display_indice =  len(vertices)
-            vertices.append(t.points[0])
-            colors.append([0,0,0,0])
-            for p in t.points:
-                vertices.append(p)
-                colors.append(t.color)
-            vertices.append(t.points[-1])
-            colors.append([0,0,0,0])
+        for t, i in zip(self.trajects, range(len(self.trajects))):
+            if i in self.displayed:
+                t.display_indice =  len(vertices)
+                vertices.append(t.points[0])
+                colors.append([0,0,0,0])
+                for p in t.points:
+                    vertices.append(p)
+                    colors.append(t.color)
+                vertices.append(t.points[-1])
+                colors.append([0,0,0,0])
         return np.array(vertices), np.array(colors)
 
     def compute_line_vertices(self, pt):

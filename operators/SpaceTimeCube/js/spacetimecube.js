@@ -37,12 +37,16 @@ function init() {
     sakura.apis.operator.fire_event("onload").then( function(result) {
       nb_trajectories = result.length;
       var tdd = $('#trajectories_dropdown');
-
-      var table = $("<table width = 100%>");
-      table.append("<tr><td><input type='checkbox' id='traj_checkbox_all' onclick='check_trajectory(-1);'></td><td>All</td></tr>");
+      var butt_hid = $('<button class="btn btn-default btn-xs" onclick=\'check_trajectory(-1);\'>hide all</button>&nbsp;');
+      var butt_sho = $('<button class="btn btn-default btn-xs" onclick=\'check_trajectory(-2);\'>show all</button>');
+      butt_hid.innerHTML = 'hide all';
+      var table = $('<table width = 100%>');
+      //table.append("<tr><td><input type='checkbox' checked id='traj_checkbox_all' onclick='check_trajectory(-1);'></td><td>All</td></tr>");
       result.forEach( function(traj, index) {
-          table.append("<tr><td><input type='checkbox' id='traj_checkbox_"+index+"' onclick='check_trajectory("+index+");'></td><td>"+traj+"</td></tr>");
+          table.append("<tr><td><input type='checkbox' checked id='traj_checkbox_"+index+"' onclick='check_trajectory("+index+");'></td><td>"+traj+"</td></tr>");
       });
+      tdd.append(butt_hid);
+      tdd.append(butt_sho);
       tdd.append(table);
     });
 
@@ -78,14 +82,37 @@ function change_map(map) {
 }
 
 function check_trajectory(index) {
-    if (index != -1) {
+    //only one trajectory
+    if (index != -1 && index != -2) {
         var val = $('#traj_checkbox_'+index).is(":checked");
         if (val)
-            sakura.apis.operator.fire_event("select_trajectories", {'value': [index]});
+            sakura.apis.operator.fire_event("show_trajectories", {'value': [index]});
         else
-            sakura.apis.operator.fire_event("unselect_trajectories", {'value': [index]});
+            sakura.apis.operator.fire_event("hide_trajectories", {'value': [index]});
     }
-    else {
+    //hide all trajectories
+    else if (index == -1) {
+        var l = []
+        for (var i=0; i< nb_trajectories;i++) {
+              var cb = $('#traj_checkbox_'+i);
+              cb.each(function(){ this.checked = false; });
+              l.push(i);
+        }
+        sakura.apis.operator.fire_event("hide_trajectories", {'value': l});
+    }
+    //show all trajectories
+    else if (index == -2) {
+        var cb = $('#traj_checkbox_'+i);
+        cb.each(function(){ this.checked = true; });
+        var l = []
+        for (var i=0; i< nb_trajectories;i++) {
+              var cb = $('#traj_checkbox_'+i);
+              cb.each(function(){ this.checked = true; });
+            l.push(i);
+        }
+        sakura.apis.operator.fire_event("show_trajectories", {'value': l});
+    }
+    /*else {
         //display
         var l = [];
         for (i=0; i< nb_trajectories;i++) {
@@ -107,5 +134,5 @@ function check_trajectory(index) {
             sakura.apis.operator.fire_event("unselect_trajectories", {'value': l});
         }
 
-    }
+    }*/
 }

@@ -115,6 +115,7 @@ class SpaceTimeCube:
         self.cube_height        = 1.
         self.hovered_target     = -1
         self.selected_trajects  = []
+        self.displayed_trajects = []
         self.new_selections     = []
         self.debug              = False
         self.projection_type    = 'perspective'
@@ -610,10 +611,12 @@ class SpaceTimeCube:
         #extracting arrays
         t_ind = self.data.trajects[traject].display_indice
         t_len = len(self.data.trajects[traject].points)
+
         cop_vertices = copy.copy(self.trajects_vertices)
         cop_colors = copy.copy(self.trajects_colors)
         self.trajects_vertices = self.trajects_vertices[t_ind +1: t_ind +t_len +1]
         self.trajects_colors = self.basic_colors_list[0: len(self.trajects_vertices)]
+
         self.update_trajects_arrays()
         sh.display_list([self.sh_shadows, self.sh_trajects])
         p_indice = self.compute_closest_color(10)
@@ -642,22 +645,20 @@ class SpaceTimeCube:
             if t_indice != -1 and not t_indice in self.selected_trajects:
                 if self.hovered_target == -1:
                     self.update_transparency(t_indice, 0.5)
-                    self.update_trajects_arrays()
-
                 elif self.hovered_target != t_indice:
                     self.update_transparency(self.hovered_target, 1.0)
                     self.update_transparency(t_indice, 0.5)
-                    self.update_trajects_arrays()
-
                 self.hovered_target =  t_indice
 
             elif self.hovered_target != -1:
                 self.update_transparency(self.hovered_target, 1.0)
                 self.hovered_target =  -1
-                self.update_trajects_arrays()
+
+            self.update_trajects_arrays()
 
             lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
             quad_vertices = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
+
             #Computing the closest point
             if t_indice != -1 and self.imode == 'none':
                 p_indice = self.compute_hovered_point(t_indice)
@@ -850,6 +851,27 @@ class SpaceTimeCube:
                     self.new_selections.append(i)
             else:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
+
+    def hide_trajectories(self, l):
+        print('hide', l)
+        for id in l:
+            if id >= 0 and id < len(self.data.trajects):
+                if id in self.data.displayed:
+                    index = self.data.displayed.index(id)
+                    self.data.displayed.pop(index)
+                    self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
+                    self.update_trajects_arrays()
+
+    def show_trajectories(self, l):
+        print('show', l)
+        for id in l:
+            if id >= 0 and id < len(self.data.trajects):
+                if id not in self.data.displayed:
+                    self.data.displayed.append(id)
+                    self.data.displayed.sort()
+                    self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
+                    self.update_trajects_arrays()
+
 
     def update_floor(self):
         if self.debug:
