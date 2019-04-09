@@ -1,6 +1,7 @@
 import builtins, numbers, numpy as np
+from sakura.common.bottle import PicklableFileRequest
 
-IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype) + \
+IO_TRANSFERABLES = (None.__class__, np.ndarray, numbers.Number, np.dtype, PicklableFileRequest) + \
                    tuple(getattr(builtins, t) for t in ( \
                         'bytearray', 'bytes', 'dict', 'frozenset', 'list',
                         'set', 'str', 'tuple', 'BaseException', 'type'))
