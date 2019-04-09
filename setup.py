@@ -43,7 +43,7 @@ setup(
     package_dir = {'sakura-py': 'sakura'},
     data_files = list(iter_data_files('web_interface')) + list(iter_data_files('operators')),
     install_requires = ['cffi', 'gevent', 'gevent-websocket', 'bottle', 'numpy', 'psycopg2-binary', 'pony==0.7.6', 'websocket-client',
-                        'pillow-simd', 'cython', 'pyopengl', 'pyopengl-accelerate'],
+                        'pillow-simd', 'cython', 'pyopengl', 'pyopengl-accelerate', 'requests'],
     author = 'Etienne Duble',
     author_email = 'etienne.duble@imag.fr',
     keywords = 'sakura data-processing research capitalization',
