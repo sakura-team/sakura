@@ -113,8 +113,6 @@ function fill_params(id) {
             d.removeChild(d.firstChild);
         }
 
-        var index = -1;
-
         if (result['parameters'].length == 0) {
             d.innerHTML = '<br><p align="center"> No Params</p>';
         }
@@ -122,8 +120,7 @@ function fill_params(id) {
             var tbl   = document.createElement("table");
             tbl.align = 'center';
 
-            result['parameters'].forEach( function (item) {
-                index++;
+            result['parameters'].forEach( function (item, index) {
 
                 if (item['gui_type'] == 'COMBO') {
                     var tr   = document.createElement("tr");
