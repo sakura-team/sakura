@@ -43,16 +43,16 @@ function buildListStub(idDiv,result,elt) {
         var n_td1 = $('<td>');
         var n_td2 = $('<td align="right">');
 
+        var warn_icon = create_warn_icon(row);
+        if (warn_icon)
+            n_td1.append(warn_icon);
+
         if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
             var name = $('<a>');
             name.html(row.name);
             name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
             name.attr('title', 'Accessing '+elt_type.slice(0, -1));
             name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
-
-            var warn_icon = create_warn_icon(row);
-            if (warn_icon)
-                n_td1.append(warn_icon);
 
             n_td1.append(name);
             if (row.grant_level == 'own') {
