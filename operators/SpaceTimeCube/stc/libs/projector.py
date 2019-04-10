@@ -133,48 +133,6 @@ class projector:
         self.top    = h
         self.bottom = -h
 
-    def near_sizes(self):
-
-        #######BAD: SHOULD FIND A SOLUTION !!!!!!!!!!
-        magic_number = 3/4.0  #######BAD: SHOULD FIND A SOLUTION !!!!!!!!!!
-        #######BAD: SHOULD FIND A SOLUTION !!!!!!!!!!
-
-        h = self.near*math.tan(self.v_angle/2.0)*magic_number
-        return h * self.ratio, h
-
-
-    def read(self, f_name):
-        """Reads projector params from a file which name is f_name"""
-        print('\tReading proj calib...\t', end='')
-        f = open(f_name,'r')
-
-        self.near    = float((f.readline()).split(" ")[2])
-        self.far     = float((f.readline()).split(" ")[2])
-        self.left    = float((f.readline()).split(" ")[2])/self.near
-        self.right   = float((f.readline()).split(" ")[2])/self.near
-        self.bottom  = float((f.readline()).split(" ")[2])/self.near
-        self.top     = float((f.readline()).split(" ")[2])/self.near
-        self.near = 1
-
-        tab     = f.readline().split(" ")
-        pos     = [ float(tab[2]), float(tab[3]), float(tab[4]) ]
-
-        tab     = f.readline().split(" ")
-        vp      = [ float(tab[2]), float(tab[3]), float(tab[4]) ]
-
-        tab     = f.readline().split(" ")
-        up      = [ float(tab[2]), float(tab[3]), float(tab[4]) ]
-
-
-        self.position   = pos
-        self.viewpoint  = vp
-        self.up         = up
-
-        f.close()
-
-        self.compute_direction()
-        print('Ok')
-
     def compute_direction(self):
         self.direction = np.array(normalize([x-y for x, y in zip(self.viewpoint, self.position)]))
 
@@ -187,11 +145,8 @@ class projector:
         print("\tUp                 : ",self.up)
         print("\tFrustum(l,r,t,b)   : ",self.left, self.right, self.top, self.bottom)
 
-    def projection(self, model='perspective'):
-        if model == 'perspective':
-            return self.perspective()
-        elif model == 'orthographic':
-            return self.orthographic()
+    def projection(self):
+        return self.perspective()
 
     def perspective(self):
         '''
