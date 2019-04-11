@@ -66,6 +66,7 @@ class data:
         if not first_time:
             nd.append([*self.maxs])
             nd.append([*self.mins])
+        self.displayed = list(range(len(self.trajects)))
         self.make_meta(nd)
 
     def make_meta(self, new_data=[]):
@@ -73,16 +74,15 @@ class data:
         maxs = []
         mins = []
         if len(new_data) == 0:
-            for t in self.trajects:
-                maxs.append(np.amax(t.points, axis = 0))
-                mins.append(np.amin(t.points, axis = 0))
+            for t, i in zip(self.trajects, range(len(self.trajects))):
+                if i in self.displayed:
+                    maxs.append(np.amax(t.points, axis = 0))
+                    mins.append(np.amin(t.points, axis = 0))
             self.maxs = np.amax(maxs, axis = 0)
             self.mins = np.amin(mins, axis = 0)
         else:
             self.maxs = np.amax(new_data, axis = 0)
             self.mins = np.amin(new_data, axis = 0)
-
-        self.displayed = list(range(len(self.trajects)))
 
     def print_meta(self):
         print('\ndata info')

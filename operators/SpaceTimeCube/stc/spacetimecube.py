@@ -523,7 +523,7 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
     def load_data(self, chunk=[], file=''):
-        if len(chunk) >0:
+        if len(chunk) > 0:
             self.data.add(chunk)
         elif file != '':
             if self.debug:
@@ -847,24 +847,28 @@ class SpaceTimeCube:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
 
     def hide_trajectories(self, l):
-        print('hide', l)
-        for id in l:
-            if id >= 0 and id < len(self.data.trajects):
-                if id in self.data.displayed:
-                    index = self.data.displayed.index(id)
-                    self.data.displayed.pop(index)
-                    self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
-                    self.update_trajects_arrays()
+        if len(l):
+            for id in l:
+                if id >= 0 and id < len(self.data.trajects):
+                    if id in self.data.displayed:
+                        index = self.data.displayed.index(id)
+                        self.data.displayed.pop(index)
+                        self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
+            self.data.make_meta()
+            self.update_trajects_arrays()
+            self.update_cube_and_lines()
 
     def show_trajectories(self, l):
-        print('show', l)
-        for id in l:
-            if id >= 0 and id < len(self.data.trajects):
-                if id not in self.data.displayed:
-                    self.data.displayed.append(id)
-                    self.data.displayed.sort()
-                    self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
-                    self.update_trajects_arrays()
+        if len(l):
+            for id in l:
+                if id >= 0 and id < len(self.data.trajects):
+                    if id not in self.data.displayed:
+                        self.data.displayed.append(id)
+                        self.data.displayed.sort()
+                        self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
+            self.data.make_meta()
+            self.update_trajects_arrays()
+            self.update_cube_and_lines()
 
 
     def update_floor(self):
