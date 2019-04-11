@@ -736,6 +736,21 @@ class SpaceTimeCube:
         sh.display_list([ self.sh_lines])
         glEnable(GL_DEPTH_TEST)
 
+        def proj_cube_corner(p):
+            size =  [   self.data.maxs[1] - self.data.mins[1],
+                        self.data.maxs[2] - self.data.mins[2] ]
+            if size[0] > size[1]:
+                p[2] *= size[1]/size[0]
+            else:
+                p[0] *= size[0]/size[1]
+            p[1] = p[1]*self.cube_height - self.cube_height/2;
+            pp = self.projo.project_on_screen([p[0], p[1], p[2], 1.0] )
+            return [ (pp[0]+1)/2*self.width, (pp[1]+1)/2*self.height]
+
+        pp0 = proj_cube_corner([.5, 0.,.5])
+        pp1 = proj_cube_corner([.5, 1.,.5])
+        self.app.push_event('times_and_positions', self.data.mins[0], pp0[0], pp0[1], self.data.maxs[0], pp1[0], pp1[1])
+
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
         LEFT_BUTTON = 0

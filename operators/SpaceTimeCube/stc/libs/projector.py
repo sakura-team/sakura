@@ -148,6 +148,10 @@ class projector:
     def projection(self):
         return self.perspective()
 
+    def project_on_screen(self, p):
+        p = np.dot(self.projection(),np.dot(self.modelview(),p))
+        return p[0]/p[3], p[1]/p[3]
+
     def perspective(self):
         '''
         M=  [2n/(r-l)   0           0     0]

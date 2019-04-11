@@ -8,12 +8,26 @@ function init() {
         var idiv = $('#info_div');
         idiv.empty();
         if (tim != -1) {
-            t = moment.unix(parseInt(tim))._d.toUTCString();
+            var t = moment.unix(parseInt(tim))._d.toUTCString();
             idiv.append("<b>"+tname+" - </b>"+t+"<b> - lng:</b> "+lng.toFixed(4)+"<b> - lat: </b>"+lat.toFixed(4)+"<b> - ele: </b>"+parseInt(ele));
         }
         else {
             idiv.append("...");
         }
+    });
+
+    opengl_app.subscribe_event('times_and_positions', function(evt, time0, x0, y0, time1, x1, y1) {
+        var t_start = $('#time_start_div');
+        var t_end = $('#time_end_div');
+        //tdiv.children(0)[0].innerHTML = 'ppp';
+        t_start[0].style.left   = ''+x0+'px';
+        t_start[0].style.bottom = ''+y0+'px';
+        t_end[0].style.left     = ''+x1+'px';
+        t_end[0].style.bottom   = ''+y1+'px';
+        var t0 = moment.unix(parseInt(time0))._d.toUTCString();
+        var t1 = moment.unix(parseInt(time1))._d.toUTCString();
+        t_start.children(0)[0].innerHTML = t0;
+        t_end.children(0)[0].innerHTML = t1;
     });
 
     opengl_app.subscribe_event('loading_data_start', function(evt) {
