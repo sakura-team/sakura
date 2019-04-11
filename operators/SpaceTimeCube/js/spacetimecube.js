@@ -13,21 +13,26 @@ function init() {
         }
         else {
             idiv.append("...");
+            var inter_div = $('#time_inter_div')[0];
+            inter_div.style.bottom   = ''+100000+'px';
         }
     });
 
-    opengl_app.subscribe_event('times_and_positions', function(evt, time0, x0, y0, time1, x1, y1) {
-        var t_start = $('#time_start_div');
-        var t_end = $('#time_end_div');
-        //tdiv.children(0)[0].innerHTML = 'ppp';
-        t_start[0].style.left   = ''+x0+'px';
-        t_start[0].style.bottom = ''+y0+'px';
-        t_end[0].style.left     = ''+x1+'px';
-        t_end[0].style.bottom   = ''+y1+'px';
-        var t0 = moment.unix(parseInt(time0))._d.toUTCString();
-        var t1 = moment.unix(parseInt(time1))._d.toUTCString();
-        t_start.children(0)[0].innerHTML = t0;
-        t_end.children(0)[0].innerHTML = t1;
+    opengl_app.subscribe_event('times_and_positions', function(evt, times) {
+
+        var sta = $('#time_start_div')[0];
+        var end = $('#time_end_div')[0];
+        var int = $('#time_inter_div')[0];
+        var ts = [sta, end, int];
+
+        times.forEach( function(t, i) {
+            ts[i].style.left   = ''+t['x']+'px';
+            ts[i].style.bottom   = ''+t['y']+'px';
+            var d = moment.unix(t['time'])._d.toUTCString();
+            d = d.replace(' GMT', '');
+            d = d.substring(5);
+            ts[i].children[0].innerHTML = d;
+        });
     });
 
     opengl_app.subscribe_event('loading_data_start', function(evt) {

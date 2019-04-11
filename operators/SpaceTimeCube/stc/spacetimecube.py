@@ -547,6 +547,7 @@ class SpaceTimeCube:
         self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
         self.update_trajects_arrays()
         self.update_cube_and_lines()
+        self.send_new_dates()
 
     def get_trajectories(self):
         return self.data.trajects_names
@@ -671,6 +672,7 @@ class SpaceTimeCube:
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
                     self.current_point = [t_indice, p_indice]
                     self.app.push_event('hovered_gps_point', pt[0], lon, lat, pt[3], self.data.trajects_names[t_indice])
+                    self.send_new_dates(th_value = pt[0])
             else:
                 if self.current_point != None:
                     self.app.push_event('hovered_gps_point', -1, -1, -1, -1, '')
@@ -736,6 +738,10 @@ class SpaceTimeCube:
         sh.display_list([ self.sh_lines])
         glEnable(GL_DEPTH_TEST)
 
+
+    def send_new_dates(self, th_value = None):
+        pp2 = [-1, -1]
+
         def proj_cube_corner(p):
             size =  [   self.data.maxs[1] - self.data.mins[1],
                         self.data.maxs[2] - self.data.mins[2] ]
@@ -749,7 +755,21 @@ class SpaceTimeCube:
 
         pp0 = proj_cube_corner([.5, 0.,.5])
         pp1 = proj_cube_corner([.5, 1.,.5])
-        self.app.push_event('times_and_positions', self.data.mins[0], pp0[0], pp0[1], self.data.maxs[0], pp1[0], pp1[1])
+
+        if th_value:
+            inter = (th_value - self.data.mins[0])/(self.data.maxs[0] - self.data.mins[0])
+            ppi = proj_cube_corner([.5, inter,.5])
+
+            times = [   {'time': self.data.mins[0], 'x': pp0[0], 'y': pp0[1]},
+                        {'time': self.data.maxs[0], 'x': pp1[0], 'y': pp1[1]},
+                        {'time': th_value, 'x': ppi[0],'y': ppi[1]}
+                    ]
+        else:
+            times = [   {'time': self.data.mins[0], 'x': pp0[0], 'y': pp0[1]},
+                        {'time': self.data.maxs[0], 'x': pp1[0], 'y': pp1[1]},
+                        {'time': self.data.maxs[0], 'x': pp1[0], 'y': pp1[1]}
+                    ]
+        self.app.push_event('times_and_positions', times)
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
@@ -770,9 +790,11 @@ class SpaceTimeCube:
         if self.imode == 'rotation':
             self.projo.h_rotation(-dx/self.width*math.pi*2)
             self.projo.v_rotation(-dy/self.height*math.pi*2)
+            self.send_new_dates()
         elif self.imode == 'translation':
             d = np.linalg.norm(np.array(self.projo.viewpoint) - np.array(self.projo.position))
             self.projo.translate([-dx*d/1000, dy*d/1000])
+            self.send_new_dates()
         self.mouse = [x, y]
 
     def on_wheel(self, delta):
