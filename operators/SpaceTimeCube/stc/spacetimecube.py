@@ -80,7 +80,6 @@ class SpaceTimeCube:
 
         #Trajectory data
         self.data = tr.data()
-        self.data.add([])
         self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
 
         #floor
@@ -847,6 +846,7 @@ class SpaceTimeCube:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
 
     def hide_trajectories(self, l):
+        print('hide', l)
         if len(l):
             for id in l:
                 if id >= 0 and id < len(self.data.trajects):

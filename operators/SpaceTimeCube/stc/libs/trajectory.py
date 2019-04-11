@@ -35,7 +35,6 @@ class data:
 
     def add(self, chunk):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''
-        nd = []
         first_time = False
         for c in chunk:
             if len(self.trajects_names) == 0:
@@ -61,13 +60,9 @@ class data:
             ind = self.trajects_names.index(c[0])
             m = mrc.mercator(c[2], c[3], c[4])
             self.trajects[ind].points.append([c[1], *m])
-            nd.append([c[1], *m])
 
-        if not first_time:
-            nd.append([*self.maxs])
-            nd.append([*self.mins])
         self.displayed = list(range(len(self.trajects)))
-        self.make_meta(nd)
+        self.make_meta()
 
     def make_meta(self, new_data=[]):
         '''making meta data from current data: min and max times, size, ...'''

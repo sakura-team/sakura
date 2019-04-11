@@ -49,6 +49,7 @@ class spacetimecubeOperator(Operator):
         self.ogl_app.push_event('loading_data_start')
         for ch in cols.chunks():
             self.ogl_app.handler.load_data(chunk=ch)
+            self.ogl_app.notify_change()
         self.ogl_app.push_event('loading_data_end')
         self.ogl_app.handler.update_floor()
 
@@ -56,6 +57,7 @@ class spacetimecubeOperator(Operator):
         if ev_type == 'onload':
             self.init_op_data()
             return self.ogl_app.handler.get_trajectories()
+            self.ogl_app.notify_change()
 
         elif ev_type == 'wiggle':
             #TODO: implement a 'unplan' periodic task
@@ -66,21 +68,27 @@ class spacetimecubeOperator(Operator):
 
         elif ev_type == 'floor_darkness':
             self.ogl_app.handler.set_floor_darkness(info['value'])
+            self.ogl_app.notify_change()
 
         elif ev_type == 'cube_height':
             self.ogl_app.handler.set_cube_height(info['value'])
+            self.ogl_app.notify_change()
 
         elif ev_type == 'show_trajectories':
             self.ogl_app.handler.show_trajectories(info['value'])
+            self.ogl_app.notify_change()
 
         elif ev_type == 'hide_trajectories':
             self.ogl_app.handler.hide_trajectories(info['value'])
+            self.ogl_app.notify_change()
 
         elif ev_type == 'get_map_layers':
             return self.ogl_app.handler.get_map_layers()
+            self.ogl_app.notify_change()
 
         elif ev_type == 'set_map_layer':
             return self.ogl_app.handler.set_map_layer(info['value'])
+            self.ogl_app.notify_change()
 
         else:
             print('\33[1;31m!!!Unknown Event', ev_type, '!!!\33[m')
