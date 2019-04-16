@@ -5,13 +5,10 @@
 import numpy as np
 import math, copy, random
 
-def limit(a, min, max):
-    if a < min:
-        return min
-    elif a > max:
-        return max
-    else:
-        return a
+
+def distance_2D(a, b):
+    return math.sqrt(   (b[0]-a[0])**2 +
+                        (b[1]-a[1])**2  )
 
 def m_mult(a, b):
     i, j = 0, 0
@@ -24,7 +21,6 @@ def m_mult(a, b):
         j = 0
 
     return M
-
 
 def m_rotation(vector, angle):
     v = normalize(vector)
@@ -61,36 +57,37 @@ def rotate(p, vector, angle, pivot = []):
 
 
 def normalize(v):
-    try:
-        n = np.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
-    except ValueError:
-        print()
-        print()
-        print(ValueError)
-        print()
-        exit(0)
-    if n == 0:
-        return [0,0,0]
-    return [v[0]/n, v[1]/n, v[2]/n]
+    n = norm(v)
+    if n != 0:
+        for i in range(len(v)):
+            v[i] /= n
+        return v
+    for i in range(len(v)):
+        v[i] = 0
+    return v
 
+def vector(a, b):
+    v = []
+    for i in range(len(a)):
+        v.append(b[i] - a[i])
+    return v
 
 def norm(v):
-    try:
-        n = np.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
-        return n
-    except ValueError:
-        print()
-        print()
-        print(ValueError)
-        print()
-        exit(0)
-
+    n = 0
+    for i in range(len(v)):
+        n += v[i]*v[i]
+    return math.sqrt(n)
 
 def cross (u,v):
     return [u[1]*v[2] - u[2]*v[1],
             u[2]*v[0] - u[0]*v[2],
             u[0]*v[1] - u[1]*v[0]]
 
+def dot(u, v):
+    res = 0
+    for i in range(len(u)):
+        res += u[i]*v[i]
+    return res
 
 def perspective(fov, aspect, near, far):
     rfov = fov*math.pi/180.
@@ -257,3 +254,16 @@ def pt_in_frame(p, mins, maxs):
         p[1] <= maxs[1]:
         return True
     return False
+
+def proj_pt_on_line(p, a, b):
+    '''point: p; line defined by [a,b]'''
+    ap, ab = [], []
+    for i in range(len(p)):
+        ap.append(p[i]-a[i])
+        ab.append(b[i]-a[i])
+
+    d = dot(ap,ab)/dot(ab,ab)
+    res = []
+    for i in range(len(p)):
+        res.append(a[i] + d * ab[i])
+    return res

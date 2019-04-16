@@ -19,7 +19,6 @@ function init() {
     });
 
     opengl_app.subscribe_event('times_and_positions', function(evt, times) {
-
         var sta = $('#time_start_div')[0];
         var end = $('#time_end_div')[0];
         var int = $('#time_inter_div')[0];

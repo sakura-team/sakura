@@ -6,7 +6,11 @@ import sys, math, time, inspect, datetime, copy
 import numpy    as      np
 from pathlib    import  Path
 from PIL        import  Image
-from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
+
+try:
+    from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
+except:
+    SAKURA_GPU_PERFORMANCE = 'high'
 
 try:
     from OpenGL.GL      import *
@@ -119,9 +123,13 @@ class SpaceTimeCube:
         self.debug              = False
         self.current_point      = None
 
+        self.proj_cube_corners_bottom   = []
+        self.proj_cube_corners_up       = []
+
     def init(self):
         self.mouse = [ -1, -1 ]
         self.imode = 'none'
+        self.current_edge = -1
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
@@ -559,6 +567,31 @@ class SpaceTimeCube:
         if self.debug:
             print('\tOk')
 
+    def project_cube_corner(self, p):
+        size =  [   self.data.maxs[1] - self.data.mins[1],
+                    self.data.maxs[2] - self.data.mins[2] ]
+        if size[0] > size[1]:
+            p[2] *= size[1]/size[0]
+        else:
+            p[0] *= size[0]/size[1]
+        p[1] = p[1]*self.cube_height - self.cube_height/2;
+        pp = self.projo.project_on_screen([p[0], p[1], p[2], 1.0] )
+        return [ (pp[0]+1)/2*self.width, (pp[1]+1)/2*self.height]
+
+    def compute_proj_cube_corners(self):
+        self.proj_cube_corners_bottom = [
+                self.project_cube_corner([.5, 0.,.5]),
+                self.project_cube_corner([.5, 0.,-.5]),
+                self.project_cube_corner([-.5, 0.,-.5]),
+                self.project_cube_corner([-.5, 0.,.5])
+                ]
+        self.proj_cube_corners_up = [
+                self.project_cube_corner([.5, 1.,.5]),
+                self.project_cube_corner([.5, 1.,-.5]),
+                self.project_cube_corner([-.5, 1.,-.5]),
+                self.project_cube_corner([-.5, 1.,.5])
+                ]
+
     def update_cube_and_lines(self):
         self.update_cube_arrays()
         self.update_lines_arrays()
@@ -587,6 +620,27 @@ class SpaceTimeCube:
             return id
         except:
             return -1
+
+    def closest_cube_edge(self, threshold):
+        '''from cube corner projections and mouse position,
+        we give the closest cube indice'''
+
+        m = [self.mouse[0], self.height - self.mouse[1]]
+
+        #vertical edges only for now
+        dist = float('inf')
+        index = -1
+        for i in range(len(self.proj_cube_corners_bottom)):
+            a = self.proj_cube_corners_bottom[i]
+            b = self.proj_cube_corners_up[i]
+            d = gm.distance_2D(gm.proj_pt_on_line(m, a, b), m)
+            if d < dist:
+                index = i
+                dist = d
+
+        if dist < threshold:
+            return index
+        return -1
 
     def compute_hovered_target(self):
         glClearColor(1.0,1.0,1.0,1.0)
@@ -740,36 +794,24 @@ class SpaceTimeCube:
 
 
     def send_new_dates(self, th_value = None):
-        pp2 = [-1, -1]
+        if len(self.proj_cube_corners_bottom):
+            times = [   {'time': self.data.mins[0],
+                            'x': self.proj_cube_corners_bottom[0][0],
+                            'y': self.proj_cube_corners_bottom[0][1]},
+                        {'time': self.data.maxs[0],
+                            'x': self.proj_cube_corners_up[0][0],
+                            'y': self.proj_cube_corners_up[0][1]} ]
 
-        def proj_cube_corner(p):
-            size =  [   self.data.maxs[1] - self.data.mins[1],
-                        self.data.maxs[2] - self.data.mins[2] ]
-            if size[0] > size[1]:
-                p[2] *= size[1]/size[0]
+            if th_value:
+                inter = (th_value - self.data.mins[0])/(self.data.maxs[0] - self.data.mins[0])
+                ppi = self.project_cube_corner([.5, inter,.5])
+                times.append({'time': th_value, 'x': ppi[0],'y': ppi[1]})
             else:
-                p[0] *= size[0]/size[1]
-            p[1] = p[1]*self.cube_height - self.cube_height/2;
-            pp = self.projo.project_on_screen([p[0], p[1], p[2], 1.0] )
-            return [ (pp[0]+1)/2*self.width, (pp[1]+1)/2*self.height]
+                times.append({'time': self.data.mins[0],
+                                'x': self.proj_cube_corners_bottom[0][0],
+                                'y': self.proj_cube_corners_bottom[0][1]})
 
-        pp0 = proj_cube_corner([.5, 0.,.5])
-        pp1 = proj_cube_corner([.5, 1.,.5])
-
-        if th_value:
-            inter = (th_value - self.data.mins[0])/(self.data.maxs[0] - self.data.mins[0])
-            ppi = proj_cube_corner([.5, inter,.5])
-
-            times = [   {'time': self.data.mins[0], 'x': pp0[0], 'y': pp0[1]},
-                        {'time': self.data.maxs[0], 'x': pp1[0], 'y': pp1[1]},
-                        {'time': th_value, 'x': ppi[0],'y': ppi[1]}
-                    ]
-        else:
-            times = [   {'time': self.data.mins[0], 'x': pp0[0], 'y': pp0[1]},
-                        {'time': self.data.maxs[0], 'x': pp1[0], 'y': pp1[1]},
-                        {'time': self.data.maxs[0], 'x': pp1[0], 'y': pp1[1]}
-                    ]
-        self.app.push_event('times_and_positions', times)
+            self.app.push_event('times_and_positions', times)
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
@@ -778,23 +820,61 @@ class SpaceTimeCube:
         RIGHT_BUTTON = 2
         DOWN = 0
         UP = 1
-        if button == LEFT_BUTTON and state == DOWN:
-            self.imode = 'rotation'
-        elif button == RIGHT_BUTTON and state == DOWN:
-            self.imode = 'translation'
-        elif state == UP:
+
+        if state == UP: #leaving any interaction modes
             self.imode = 'none'
+            return
+
+        #projecting cube corners
+        self.compute_proj_cube_corners()
+
+        #Are we on an edge ?
+        index = -1
+        if len(self.proj_cube_corners_bottom):
+            index = self.closest_cube_edge(5)
+
+        if index == -1: #Not on an edge !!!
+            if button == LEFT_BUTTON and state == DOWN:
+                self.imode = 'rotation'
+            elif button == RIGHT_BUTTON and state == DOWN:
+                self.imode = 'translation'
+
+        else:   #On an edge !!!!
+            self.current_edge = index
+            if button == LEFT_BUTTON and state == DOWN:
+                self.imode = 'scale'
+            elif button == RIGHT_BUTTON and state == DOWN:
+                self.imode = 'crop'
+                print('Crop not implemented yet')
 
     def on_mouse_motion(self, x, y):
+        self.compute_proj_cube_corners()
         dx, dy = x - self.mouse[0], y - self.mouse[1]
+
         if self.imode == 'rotation':
             self.projo.h_rotation(-dx/self.width*math.pi*2)
             self.projo.v_rotation(-dy/self.height*math.pi*2)
             self.send_new_dates()
+
         elif self.imode == 'translation':
             d = np.linalg.norm(np.array(self.projo.viewpoint) - np.array(self.projo.position))
             self.projo.translate([-dx*d/1000, dy*d/1000])
             self.send_new_dates()
+
+        elif self.imode == 'scale':
+            a = self.proj_cube_corners_bottom[self.current_edge]
+            b = self.proj_cube_corners_up[self.current_edge]
+            dist = gm.distance_2D(a, b)
+            dot = gm.dot(   gm.normalize(gm.vector(a, b)),
+                            gm.normalize([dx, dy]))
+            amount = 1
+            amount = gm.norm([dx, dy])/dist
+            if dot <= -0.5:
+                self.set_cube_height(self.cube_height + amount*self.cube_height)
+            elif dot >= 0.5:
+                self.set_cube_height(self.cube_height - amount*self.cube_height)
+            self.send_new_dates()
+
         self.mouse = [x, y]
 
     def on_wheel(self, delta):
