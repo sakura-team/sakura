@@ -30,36 +30,37 @@ from .libs import geomaths      as gm
 
 def wire_cube(mins, maxs):
     size = np.fabs(maxs - mins)
-    return np.array(
-            [   mins,
-                mins + np.array([size[0], 0, 0]),
+    return np.array([
+                #verticals
+                mins + np.array([size[0], 0, size[0]]),
+                mins + np.array([size[0], size[0], size[0]]),
                 mins + np.array([size[0], 0, 0]),
                 mins + np.array([size[0], size[0], 0]),
-                mins + np.array([size[0], size[0], 0]),
-                mins + np.array([0, size[0], 0]),
-                mins + np.array([0, size[0], 0]),
                 mins,
-
-                maxs,
-                maxs - np.array([size[0], 0, 0]),
-                maxs - np.array([size[0], 0, 0]),
-                maxs - np.array([size[0], size[0], 0]),
-                maxs - np.array([size[0], size[0], 0]),
-                maxs - np.array([0, size[0], 0]),
-                maxs - np.array([0, size[0], 0]),
-                maxs,
-
-                mins,
+                mins + np.array([0, size[0], 0]),
                 mins + np.array([0, 0, size[0]]),
-                mins + np.array([0, size[0], 0]),
                 mins + np.array([0, size[0], size[0]]),
 
-                maxs,
-                maxs - np.array([0, 0, size[0]]),
-                maxs - np.array([0, size[0], 0]),
-                maxs - np.array([0, size[0], size[0]])
-                ]
-            )
+                #ground
+                mins + np.array([size[0], 0, size[0]]),
+                mins + np.array([size[0], 0, 0]),
+                mins + np.array([size[0], 0, 0]),
+                mins,
+                mins,
+                mins + np.array([0, 0, size[0]]),
+                mins + np.array([0, 0, size[0]]),
+                mins + np.array([size[0], 0, size[0]]),
+
+                #top
+                mins + np.array([size[0], size[0], size[0]]),
+                mins + np.array([size[0], size[0], 0]),
+                mins + np.array([size[0], size[0], 0]),
+                mins + np.array([0, size[0], 0]),
+                mins + np.array([0, size[0], 0]),
+                mins + np.array([0, size[0], size[0]]),
+                mins + np.array([0, size[0], size[0]]),
+                mins + np.array([size[0], size[0], size[0]]),
+                ])
 
 class SpaceTimeCube:
     def __init__(self):
@@ -95,7 +96,7 @@ class SpaceTimeCube:
         self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
                                             np.array([.5,1,.5]))
 
-        self.cube_colors        = np.full((len(self.cube_vertices)*3), 1)
+        self.cube_colors        = np.full((len(self.cube_vertices)*3), .5)
         self.cube_colors        = self.cube_colors.reshape(int(len(self.cube_vertices)), 3)
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
@@ -598,6 +599,21 @@ class SpaceTimeCube:
                 self.project_cube_corner([-.5, 1.,.5])
                 ]
 
+        #Are we on an edge ?
+        index = -1
+        if len(self.proj_cube_corners_bottom):
+            index = self.closest_cube_edge(5)
+
+        if index != -1:
+            self.cube_colors[index*2] = [1,1,1]
+            self.cube_colors[index*2+1] = [1,1,1]
+        else:
+            self.cube_colors[self.current_edge*2] = [.5,.5,.5]
+            self.cube_colors[self.current_edge*2+1] = [.5,.5,.5]
+        self.current_edge = index
+        self.update_cube_and_lines()
+
+
     def update_cube_and_lines(self):
         self.update_cube_arrays()
         self.update_lines_arrays()
@@ -827,26 +843,20 @@ class SpaceTimeCube:
         DOWN = 0
         UP = 1
 
+        #projecting cube corners
+        self.compute_proj_cube_corners()
+
         if state == UP: #leaving any interaction modes
             self.imode = 'none'
             return
 
-        #projecting cube corners
-        self.compute_proj_cube_corners()
-
-        #Are we on an edge ?
-        index = -1
-        if len(self.proj_cube_corners_bottom):
-            index = self.closest_cube_edge(5)
-
-        if index == -1: #Not on an edge !!!
+        if self.current_edge == -1: #Not on an edge !!!
             if button == LEFT_BUTTON and state == DOWN:
                 self.imode = 'rotation'
             elif button == RIGHT_BUTTON and state == DOWN:
                 self.imode = 'translation'
 
         else:   #On an edge !!!!
-            self.current_edge = index
             if button == LEFT_BUTTON and state == DOWN:
                 self.imode = 'scale'
             elif button == RIGHT_BUTTON and state == DOWN:
@@ -861,6 +871,7 @@ class SpaceTimeCube:
 
     def on_mouse_motion(self, x, y):
         self.compute_proj_cube_corners()
+
         dx, dy = x - self.mouse[0], y - self.mouse[1]
 
         if self.imode == 'rotation':
