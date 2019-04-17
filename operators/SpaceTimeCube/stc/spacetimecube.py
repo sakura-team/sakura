@@ -844,8 +844,14 @@ class SpaceTimeCube:
             if button == LEFT_BUTTON and state == DOWN:
                 self.imode = 'scale'
             elif button == RIGHT_BUTTON and state == DOWN:
-                self.imode = 'crop'
-                print('Crop not implemented yet')
+                a = self.proj_cube_corners_bottom[self.current_edge]
+                b = self.proj_cube_corners_up[self.current_edge]
+                dist_a = gm.distance_2D(self.mouse, a)
+                dist_b = gm.distance_2D(self.mouse, b)
+                if dist_a < dist_b:
+                    self.imode = 'crop_down'
+                else:
+                    self.imode = 'crop_up'
 
     def on_mouse_motion(self, x, y):
         self.compute_proj_cube_corners()
@@ -874,6 +880,8 @@ class SpaceTimeCube:
             elif dot >= 0.5:
                 self.set_cube_height(self.cube_height - amount*self.cube_height)
             self.send_new_dates()
+        elif self.imode in ['crop_down', 'crop_up']:
+            print(self.imode, 'not yet implemented')
 
         self.mouse = [x, y]
 
