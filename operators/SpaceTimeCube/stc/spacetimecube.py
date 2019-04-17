@@ -95,10 +95,12 @@ class SpaceTimeCube:
         self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
                                             np.array([.5,1,.5]))
 
+        self.cube_colors        = np.full((len(self.cube_vertices)*3), 1)
+        self.cube_colors        = self.cube_colors.reshape(int(len(self.cube_vertices)), 3)
+
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
 
-        #self.lines_vertices     = np.array([[-.5,0,-.5], [.5,1,.5]])
         self.lines_vertices     = np.array([[0,0,0,0], [0,0,0,0]])
         self.quad_vertices      = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
 
@@ -170,8 +172,10 @@ class SpaceTimeCube:
 
         ##########################
         # VBOS & attributes
-        self.vbo_cube               = glGenBuffers(1)
+        self.vbo_cube_vertices      = glGenBuffers(1)
+        self.vbo_cube_colors        = glGenBuffers(1)
         self.attr_cube_vertices     = sh.new_attribute_index()
+        self.attr_cube_colors       = sh.new_attribute_index()
 
         self.vbo_lines              = glGenBuffers(1)
         self.attr_lines_vertices    = sh.new_attribute_index()
@@ -195,7 +199,8 @@ class SpaceTimeCube:
         # cube
         ## CALLBACKS -------
         def _update_cube_arrays():
-            sh.bind(self.vbo_cube, self.cube_vertices, self.attr_cube_vertices, 3, GL_FLOAT)
+            sh.bind(self.vbo_cube_vertices, self.cube_vertices, self.attr_cube_vertices, 3, GL_FLOAT)
+            sh.bind(self.vbo_cube_colors, self.cube_colors, self.attr_cube_colors, 3, GL_FLOAT)
         self.update_cube_arrays = _update_cube_arrays
 
         def cube_display():
@@ -221,7 +226,8 @@ class SpaceTimeCube:
         self.sh_cube.sh = sh.create(str(self.spacetimecube_dir / 'shaders/cube.vert'),
                                     None,
                                     str(self.spacetimecube_dir / 'shaders/cube.frag'),
-                                    [self.attr_cube_vertices], ['in_vertex'],
+                                    [self.attr_cube_vertices, self.attr_cube_colors],
+                                    ['in_vertex', 'in_color'],
                                     glsl_version)
         if not self.sh_cube.sh: exit(1)
         if self.debug:
