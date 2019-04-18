@@ -759,7 +759,8 @@ class SpaceTimeCube:
                 self.imode = self.cube.crop_mode(self.mouse)
 
     def on_mouse_motion(self, x, y):
-        self.compute_proj_cube_corners()
+        if self.imode == 'none':
+            self.compute_proj_cube_corners()
 
         dx, dy = x - self.mouse[0], y - self.mouse[1]
 
@@ -774,18 +775,9 @@ class SpaceTimeCube:
             self.send_new_dates()
 
         elif self.imode == 'scale':
-            a = self.cube.proj_corners_bottom[self.cube.current_edge]
-            b = self.cube.proj_corners_up[self.cube.current_edge]
-            dist = gm.distance_2D(a, b)
-            dot = gm.dot(   gm.normalize(gm.vector(a, b)),
-                            gm.normalize([dx, dy]))
-            amount = 1
-            amount = gm.norm([dx, dy])/dist
-            if dot <= -0.5:
-                self.cube.set_height(self.cube.height + amount*self.cube.height)
-            elif dot >= 0.5:
-                self.cube.set_height(self.cube.height - amount*self.cube.height)
+            self.cube.scale([dx,dy])
             self.send_new_dates()
+
         elif self.imode in ['crop_down', 'crop_up']:
             print(self.imode, 'not yet implemented')
 

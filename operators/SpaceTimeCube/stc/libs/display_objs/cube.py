@@ -142,7 +142,7 @@ class cube:
         if index != -1:
             self.colors[index*2] = [1,1,1]
             self.colors[index*2+1] = [1,1,1]
-        else:
+        if index == -1 or index != self.current_edge:
             self.colors[self.current_edge*2] = [.5,.5,.5]
             self.colors[self.current_edge*2+1] = [.5,.5,.5]
         self.current_edge = index
@@ -155,3 +155,16 @@ class cube:
         if dist_a < dist_b:
             return 'crop_down'
         return 'crop_up'
+
+    def scale(self, delta):
+        a = self.proj_corners_bottom[self.current_edge]
+        b = self.proj_corners_up[self.current_edge]
+        dist = gm.distance_2D(a, b)
+        dot = gm.dot(   gm.normalize(gm.vector(a, b)),
+                        gm.normalize(delta))
+        amount = 1
+        amount = gm.norm(delta)/dist
+        if dot <= -0.5:
+            self.set_height(self.height + 2*amount*self.height)
+        elif dot >= 0.5:
+            self.set_height(self.height - 2*amount*self.height)
