@@ -27,40 +27,7 @@ from .libs import mercator      as mc
 from .libs import tilenames     as tn
 from .libs import geomaths      as gm
 
-
-def wire_cube(mins, maxs):
-    size = np.fabs(maxs - mins)
-    return np.array([
-                #verticals
-                mins + np.array([size[0], 0, size[0]]),
-                mins + np.array([size[0], size[0], size[0]]),
-                mins + np.array([size[0], 0, 0]),
-                mins + np.array([size[0], size[0], 0]),
-                mins,
-                mins + np.array([0, size[0], 0]),
-                mins + np.array([0, 0, size[0]]),
-                mins + np.array([0, size[0], size[0]]),
-
-                #ground
-                mins + np.array([size[0], 0, size[0]]),
-                mins + np.array([size[0], 0, 0]),
-                mins + np.array([size[0], 0, 0]),
-                mins,
-                mins,
-                mins + np.array([0, 0, size[0]]),
-                mins + np.array([0, 0, size[0]]),
-                mins + np.array([size[0], 0, size[0]]),
-
-                #top
-                mins + np.array([size[0], size[0], size[0]]),
-                mins + np.array([size[0], size[0], 0]),
-                mins + np.array([size[0], size[0], 0]),
-                mins + np.array([0, size[0], 0]),
-                mins + np.array([0, size[0], 0]),
-                mins + np.array([0, size[0], size[0]]),
-                mins + np.array([0, size[0], size[0]]),
-                mins + np.array([size[0], size[0], size[0]]),
-                ])
+from .libs.display_objs import cube as obj_cube
 
 class SpaceTimeCube:
     def __init__(self):
@@ -93,11 +60,7 @@ class SpaceTimeCube:
                                             [0.,0.], [1.,1.], [1.,0.]])
 
         #Global display data
-        self.cube_vertices      = wire_cube(np.array([-.5,0,-.5]),
-                                            np.array([.5,1,.5]))
-
-        self.cube_colors        = np.full((len(self.cube_vertices)*3), .5)
-        self.cube_colors        = self.cube_colors.reshape(int(len(self.cube_vertices)), 3)
+        self.cube = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
@@ -118,7 +81,6 @@ class SpaceTimeCube:
         self.thickness_of_backs = 8 #pixels
         self.floor_darkness     = .5
         self.green_floor        = None
-        self.cube_height        = 1.
         self.hovered_target     = -1
         self.selected_trajects  = []
         self.displayed_trajects = []
@@ -126,13 +88,10 @@ class SpaceTimeCube:
         self.debug              = False
         self.current_point      = None
 
-        self.proj_cube_corners_bottom   = []
-        self.proj_cube_corners_up       = []
-
     def init(self):
         self.mouse = [ -1, -1 ]
         self.imode = 'none'
-        self.current_edge = -1
+        self.cube.current_edge = -1
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
@@ -150,6 +109,18 @@ class SpaceTimeCube:
 
         glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8")
         glsl_version = glsl_version.replace('.', '').split()[0]
+
+        # Loading shader files
+        def load_shader(shader_name, shader, obj):
+            if self.debug:
+                print('\t\33[1;32m'+shader_name+' shader...\33[m', end='')
+            sys.stdout.flush()
+            shader.sh = obj.create_shader(str(self.spacetimecube_dir / 'shaders/'), glsl_version)
+
+            if not shader.sh: exit(1)
+            if self.debug:
+                print('\t\tOk')
+            sys.stdout.flush()
 
         ##########################
         # general vertex array object
@@ -169,14 +140,8 @@ class SpaceTimeCube:
             print()
             sys.exit()
 
-
-
         ##########################
         # VBOS & attributes
-        self.vbo_cube_vertices      = glGenBuffers(1)
-        self.vbo_cube_colors        = glGenBuffers(1)
-        self.attr_cube_vertices     = sh.new_attribute_index()
-        self.attr_cube_colors       = sh.new_attribute_index()
 
         self.vbo_lines              = glGenBuffers(1)
         self.attr_lines_vertices    = sh.new_attribute_index()
@@ -198,42 +163,21 @@ class SpaceTimeCube:
         # shaders
         #-----------------------------------------------
         # cube
-        ## CALLBACKS -------
-        def _update_cube_arrays():
-            sh.bind(self.vbo_cube_vertices, self.cube_vertices, self.attr_cube_vertices, 3, GL_FLOAT)
-            sh.bind(self.vbo_cube_colors, self.cube_colors, self.attr_cube_colors, 3, GL_FLOAT)
-        self.update_cube_arrays = _update_cube_arrays
-
-        def cube_display():
-            self.sh_cube.update_uniforms()
-            glDrawArrays(GL_LINES, 0, len(self.cube_vertices))
-        self.sh_cube.display = cube_display
+        self.cube.generate_buffers_and_attributes()
+        self.sh_cube.display = self.cube.display
 
         def update_uni_cube():
-            self.sh_cube.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_cube.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_cube.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_cube.set_uniform("mins", self.data.mins, '4fv')
             self.sh_cube.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             self.sh_cube.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.sh_cube.update_uniforms = update_uni_cube
+        self.cube.update_uniforms = update_uni_cube
 
         ## CALLBACKS -------
-        self.update_cube_arrays()
+        self.cube.update_arrays()
+        load_shader('Cube', self.sh_cube, self.cube)
 
-        # Loading shader files
-        if self.debug:
-            print('\t\33[1;32mCube shader...\33[m', end='')
-        sys.stdout.flush()
-        self.sh_cube.sh = sh.create(str(self.spacetimecube_dir / 'shaders/cube.vert'),
-                                    None,
-                                    str(self.spacetimecube_dir / 'shaders/cube.frag'),
-                                    [self.attr_cube_vertices, self.attr_cube_colors],
-                                    ['in_vertex', 'in_color'],
-                                    glsl_version)
-        if not self.sh_cube.sh: exit(1)
-        if self.debug:
-            print('\t\tOk')
-        sys.stdout.flush()
         #-----------------------------------------------
 
         #-----------------------------------------------
@@ -249,7 +193,7 @@ class SpaceTimeCube:
         self.sh_lines.display = lines_display
 
         def update_uni_lines():
-            self.sh_lines.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_lines.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_lines.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_lines.set_uniform("mins", self.data.mins, '4fv')
             self.sh_lines.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -287,7 +231,7 @@ class SpaceTimeCube:
         self.sh_quad.display = quad_display
 
         def update_uni_quad():
-            self.sh_quad.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_quad.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_quad.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_quad.set_uniform("mins", self.data.mins, '4fv')
             self.sh_quad.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -327,7 +271,7 @@ class SpaceTimeCube:
         self.sh_shadows.display = shadows_display
 
         def update_uni_shadows():
-            self.sh_shadows.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_shadows.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_shadows.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
             self.sh_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -365,7 +309,7 @@ class SpaceTimeCube:
         def update_uni_back_shadows():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
             p_size  = h*2/(self.height)
-            self.sh_back_shadows.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_back_shadows.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_back_shadows.set_uniform("pixel_size", p_size, 'f')
             self.sh_back_shadows.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
             self.sh_back_shadows.set_uniform("cam_near", self.projo.near, 'f')
@@ -404,7 +348,7 @@ class SpaceTimeCube:
         self.sh_trajects.display = trajects_display
 
         def update_uni_trajects():
-            self.sh_trajects.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_trajects.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
             self.sh_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -440,7 +384,7 @@ class SpaceTimeCube:
         def update_uni_back_trajects():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
             p_size  = h*2/(self.height)
-            self.sh_back_trajects.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_back_trajects.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_back_trajects.set_uniform("pixel_size", p_size, 'f')
             self.sh_back_trajects.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
             self.sh_back_trajects.set_uniform("cam_near", self.projo.near, 'f')
@@ -484,7 +428,7 @@ class SpaceTimeCube:
         self.sh_floor.display = floor_display
 
         def update_uni_floor():
-            self.sh_floor.set_uniform("cube_height", self.cube_height, 'f')
+            self.sh_floor.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_floor.set_uniform("maxs", self.data.maxs, '4fv')
             self.sh_floor.set_uniform("mins", self.data.mins, '4fv')
             self.sh_floor.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
@@ -574,48 +518,17 @@ class SpaceTimeCube:
         if self.debug:
             print('\tOk')
 
-    def project_cube_corner(self, p):
+    def compute_proj_cube_corners(self):
+
+        m = [self.mouse[0], self.height - self.mouse[1]]
         size =  [   self.data.maxs[1] - self.data.mins[1],
                     self.data.maxs[2] - self.data.mins[2] ]
-        if size[0] > size[1]:
-            p[2] *= size[1]/size[0]
-        else:
-            p[0] *= size[0]/size[1]
-        p[1] = p[1]*self.cube_height - self.cube_height/2;
-        pp = self.projo.project_on_screen([p[0], p[1], p[2], 1.0] )
-        return [ (pp[0]+1)/2*self.width, (pp[1]+1)/2*self.height]
-
-    def compute_proj_cube_corners(self):
-        self.proj_cube_corners_bottom = [
-                self.project_cube_corner([.5, 0.,.5]),
-                self.project_cube_corner([.5, 0.,-.5]),
-                self.project_cube_corner([-.5, 0.,-.5]),
-                self.project_cube_corner([-.5, 0.,.5])
-                ]
-        self.proj_cube_corners_up = [
-                self.project_cube_corner([.5, 1.,.5]),
-                self.project_cube_corner([.5, 1.,-.5]),
-                self.project_cube_corner([-.5, 1.,-.5]),
-                self.project_cube_corner([-.5, 1.,.5])
-                ]
-
-        #Are we on an edge ?
-        index = -1
-        if len(self.proj_cube_corners_bottom):
-            index = self.closest_cube_edge(5)
-
-        if index != -1:
-            self.cube_colors[index*2] = [1,1,1]
-            self.cube_colors[index*2+1] = [1,1,1]
-        else:
-            self.cube_colors[self.current_edge*2] = [.5,.5,.5]
-            self.cube_colors[self.current_edge*2+1] = [.5,.5,.5]
-        self.current_edge = index
+        self.cube.compute_proj_corners(size, m, self.projo, [self.width, self.height])
         self.update_cube_and_lines()
 
 
     def update_cube_and_lines(self):
-        self.update_cube_arrays()
+        self.cube.update_arrays()
         self.update_lines_arrays()
 
     def compute_closest_color(self, edge_size):
@@ -642,27 +555,6 @@ class SpaceTimeCube:
             return id
         except:
             return -1
-
-    def closest_cube_edge(self, threshold):
-        '''from cube corner projections and mouse position,
-        we give the closest cube indice'''
-
-        m = [self.mouse[0], self.height - self.mouse[1]]
-
-        #vertical edges only for now
-        dist = float('inf')
-        index = -1
-        for i in range(len(self.proj_cube_corners_bottom)):
-            a = self.proj_cube_corners_bottom[i]
-            b = self.proj_cube_corners_up[i]
-            d = gm.distance_2D(gm.proj_pt_on_line(m, a, b), m)
-            if d < dist:
-                index = i
-                dist = d
-
-        if dist < threshold:
-            return index
-        return -1
 
     def compute_hovered_target(self):
         glClearColor(1.0,1.0,1.0,1.0)
@@ -777,7 +669,7 @@ class SpaceTimeCube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        if self.cube_height > 0.00000000001:
+        if self.cube.height > 0.00000000001:
             glDisable(GL_DEPTH_TEST)
             if SAKURA_GPU_PERFORMANCE == 'low':
                 sh.display_list([ self.sh_floor ])
@@ -806,7 +698,7 @@ class SpaceTimeCube:
 
 
         sh.display_list([   self.sh_cube])
-        if self.cube_height > 0.00000000001:
+        if self.cube.height > 0.00000000001:
             sh.display_list([   self.sh_quad])
         sh.display_list([   self.sh_trajects])
 
@@ -816,22 +708,27 @@ class SpaceTimeCube:
 
 
     def send_new_dates(self, th_value = None):
-        if len(self.proj_cube_corners_bottom):
+        if len(self.cube.proj_corners_bottom):
             times = [   {'time': self.data.mins[0],
-                            'x': self.proj_cube_corners_bottom[0][0],
-                            'y': self.proj_cube_corners_bottom[0][1]},
+                            'x': self.cube.proj_corners_bottom[0][0],
+                            'y': self.cube.proj_corners_bottom[0][1]},
                         {'time': self.data.maxs[0],
-                            'x': self.proj_cube_corners_up[0][0],
-                            'y': self.proj_cube_corners_up[0][1]} ]
+                            'x': self.cube.proj_corners_up[0][0],
+                            'y': self.cube.proj_corners_up[0][1]} ]
 
             if th_value:
                 inter = (th_value - self.data.mins[0])/(self.data.maxs[0] - self.data.mins[0])
-                ppi = self.project_cube_corner([.5, inter,.5])
+                traj_size = [   self.data.maxs[1] - self.data.mins[1],
+                                self.data.maxs[2] - self.data.mins[2] ]
+                ppi = self.cube.project_corner( [.5, inter,.5],
+                                                traj_size,
+                                                self.projo,
+                                                [self.width, self.height])
                 times.append({'time': th_value, 'x': ppi[0],'y': ppi[1]})
             else:
                 times.append({'time': self.data.mins[0],
-                                'x': self.proj_cube_corners_bottom[0][0],
-                                'y': self.proj_cube_corners_bottom[0][1]})
+                                'x': self.cube.proj_corners_bottom[0][0],
+                                'y': self.cube.proj_corners_bottom[0][1]})
 
             self.app.push_event('times_and_positions', times)
 
@@ -850,24 +747,16 @@ class SpaceTimeCube:
             self.imode = 'none'
             return
 
-        if self.current_edge == -1: #Not on an edge !!!
+        if self.cube.current_edge == -1: #Not on an edge !!!
             if button == LEFT_BUTTON and state == DOWN:
                 self.imode = 'rotation'
             elif button == RIGHT_BUTTON and state == DOWN:
                 self.imode = 'translation'
-
         else:   #On an edge !!!!
             if button == LEFT_BUTTON and state == DOWN:
                 self.imode = 'scale'
             elif button == RIGHT_BUTTON and state == DOWN:
-                a = self.proj_cube_corners_bottom[self.current_edge]
-                b = self.proj_cube_corners_up[self.current_edge]
-                dist_a = gm.distance_2D(self.mouse, a)
-                dist_b = gm.distance_2D(self.mouse, b)
-                if dist_a < dist_b:
-                    self.imode = 'crop_down'
-                else:
-                    self.imode = 'crop_up'
+                self.imode = self.cube.crop_mode(self.mouse)
 
     def on_mouse_motion(self, x, y):
         self.compute_proj_cube_corners()
@@ -885,17 +774,17 @@ class SpaceTimeCube:
             self.send_new_dates()
 
         elif self.imode == 'scale':
-            a = self.proj_cube_corners_bottom[self.current_edge]
-            b = self.proj_cube_corners_up[self.current_edge]
+            a = self.cube.proj_corners_bottom[self.cube.current_edge]
+            b = self.cube.proj_corners_up[self.cube.current_edge]
             dist = gm.distance_2D(a, b)
             dot = gm.dot(   gm.normalize(gm.vector(a, b)),
                             gm.normalize([dx, dy]))
             amount = 1
             amount = gm.norm([dx, dy])/dist
             if dot <= -0.5:
-                self.set_cube_height(self.cube_height + amount*self.cube_height)
+                self.cube.set_height(self.cube.height + amount*self.cube.height)
             elif dot >= 0.5:
-                self.set_cube_height(self.cube_height - amount*self.cube_height)
+                self.cube.set_height(self.cube.height - amount*self.cube.height)
             self.send_new_dates()
         elif self.imode in ['crop_down', 'crop_up']:
             print(self.imode, 'not yet implemented')
@@ -921,9 +810,9 @@ class SpaceTimeCube:
         elif key == b'd':
             self.set_floor_darkness(self.floor_darkness-.1)
         elif key == b'h':
-            self.set_cube_height(self.cube_height-.1)
+            self.set_cube_height(self.cube.height-.1)
         elif key == b'H':
-            self.set_cube_height(self.cube_height+.1)
+            self.set_cube_height(self.cube.height+.1)
         elif key == b'p':
             self.data.print_meta()
         elif key == b'f':
@@ -955,9 +844,7 @@ class SpaceTimeCube:
         self.sh_floor.update_texture()
 
     def set_cube_height(self, value):
-        if value > 1.0:     self.cube_height = 1.0
-        elif value < 0.0:   self.cube_height = 0.0
-        else:               self.cube_height = value
+        self.cube.set_height(value)
 
     def get_map_layers(self):
         return self.floor.get_layers()
