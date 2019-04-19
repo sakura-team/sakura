@@ -30,6 +30,7 @@ from .libs import geomaths      as gm
 from .libs.display_objs import cube as obj_cube
 from .libs.display_objs import lines as obj_lines
 from .libs.display_objs import quad as obj_quad
+from .libs.display_objs import trajectories as obj_trajs
 
 class SpaceTimeCube:
     def __init__(self):
@@ -45,13 +46,11 @@ class SpaceTimeCube:
         #Shaders
         self.sh_shadows         = sh.shader()
         self.sh_back_shadows    = sh.shader()
-        self.sh_trajects        = sh.shader()
         self.sh_back_trajects   = sh.shader()
         self.sh_floor           = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
-        self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
 
         #floor
         self.floor = fl.floor()
@@ -62,6 +61,9 @@ class SpaceTimeCube:
         self.cube   = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
         self.lines  = obj_lines.lines()
         self.quad   = obj_quad.quad()
+        self.trajs  = obj_trajs.trajectories()
+
+        self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
@@ -140,11 +142,6 @@ class SpaceTimeCube:
 
         ##########################
         # VBOS & attributes
-        self.vbo_trajects_vertices  = glGenBuffers(1)
-        self.vbo_trajects_colors    = glGenBuffers(1)
-        self.attr_trajects_vertices = sh.new_attribute_index()
-        self.attr_trajects_colors   = sh.new_attribute_index()
-
         self.vbo_floor_vertices     = glGenBuffers(1)
         self.vbo_floor_text_coords  = glGenBuffers(1)
         self.attr_floor_vertices    = sh.new_attribute_index()
@@ -184,22 +181,23 @@ class SpaceTimeCube:
         load_shader('Quad', self.quad.sh, self.quad)
         #-----------------------------------------------
 
+        #-----------------------------------------------
+        # main trajectories
+        self.trajs.update_uniforms = update_uni_cube
+        self.trajs.generate_buffers_and_attributes()
+        self.trajs.update_arrays()
+        load_shader('Trajects', self.trajs.sh, self.trajs)
+        #-----------------------------------------------
+
 
         #-----------------------------------------------
         # shadows
-        def _update_trajects_arrays():
-            sh.bind(self.vbo_trajects_vertices, self.trajects_vertices, self.attr_trajects_vertices, 4, GL_FLOAT)
-            sh.bind(self.vbo_trajects_colors, self.trajects_colors, self.attr_trajects_colors, 4, GL_FLOAT)
-        self.update_trajects_arrays = _update_trajects_arrays
-
         def shadows_display():
             self.sh_shadows.update_uniforms(self.sh_shadows)
-            glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
+            glDrawArrays(GL_LINE_STRIP, 0, len(self.trajs.vertices))
         self.sh_shadows.display = shadows_display
 
         self.sh_shadows.update_uniforms = update_uni_cube
-
-        self.update_trajects_arrays()
 
         # Loading shader files
         if self.debug:
@@ -208,7 +206,7 @@ class SpaceTimeCube:
         self.sh_shadows.sh = sh.create( str(self.spacetimecube_dir / 'shaders/shadows.vert'),
                                         None,
                                         str(self.spacetimecube_dir / 'shaders/shadows.frag'),
-                                        [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                        [self.trajs.attr_vertices, self.trajs.attr_colors],
                                         ['in_vertex', 'in_color'],
                                         glsl_version)
 
@@ -223,7 +221,7 @@ class SpaceTimeCube:
         ## CALLBACKS -------
         def back_shadows_display():
             self.sh_back_shadows.update_uniforms()
-            glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajs.vertices))
         self.sh_back_shadows.display = back_shadows_display
 
         def update_uni_back_shadows():
@@ -249,7 +247,7 @@ class SpaceTimeCube:
             self.sh_back_shadows.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_shadows.vert'),
                                                 str(self.spacetimecube_dir / 'shaders/back_shadows.geom'),
                                                 str(self.spacetimecube_dir / 'shaders/back_shadows.frag'),
-                                                [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                                [self.trajs.attr_vertices, self.trajs.attr_colors],
                                                 ['in_vertex', 'in_color'],
                                                 glsl_version)
 
@@ -260,36 +258,10 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
-        # main trajectories
-        def trajects_display():
-            self.sh_trajects.update_uniforms(self.sh_trajects)
-            glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
-        self.sh_trajects.display = trajects_display
-
-        self.sh_trajects.update_uniforms = update_uni_cube
-
-        # Loading shader files
-        if self.debug:
-            print('\t\33[1;32mTrajects shader...\33[m', end='')
-        sys.stdout.flush()
-        self.sh_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/trajects.vert'),
-                                        None,
-                                        str(self.spacetimecube_dir / 'shaders/trajects.frag'),
-                                        [self.attr_trajects_vertices, self.attr_trajects_colors],
-                                        ['in_vertex', 'in_color'],
-                                        glsl_version)
-
-        if not self.sh_trajects.sh: exit(1)
-        if self.debug:
-            print('\tOk')
-        sys.stdout.flush()
-        #-----------------------------------------------
-
-        #-----------------------------------------------
         # back trajectories
         def back_trajects_display():
             self.sh_back_trajects.update_uniforms()
-            glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
+            glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajs.vertices))
         self.sh_back_trajects.display = back_trajects_display
 
         def update_uni_back_trajects():
@@ -314,7 +286,7 @@ class SpaceTimeCube:
             self.sh_back_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_trajects.vert'),
                                                 str(self.spacetimecube_dir / 'shaders/back_trajects.geom'),
                                                 str(self.spacetimecube_dir / 'shaders/back_trajects.frag'),
-                                                [self.attr_trajects_vertices, self.attr_trajects_colors],
+                                                [self.trajs.attr_vertices, self.trajs.attr_colors],
                                                 ['in_vertex', 'in_color'],
                                                 glsl_version)
 
@@ -411,8 +383,8 @@ class SpaceTimeCube:
         sys.stdout.flush()
 
         #self.data.print_meta()
-        self.trajects_vertices, self.trajects_colors = np.array(self.data.compute_geometry())
-        self.update_trajects_arrays()
+        self.trajs.vertices, self.trajs.colors = np.array(self.data.compute_geometry())
+        self.trajs.update_arrays()
         self.update_cube_and_lines()
         self.send_new_dates()
 
@@ -469,7 +441,7 @@ class SpaceTimeCube:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         glDisable(GL_MULTISAMPLE)
-        sh.display_list([self.sh_trajects])
+        sh.display_list([self.trajs.sh])
         ccolor = self.compute_closest_color(10)
         t_indice = -1
         if ccolor != -1 and ccolor in self.data.trajects_ids:
@@ -487,18 +459,18 @@ class SpaceTimeCube:
         t_ind = self.data.trajects[traject].display_indice
         t_len = len(self.data.trajects[traject].points)
 
-        cop_vertices = copy.copy(self.trajects_vertices)
-        cop_colors = copy.copy(self.trajects_colors)
-        self.trajects_vertices = self.trajects_vertices[t_ind +1: t_ind +t_len +1]
-        self.trajects_colors = self.basic_colors_list[0: len(self.trajects_vertices)]
+        cop_vertices = copy.copy(self.trajs.vertices)
+        cop_colors = copy.copy(self.trajs.colors)
+        self.trajs.vertices = self.trajs.vertices[t_ind +1: t_ind +t_len +1]
+        self.trajs.colors = self.basic_colors_list[0: len(self.trajs.vertices)]
 
-        self.update_trajects_arrays()
-        sh.display_list([self.sh_shadows, self.sh_trajects])
+        self.trajs.update_arrays()
+        sh.display_list([self.sh_shadows, self.trajs.sh])
         p_indice = self.compute_closest_color(10)
 
-        self.trajects_vertices = copy.copy(cop_vertices)
-        self.trajects_colors = copy.copy(cop_colors)
-        self.update_trajects_arrays()
+        self.trajs.vertices = copy.copy(cop_vertices)
+        self.trajs.colors = copy.copy(cop_colors)
+        self.trajs.update_arrays()
 
         glEnable(GL_MULTISAMPLE)
         return p_indice
@@ -507,9 +479,9 @@ class SpaceTimeCube:
     def update_transparency(self, indice, value):
         t_ind = self.data.trajects[indice].display_indice
         t_len = len(self.data.trajects[indice].points)
-        arr = self.trajects_colors[t_ind+1: t_ind +1+ t_len]
+        arr = self.trajs.colors[t_ind+1: t_ind +1+ t_len]
         arr[:, 3] = value
-        self.trajects_colors[t_ind+1: t_ind +1+ t_len] = arr
+        self.trajs.colors[t_ind+1: t_ind +1+ t_len] = arr
 
     def display(self):
         # Hovering
@@ -529,7 +501,7 @@ class SpaceTimeCube:
                 self.update_transparency(self.hovered_target, 1.0)
                 self.hovered_target =  -1
 
-            self.update_trajects_arrays()
+            self.trajs.update_arrays()
 
             lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
             quad_vertices = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
@@ -571,7 +543,7 @@ class SpaceTimeCube:
                     self.update_transparency(i, 1.0)
                     index = self.selected_trajects.index(self.new_selections.pop(0))
                     self.selected_trajects.pop(index)
-            self.update_trajects_arrays()
+            self.trajs.update_arrays()
 
         # Main display
         glClearColor(.31,.63,1.0,1.0)
@@ -608,7 +580,7 @@ class SpaceTimeCube:
         sh.display_list([   self.cube.sh])
         if self.cube.height > 0.00000000001:
             sh.display_list([   self.quad.sh])
-        sh.display_list([   self.sh_trajects])
+        sh.display_list([   self.trajs.sh])
 
         glDisable(GL_DEPTH_TEST)
         sh.display_list([ self.lines.sh])
@@ -782,9 +754,9 @@ class SpaceTimeCube:
                     if id in self.data.displayed:
                         index = self.data.displayed.index(id)
                         self.data.displayed.pop(index)
-                        self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
+                        self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
             self.data.make_meta()
-            self.update_trajects_arrays()
+            self.trajs.update_arrays()
             self.update_cube_and_lines()
 
     def show_trajectories(self, l):
@@ -794,9 +766,9 @@ class SpaceTimeCube:
                     if id not in self.data.displayed:
                         self.data.displayed.append(id)
                         self.data.displayed.sort()
-                        self.trajects_vertices, self.trajects_colors = self.data.compute_geometry()
+                        self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
             self.data.make_meta()
-            self.update_trajects_arrays()
+            self.trajs.update_arrays()
             self.update_cube_and_lines()
 
 
