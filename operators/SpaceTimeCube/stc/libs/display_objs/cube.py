@@ -54,11 +54,14 @@ class cube:
         self.proj_corners_bottom    = []
         self.proj_corners_up        = []
         self.current_edge           = -1
+        self.sh                     = sh.shader()
 
 
-        self.vertices = wire_cube(mins, maxs)
+        self.vertices       = wire_cube(mins, maxs)
         self.colors        = np.full((len(self.vertices)*3), .5)
         self.colors        = self.colors.reshape(int(len(self.vertices)), 3)
+
+        self.sh.display = self.display
 
     def set_height(self, value):
         if value > 1.0:     self.height = 1.0

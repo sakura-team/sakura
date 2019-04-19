@@ -28,6 +28,7 @@ from .libs import tilenames     as tn
 from .libs import geomaths      as gm
 
 from .libs.display_objs import cube as obj_cube
+from .libs.display_objs import lines as obj_lines
 
 class SpaceTimeCube:
     def __init__(self):
@@ -41,13 +42,11 @@ class SpaceTimeCube:
         self.label          = "3D cube"
 
         #Shaders
-        self.sh_cube            = sh.shader()
         self.sh_shadows         = sh.shader()
         self.sh_back_shadows    = sh.shader()
         self.sh_trajects        = sh.shader()
         self.sh_back_trajects   = sh.shader()
         self.sh_floor           = sh.shader()
-        self.sh_lines           = sh.shader()
         self.sh_quad            = sh.shader()
 
         #Trajectory data
@@ -60,12 +59,12 @@ class SpaceTimeCube:
                                             [0.,0.], [1.,1.], [1.,0.]])
 
         #Global display data
-        self.cube = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
+        self.cube   = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
+        self.lines  = obj_lines.lines()
 
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
 
-        self.lines_vertices     = np.array([[0,0,0,0], [0,0,0,0]])
         self.quad_vertices      = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
 
         #Array used for point selection
@@ -142,10 +141,6 @@ class SpaceTimeCube:
 
         ##########################
         # VBOS & attributes
-
-        self.vbo_lines              = glGenBuffers(1)
-        self.attr_lines_vertices    = sh.new_attribute_index()
-
         self.vbo_quad               = glGenBuffers(1)
         self.attr_quad_vertices     = sh.new_attribute_index()
 
@@ -163,59 +158,32 @@ class SpaceTimeCube:
         # shaders
         #-----------------------------------------------
         # cube
-        self.cube.generate_buffers_and_attributes()
-        self.sh_cube.display = self.cube.display
-
         def update_uni_cube():
-            self.sh_cube.set_uniform("cube_height", self.cube.height, 'f')
-            self.sh_cube.set_uniform("maxs", self.data.maxs, '4fv')
-            self.sh_cube.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_cube.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.sh_cube.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+            self.cube.sh.set_uniform("cube_height", self.cube.height, 'f')
+            self.cube.sh.set_uniform("maxs", self.data.maxs, '4fv')
+            self.cube.sh.set_uniform("mins", self.data.mins, '4fv')
+            self.cube.sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.cube.sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.cube.update_uniforms = update_uni_cube
-
-        ## CALLBACKS -------
+        self.cube.generate_buffers_and_attributes()
         self.cube.update_arrays()
-        load_shader('Cube', self.sh_cube, self.cube)
+        load_shader('Cube', self.cube.sh, self.cube)
 
         #-----------------------------------------------
 
         #-----------------------------------------------
         # lines
         ## CALLBACKS -------
-        def _update_lines_arrays():
-            sh.bind(self.vbo_lines, self.lines_vertices, self.attr_lines_vertices, 4, GL_FLOAT)
-        self.update_lines_arrays = _update_lines_arrays
-
-        def lines_display():
-            self.sh_lines.update_uniforms()
-            glDrawArrays(GL_LINES, 0, len(self.lines_vertices))
-        self.sh_lines.display = lines_display
-
         def update_uni_lines():
-            self.sh_lines.set_uniform("cube_height", self.cube.height, 'f')
-            self.sh_lines.set_uniform("maxs", self.data.maxs, '4fv')
-            self.sh_lines.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_lines.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.sh_lines.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.sh_lines.update_uniforms = update_uni_lines
-
-        ## CALLBACKS -------
-        self.update_lines_arrays()
-
-        # Loading shader files
-        if self.debug:
-            print('\t\33[1;32mLines shader...\33[m', end='')
-        sys.stdout.flush()
-        self.sh_lines.sh = sh.create(str(self.spacetimecube_dir / 'shaders/lines.vert'),
-                                    None,
-                                    str(self.spacetimecube_dir / 'shaders/lines.frag'),
-                                    [self.attr_lines_vertices], ['in_vertex'],
-                                    glsl_version)
-        if not self.sh_lines.sh: exit(1)
-        if self.debug:
-            print('\t\tOk')
-        sys.stdout.flush()
+            self.lines.sh.set_uniform("cube_height", self.cube.height, 'f')
+            self.lines.sh.set_uniform("maxs", self.data.maxs, '4fv')
+            self.lines.sh.set_uniform("mins", self.data.mins, '4fv')
+            self.lines.sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            self.lines.sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        self.lines.update_uniforms = update_uni_lines
+        self.lines.generate_buffers_and_attributes()
+        self.lines.update_arrays()
+        load_shader('Lines', self.lines.sh, self.lines)
         #-----------------------------------------------
 
         #-----------------------------------------------
@@ -529,7 +497,7 @@ class SpaceTimeCube:
 
     def update_cube_and_lines(self):
         self.cube.update_arrays()
-        self.update_lines_arrays()
+        self.lines.update_arrays()
 
     def compute_closest_color(self, edge_size):
         '''Reads a square from the framebuffer,
@@ -647,9 +615,10 @@ class SpaceTimeCube:
                     self.current_point = None
 
 
-            self.lines_vertices = copy.copy(lines_vertices)
+            self.lines.vertices = copy.copy(lines_vertices)
+            self.lines.update_arrays()
+
             self.quad_vertices = copy.copy(quad_vertices)
-            self.update_lines_arrays()
             self.update_quad_arrays()
 
         #Selection
@@ -697,13 +666,13 @@ class SpaceTimeCube:
             glEnable(GL_DEPTH_TEST)
 
 
-        sh.display_list([   self.sh_cube])
+        sh.display_list([   self.cube.sh])
         if self.cube.height > 0.00000000001:
             sh.display_list([   self.sh_quad])
         sh.display_list([   self.sh_trajects])
 
         glDisable(GL_DEPTH_TEST)
-        sh.display_list([ self.sh_lines])
+        sh.display_list([ self.lines.sh])
         glEnable(GL_DEPTH_TEST)
 
 
