@@ -54,10 +54,9 @@ class cube:
         self.proj_corners_bottom    = []
         self.proj_corners_up        = []
         self.current_edge           = -1
-        self.sh                     = sh.shader()
 
-
-        self.vertices       = wire_cube(mins, maxs)
+        self.sh            = sh.shader()
+        self.vertices      = wire_cube(mins, maxs)
         self.colors        = np.full((len(self.vertices)*3), .5)
         self.colors        = self.colors.reshape(int(len(self.vertices)), 3)
 

@@ -22,7 +22,6 @@ except:
 from .libs import shader        as sh
 from .libs import projector     as pr
 from .libs import trajectory    as tr
-from .libs import floor         as fl
 from .libs import mercator      as mc
 from .libs import tilenames     as tn
 from .libs import geomaths      as gm
@@ -31,6 +30,7 @@ from .libs.display_objs import cube as obj_cube
 from .libs.display_objs import lines as obj_lines
 from .libs.display_objs import quad as obj_quad
 from .libs.display_objs import trajectories as obj_trajs
+from .libs.display_objs import floor as obj_fl
 
 class SpaceTimeCube:
     def __init__(self):
@@ -47,33 +47,24 @@ class SpaceTimeCube:
         self.sh_shadows         = sh.shader()
         self.sh_back_shadows    = sh.shader()
         self.sh_back_trajects   = sh.shader()
-        self.sh_floor           = sh.shader()
 
         #Trajectory data
         self.data = tr.data()
-
-        #floor
-        self.floor = fl.floor()
-        self.floor_text_coords = np.array([ [0.,0.], [0.,1.], [1.,1.],
-                                            [0.,0.], [1.,1.], [1.,0.]])
 
         #Global display data
         self.cube   = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
         self.lines  = obj_lines.lines()
         self.quad   = obj_quad.quad()
         self.trajs  = obj_trajs.trajectories()
+        self.floor  = obj_fl.floor()
 
         self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
-
-        self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
-                                            [0, 0, 0], [1, 0, 1], [1, 0, 0]])
 
         #Display params
         self.width = 100
         self.height = 100
         self.projo.wiggle = False
         self.thickness_of_backs = 8 #pixels
-        self.floor_darkness     = .5
         self.hovered_target     = -1
         self.selected_trajects  = []
         self.displayed_trajects = []
@@ -135,10 +126,6 @@ class SpaceTimeCube:
 
         ##########################
         # VBOS & attributes
-        self.vbo_floor_vertices     = glGenBuffers(1)
-        self.vbo_floor_text_coords  = glGenBuffers(1)
-        self.attr_floor_vertices    = sh.new_attribute_index()
-        self.attr_floor_text_coords = sh.new_attribute_index()
 
         ##########################
         # shaders
@@ -180,6 +167,22 @@ class SpaceTimeCube:
         self.trajs.generate_buffers_and_attributes()
         self.trajs.update_arrays()
         load_shader('Trajs', self.trajs.sh, self.trajs)
+        #-----------------------------------------------
+
+        #-----------------------------------------------
+        # Floor
+        def update_uni_floor(_sh):
+            _sh.set_uniform("cube_height", self.cube.height, 'f')
+            _sh.set_uniform("maxs", self.data.maxs, '4fv')
+            _sh.set_uniform("mins", self.data.mins, '4fv')
+            _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+            _sh.set_uniform("floor_texture", 0, 'i')
+        self.floor.update_uniforms = update_uni_floor
+        self.floor.generate_buffers_and_attributes()
+        self.floor.update_texture()
+        self.floor.update_arrays()
+        load_shader('Floor', self.floor.sh, self.floor)
         #-----------------------------------------------
 
 
@@ -289,69 +292,6 @@ class SpaceTimeCube:
         sys.stdout.flush()
         #-----------------------------------------------
 
-        #-----------------------------------------------
-        # Floor
-        def _update_floor_arrays():
-            sh.bind(self.vbo_floor_vertices, self.floor_vertices, self.attr_floor_vertices, 3, GL_FLOAT)
-            sh.bind(self.vbo_floor_text_coords, self.floor_text_coords, self.attr_floor_text_coords, 2, GL_FLOAT)
-        self.update_floor_arrays = _update_floor_arrays
-
-        def floor_display():
-            self.sh_floor.update_uniforms()
-            glDrawArrays(GL_TRIANGLES, 0, len(self.floor_vertices))
-        self.sh_floor.display = floor_display
-
-        def update_uni_floor():
-            self.sh_floor.set_uniform("cube_height", self.cube.height, 'f')
-            self.sh_floor.set_uniform("maxs", self.data.maxs, '4fv')
-            self.sh_floor.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_floor.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.sh_floor.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-            self.sh_floor.set_uniform("floor_texture", 0, 'i')
-        self.sh_floor.update_uniforms = update_uni_floor
-
-        self.sh_floor.texture_id = glGenTextures(1)
-        def u_texture(init = False):
-            glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, self.sh_floor.texture_id);
-
-            w = self.floor.img.width
-            h = self.floor.img.height
-
-            black = Image.new('RGB', (w, h), (0, 0, 0))
-            f = self.floor.img.resize((w, h), Image.ANTIALIAS)
-            final = Image.blend(f, black, self.floor_darkness)
-
-            arr = np.fromstring(final.tobytes(), np.uint8)
-            glTexImage2D(   GL_TEXTURE_2D, 0, GL_RGB,
-                            final.width,
-                            final.height,
-                            0, GL_RGB, GL_UNSIGNED_BYTE, arr);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        self.sh_floor.update_texture = u_texture
-
-        self.sh_floor.update_texture()
-        self.update_floor_arrays()
-
-        # Loading shader files
-        if self.debug:
-            print('\t\33[1;32mFloor shader...\33[m', end='')
-        sys.stdout.flush()
-        self.sh_floor.sh = sh.create(str(self.spacetimecube_dir / 'shaders/floor.vert'),
-                                        None,
-                                        str(self.spacetimecube_dir / 'shaders/floor.frag'),
-                                        [self.attr_floor_vertices, self.attr_floor_text_coords],
-                                        ['in_vertex', 'in_text_coords'],
-                                        glsl_version)
-
-        if not self.sh_floor.sh: exit(1)
-        if self.debug:
-            print('\t\tOk')
-        sys.stdout.flush()
-
-        #-----------------------------------------------
 
     def load_data(self, chunk=[], file=''):
         if len(chunk) > 0:
@@ -545,10 +485,10 @@ class SpaceTimeCube:
         if self.cube.height > 0.00000000001:
             glDisable(GL_DEPTH_TEST)
             if SAKURA_GPU_PERFORMANCE == 'low':
-                sh.display_list([ self.sh_floor ])
+                sh.display_list([ self.floor.sh ])
             else:
-                sh.display_list([   self.sh_floor,
-                                    self.sh_back_shadows,
+                sh.display_list([   self.floor.sh,
+                                    self.sh_back_shadows
                                 ])
             glEnable(GL_DEPTH_TEST)
 
@@ -562,11 +502,11 @@ class SpaceTimeCube:
         else:
             glDisable(GL_DEPTH_TEST)
             if SAKURA_GPU_PERFORMANCE == 'low':
-                sh.display_list([ self.sh_floor ])
+                sh.display_list([ self.floor.sh ])
             else:
-                sh.display_list([   self.sh_floor,
+                sh.display_list([   self.floor.sh,
                                     self.sh_back_trajects
-                                ]);
+                                ])
             glEnable(GL_DEPTH_TEST)
 
 
@@ -604,6 +544,9 @@ class SpaceTimeCube:
                                 'y': self.cube.proj_corners_bottom[0][1]})
 
             self.app.push_event('times_and_positions', times)
+
+    def update_floor(self):
+        self.floor.update(self.data.mins, self.data.maxs, debug=True)
 
     def on_mouse_click(self, button, state, x, y):
         self.mouse = [x, y]
@@ -663,7 +606,7 @@ class SpaceTimeCube:
         if key == b'\x1b':
             sys.exit()
         elif key == b't':
-            self.update_floor()
+            self.floot.update()
         elif key == b'w':
             self.toggle_wiggle(not self.projo.wiggle)
         elif key == b'+':
@@ -671,9 +614,9 @@ class SpaceTimeCube:
         elif key == b'-':
             self.projo.zoom(-1)
         elif key == b'D':
-            self.set_floor_darkness(self.floor_darkness+.1)
+            self.floor.set_darkness(self.floor.darkness+.1)
         elif key == b'd':
-            self.set_floor_darkness(self.floor_darkness-.1)
+            self.floor.set_darkness(self.floor.darkness-.1)
         elif key == b'h':
             self.set_cube_height(self.cube.height-.1)
         elif key == b'H':
@@ -701,12 +644,6 @@ class SpaceTimeCube:
 
     def toggle_wiggle(self, bool):
         self.projo.wiggle = bool
-
-    def set_floor_darkness(self, value):
-        if value > 1.0:     self.floor_darkness = 1.0
-        elif value < 0.0:   self.floor_darkness = 0.0
-        else:               self.floor_darkness = value
-        self.sh_floor.update_texture()
 
     def set_cube_height(self, value):
         self.cube.set_height(value)
@@ -763,60 +700,3 @@ class SpaceTimeCube:
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()
-
-
-    def update_floor(self):
-        if self.debug:
-            print('\t\33[1;32mUpdating floor...\33[m', flush = True)
-        sys.stdout.flush()
-
-        # longitude and latitude of the cube corners
-        lon_min, lat_min = mc.lonlat_from_mercator( self.data.mins[1],self.data.mins[2])
-        lon_max, lat_max = mc.lonlat_from_mercator( self.data.maxs[1],self.data.maxs[2])
-
-        # computing the higher depth that gives a tile smaller than the cube size
-        z = tn.depth_from_size(lon_max - lon_min)+1
-
-        # coordinates of the tiles
-        lon_t_min, lat_t_min = tn.tileXY(lat_min, lon_min, z)
-        lon_t_max, lat_t_max = tn.tileXY(lat_max, lon_max, z)
-
-        edges = []
-        coords = []
-        size = [lon_t_max - lon_t_min + 1, lat_t_min - lat_t_max + 1]
-        for lo in range(size[0]):
-            for la in range(size[1]):
-                lon = lon_t_min + lo
-                lat = lat_t_min - la
-                edges.append(tn.tileEdges(lon, lat , z))
-                coords.append({'lon': lon, 'lat': lat, 'img_x': lo, 'img_y': la })
-
-        self.floor.img = self.floor.img.resize(((size[0])*256, (size[1])*256) )
-        lon_min, lat_min = mc.mercator(edges[0]['w'], edges[0]['s'])
-        lon_max, lat_max = mc.mercator(edges[-1]['e'], edges[-1]['n'])
-        self.floor_vertices = np.array([[lon_min, 0, lat_min],
-                                        [lon_min, 0, lat_max],
-                                        [lon_max, 0, lat_max],
-                                        [lon_min, 0, lat_min],
-                                        [lon_max, 0, lat_max],
-                                        [lon_max, 0, lat_min]])
-        if self.debug:
-            print('\t\t\33[1;32mDownloading tiles 0%\33[m', end='', flush = True)
-
-        for i in range(len(coords)):
-            self.download_tile(coords[i], z, str(int((i+1)*100/len(coords))))
-            self.update_floor_arrays()
-            self.sh_floor.update_texture()
-        if self.debug:
-            print('\tOk', flush = True)
-
-    def download_tile(self, coords, z, perc):
-        self.floor.download_tile(   coords['lon'],
-                                    coords['lat'],
-                                    z,
-                                    coords['img_x'],
-                                    coords['img_y'])
-        if self.debug:
-            print(  '\r\t\t\33[1;32mDownloading tiles '+perc+'%\33[m',
-                    end='',
-                    flush = True)
