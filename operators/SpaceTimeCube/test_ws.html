@@ -81,6 +81,7 @@
                         }
                         else if (['move',
                                   'click',
+                                  'wheel',
                                   'hide_trajectories',
                                   'show_trajectories'].indexOf(j.key) < 0) {
                             console.log('Unknown answer:', j);
@@ -187,6 +188,11 @@
 
             canvas.addEventListener('contextmenu', function(evt) {
                 evt.preventDefault();
+            }, false);
+
+            canvas.addEventListener('wheel', function(evt) {
+                evt.preventDefault();
+                send('wheel', [evt.deltaY]);
             }, false);
 
         </script>

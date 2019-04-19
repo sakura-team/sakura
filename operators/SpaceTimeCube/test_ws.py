@@ -61,7 +61,7 @@ class wsock:
 
 
     def push_event(self, evt, *args, **kwargs):
-        print('back_event')
+        pass
 
     def display(self):
         self.stc.display()
@@ -102,6 +102,7 @@ class wsock:
     def mpassive(self, x, y):
         self.mmotion(x, y)
 
+
     ################------------------------------------------------------------
     ### server funcs
     def stc_test(self, a):
@@ -118,6 +119,7 @@ class wsock:
                                 'image': self.stc_image,
                                 'move': self.mmotion,
                                 'click': self.mclick,
+                                'wheel': self.stc.on_wheel,
                                 'get_trajectories': self.stc.get_trajectories,
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,
