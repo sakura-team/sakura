@@ -65,7 +65,7 @@ class wsock:
 
     def display(self):
         self.stc.display()
-        if self.stc_server:
+        if self.server_mode:
             #tests for sending image
             w = self.stc.width
             h = self.stc.height
@@ -81,7 +81,7 @@ class wsock:
 
     def keyboard(self, key, x, y):
         if key == b'\x1b':
-            if self.stc_server:
+            if self.server_mode:
                 self.stc_server._stop()
         self.stc.on_key_press(key, x, y)
         glutPostRedisplay()
@@ -95,7 +95,7 @@ class wsock:
         glutPostRedisplay()
 
     def idle(self):
-        if self.stc_server:
+        if self.server_mode:
             gevent.idle()
             glutPostRedisplay()
 
