@@ -79,10 +79,10 @@ class cube:
         sh.bind(self.vbo_colors, self.colors, self.attr_colors, 3, GL_FLOAT)
 
     def display(self):
-        self.update_uniforms()
+        self.update_uniforms(self.sh)
         glDrawArrays(GL_LINES, 0, len(self.vertices))
 
-    def update_unforms():
+    def update_unforms(self, sh):
         pass
 
     def create_shader(self, dir, glsl_version):

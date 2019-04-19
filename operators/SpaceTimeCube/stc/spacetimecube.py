@@ -152,15 +152,15 @@ class SpaceTimeCube:
 
         ##########################
         # shaders
-    
+
         #-----------------------------------------------
         # cube
-        def update_uni_cube():
-            self.cube.sh.set_uniform("cube_height", self.cube.height, 'f')
-            self.cube.sh.set_uniform("maxs", self.data.maxs, '4fv')
-            self.cube.sh.set_uniform("mins", self.data.mins, '4fv')
-            self.cube.sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.cube.sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        def update_uni_cube(_sh):
+            _sh.set_uniform("cube_height", self.cube.height, 'f')
+            _sh.set_uniform("maxs", self.data.maxs, '4fv')
+            _sh.set_uniform("mins", self.data.mins, '4fv')
+            _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.cube.update_uniforms = update_uni_cube
         self.cube.generate_buffers_and_attributes()
         self.cube.update_arrays()
@@ -170,13 +170,7 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # lines
-        def update_uni_lines():
-            self.lines.sh.set_uniform("cube_height", self.cube.height, 'f')
-            self.lines.sh.set_uniform("maxs", self.data.maxs, '4fv')
-            self.lines.sh.set_uniform("mins", self.data.mins, '4fv')
-            self.lines.sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.lines.sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.lines.update_uniforms = update_uni_lines
+        self.lines.update_uniforms = update_uni_cube
         self.lines.generate_buffers_and_attributes()
         self.lines.update_arrays()
         load_shader('Lines', self.lines.sh, self.lines)
@@ -184,13 +178,7 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # quad
-        def update_uni_quad():
-            self.quad.sh.set_uniform("cube_height", self.cube.height, 'f')
-            self.quad.sh.set_uniform("maxs", self.data.maxs, '4fv')
-            self.quad.sh.set_uniform("mins", self.data.mins, '4fv')
-            self.quad.sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.quad.sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.quad.update_uniforms = update_uni_quad
+        self.quad.update_uniforms = update_uni_cube
         self.quad.generate_buffers_and_attributes()
         self.quad.update_arrays()
         load_shader('Quad', self.quad.sh, self.quad)
@@ -199,25 +187,17 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # shadows
-        ## CALLBACKS -------
         def _update_trajects_arrays():
             sh.bind(self.vbo_trajects_vertices, self.trajects_vertices, self.attr_trajects_vertices, 4, GL_FLOAT)
             sh.bind(self.vbo_trajects_colors, self.trajects_colors, self.attr_trajects_colors, 4, GL_FLOAT)
         self.update_trajects_arrays = _update_trajects_arrays
 
         def shadows_display():
-            self.sh_shadows.update_uniforms()
+            self.sh_shadows.update_uniforms(self.sh_shadows)
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
         self.sh_shadows.display = shadows_display
 
-        def update_uni_shadows():
-            self.sh_shadows.set_uniform("cube_height", self.cube.height, 'f')
-            self.sh_shadows.set_uniform("maxs", self.data.maxs, '4fv')
-            self.sh_shadows.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_shadows.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.sh_shadows.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.sh_shadows.update_uniforms = update_uni_shadows
-        ## CALLBACKS -------
+        self.sh_shadows.update_uniforms = update_uni_cube
 
         self.update_trajects_arrays()
 
@@ -281,20 +261,12 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # main trajectories
-        ## CALLBACKS -------
         def trajects_display():
-            self.sh_trajects.update_uniforms()
+            self.sh_trajects.update_uniforms(self.sh_trajects)
             glDrawArrays(GL_LINE_STRIP, 0, len(self.trajects_vertices))
         self.sh_trajects.display = trajects_display
 
-        def update_uni_trajects():
-            self.sh_trajects.set_uniform("cube_height", self.cube.height, 'f')
-            self.sh_trajects.set_uniform("maxs", self.data.maxs, '4fv')
-            self.sh_trajects.set_uniform("mins", self.data.mins, '4fv')
-            self.sh_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
-            self.sh_trajects.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.sh_trajects.update_uniforms = update_uni_trajects
-        ## CALLBACKS -------
+        self.sh_trajects.update_uniforms = update_uni_cube
 
         # Loading shader files
         if self.debug:
@@ -315,7 +287,6 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # back trajectories
-        ## CALLBACKS -------
         def back_trajects_display():
             self.sh_back_trajects.update_uniforms()
             glDrawArrays(GL_LINE_STRIP_ADJACENCY, 0, len(self.trajects_vertices))
@@ -334,7 +305,6 @@ class SpaceTimeCube:
             self.sh_back_trajects.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             self.sh_back_trajects.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.sh_back_trajects.update_uniforms = update_uni_back_trajects
-        ## CALLBACKS -------
 
         # Loading shader files
         if self.debug:
@@ -356,7 +326,6 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # Floor
-        ## CALLBACKS -------
         def _update_floor_arrays():
             sh.bind(self.vbo_floor_vertices, self.floor_vertices, self.attr_floor_vertices, 3, GL_FLOAT)
             sh.bind(self.vbo_floor_text_coords, self.floor_text_coords, self.attr_floor_text_coords, 2, GL_FLOAT)
@@ -397,7 +366,6 @@ class SpaceTimeCube:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         self.sh_floor.update_texture = u_texture
-        ## CALLBACKS -------
 
         self.sh_floor.update_texture()
         self.update_floor_arrays()

@@ -27,10 +27,10 @@ class quad:
         sh.bind(self.vbo_vertices, self.vertices, self.attr_vertices, 4, GL_FLOAT)
 
     def display(self):
-        self.update_uniforms()
+        self.update_uniforms(self.sh)
         glDrawArrays(GL_TRIANGLES, 0, len(self.vertices))
 
-    def update_unforms():
+    def update_unforms(self, sh):
         pass
 
     def create_shader(self, dir, glsl_version):
