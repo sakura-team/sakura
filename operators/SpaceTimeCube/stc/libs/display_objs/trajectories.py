@@ -20,6 +20,13 @@ class trajectories:
         self.sh         = sh.shader()
         self.sh.display = self.display
 
+        #Array used for point selection
+        self.basic_colors_list = []
+        for i in range(255*255*10):
+            self.basic_colors_list.append(gm.id_to_color(i))
+        self.basic_colors_list = np.array(self.basic_colors_list)
+
+
     def generate_buffers_and_attributes(self):
         self.vbo_vertices      = glGenBuffers(1)
         self.vbo_colors        = glGenBuffers(1)

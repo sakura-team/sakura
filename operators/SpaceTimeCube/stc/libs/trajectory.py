@@ -73,8 +73,9 @@ class data:
                 if i in self.displayed:
                     maxs.append(np.amax(t.points, axis = 0))
                     mins.append(np.amin(t.points, axis = 0))
-            self.maxs = np.amax(maxs, axis = 0)
-            self.mins = np.amin(mins, axis = 0)
+            if len(maxs) > 0:
+                self.maxs = np.amax(maxs, axis = 0)
+                self.mins = np.amin(mins, axis = 0)
         else:
             self.maxs = np.amax(new_data, axis = 0)
             self.mins = np.amin(new_data, axis = 0)

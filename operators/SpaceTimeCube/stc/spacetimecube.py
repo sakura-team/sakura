@@ -68,19 +68,12 @@ class SpaceTimeCube:
         self.floor_vertices     = np.array([[0, 0, 0], [0, 0, 1], [1, 0, 1],
                                             [0, 0, 0], [1, 0, 1], [1, 0, 0]])
 
-        #Array used for point selection
-        self.basic_colors_list = []
-        for i in range(255*255*10):
-            self.basic_colors_list.append(gm.id_to_color(i))
-        self.basic_colors_list = np.array(self.basic_colors_list)
-
         #Display params
         self.width = 100
         self.height = 100
         self.projo.wiggle = False
         self.thickness_of_backs = 8 #pixels
         self.floor_darkness     = .5
-        self.green_floor        = None
         self.hovered_target     = -1
         self.selected_trajects  = []
         self.displayed_trajects = []
@@ -186,7 +179,7 @@ class SpaceTimeCube:
         self.trajs.update_uniforms = update_uni_cube
         self.trajs.generate_buffers_and_attributes()
         self.trajs.update_arrays()
-        load_shader('Trajects', self.trajs.sh, self.trajs)
+        load_shader('Trajs', self.trajs.sh, self.trajs)
         #-----------------------------------------------
 
 
@@ -462,7 +455,7 @@ class SpaceTimeCube:
         cop_vertices = copy.copy(self.trajs.vertices)
         cop_colors = copy.copy(self.trajs.colors)
         self.trajs.vertices = self.trajs.vertices[t_ind +1: t_ind +t_len +1]
-        self.trajs.colors = self.basic_colors_list[0: len(self.trajs.vertices)]
+        self.trajs.colors = self.trajs.basic_colors_list[0: len(self.trajs.vertices)]
 
         self.trajs.update_arrays()
         sh.display_list([self.sh_shadows, self.trajs.sh])
