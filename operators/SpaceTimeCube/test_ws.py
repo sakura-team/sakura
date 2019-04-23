@@ -123,6 +123,7 @@ class wsock:
                                 'get_trajectories': self.stc.get_trajectories,
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,
+                                'darkness': self.stc.set_floor_darkness
                                 })
 
     def loop(self):
