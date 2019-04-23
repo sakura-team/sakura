@@ -615,9 +615,9 @@ class SpaceTimeCube:
         elif key == b'-':
             self.projo.zoom(-1)
         elif key == b'D':
-            self.floor.set_darkness(self.floor.darkness+.1)
+            self.set_floor_darkness(self.floor.darkness+.1)
         elif key == b'd':
-            self.floor.set_darkness(self.floor.darkness-.1)
+            self.set_floor_darkness(self.floor.darkness-.1)
         elif key == b'h':
             self.set_cube_height(self.cube.height-.1)
         elif key == b'H':
@@ -648,6 +648,9 @@ class SpaceTimeCube:
 
     def set_cube_height(self, value):
         self.cube.set_height(value)
+
+    def set_floor_darkness(self, value):
+        self.floor.set_darkness(value)
 
     def get_map_layers(self):
         return self.floor.get_layers()
