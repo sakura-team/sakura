@@ -2,12 +2,14 @@ var ws = new WebSocket("ws://localhost:10433");
 var recover = false;
 var last_date = new Date();
 var canvas = document.getElementById("myCanvas");
-var wiggle_status = false;
+var interval_id = -1;
 
 function init_server() {
     ws.onopen = function(event) {
         console.log('Connection: open');
+        send('wiggle', [false]);
         send('get_trajectories');
+        send('image');
     }
     ws.onclose = function(event) {
         console.log('Connection closed');
@@ -59,18 +61,24 @@ function init_server() {
                       'wiggle'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
+            else {
+                send('image');
+            }
         }
         return;
     }
     $('#wiggle_checkbox').change(function () {
         var wcbv = $('#wiggle_checkbox').is(":checked");
         send('wiggle', [wcbv]);
+        if (wcbv) {
+            interval_id = setInterval(function(){send('image');}, 50);
+        }
+        else {
+            clearInterval(interval_id);
+        }
     });
 
     $('#wiggle_checkbox').prop('checked', false);
-    //send('wiggle', [false]);
-
-    setInterval(function(){send('image');}, 50);
 }
 
 function fill_trajectories_db(trajs) {
