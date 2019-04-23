@@ -607,7 +607,7 @@ class SpaceTimeCube:
         if key == b'\x1b':
             sys.exit()
         elif key == b't':
-            self.floot.update()
+            self.floor.update()
         elif key == b'w':
             self.toggle_wiggle(not self.projo.wiggle)
         elif key == b'+':
