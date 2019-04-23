@@ -55,12 +55,20 @@ function init_server() {
                       'click',
                       'wheel',
                       'hide_trajectories',
-                      'show_trajectories'].indexOf(j.key) < 0) {
+                      'show_trajectories',
+                      'wiggle'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
         }
         return;
     }
+    $('#wiggle_checkbox').change(function () {
+        var wcbv = $('#wiggle_checkbox').is(":checked");
+        send('wiggle', [wcbv]);
+    });
+
+    $('#wiggle_checkbox').prop('checked', false);
+    //send('wiggle', [false]);
 
     setInterval(function(){send('image');}, 50);
 }
@@ -117,11 +125,6 @@ function getMousePos(canvas, evt) {
         x: parseInt(evt.clientX - rect.left),
         y: parseInt(evt.clientY - rect.top)
     };
-}
-
-function wiggle() {
-    wiggle_status = !wiggle_status;
-    send('wiggle', [wiggle_status]);
 }
 
 function tile_type() {

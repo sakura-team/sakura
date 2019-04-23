@@ -108,7 +108,12 @@ class wsock:
     def stc_test(self, a):
         print(a)
 
+    def set_wiggle(self, value):
+        self.stc.toggle_wiggle(value)
+
     def stc_image(self):
+        if self.stc.is_wiggle_on():
+            self.stc.animation()
         buf = BytesIO()
         self.image_to_send.save(buf, format= 'JPEG', quality= 90)
         return buf.getvalue()
@@ -123,7 +128,8 @@ class wsock:
                                 'get_trajectories': self.stc.get_trajectories,
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,
-                                'darkness': self.stc.set_floor_darkness
+                                'darkness': self.stc.set_floor_darkness,
+                                'wiggle': self.set_wiggle
                                 })
 
     def loop(self):
