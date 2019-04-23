@@ -53,7 +53,6 @@ class cube:
         self.height                 = maxs[1] - mins[1]
         self.proj_corners_bottom    = []
         self.proj_corners_up        = []
-        self.current_edge           = -1
 
         self.sh            = sh.shader()
         self.vertices      = wire_cube(mins, maxs)
@@ -62,9 +61,14 @@ class cube:
 
         self.sh.display = self.display
 
+        self.reset()
+
+    def reset(self):
+        self.current_edge   = -1
+
     def set_height(self, value):
         if value > 1.0:     self.height = 1.0
-        elif value < 0.0:   self.height = 0.0
+        elif value <= 0.0:  self.height = 0.00001
         else:               self.height = value
 
     def generate_buffers_and_attributes(self):
@@ -161,12 +165,15 @@ class cube:
     def scale(self, delta):
         a = self.proj_corners_bottom[self.current_edge]
         b = self.proj_corners_up[self.current_edge]
+
         dist = gm.distance_2D(a, b)
-        dot = gm.dot(   gm.normalize(gm.vector(a, b)),
-                        gm.normalize(delta))
-        amount = 1
-        amount = gm.norm(delta)/dist
+        amount  = 0
+        dot     = 0
+        if dist > 0:
+            amount  = gm.norm(delta)/gm.distance_2D(a, b)
+            dot     = gm.dot(   gm.normalize(gm.vector(a, b)),
+                                gm.normalize(delta))
         if dot <= -0.5:
-            self.set_height(self.height + 2*amount*self.height)
+            self.set_height(self.height + amount*self.height)
         elif dot >= 0.5:
-            self.set_height(self.height - 2*amount*self.height)
+            self.set_height(self.height - amount*self.height)

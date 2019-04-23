@@ -75,7 +75,7 @@ class SpaceTimeCube:
     def init(self):
         self.mouse = [ -1, -1 ]
         self.imode = 'none'
-        self.cube.current_edge = -1
+        self.cube.reset()
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
@@ -560,6 +560,7 @@ class SpaceTimeCube:
         self.compute_proj_cube_corners()
 
         if state == UP: #leaving any interaction modes
+            self.cube.reset()
             self.imode = 'none'
             return
 
@@ -575,8 +576,8 @@ class SpaceTimeCube:
                 self.imode = self.cube.crop_mode(self.mouse)
 
     def on_mouse_motion(self, x, y):
-        if self.imode == 'none':
-            self.compute_proj_cube_corners()
+        #if self.imode == 'none':
+        self.compute_proj_cube_corners()
 
         dx, dy = x - self.mouse[0], y - self.mouse[1]
 
