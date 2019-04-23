@@ -646,6 +646,9 @@ class SpaceTimeCube:
     def toggle_wiggle(self, bool):
         self.projo.wiggle = bool
 
+    def is_wiggle_on(self):
+        return self.projo.wiggle
+
     def set_cube_height(self, value):
         self.cube.set_height(value)
 
