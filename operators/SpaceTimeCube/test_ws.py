@@ -118,6 +118,9 @@ class wsock:
         self.image_to_send.save(buf, format= 'JPEG', quality= 90)
         return buf.getvalue()
 
+    def stc_dates(self):
+        return self.stc.send_new_dates()
+
     def init_server(self, p):
         self.stc_server = STC_server = ws_server(port = p)
         self.stc_server.start({ 'test': self.stc_test,
@@ -129,7 +132,8 @@ class wsock:
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,
                                 'darkness': self.stc.set_floor_darkness,
-                                'wiggle': self.set_wiggle
+                                'wiggle': self.set_wiggle,
+                                'dates': self.stc_dates
                                 })
 
     def loop(self):

@@ -53,16 +53,21 @@ function init_server() {
             else if (j.key == 'darkness') {
                 send('image');
             }
+            else if (j.key == 'dates') {
+                update_dates(j.value);
+            }
             else if (['move',
                       'click',
                       'wheel',
                       'hide_trajectories',
                       'show_trajectories',
-                      'wiggle'].indexOf(j.key) < 0) {
+                      'wiggle',
+                      'dates'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
             else {
                 send('image');
+                send('dates');
             }
         }
         return;
@@ -150,6 +155,24 @@ function select_dir() {
     send('data_directory', [select.options[select.selectedIndex].text])
     darkness();
 }
+
+function update_dates(times) {
+  var sta = $('#time_start_div')[0];
+  var end = $('#time_end_div')[0];
+  var int = $('#time_inter_div')[0];
+  var ts = [sta];//, end, int];
+
+  times.forEach( function(t, i) {
+      ts[i].style.left   = ''+t['x']+'px';
+      ts[i].style.bottom   = ''+600+'px';//''+t['y']+'px';
+      //var d = moment.unix(t['time'])._d.toUTCString();
+      //d = d.replace(' GMT', '');
+      //d = d.substring(5);
+      //ts[i].children[0].innerHTML = d;
+  });
+}
+
+
 canvas.addEventListener('mousemove', function(evt) {
     var pos = getMousePos(canvas, evt);
     send('move', [pos.x, pos.y]);
