@@ -15,10 +15,11 @@ except:
 class trajectories:
     def __init__(self):
 
-        self.vertices   = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
-        self.colors     = np.array([[0,0,0,1], [0,0,0,1], [0,0,0,1]])
-        self.sh         = sh.shader()
-        self.sh.display = self.display
+        self.vertices       = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
+        self.colors         = np.array([[0,0,0,1], [0,0,0,1], [0,0,0,1]])
+        self.sh             = sh.shader()
+        self.sh.display     = self.display
+        self.display_color  = 'trajectories'   #other option is 'semantic'
 
         #Array used for point selection
         self.basic_colors_list = []
@@ -33,9 +34,19 @@ class trajectories:
         self.attr_vertices     = sh.new_attribute_index()
         self.attr_colors       = sh.new_attribute_index()
 
-    def update_arrays(self):
+    def update_arrays(self, dcolor = 'none'):
         sh.bind(self.vbo_vertices, self.vertices, self.attr_vertices, 4, GL_FLOAT)
-        sh.bind(self.vbo_colors, self.colors, self.attr_colors, 4, GL_FLOAT)
+
+        tempd = self.display_color
+        if dcolor != 'none':
+            self.display_color = dcolor
+
+        if self.display_color == 'trajectories':
+            sh.bind(self.vbo_colors, self.colors, self.attr_colors, 4, GL_FLOAT)
+        else:
+            sh.bind(self.vbo_colors, self.sem_colors, self.attr_colors, 4, GL_FLOAT)
+
+        self.display_color = tempd
 
     def display(self):
         self.update_uniforms(self.sh)
@@ -51,3 +62,6 @@ class trajectories:
                             [self.attr_vertices, self.attr_colors],
                             ['in_vertex', 'in_color'],
                             glsl_version)
+
+    def geometry(self, data):
+        self.vertices, self.colors, self.sem_colors = np.array(data.compute_geometry())

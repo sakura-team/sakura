@@ -58,7 +58,7 @@ class SpaceTimeCube:
         self.trajs  = obj_trajs.trajectories()
         self.floor  = obj_fl.floor()
 
-        self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
+        self.trajs.geometry(self.data)
 
         #Display params
         self.width = 100
@@ -312,6 +312,7 @@ class SpaceTimeCube:
                 #change type
                 dt = big_chunk.dtype
                 dt = dt.descr
+                dt[0] = ('trajectory', np.dtype('<f8'))
                 dt[1] = ('date', np.dtype('int'))
                 big_chunk = big_chunk.astype(dt)
 
@@ -322,7 +323,7 @@ class SpaceTimeCube:
         sys.stdout.flush()
 
         #self.data.print_meta()
-        self.trajs.vertices, self.trajs.colors = np.array(self.data.compute_geometry())
+        self.trajs.geometry(self.data)
         self.trajs.update_arrays()
         self.update_cube_and_lines()
         self.send_new_dates()
@@ -380,11 +381,16 @@ class SpaceTimeCube:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         glDisable(GL_MULTISAMPLE)
+        self.trajs.update_arrays('trajectories')
         sh.display_list([self.trajs.sh])
         ccolor = self.compute_closest_color(10)
         t_indice = -1
         if ccolor != -1 and ccolor in self.data.trajects_ids:
             t_indice = self.data.trajects_ids.index(ccolor)
+
+        if self.trajs.display_color != 'trajectories':
+            self.trajs.update_arrays()
+
         glEnable(GL_MULTISAMPLE)
         return t_indice
 
@@ -403,7 +409,7 @@ class SpaceTimeCube:
         self.trajs.vertices = self.trajs.vertices[t_ind +1: t_ind +t_len +1]
         self.trajs.colors = self.trajs.basic_colors_list[0: len(self.trajs.vertices)]
 
-        self.trajs.update_arrays()
+        self.trajs.update_arrays('trajectories')
         sh.display_list([self.sh_shadows, self.trajs.sh])
         p_indice = self.compute_closest_color(10)
 
@@ -421,6 +427,11 @@ class SpaceTimeCube:
         arr = self.trajs.colors[t_ind+1: t_ind +1+ t_len]
         arr[:, 3] = value
         self.trajs.colors[t_ind+1: t_ind +1+ t_len] = arr
+
+        sarr = self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len]
+        sarr[:, 3] = value
+        self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len] = sarr
+
 
     def display(self):
         # Hovering
@@ -615,6 +626,10 @@ class SpaceTimeCube:
     def on_key_press(self, key, x, y):
         if key == b'\x1b':
             sys.exit()
+        elif key == b's':
+            self.trajs.display_color = 'semantic'
+        elif key == b'S':
+            self.trajs.display_color = 'trajectories'
         elif key == b't':
             self.floor.update()
         elif key == b'w':
@@ -700,7 +715,7 @@ class SpaceTimeCube:
                     if id in self.data.displayed:
                         index = self.data.displayed.index(id)
                         self.data.displayed.pop(index)
-                        self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
+                        self.trajs.geometry(self.data)
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()
@@ -712,7 +727,7 @@ class SpaceTimeCube:
                     if id not in self.data.displayed:
                         self.data.displayed.append(id)
                         self.data.displayed.sort()
-                        self.trajs.vertices, self.trajs.colors = self.data.compute_geometry()
+                        self.trajs.geometry(self.data)
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()

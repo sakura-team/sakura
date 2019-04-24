@@ -15,6 +15,8 @@ class trajectory:
         self.color                      = np.array([])  # color
         self.zones                      = np.array([])  # a zone is defined by [gps position, radius, starting date, ending date]
         self.display_indice             = 0             # indice of begining of the trajectory in the whole array of data display
+        self.semantics                  = []            # each point can have a semantic, then a color could be used for
+        self.sem_colors                 = np.array([])
 
 class data:
     def  __init__(self):
@@ -29,6 +31,8 @@ class data:
         self.trajects_ind   = []                # indices of each trajectory in the whole array of geometric data
         self.maxs           = [1, 1, 1, 1]      #[time, lon, lat, ele]
         self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
+        self.semantics      = []
+        self.sem_colors     = []
 
     def clean(self):
         self.init()
@@ -61,24 +65,40 @@ class data:
             m = mrc.mercator(c[2], c[3], c[4])
             self.trajects[ind].points.append([c[1], *m])
 
+            if len(c) > 5:  #We have a semantic
+                self.trajects[ind].semantics.append(c[5])
+
+
         self.displayed = list(range(len(self.trajects)))
         self.make_meta()
 
-    def make_meta(self, new_data=[]):
+    def make_meta(self):
         '''making meta data from current data: min and max times, size, ...'''
         maxs = []
         mins = []
-        if len(new_data) == 0:
-            for t, i in zip(self.trajects, range(len(self.trajects))):
-                if i in self.displayed:
-                    maxs.append(np.amax(t.points, axis = 0))
-                    mins.append(np.amin(t.points, axis = 0))
-            if len(maxs) > 0:
-                self.maxs = np.amax(maxs, axis = 0)
-                self.mins = np.amin(mins, axis = 0)
-        else:
-            self.maxs = np.amax(new_data, axis = 0)
-            self.mins = np.amin(new_data, axis = 0)
+        sems = []
+        for t, i in zip(self.trajects, range(len(self.trajects))):
+            if i in self.displayed:
+                maxs.append(np.amax(t.points, axis = 0))
+                mins.append(np.amin(t.points, axis = 0))
+            u = np.unique(t.semantics)
+            for n in u:
+                sems.append(n)
+        if len(maxs) > 0:
+            self.maxs = np.amax(maxs, axis = 0)
+            self.mins = np.amin(mins, axis = 0)
+
+        self.semantics = list(np.unique(sems))
+        self.sem_colors = []
+        for s in self.semantics:
+            self.sem_colors.append([*gm.random_color(), 1])
+
+        for t in self.trajects:
+            t.sem_colors = []
+            for s in t.semantics:
+                ind = self.semantics.index(s)
+                t.sem_colors.append(self.sem_colors[ind])
+
 
     def print_meta(self):
         print('\ndata info')
@@ -90,21 +110,31 @@ class data:
         print('\ttime duration:\t'+ str(datetime.timedelta(seconds=(self.maxs[0] - self.mins[0]))))
         print('\tCube size:\t\t'+str(self.maxs[1:] - self.mins[1:] )+'\n')
 
-    def compute_geometry(self):
+    def compute_geometry(self, semantic = False):
 
         vertices    = []
         colors      = []
+        sem_colors  = []
         for t, i in zip(self.trajects, range(len(self.trajects))):
             if i in self.displayed:
                 t.display_indice =  len(vertices)
                 vertices.append(t.points[0])
                 colors.append([0,0,0,0])
-                for p in t.points:
-                    vertices.append(p)
-                    colors.append(t.color)
+                if len(t.sem_colors) > 0:
+                    sem_colors.append([0,0,0,0])
+                    for p, i in zip(t.points, range(len(t.points))):
+                        vertices.append(p)
+                        colors.append(t.color)
+                        sem_colors.append(t.sem_colors[i])
+                    sem_colors.append([0,0,0,0])
+                else:
+                    for p in t.points:
+                        vertices.append(p)
+                        colors.append(t.color)
                 vertices.append(t.points[-1])
                 colors.append([0,0,0,0])
-        return np.array(vertices), np.array(colors)
+
+        return np.array(vertices), np.array(colors), np.array(sem_colors)
 
     def compute_line_vertices(self, pt):
         return np.array([   pt, [self.mins[0],*pt[1:]],
