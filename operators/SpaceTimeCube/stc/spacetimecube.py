@@ -301,14 +301,20 @@ class SpaceTimeCube:
                 print('\t\33[1;32mReading data...\33[m', end='')
             sys.stdout.flush()
             big_chunk = np.recfromcsv(file, delimiter=',', encoding='utf-8')
+
             if type(big_chunk[0][1]) != int:
-                for b in big_chunk:
-                    b[1] = int(datetime.datetime.strptime(b[1], '%Y-%m-%d %H:%M:%S').strftime("%s"))
-                big_chunk = big_chunk.astype([  ('trajectory', big_chunk.dtype[0]),
-                                                ('date', big_chunk.dtype[2]),
-                                                ('longitude', big_chunk.dtype[2]),
-                                                ('latitude', big_chunk.dtype[3]),
-                                                ('elevation', big_chunk.dtype[4])])
+                #convert
+                for i in range(len(big_chunk)):
+                    d = big_chunk[i][1]
+                    d = datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
+                    big_chunk[i][1] = int(d.strftime("%s"))
+
+                #change type
+                dt = big_chunk.dtype
+                dt = dt.descr
+                dt[1] = ('date', np.dtype('int'))
+                big_chunk = big_chunk.astype(dt)
+
             self.data.add(big_chunk[ : int(len(big_chunk)/2)])
             self.data.add(big_chunk[int(len(big_chunk)/2) : ])
             if self.debug:
@@ -544,6 +550,9 @@ class SpaceTimeCube:
                                 'y': self.cube.proj_corners_bottom[0][1]})
 
             self.app.push_event('times_and_positions', times)
+            return times
+        else:
+            return []
 
     def update_floor(self):
         self.floor.update(self.data.mins, self.data.maxs, debug=True)
