@@ -35,6 +35,10 @@ class wsock:
             ind = sys.argv.index('-c')
             self.stc.set_colors_file(sys.argv[ind+1])
 
+        if '-shape' in sys.argv:
+            ind = sys.argv.index('-shape')
+            self.stc.set_floor_shape_file(sys.argv[ind+1])
+
     def init(self):
         glutInit(sys.argv)
         if pl.system() == 'Darwin':
