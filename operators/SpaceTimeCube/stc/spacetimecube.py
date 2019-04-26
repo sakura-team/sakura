@@ -71,6 +71,7 @@ class SpaceTimeCube:
         self.new_selections     = []
         self.debug              = False
         self.current_point      = None
+        self.colors_file    = None
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -294,6 +295,10 @@ class SpaceTimeCube:
 
 
     def load_data(self, chunk=[], file=''):
+
+        if self.colors_file:
+            self.data.colors_file = self.colors_file
+
         if len(chunk) > 0:
             self.data.add(chunk)
         elif file != '':
@@ -306,6 +311,8 @@ class SpaceTimeCube:
                 #convert
                 for i in range(len(big_chunk)):
                     d = big_chunk[i][1]
+                    if d.find('24:00') != -1:
+                        d = d.replace('24:00', '23:59')
                     d = datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
                     big_chunk[i][1] = int(d.strftime("%s"))
 
@@ -438,18 +445,23 @@ class SpaceTimeCube:
         if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]) and self.imode == 'none':
             t_indice = self.compute_hovered_target()
 
-            #Highlighting the trajectory
-            if t_indice != -1 and not t_indice in self.selected_trajects:
-                if self.hovered_target == -1:
-                    self.update_transparency(t_indice, 0.5)
-                elif self.hovered_target != t_indice:
-                    self.update_transparency(self.hovered_target, 1.0)
-                    self.update_transparency(t_indice, 0.5)
-                self.hovered_target =  t_indice
+            if self.trajs.display_color == 'trajectories':
+                #Highlighting the trajectory
+                if t_indice != -1 and not t_indice in self.selected_trajects:
+                    if self.hovered_target == -1:
+                        self.update_transparency(t_indice, 0.5)
+                    elif self.hovered_target != t_indice:
+                        self.update_transparency(self.hovered_target, 1.0)
+                        self.update_transparency(t_indice, 0.5)
+                    self.hovered_target =  t_indice
 
-            elif self.hovered_target != -1:
-                self.update_transparency(self.hovered_target, 1.0)
-                self.hovered_target =  -1
+                elif self.hovered_target != -1:
+                    self.update_transparency(self.hovered_target, 1.0)
+                    self.hovered_target =  -1
+
+            else:
+                for i in range(len(self.data.trajects)):
+                    self.update_transparency(i, 0.5)
 
             self.trajs.update_arrays()
 
@@ -667,8 +679,13 @@ class SpaceTimeCube:
         if self.projo.wiggle:
             self.projo.wiggle_next()
 
-    def toggle_wiggle(self, bool):
-        self.projo.wiggle = bool
+    def toggle_wiggle(self, value= bool):
+        print('W val', value)
+        if value != None:
+            self.projo.wiggle = value
+        else:
+            self.projo.wiggle = not self.projo.wiggle
+        print('wiggle', self.projo.wiggle )
 
     def is_wiggle_on(self):
         return self.projo.wiggle
@@ -678,6 +695,9 @@ class SpaceTimeCube:
 
     def set_floor_darkness(self, value):
         self.floor.set_darkness(value)
+
+    def set_colors_file(self, fname):
+        self.colors_file = fname
 
     def get_map_layers(self):
         return self.floor.get_layers()

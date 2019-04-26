@@ -28,11 +28,11 @@ class data:
         self.trajects       = []
         self.trajects_names = []
         self.trajects_ids   = []                # we identify the trajectories by a factice color facilitating opengl selection
-        self.trajects_ind   = []                # indices of each trajectory in the whole array of geometric data
         self.maxs           = [1, 1, 1, 1]      #[time, lon, lat, ele]
         self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
         self.semantics      = []
         self.sem_colors     = []
+        self.colors_file    = None
 
     def clean(self):
         self.init()
@@ -62,7 +62,7 @@ class data:
                 self.trajects_ids.append(id)
 
             ind = self.trajects_names.index(c[0])
-            m = mrc.mercator(c[2], c[3], c[4])
+            m = mrc.mercator(c['longitude'], c['latitude'], c['elevation'])
             self.trajects[ind].points.append([c[1], *m])
 
             if len(c) > 5:  #We have a semantic
@@ -74,6 +74,19 @@ class data:
 
     def make_meta(self):
         '''making meta data from current data: min and max times, size, ...'''
+
+        indices = []
+        for i in range(len(self.trajects)):
+            for p in self.trajects[i].points:
+                if p[1] == 0.0:
+                    indices.append(i)
+                    break
+
+        for i in reversed(indices):
+            self.trajects       = np.delete(self.trajects, i).tolist()
+            self.trajects_names = np.delete(self.trajects_names, i).tolist()
+            self.trajects_ids   = np.delete(self.trajects_ids, i).tolist()
+
         maxs = []
         mins = []
         sems = []
@@ -90,15 +103,29 @@ class data:
 
         self.semantics = list(np.unique(sems))
         self.sem_colors = []
-        for s in self.semantics:
-            self.sem_colors.append([*gm.random_color(), 1])
+        if not self.colors_file:
+            for s in self.semantics:
+                self.sem_colors.append([*gm.random_color(), 1])
+        else:
+            for s in self.semantics:
+                self.sem_colors.append([*gm.random_color(), 1])
+
+            fcolors = open(self.colors_file, 'r').readlines()
+            colors = []
+            for f in fcolors[1:]:
+                c = f.split(',')
+                h = c[-1].rstrip().lstrip('#')
+                c[-1] = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+                if c[0] in self.semantics:
+                    ind = self.semantics.index(c[0])
+                    self.sem_colors[ind] = [c[1][0]/255, c[1][1]/255, c[1][2]/255, 1.0]
 
         for t in self.trajects:
             t.sem_colors = []
             for s in t.semantics:
                 ind = self.semantics.index(s)
                 t.sem_colors.append(self.sem_colors[ind])
-
 
     def print_meta(self):
         print('\ndata info')
