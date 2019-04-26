@@ -31,6 +31,10 @@ class wsock:
         if '-server' in sys.argv:
             self.server_mode = True
 
+        if '-c' in sys.argv:
+            ind = sys.argv.index('-c')
+            self.stc.set_colors_file(sys.argv[ind+1])
+
     def init(self):
         glutInit(sys.argv)
         if pl.system() == 'Darwin':
@@ -108,8 +112,9 @@ class wsock:
     def stc_test(self, a):
         print(a)
 
-    def set_wiggle(self, value):
+    def set_wiggle(self, value= None):
         self.stc.toggle_wiggle(value)
+        glutPostRedisplay()
 
     def stc_image(self):
         if self.stc.is_wiggle_on():
