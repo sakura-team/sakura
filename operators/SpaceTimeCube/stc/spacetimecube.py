@@ -26,11 +26,12 @@ from .libs import mercator      as mc
 from .libs import tilenames     as tn
 from .libs import geomaths      as gm
 
-from .libs.display_objs import cube as obj_cube
-from .libs.display_objs import lines as obj_lines
-from .libs.display_objs import quad as obj_quad
+from .libs.display_objs import cube         as obj_cube
+from .libs.display_objs import lines        as obj_lines
+from .libs.display_objs import quad         as obj_quad
 from .libs.display_objs import trajectories as obj_trajs
-from .libs.display_objs import floor as obj_fl
+from .libs.display_objs import floor        as obj_fl
+from .libs.display_objs import floor_shape  as obj_fs
 
 class SpaceTimeCube:
     def __init__(self):
@@ -57,6 +58,7 @@ class SpaceTimeCube:
         self.quad   = obj_quad.quad()
         self.trajs  = obj_trajs.trajectories()
         self.floor  = obj_fl.floor()
+        self.fshapes= obj_fs.floor_shapes()
 
         self.trajs.geometry(self.data)
 
@@ -71,7 +73,8 @@ class SpaceTimeCube:
         self.new_selections     = []
         self.debug              = False
         self.current_point      = None
-        self.colors_file    = None
+        self.colors_file        = None
+        self.floor_shapes_file  = None
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -169,6 +172,15 @@ class SpaceTimeCube:
         self.trajs.update_arrays()
         load_shader('Trajs', self.trajs.sh, self.trajs)
         #-----------------------------------------------
+
+        #-----------------------------------------------
+        # floor shapes
+        self.fshapes.update_uniforms = update_uni_cube
+        self.fshapes.generate_buffers_and_attributes()
+        self.fshapes.update_arrays()
+        load_shader('FShape', self.fshapes.sh, self.fshapes)
+        #-----------------------------------------------
+
 
         #-----------------------------------------------
         # Floor
@@ -332,6 +344,11 @@ class SpaceTimeCube:
         #self.data.print_meta()
         self.trajs.geometry(self.data)
         self.trajs.update_arrays()
+        if self.fshapes.displayed and self.floor_shapes_file:
+            self.fshapes.geometry(self.data)
+            self.fshapes.update_arrays()
+            self.data.maxs[1:3] = np.max(self.fshapes.vertices, axis=0)[1:3]
+            self.data.mins[1:3] = np.min(self.fshapes.vertices, axis=0)[1:3]
         self.update_cube_and_lines()
         self.send_new_dates()
 
@@ -538,6 +555,8 @@ class SpaceTimeCube:
                                 ])
             glEnable(GL_DEPTH_TEST)
 
+        if self.fshapes.displayed and self.floor_shapes_file:
+            sh.display_list([   self.fshapes.sh])
 
         sh.display_list([   self.cube.sh])
         if self.cube.height > 0.00000000001:
@@ -698,6 +717,15 @@ class SpaceTimeCube:
 
     def set_colors_file(self, fname):
         self.colors_file = fname
+
+    def set_floor_shape_file(self, fname):
+        if self.debug:
+            print('\t\33[1;32mReading floor shape...\33[m', end='')
+        self.floor_shapes_file = fname
+        self.fshapes.read_shapes(fname)
+        if self.debug:
+            print('\tOk')
+
 
     def get_map_layers(self):
         return self.floor.get_layers()
