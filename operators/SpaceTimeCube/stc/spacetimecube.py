@@ -453,8 +453,9 @@ class SpaceTimeCube:
         self.trajs.colors[t_ind+1: t_ind +1+ t_len] = arr
 
         sarr = self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len]
-        sarr[:, 3] = value
-        self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len] = sarr
+        if len(sarr) > 0:
+            sarr[:, 3] = value
+            self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len] = sarr
 
 
     def display(self):
