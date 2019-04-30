@@ -91,7 +91,7 @@ def web_greenlet(context, webapp_path):
         print('serving ' + filepath, end="")
         resp = bottle.static_file(filepath, root = webapp_path)
         print(' ->', resp.status_line)
-        session_id_set(resp)
+        session_id_set(resp, filepath)
         return resp
 
     # session-id cookie management
@@ -114,10 +114,17 @@ def web_greenlet(context, webapp_path):
 
     # if session-id cookie is not present or has changed,
     # let the browser update it
-    def session_id_set(resp):
+    def session_id_set(resp, filepath):
         with db_session_wrapper():
             if get_session_id_cookie() != context.session.id:
                 resp.set_cookie("session-id", str(context.session.id))
+        # Ensure the browser will always request the root document
+        # (instead of using its cache), so that we can update the
+        # session-id cookie in the response if needed.
+        # The browser will then associate this possibly new session-id
+        # to subsequent page requests.
+        if filepath == 'index.html':
+            resp.set_header("Cache-Control", "must-revalidate")
 
     server = WSGIServer(('', conf.web_port), app,
                         handler_class=WebSocketHandler)
