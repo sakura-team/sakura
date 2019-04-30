@@ -310,6 +310,7 @@ class SpaceTimeCube:
 
         if self.colors_file:
             self.data.colors_file = self.colors_file
+            self.trajs.display_color = 'semantic'
 
         if len(chunk) > 0:
             self.data.add(chunk)
@@ -476,10 +477,6 @@ class SpaceTimeCube:
                     self.update_transparency(self.hovered_target, 1.0)
                     self.hovered_target =  -1
 
-            else:
-                for i in range(len(self.data.trajects)):
-                    self.update_transparency(i, 0.5)
-
             self.trajs.update_arrays()
 
             lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
@@ -510,6 +507,11 @@ class SpaceTimeCube:
             self.lines.update_arrays()
             self.quad.vertices = copy.copy(quad_vertices)
             self.quad.update_arrays()
+
+        if self.trajs.display_color != 'trajectories':
+            for i in range(len(self.data.trajects)):
+                self.update_transparency(i, 0.5)
+            self.trajs.update_arrays()
 
         #Selection
         if len(self.new_selections):
