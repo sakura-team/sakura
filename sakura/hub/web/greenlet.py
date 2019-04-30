@@ -119,7 +119,7 @@ def web_greenlet(context, webapp_path):
             if get_session_id_cookie() != context.session.id:
                 resp.set_cookie("session-id", str(context.session.id))
 
-    server = WSGIServer(("0.0.0.0", conf.web_port), app,
+    server = WSGIServer(('', conf.web_port), app,
                         handler_class=WebSocketHandler)
     server.start()
     ws_handle.catch_issues()

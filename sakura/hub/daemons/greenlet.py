@@ -10,7 +10,7 @@ def daemons_greenlet(context):
         sock_file = socket.makefile(mode='rwb')
         daemon_name = pickle.load(sock_file)
         rpc_manager(context, daemon_name, sock_file)
-    server = StreamServer(('0.0.0.0', conf.hub_port), handle)
+    server = StreamServer(('', conf.hub_port), handle)
     server.start()
     # wait for end or exception
     handle.catch_issues()
