@@ -450,8 +450,9 @@ class SpaceTimeCube:
         t_ind = self.data.trajects[indice].display_indice
         t_len = len(self.data.trajects[indice].points)
         arr = self.trajs.colors[t_ind+1: t_ind +1+ t_len]
-        arr[:, 3] = value
-        self.trajs.colors[t_ind+1: t_ind +1+ t_len] = arr
+        if len(arr) > 0:
+            arr[:, 3] = value
+            self.trajs.colors[t_ind+1: t_ind +1+ t_len] = arr
 
         sarr = self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len]
         if len(sarr) > 0:
