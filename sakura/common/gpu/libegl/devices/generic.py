@@ -1,28 +1,24 @@
 #!/usr/bin/env python
 import OpenGL.EGL as egl
 from sakura.common.gpu.libegl import EGL_PLATFORM_DEVICE_EXT, EGL_DRM_DEVICE_FILE_EXT, egl_convert_to_int_array
+from sakura.common.gpu.libegl.devices.base import SurfaceBase
 from ctypes import pointer
 
-class GenericEGLSurface:
-    def __init__(self, egl_dpy, egl_config):
-        self.egl_dpy, self.egl_config = egl_dpy, egl_config
-    def initialize(self, width, height):
+class GenericEGLSurface(SurfaceBase):
+    def subclass_init(self):
+        pass
+    def subclass_create_egl_surface(self, width, height):
         pb_surf_attribs = egl_convert_to_int_array({
                 egl.EGL_WIDTH: width,
                 egl.EGL_HEIGHT: height,
         })
-        self.egl_surface = egl.eglCreatePbufferSurface(
+        egl_surface = egl.eglCreatePbufferSurface(
                 self.egl_dpy, self.egl_config, pb_surf_attribs)
-        if self.egl_surface == egl.EGL_NO_SURFACE:
-            return False
-        return True
-    def release(self):
-        egl.eglDestroySurface(self.egl_dpy, self.egl_surface)
-    def make_current(self, egl_context):
-        return egl.eglMakeCurrent(self.egl_dpy, self.egl_surface, self.egl_surface, egl_context)
-    def resize(self, width, height):
-        self.release()
-        self.initialize(width, height)
+        if not egl_surface:
+            return None
+        return egl_surface
+    def subclass_release(self):
+        pass
 
 class GenericEGLDevice:
     @staticmethod

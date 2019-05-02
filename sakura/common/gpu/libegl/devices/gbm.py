@@ -1,18 +1,18 @@
 import os, glob
 from sakura.common.gpu import libgbm
+from sakura.common.gpu.libegl.devices.base import SurfaceBase
 import OpenGL.EGL as egl
 from ctypes import pointer
 
-class GBMSurface:
-    def __init__(self, gbm_dev, egl_dpy, egl_config):
-        self.gbm_dev, self.egl_dpy, self.egl_config = gbm_dev, egl_dpy, egl_config
+class GBMSurface(SurfaceBase):
+    def subclass_init(self, gbm_dev):
+        self.gbm_dev = gbm_dev
         self.gbm_surf = None
-        self.egl_surface = None
-    def initialize(self, width, height):
+    def subclass_create_egl_surface(self, width, height):
         gbm_format = egl.EGLint()
         if not egl.eglGetConfigAttrib(self.egl_dpy, self.egl_config,
                             egl.EGL_NATIVE_VISUAL_ID, pointer(gbm_format)):
-            return False
+            return None
         self.gbm_surf = libgbm.gbm_surface_create(
                                         self.gbm_dev,
                                         width, height,
@@ -20,24 +20,17 @@ class GBMSurface:
                                         libgbm.GBM_BO_USE_RENDERING)
         if not self.gbm_surf:
             self.gbm_surf = None
-            return False
-        self.egl_surface = egl.eglCreateWindowSurface(
+            return None
+        egl_surface = egl.eglCreateWindowSurface(
                 self.egl_dpy, self.egl_config, self.gbm_surf, None)
-        if self.egl_surface == egl.EGL_NO_SURFACE:
-            self.egl_surface = None
+        if not egl_surface:
+            print('GBMSurface initialize FAILED')
             self.release()
-            return False
-        return True
-    def release(self):
+            return None
+        return egl_surface
+    def subclass_release(self):
         if self.gbm_surf is not None:
             libgbm.gbm_surface_destroy(self.gbm_surf)
-        if self.egl_surface is not None:
-            egl.eglDestroySurface(self.egl_dpy, self.egl_surface)
-    def make_current(self, egl_context):
-        return egl.eglMakeCurrent(self.egl_dpy, self.egl_surface, self.egl_surface, egl_context)
-    def resize(self, width, height):
-        self.release()
-        self.initialize(width, height)
 
 class GBMDevice:
     @staticmethod
@@ -64,4 +57,4 @@ class GBMDevice:
     def get_egl_display(self):
         return egl.eglGetDisplay(self.gbm_dev)
     def create_surface(self, egl_dpy, egl_config):
-        return GBMSurface(self.gbm_dev, egl_dpy, egl_config)
+        return GBMSurface(egl_dpy, egl_config, self.gbm_dev)
