@@ -63,23 +63,30 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
         let mouse_move_reporting = app_info.mouse_move_reporting;
 
         let reconnect = function() {
-            img.src = app_info.mjpeg_url;
+            let width = img.width;
+            let height = img.height;
+            if (width <= 0 || height <= 0) {
+                // size is not correct yet, wait for next resize event.
+                return;
+            }
+            console.log('reconnect', width, height);
+            let url = eval('`' + app_info.mjpeg_url_pattern + '`');
+            img.src = url;
         }
 
-        remote_app.subscribe_event('browser_disconnect', reconnect);
+        // when the window is resized, reconnect to get appropriate video size.
+        window.addEventListener('resize', reconnect);
 
-        // RESIZE EVENTS
-        let do_resize = function(evt) {
-            w = img.width;
-            h = img.height;
-            if (w <= 0 || h <= 0) {
-                w = 50;
-                h = 50;
+        // handle possibly unexpected browser video disconnection.
+        remote_app.subscribe_event('browser_disconnect', function(evt, width, height) {
+            if (width == img.width && height == img.height) {
+                /* sakura hub notifies us that the browser disconnected the video stream,
+                   and this is unexpected because the image size did not change.
+                   let's force reconnection. */
+                img.src = '';
+                reconnect();
             }
-            console.log('opengl_resize', w, h);
-            return remote_app.fire_event('on_resize', w, h);
-        };
-        window.addEventListener('resize', do_resize);
+        });
 
         // MOUSE INTERACTION
         let report_move = function(evt) {
@@ -127,7 +134,7 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
 
         // initialize
         update_mouse_reports();
-        do_resize().then(reconnect);
+        reconnect();
     });
     return remote_app;
 }
