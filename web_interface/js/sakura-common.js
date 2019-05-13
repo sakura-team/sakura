@@ -293,12 +293,9 @@ sakura.internal.hub_api_send = function(path, args) {
 
 sakura.internal.monitor_remote_events = function (remote_obj) {
     var timeout = 2.0;
-    // wait for next event and process it
-    remote_obj.next_event(timeout).then(function (evt) {
-        if (evt == null) {
-            // timeout, nothing happened
-        }
-        else {
+    // wait for next event(s) and process it(them)
+    remote_obj.next_events(timeout).then(function (evts) {
+        for (evt of evts) {
             let event_name = evt[0];
             let event_args = evt[1];
             let event_kwargs = evt[2];
@@ -316,7 +313,7 @@ sakura.internal.monitor_remote_events = function (remote_obj) {
                 });
             }
         }
-        // re-call for next event
+        // re-call for next event(s)
         sakura.internal.monitor_remote_events(remote_obj);
     });
 };

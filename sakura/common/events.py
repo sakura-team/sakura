@@ -19,6 +19,12 @@ class EventSourceMixin:
             self._esm_internal_listener_timeouts = []
         return self._esm_internal_listener_timeouts
     def next_event(self, listener_id, timeout):
+        events = self.next_events(listener_id, timeout, max_events=1)
+        if len(events) == 0:
+            return None
+        else:
+            return events[0]
+    def next_events(self, listener_id, timeout, max_events=None):
         # retrieve or create listener queue
         if listener_id in self._esm_listener_info:
             queue, old_listener_timeout = self._esm_listener_info[listener_id]
@@ -32,13 +38,17 @@ class EventSourceMixin:
         heappush(self._esm_listener_timeouts, (listener_timeout, listener_id))
         # cleanup
         self._esm_cleanup()
-        # receive a message or time out
+        # if some events were queued, just return them
+        events = []
+        while not queue.empty() and (max_events is None or len(events) < max_events):
+            events.append(queue.get())
+        if len(events) > 0:
+            return events
+        # no events were already queued, we have to wait
         try:
-            res = queue.get(timeout=timeout)
+            return [ queue.get(timeout=timeout) ]   # single event
         except Empty:
-            res = None
-        # return result
-        return res
+            return []                               # no event
     def _esm_cleanup(self):
         # cleanup obsolete listeners info
         if len(self._esm_listener_timeouts) == 0:

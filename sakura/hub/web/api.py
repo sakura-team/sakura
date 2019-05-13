@@ -44,10 +44,10 @@ class GuiToHubAPI:
     def get_operator_instance_info(self, op_id):
         return self.context.op_instances[op_id]
 
-    @api.operators.__getitem__.next_event
-    def operator_instance_next_event(self, op_id, timeout):
+    @api.operators.__getitem__.next_events
+    def operator_instance_next_events(self, op_id, timeout):
         # use the web session ID to uniquely identify this event listener
-        return self.context.op_instances[op_id].next_event(
+        return self.context.op_instances[op_id].next_events(
                         self.context.session.id, timeout)
 
     @api.operators.__getitem__.parameters.__getitem__.set_value
@@ -90,10 +90,10 @@ class GuiToHubAPI:
     def fire_opengl_app_event(self, op_id, ogl_id, *args, **kwargs):
         return self.context.op_instances[op_id].opengl_apps[ogl_id].fire_event(*args, **kwargs)
 
-    @api.operators.__getitem__.opengl_apps.__getitem__.next_event
-    def opengl_app_next_event(self, op_id, ogl_id, timeout):
+    @api.operators.__getitem__.opengl_apps.__getitem__.next_events
+    def opengl_app_next_events(self, op_id, ogl_id, timeout):
         # use the web session ID to uniquely identify this event listener
-        return self.context.op_instances[op_id].opengl_apps[ogl_id].next_event(
+        return self.context.op_instances[op_id].opengl_apps[ogl_id].next_events(
                         self.context.session.id, timeout)
 
     ########################################
