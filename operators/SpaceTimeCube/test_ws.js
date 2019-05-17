@@ -9,6 +9,7 @@ function init_server() {
         console.log('Connection: open');
         send('wiggle', [false]);
         send('get_trajectories');
+        send('get_semantic_names');
         send('image');
     }
     ws.onclose = function(event) {
@@ -48,9 +49,15 @@ function init_server() {
                 }
             }
             else if (j.key == 'get_trajectories') {
-                fill_trajectories_db(j.value);
+                fill_trajectories_dd(j.value);
+            }
+            else if (j.key == 'get_semantic_names') {
+                fill_semantics_dd(j.value);
             }
             else if (j.key == 'darkness') {
+                send('image');
+            }
+            else if(j.key == 'select_semantic') {
                 send('image');
             }
             else if (j.key == 'dates') {
@@ -86,7 +93,7 @@ function init_server() {
     $('#wiggle_checkbox').prop('checked', false);
 }
 
-function fill_trajectories_db(trajs) {
+function fill_trajectories_dd(trajs) {
     nb_trajectories = trajs.length;
     var tdd = $('#trajectories_dropdown');
     var butt_hid = $('<button class="btn btn-default btn-xs" onclick=\'check_trajectory(-1);\'>hide all</button>&nbsp;');
@@ -102,6 +109,7 @@ function fill_trajectories_db(trajs) {
     tdd.append(butt_sho);
     tdd.append(table);
 }
+
 function check_trajectory(index) {
     var l = [index];
     var func = "hide_trajectories"
@@ -125,6 +133,19 @@ function check_trajectory(index) {
         }
     }
     send(func, [l]);
+}
+
+function fill_semantics_dd(sems){
+    var sdd = $('#semantic_dropdown');
+    var table = $('<table width = 100%>');
+    sems.forEach( function(sem, index) {
+      table.append("<tr><td><button onclick='select_semantic("+index+");'>"+sem+"</button>");
+    })
+    sdd.append(table);
+}
+
+function select_semantic(index) {
+    send('select_semantic', [index])
 }
 
 function send(key, data) {
@@ -160,18 +181,20 @@ function update_dates(times) {
   var sta = $('#time_start_div')[0];
   var end = $('#time_end_div')[0];
   var int = $('#time_inter_div')[0];
-  var ts = [sta];//, end, int];
+  var ts = [sta, end, int];
 
-  times.forEach( function(t, i) {
-      ts[i].style.left   = ''+t['x']+'px';
-      ts[i].style.bottom   = ''+600+'px';//''+t['y']+'px';
-      //var d = moment.unix(t['time'])._d.toUTCString();
-      //d = d.replace(' GMT', '');
-      //d = d.substring(5);
-      //ts[i].children[0].innerHTML = d;
+  ts.forEach( function(t, i) {
+      t.style.left   = ''+times[i]['x']+'px';
+      var navbar_h = $('#navbar').height();
+      var canvas_h = $('#myCanvas').height();
+      var h = navbar_h + canvas_h - times[i]['y']
+      t.style.top   = ''+h+'px';
+      var d = moment.unix(times[i]['time'])._d.toUTCString();
+      d = d.replace(' GMT', '');
+      d = d.substring(5);
+      t.children[0].innerHTML = d;
   });
 }
-
 
 canvas.addEventListener('mousemove', function(evt) {
     var pos = getMousePos(canvas, evt);

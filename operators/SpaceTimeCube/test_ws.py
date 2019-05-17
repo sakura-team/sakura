@@ -140,6 +140,8 @@ class wsock:
                                 'get_trajectories': self.stc.get_trajectories,
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,
+                                'get_semantic_names': self.stc.get_semantic_names,
+                                'select_semantic': self.stc.select_colored_semantic,
                                 'darkness': self.stc.set_floor_darkness,
                                 'wiggle': self.set_wiggle,
                                 'dates': self.stc_dates

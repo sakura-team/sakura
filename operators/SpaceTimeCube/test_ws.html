@@ -6,11 +6,12 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     </head>
 
     <body onload="init_server();">
-        <nav class="navbar navbar-default" style="margin-bottom: 0px;">
+        <nav class="navbar navbar-default" style="margin-bottom: 0px;" id='navbar'>
         <!-- Navbar content -->
           <ul class="nav navbar-nav">
             <li class="dropdown">
@@ -45,32 +46,41 @@
               <ul class="dropdown-menu" id="trajectories_dropdown" overflow: auto>
               </ul>
             </li>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#">Colored Semantic
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" id="semantic_dropdown" overflow: auto>
+              </ul>
+            </li>
           </ul>
         </nav>
 
-        <div style="background-color :rgb(255,255,255); z-index: 0;">
-          <div  class="panel panel-default" id="time_start_div"
-                style="margin-bottom: 0px; z-index: 3; position: absolute; bottom: 0; left: 0; display: block">
-                <div class="panel-body" style="padding-top: 0px; padding-bottom: 0px;">
-                  ...
-                </div>
-          </div>
+        <div>
+          <div style="background-color :rgb(255,255,255); z-index: 0;">
+            <div  class="panel panel-default" id="time_start_div"
+                  style="margin-bottom: 0px; z-index: 3; position: absolute; top: 0; left: 0; display: block">
+                  <div class="panel-body" style="padding-top: 0px; padding-bottom: 0px;">
+                    ...
+                  </div>
+            </div>
 
-          <div  class="panel panel-default" id="time_inter_div"
-                style="margin-bottom: 0px; z-index: 4; position: absolute; bottom: 0; left: 0; display: block">
-                <div class="panel-body" style="padding-top: 0px; padding-bottom: 0px;">
-                  ...
-                </div>
-          </div>
+            <div  class="panel panel-default" id="time_inter_div"
+                  style="margin-bottom: 0px; z-index: 4; position: absolute; top: 0; left: 0; display: block">
+                  <div class="panel-body" style="padding-top: 0px; padding-bottom: 0px;">
+                    ...
+                  </div>
+            </div>
 
-          <div  class="panel panel-default" id="time_end_div"
-                style="margin-bottom: 0px; z-index: 3; position: absolute; bottom: 0; left: 0; display: block">
-                <div class="panel-body" style="padding-top: 0px; padding-bottom: 0px;">
-                  ...
-                </div>
+            <div  class="panel panel-default" id="time_end_div"
+                  style="margin-bottom: 0px; z-index: 3; position: absolute; top: 0; left: 0; display: block">
+                  <div class="panel-body" style="padding-top: 0px; padding-bottom: 0px;">
+                    ...
+                  </div>
+            </div>
+            <canvas id="myCanvas" width="800" height="600" style="z-index=0"></canvas>
           </div>
-          <canvas id="myCanvas" width="800" height="600" style="z-index=0"></canvas>
-        </div>
+      </div>
         <script src="test_ws.js"></script>
 
     </body>
