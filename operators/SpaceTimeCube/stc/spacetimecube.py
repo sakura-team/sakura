@@ -178,7 +178,7 @@ class SpaceTimeCube:
         self.fshapes.update_uniforms = update_uni_cube
         self.fshapes.generate_buffers_and_attributes()
         self.fshapes.update_arrays()
-        load_shader('FShape', self.fshapes.sh, self.fshapes)
+        load_shader('FShap', self.fshapes.sh, self.fshapes)
         #-----------------------------------------------
 
 
@@ -332,7 +332,7 @@ class SpaceTimeCube:
                 #change type
                 dt = big_chunk.dtype
                 dt = dt.descr
-                dt[0] = ('trajectory', np.dtype('<f8'))
+                dt[0] = ('trajectory', np.dtype('<U8'))
                 dt[1] = ('date', np.dtype('int'))
                 big_chunk = big_chunk.astype(dt)
 
@@ -730,6 +730,13 @@ class SpaceTimeCube:
         if self.debug:
             print('\tOk')
 
+    def select_colored_semantic(self, index):
+        self.data.update_sem_colors(index)
+        self.trajs.geometry(self.data)
+        self.trajs.update_arrays()
+
+    def get_semantic_names(self):
+        return self.data.get_semantic_names()
 
     def get_map_layers(self):
         return self.floor.get_layers()
