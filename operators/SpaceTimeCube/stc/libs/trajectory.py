@@ -33,16 +33,16 @@ class data:
         self.semantics      = []
         self.sem_colors     = []
         self.colors_file    = None
+        self.hl_semantic    = 0                 # the current semantic that gives the trakectory its color
+        self.semantic_names = []
 
     def clean(self):
         self.init()
 
     def add(self, chunk):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''
-        first_time = False
         for c in chunk:
             if len(self.trajects_names) == 0:
-                first_time = True
                 self.trajects_names = [c[0]]
                 self.trajects = np.append(self.trajects, trajectory(id=len(self.trajects)-1))
                 self.trajects[-1].color = np.array([*gm.random_color(), 1])
@@ -65,9 +65,14 @@ class data:
             m = mrc.mercator(c['longitude'], c['latitude'], c['elevation'])
             self.trajects[ind].points.append([c[1], *m])
 
+            self.semantic_names = []
             if len(c) > 5:  #We have a semantic
-                self.trajects[ind].semantics.append(c[5])
-
+                arr = []
+                for n in c.dtype.names:
+                    if not n in ['trajectory', 'date', 'longitude', 'latitude', 'elevation']:
+                        arr.append(c[n])
+                        self.semantic_names.append(n)
+                self.trajects[ind].semantics.append(arr)
 
         self.displayed = list(range(len(self.trajects)))
         self.make_meta()
@@ -121,11 +126,20 @@ class data:
                     ind = self.semantics.index(c[0])
                     self.sem_colors[ind] = [c[1][0]/255, c[1][1]/255, c[1][2]/255, 1.0]
 
+        self.update_sem_colors()
+
+    def update_sem_colors(self, sem_index = -1):
+        if sem_index >= 0 and sem_index < len(self.trajects[0].semantics):
+            self.hl_semantic = sem_index
+
         for t in self.trajects:
             t.sem_colors = []
             for s in t.semantics:
-                ind = self.semantics.index(s)
+                ind = self.semantics.index(s[self.hl_semantic])
                 t.sem_colors.append(self.sem_colors[ind])
+
+    def get_semantic_names(self):
+        return self.semantic_names
 
     def print_meta(self):
         print('\ndata info')
