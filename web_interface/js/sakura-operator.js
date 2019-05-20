@@ -49,9 +49,11 @@ sakura.internal.get_mouse_pos = function(img, evt) {
 
 sakura.apis.operator = sakura.internal.get_operator_interface();
 
-sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
+sakura.apis.operator.attach_opengl_app = function (opengl_app_id, div_id) {
 
-    let img= document.getElementById(img_id);
+    let div= document.getElementById(div_id);
+    let img= document.createElement("img");
+    div.appendChild(img);
     let remote_app = sakura.apis.operator.opengl_apps[opengl_app_id];
     let clicked_buttons = 0;
     let masks = { 'NONE': 0, 'LEFT_CLICKED': 1, 'RIGHT_CLICKED': 4, 'LEFT_OR_RIGHT_CLICKED': 5 };
@@ -63,8 +65,9 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
         let mouse_move_reporting = app_info.mouse_move_reporting;
 
         let reconnect = function() {
-            let width = img.width;
-            let height = img.height;
+            // some video codecs require width and height to be even
+            let width = div.clientWidth - div.clientWidth % 2;
+            let height = div.clientHeight - div.clientHeight % 2;
             if (width <= 0 || height <= 0) {
                 // size is not correct yet, wait for next resize event.
                 return;
@@ -72,6 +75,8 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, img_id) {
             console.log('reconnect', width, height);
             let url = eval('`' + app_info.mjpeg_url_pattern + '`');
             img.src = url;
+            img.style.width = width + "px";
+            img.style.height = height + "px";
         }
 
         // when the window is resized, reconnect to get appropriate video size.

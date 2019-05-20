@@ -3,7 +3,7 @@
 var nb_trajectories = 0
 
 function init() {
-    opengl_app = sakura.apis.operator.attach_opengl_app(0, 'ogl-img');
+    opengl_app = sakura.apis.operator.attach_opengl_app(0, 'ogl-div');
     opengl_app.subscribe_event('hovered_gps_point', function(evt, tim, lng, lat, ele, tname) {
         var idiv = $('#info_div');
         idiv.empty();
