@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-import  sys, gevent
+import  sys, gevent, time
 import  platform         as pl
 from    gevent           import Greenlet
 from    PIL              import Image
@@ -100,7 +100,7 @@ class wsock:
 
     def mmotion(self, x, y):
         self.stc.on_mouse_motion(x, y)
-        glutPostRedisplay()
+        #glutPostRedisplay()
 
     def idle(self):
         if self.server_mode:
@@ -109,7 +109,6 @@ class wsock:
 
     def mpassive(self, x, y):
         self.mmotion(x, y)
-
 
     ################------------------------------------------------------------
     ### server funcs

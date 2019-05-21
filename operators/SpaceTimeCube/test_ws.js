@@ -1,8 +1,10 @@
 var ws = new WebSocket("ws://localhost:10433");
 var recover = false;
-var last_date = new Date();
 var canvas = document.getElementById("myCanvas");
 var interval_id = -1;
+var mouse_move_pre_date = new Date();
+var prev_moves = [];
+var max_messages_per_seconds = 25;
 
 function init_server() {
     ws.onopen = function(event) {
@@ -201,8 +203,12 @@ function full_screen() {
     send('resize', [$(window).width(), $(window).height()]);
 }
 canvas.addEventListener('mousemove', function(evt) {
-    var pos = getMousePos(canvas, evt);
-    send('move', [pos.x, pos.y]);
+    var d = Date.now();
+    if ((d - mouse_move_pre_date)/1000 > 1/max_messages_per_seconds) {
+        var pos = getMousePos(canvas, evt);
+        send('move', [pos.x, pos.y]);
+        mouse_move_pre_date = d
+    }
 }, false);
 
 canvas.addEventListener('mousedown', function(evt) {
