@@ -51,10 +51,10 @@ class wsock:
                 print(e)
                 sys.exit()
 
-        glutInitWindowSize (800, 600)
+        glutInitWindowSize (400, 300)
         glutCreateWindow ('Space-Time Cube, by Michael Ortega, LIG')
 
-        self.stc.on_resize(800, 600)
+        self.stc.on_resize(400, 300)
         self.stc.init()
         self.stc.clean_data()
         self.stc.load_data(file=sys.argv[1])
@@ -130,6 +130,10 @@ class wsock:
     def stc_dates(self):
         return self.stc.send_new_dates()
 
+    def stc_resize(self, w, h):
+        glutReshapeWindow(w,h)
+        self.reshape(w, h)
+
     def init_server(self, p):
         self.stc_server = STC_server = ws_server(port = p)
         self.stc_server.start({ 'test': self.stc_test,
@@ -144,7 +148,8 @@ class wsock:
                                 'select_semantic': self.stc.select_colored_semantic,
                                 'darkness': self.stc.set_floor_darkness,
                                 'wiggle': self.set_wiggle,
-                                'dates': self.stc_dates
+                                'dates': self.stc_dates,
+                                'resize': self.stc_resize
                                 })
 
     def loop(self):

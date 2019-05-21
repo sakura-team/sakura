@@ -7,10 +7,7 @@ var interval_id = -1;
 function init_server() {
     ws.onopen = function(event) {
         console.log('Connection: open');
-        send('wiggle', [false]);
-        send('get_trajectories');
-        send('get_semantic_names');
-        send('image');
+        refresh();
     }
     ws.onclose = function(event) {
         console.log('Connection closed');
@@ -24,19 +21,12 @@ function init_server() {
                 var ctx = canvas.getContext("2d");
                 ctx.drawImage(image,0,0);
                 ctx.restore();
-
-                if (recover) {
-                    //var new_date = new Date();
-                    //console.log(1000/(new_date - last_date));
-                    //last_date = new_date;
-                    //send('image');
-                }
             }
         }
         else {
             var j = JSON.parse(event.data);
             if (j.key == 'resize') {
-                recover = true;
+                send('image');
             }
             else if (j.key == 'data_directories') {
                 var dirs = JSON.parse(j.value);
@@ -91,6 +81,15 @@ function init_server() {
     });
 
     $('#wiggle_checkbox').prop('checked', false);
+}
+
+function refresh() {
+    send('wiggle', [false]);
+    send('get_trajectories');
+    send('get_semantic_names');
+    canvas.width = 800;
+    canvas.height = 600;
+    send('resize', [canvas.width, canvas.height]);
 }
 
 function fill_trajectories_dd(trajs) {
@@ -196,6 +195,11 @@ function update_dates(times) {
   });
 }
 
+function full_screen() {
+    canvas.width = $(window).width();
+    canvas.height = $(window).height();
+    send('resize', [$(window).width(), $(window).height()]);
+}
 canvas.addEventListener('mousemove', function(evt) {
     var pos = getMousePos(canvas, evt);
     send('move', [pos.x, pos.y]);
