@@ -14,8 +14,9 @@ void main() {
     vec2 midl = (maxs.yz + mins.yz)/2.0;
     vec2 size = maxs.yz - mins.yz;
     float msize = max(size.x, size.y);
+
     vec4 v = vec4((in_vertex.x - midl.x)/msize,
-                  -(cube_height/2.0 + .001),
+                  (in_vertex.y- mins.x)/(maxs.x - mins.x)*cube_height -cube_height/2.0 -.00001,
                   -(in_vertex.z - midl.y)/msize,
                   1.0);
     gl_Position = projection_mat * modelview_mat * v;

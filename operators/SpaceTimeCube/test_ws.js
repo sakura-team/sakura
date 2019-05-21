@@ -46,6 +46,9 @@ function init_server() {
             else if (j.key == 'get_semantic_names') {
                 fill_semantics_dd(j.value);
             }
+            else if (j.key == 'set_updatable_floor') {
+                send('image')
+            }
             else if (j.key == 'darkness') {
                 send('image');
             }
@@ -91,7 +94,9 @@ function refresh() {
     send('get_semantic_names');
     canvas.width = 800;
     canvas.height = 600;
+    send('set_updatable_floor', [true])
     send('resize', [canvas.width, canvas.height]);
+    send('image')
 }
 
 function fill_trajectories_dd(trajs) {

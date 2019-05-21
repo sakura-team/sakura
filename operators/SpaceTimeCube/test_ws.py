@@ -148,7 +148,8 @@ class wsock:
                                 'darkness': self.stc.set_floor_darkness,
                                 'wiggle': self.set_wiggle,
                                 'dates': self.stc_dates,
-                                'resize': self.stc_resize
+                                'resize': self.stc_resize,
+                                'set_updatable_floor': self.stc.set_updatable_floor
                                 })
 
     def loop(self):

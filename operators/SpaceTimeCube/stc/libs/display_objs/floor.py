@@ -30,7 +30,16 @@ class floor:
                                             [0.,0.], [1.,1.], [1.,0.]])
         self.sh             = sh.shader()
         self.sh.display     = self.display
-        #self.sh.update_texture  = self.u_texture
+        self.updatable_height = False
+        self.init_height = 0
+
+    def set_updatable_height(self, val):
+        if val:
+            self.updatable_height = True
+        else:
+            self.updatable_height = False
+            self.update_height(self.init_height)
+            self.update_arrays()
 
     def generate_buffers_and_attributes(self):
         self.vbo_vertices       = glGenBuffers(1)
@@ -148,12 +157,13 @@ class floor:
         self.img = self.img.resize(((size[0])*256, (size[1])*256) )
         lon_min, lat_min = mc.mercator(edges[0]['w'], edges[0]['s'])
         lon_max, lat_max = mc.mercator(edges[-1]['e'], edges[-1]['n'])
-        self.vertices = np.array([  [lon_min, 0, lat_min],
-                                    [lon_min, 0, lat_max],
-                                    [lon_max, 0, lat_max],
-                                    [lon_min, 0, lat_min],
-                                    [lon_max, 0, lat_max],
-                                    [lon_max, 0, lat_min]])
+        self.vertices = np.array([  [lon_min, mins[0], lat_min],
+                                    [lon_min, mins[0], lat_max],
+                                    [lon_max, mins[0], lat_max],
+                                    [lon_min, mins[0], lat_min],
+                                    [lon_max, mins[0], lat_max],
+                                    [lon_max, mins[0], lat_min]])
+        self.init_height = mins[0]
         if debug:
             print('\t\t\33[1;32mDownloading tiles 0%\33[m', end='', flush = True)
 
@@ -163,3 +173,7 @@ class floor:
             self.update_texture()
         if debug:
             print('\tOk', flush = True)
+
+    def update_height(self, h):
+        for v in self.vertices:
+            v[1] = h

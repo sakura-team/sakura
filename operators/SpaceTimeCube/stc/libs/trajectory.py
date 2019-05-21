@@ -126,7 +126,6 @@ class data:
                     ind = self.semantics.index(c[0])
                     self.sem_colors[ind] = [c[1][0]/255, c[1][1]/255, c[1][2]/255, 1.0]
 
-        print(self.semantics)
         self.update_sem_colors()
 
     def update_sem_colors(self, sem_index = -1):
