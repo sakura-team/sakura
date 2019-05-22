@@ -31,6 +31,7 @@ class data:
         self.maxs           = [1, 1, 1, 1]      #[time, lon, lat, ele]
         self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
         self.curr_date      = 0
+        self.curr_floor_date= 0
         self.semantics      = []
         self.sem_colors     = []
         self.colors_file    = None
@@ -128,6 +129,7 @@ class data:
                     self.sem_colors[ind] = [c[1][0]/255, c[1][1]/255, c[1][2]/255, 1.0]
 
         self.curr_date = self.mins[0]
+        self.curr_floor_date = self.mins[0]
         self.update_sem_colors()
 
     def update_sem_colors(self, sem_index = -1):

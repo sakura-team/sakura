@@ -53,6 +53,7 @@ class cube:
         self.height                 = maxs[1] - mins[1]
         self.proj_corners_bottom    = []
         self.proj_corners_up        = []
+        self.proj_curr_pt           = []
 
         self.sh            = sh.shader()
         self.vertices      = wire_cube(mins, maxs)
@@ -126,7 +127,7 @@ class cube:
         pp = projo.project_on_screen([p[0], p[1], p[2], 1.0] )
         return [ (pp[0]+1)/2*win_size[0], (pp[1]+1)/2*win_size[1]]
 
-    def compute_proj_corners(self,size, m, projo, win):
+    def compute_proj_corners(self, size, m, projo, win):
         self.proj_corners_bottom = [
                 self.project_corner([.5, 0.,.5], size, projo, win),
                 self.project_corner([.5, 0.,-.5], size, projo, win),

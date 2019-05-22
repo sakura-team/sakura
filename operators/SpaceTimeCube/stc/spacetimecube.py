@@ -179,7 +179,7 @@ class SpaceTimeCube:
             _sh.set_uniform("cube_height", self.cube.height, 'f')
             _sh.set_uniform("maxs", self.data.maxs, '4fv')
             _sh.set_uniform("mins", self.data.mins, '4fv')
-            _sh.set_uniform("curr_date", self.data.curr_date, 'f')
+            _sh.set_uniform("curr_date", self.data.curr_floor_date, 'f')
             _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
         self.fshapes.update_uniforms = update_uni_fshape
@@ -195,7 +195,7 @@ class SpaceTimeCube:
             _sh.set_uniform("cube_height", self.cube.height, 'f')
             _sh.set_uniform("maxs", self.data.maxs, '4fv')
             _sh.set_uniform("mins", self.data.mins, '4fv')
-            _sh.set_uniform("curr_date", self.data.curr_date, 'f')
+            _sh.set_uniform("curr_date", self.data.curr_floor_date, 'f')
             _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
             _sh.set_uniform("floor_texture", 0, 'i')
@@ -379,6 +379,11 @@ class SpaceTimeCube:
         self.cube.compute_proj_corners(size, m, self.projo, [self.width, self.height])
         self.update_cube_and_lines()
 
+        inter = (self.data.curr_date - self.data.mins[0])/(self.data.maxs[0] - self.data.mins[0])
+        self.cube.proj_curr_pt  = self.cube.project_corner( [.5, inter,.5],
+                                                            size,
+                                                            self.projo,
+                                                            [self.width, self.height])
 
     def update_cube_and_lines(self):
         self.cube.update_arrays()
@@ -505,17 +510,19 @@ class SpaceTimeCube:
                     quad_vertices = self.data.compute_quad_vertices(pt)
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
 
+                    self.data.curr_date = pt[0]
                     if self.floor.updatable_height:
-                        self.data.curr_date = pt[0]
+                        self.data.curr_floor_date = pt[0]
                     else:
-                        self.data.curr_date = self.data.mins[0]
+                        self.data.curr_floor_date = self.data.mins[0]
                     self.current_point = [t_indice, p_indice]
                     self.app.push_event('hovered_gps_point', pt[0], lon, lat, pt[3], self.data.trajects_names[t_indice])
-                    self.send_new_dates(th_value = pt[0])
+                    self.send_new_dates()
             else:
                 if self.current_point != None:
                     self.app.push_event('hovered_gps_point', -1, -1, -1, -1, '')
                     self.current_point = None
+                    self.data.curr_floor_date = self.data.mins[0]
                     self.data.curr_date = self.data.mins[0]
 
             self.lines.vertices = copy.copy(lines_vertices)
@@ -591,22 +598,10 @@ class SpaceTimeCube:
                             'y': self.cube.proj_corners_bottom[0][1]},
                         {'time': self.data.maxs[0],
                             'x': self.cube.proj_corners_up[0][0],
-                            'y': self.cube.proj_corners_up[0][1]} ]
-
-            if th_value:
-                inter = (th_value - self.data.mins[0])/(self.data.maxs[0] - self.data.mins[0])
-                traj_size = [   self.data.maxs[1] - self.data.mins[1],
-                                self.data.maxs[2] - self.data.mins[2] ]
-                ppi = self.cube.project_corner( [.5, inter,.5],
-                                                traj_size,
-                                                self.projo,
-                                                [self.width, self.height])
-                times.append({'time': th_value, 'x': ppi[0],'y': ppi[1]})
-            else:
-                times.append({'time': self.data.mins[0],
-                                'x': self.cube.proj_corners_bottom[0][0],
-                                'y': self.cube.proj_corners_bottom[0][1]})
-
+                            'y': self.cube.proj_corners_up[0][1]},
+                        {'time': float(self.data.curr_date),
+                            'x': self.cube.proj_curr_pt[0],
+                            'y': self.cube.proj_curr_pt[1]} ]
             self.app.push_event('times_and_positions', times)
             return times
         else:

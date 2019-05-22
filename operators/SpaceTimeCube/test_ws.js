@@ -58,8 +58,11 @@ function init_server() {
             else if (j.key == 'dates') {
                 update_dates(j.value);
             }
-            else if (['move',
-                      'click',
+            //else if (j.key == 'move') {
+            //    send['dates'];
+            //}
+            else if (['click',
+                      'move',
                       'wheel',
                       'hide_trajectories',
                       'show_trajectories',
@@ -68,8 +71,8 @@ function init_server() {
                 console.log('Unknown answer:', j);
             }
             else {
-                send('image');
                 send('dates');
+                send('image');
             }
         }
         return;
@@ -90,19 +93,20 @@ function init_server() {
         send('set_updatable_floor', [wcbv]);
     });
 
-    $('#wiggle_checkbox').prop('checked', false);
-    $('#set_updatable_floor').prop('checked', false);
-
     refresh()
 }
 
 function refresh() {
+    $('#wiggle_checkbox').prop('checked', false);
     send('wiggle', [false]);
+
+    $('#dynamic_floor_checkbox').prop('checked', false);
+    send('set_updatable_floor', [false])
+
     send('get_trajectories');
     send('get_semantic_names');
     canvas.width = 800;
     canvas.height = 600;
-    send('set_updatable_floor', [false])
     send('resize', [canvas.width, canvas.height]);
     send('image')
 }
