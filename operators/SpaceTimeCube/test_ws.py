@@ -140,6 +140,7 @@ class wsock:
                                 'move': self.mmotion,
                                 'click': self.mclick,
                                 'wheel': self.stc.on_wheel,
+                                'reset_zoom': self.stc.reset_zoom,
                                 'get_trajectories': self.stc.get_trajectories,
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,

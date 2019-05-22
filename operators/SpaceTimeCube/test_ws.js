@@ -58,16 +58,14 @@ function init_server() {
             else if (j.key == 'dates') {
                 update_dates(j.value);
             }
-            //else if (j.key == 'move') {
-            //    send['dates'];
-            //}
             else if (['click',
                       'move',
                       'wheel',
                       'hide_trajectories',
                       'show_trajectories',
                       'wiggle',
-                      'dates'].indexOf(j.key) < 0) {
+                      'dates',
+                      'reset_zoom'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
             else {
@@ -108,7 +106,7 @@ function refresh() {
     canvas.width = 800;
     canvas.height = 600;
     send('resize', [canvas.width, canvas.height]);
-    send('image')
+    send('reset_zoom');
 }
 
 function fill_trajectories_dd(trajs) {

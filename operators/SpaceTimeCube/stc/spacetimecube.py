@@ -33,6 +33,9 @@ from .libs.display_objs import trajectories as obj_trajs
 from .libs.display_objs import floor        as obj_fl
 from .libs.display_objs import floor_shape  as obj_fs
 
+
+init_zoom = 2
+
 class SpaceTimeCube:
     def __init__(self):
         # import local libs
@@ -40,7 +43,6 @@ class SpaceTimeCube:
         self.spacetimecube_dir = spacetimecube_py_path.parent
 
         self.projo = pr.projector(position = [0, 0, 2])
-        #self.projo.v_rotation(-45.)
 
         self.label          = "3D cube"
 
@@ -664,6 +666,11 @@ class SpaceTimeCube:
 
     def on_wheel(self, delta):
         self.projo.zoom(-delta/10.)
+
+    def reset_zoom(self):
+        dir = gm.vector(self.projo.position, self.projo.viewpoint)
+        diff = init_zoom - gm.norm(dir)
+        self.on_wheel(diff*10)
 
     def on_key_press(self, key, x, y):
         if key == b'\x1b':
