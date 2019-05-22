@@ -175,7 +175,14 @@ class SpaceTimeCube:
 
         #-----------------------------------------------
         # floor shapes
-        self.fshapes.update_uniforms = update_uni_cube
+        def update_uni_fshape(_sh):
+            _sh.set_uniform("cube_height", self.cube.height, 'f')
+            _sh.set_uniform("maxs", self.data.maxs, '4fv')
+            _sh.set_uniform("mins", self.data.mins, '4fv')
+            _sh.set_uniform("curr_date", self.data.curr_date, 'f')
+            _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
+            _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
+        self.fshapes.update_uniforms = update_uni_fshape
         self.fshapes.generate_buffers_and_attributes()
         self.fshapes.update_arrays()
         load_shader('FShap', self.fshapes.sh, self.fshapes)
@@ -188,6 +195,7 @@ class SpaceTimeCube:
             _sh.set_uniform("cube_height", self.cube.height, 'f')
             _sh.set_uniform("maxs", self.data.maxs, '4fv')
             _sh.set_uniform("mins", self.data.mins, '4fv')
+            _sh.set_uniform("curr_date", self.data.curr_date, 'f')
             _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
             _sh.set_uniform("floor_texture", 0, 'i')
@@ -495,10 +503,12 @@ class SpaceTimeCube:
                         print(p_indice, len(self.data.trajects[t_indice].points))
                     lines_vertices = self.data.compute_line_vertices(pt)
                     quad_vertices = self.data.compute_quad_vertices(pt)
-                    if self.floor.updatable_height:
-                        self.floor.update_height(pt[0])
-                        self.floor.update_arrays()
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
+
+                    if self.floor.updatable_height:
+                        self.data.curr_date = pt[0]
+                    else:
+                        self.data.curr_date = self.data.mins[0]
                     self.current_point = [t_indice, p_indice]
                     self.app.push_event('hovered_gps_point', pt[0], lon, lat, pt[3], self.data.trajects_names[t_indice])
                     self.send_new_dates(th_value = pt[0])
@@ -506,8 +516,7 @@ class SpaceTimeCube:
                 if self.current_point != None:
                     self.app.push_event('hovered_gps_point', -1, -1, -1, -1, '')
                     self.current_point = None
-                    self.floor.update_height(self.data.mins[0])
-                    self.floor.update_arrays()
+                    self.data.curr_date = self.data.mins[0]
 
             self.lines.vertices = copy.copy(lines_vertices)
             self.lines.update_arrays()
@@ -538,10 +547,12 @@ class SpaceTimeCube:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         if self.cube.height > 0.00000000001:
+            '''
             glDisable(GL_DEPTH_TEST)
             if SAKURA_GPU_PERFORMANCE == 'high':
                 sh.display_list([self.sh_back_shadows])
             glEnable(GL_DEPTH_TEST)
+            '''
 
             sh.display_list([   self.sh_shadows])
 
@@ -564,13 +575,11 @@ class SpaceTimeCube:
             sh.display_list([self.fshapes.sh])
 
         sh.display_list([   self.cube.sh])
-        if self.cube.height > 0.00000000001 and not self.floor.updatable_height:
-            sh.display_list([self.quad.sh])
+        #if self.cube.height > 0.00000000001 and not self.floor.updatable_height:
+        #    sh.display_list([self.quad.sh])
         sh.display_list([self.trajs.sh])
 
-        #glDisable(GL_DEPTH_TEST)
         sh.display_list([ self.lines.sh])
-        #glEnable(GL_DEPTH_TEST)
 
         sh.display_list([ self.floor.sh ])
 
@@ -736,10 +745,11 @@ class SpaceTimeCube:
             print('\tOk')
 
     def set_updatable_floor(self, updatable=None):
-        if updatable:
+        print('updatable', updatable)
+        if updatable != None:
             self.floor.set_updatable_height(updatable)
         else:
-            self.floor.set_updatable_height(not selt.floor.updatable_height)
+            self.floor.set_updatable_height(not self.floor.updatable_height)
 
     def select_colored_semantic(self, index):
         self.data.update_sem_colors(index)
@@ -791,6 +801,7 @@ class SpaceTimeCube:
             self.update_cube_and_lines()
 
     def show_trajectories(self, l):
+        print('show', l)
         if len(l):
             for id in l:
                 if id >= 0 and id < len(self.data.trajects):

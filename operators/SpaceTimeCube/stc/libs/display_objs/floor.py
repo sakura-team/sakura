@@ -38,9 +38,7 @@ class floor:
             self.updatable_height = True
         else:
             self.updatable_height = False
-            self.update_height(self.init_height)
-            self.update_arrays()
-
+            
     def generate_buffers_and_attributes(self):
         self.vbo_vertices       = glGenBuffers(1)
         self.vbo_text_coords    = glGenBuffers(1)
@@ -173,7 +171,3 @@ class floor:
             self.update_texture()
         if debug:
             print('\tOk', flush = True)
-
-    def update_height(self, h):
-        for v in self.vertices:
-            v[1] = h

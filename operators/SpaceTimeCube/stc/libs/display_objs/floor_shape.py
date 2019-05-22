@@ -84,7 +84,7 @@ class floor_shapes:
             for p in shape.points:
                 m = mrc.mercator(*p, 0)
                 vertices.append([data.mins[0], *m])
-                colors.append([0,0,0,1])
+                colors.append([1,1,1,1])
 
             m = mrc.mercator(*shape.points[-1], 0)
             vertices.append([data.mins[0], *m])

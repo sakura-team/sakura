@@ -85,7 +85,15 @@ function init_server() {
         }
     });
 
+    $('#dynamic_floor_checkbox').change(function () {
+        var wcbv = $('#dynamic_floor_checkbox').is(":checked");
+        send('set_updatable_floor', [wcbv]);
+    });
+
     $('#wiggle_checkbox').prop('checked', false);
+    $('#set_updatable_floor').prop('checked', false);
+
+    refresh()
 }
 
 function refresh() {
@@ -94,7 +102,7 @@ function refresh() {
     send('get_semantic_names');
     canvas.width = 800;
     canvas.height = 600;
-    send('set_updatable_floor', [true])
+    send('set_updatable_floor', [false])
     send('resize', [canvas.width, canvas.height]);
     send('image')
 }
@@ -138,6 +146,7 @@ function check_trajectory(index) {
               l.push(i);
         }
     }
+    console.log(func);
     send(func, [l]);
 }
 

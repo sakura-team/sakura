@@ -5,6 +5,7 @@ uniform mat4 modelview_mat;
 uniform vec4 maxs;
 uniform vec4 mins;
 uniform float cube_height;
+uniform float curr_date;
 
 in  vec3 in_vertex;
 in  vec2 in_text_coords;
@@ -16,7 +17,7 @@ void main() {
     float msize = max(size.x, size.y);
 
     vec4 v = vec4((in_vertex.x - midl.x)/msize,
-                  (in_vertex.y- mins.x)/(maxs.x - mins.x)*cube_height -cube_height/2.0 -.00001,
+                  (curr_date- mins.x)/(maxs.x - mins.x)*cube_height -cube_height/2.0 -.00001,
                   -(in_vertex.z - midl.y)/msize,
                   1.0);
     gl_Position = projection_mat * modelview_mat * v;

@@ -30,6 +30,7 @@ class data:
         self.trajects_ids   = []                # we identify the trajectories by a factice color facilitating opengl selection
         self.maxs           = [1, 1, 1, 1]      #[time, lon, lat, ele]
         self.mins           = [0, 0, 0, 0]      #[time, lon, lat, ele]
+        self.curr_date      = 0
         self.semantics      = []
         self.sem_colors     = []
         self.colors_file    = None
@@ -126,6 +127,7 @@ class data:
                     ind = self.semantics.index(c[0])
                     self.sem_colors[ind] = [c[1][0]/255, c[1][1]/255, c[1][2]/255, 1.0]
 
+        self.curr_date = self.mins[0]
         self.update_sem_colors()
 
     def update_sem_colors(self, sem_index = -1):
