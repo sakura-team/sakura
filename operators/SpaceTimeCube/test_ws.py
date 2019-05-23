@@ -85,22 +85,26 @@ class wsock:
 
     def reshape(self, w, h):
         self.stc.on_resize(w, h)
-        glutPostRedisplay()
+        if not self.server_mode:
+            glutPostRedisplay()
 
     def keyboard(self, key, x, y):
         if key == b'\x1b':
             if self.server_mode:
                 self.stc_server._stop()
         self.stc.on_key_press(key, x, y)
-        glutPostRedisplay()
+        if not self.server_mode:
+            glutPostRedisplay()
 
     def mclick(self, button, state, x, y):
         self.stc.on_mouse_click(button, state, x, y)
-        glutPostRedisplay()
+        if not self.server_mode:
+            glutPostRedisplay()
 
     def mmotion(self, x, y):
         self.stc.on_mouse_motion(x, y)
-        #glutPostRedisplay()
+        if not self.server_mode:
+            glutPostRedisplay()
 
     def idle(self):
         if self.server_mode:
@@ -109,6 +113,8 @@ class wsock:
 
     def mpassive(self, x, y):
         self.mmotion(x, y)
+        if not self.server_mode:
+            glutPostRedisplay()
 
     ################------------------------------------------------------------
     ### server funcs

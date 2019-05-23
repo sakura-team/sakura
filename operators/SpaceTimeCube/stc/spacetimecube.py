@@ -343,7 +343,7 @@ class SpaceTimeCube:
                 #change type
                 dt = big_chunk.dtype
                 dt = dt.descr
-                dt[0] = ('trajectory', np.dtype('<U8'))
+                dt[0] = ('trajectory', np.dtype('U64'))
                 dt[1] = ('date', np.dtype('int'))
                 big_chunk = big_chunk.astype(dt)
 
