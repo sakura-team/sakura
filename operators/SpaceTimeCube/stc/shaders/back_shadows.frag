@@ -9,4 +9,8 @@ void main() {
         fragColor = vec4(geom_color.xyz, 1.0);
     else
         fragColor = vec4(.2, .2, .2, geom_color.w);
+    if (geom_color.w == 0)
+        gl_FragDepth = 2;
+    else
+        gl_FragDepth = gl_FragCoord.z;
 }

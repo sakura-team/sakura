@@ -11,7 +11,9 @@ void main() {
   else {
       fragColor = vec4(1, 1, 1, geom_color.w);
   }
-  if (geom_color.w == 0) {
-      gl_FragDepth = 1;
-  }
+  if (geom_color.w == 0)
+      gl_FragDepth = 2;
+  else
+      gl_FragDepth = gl_FragCoord.z+.001;
+
 }

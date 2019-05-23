@@ -141,25 +141,26 @@ class wsock:
 
     def init_server(self, p):
         self.stc_server = STC_server = ws_server(port = p)
-        self.stc_server.start({ 'test': self.stc_test,
-                                'image': self.stc_image,
-                                'move': self.mmotion,
-                                'click': self.mclick,
-                                'wheel': self.stc.on_wheel,
-                                'reset_zoom': self.stc.reset_zoom,
-                                'reset_position': self.stc.reset_projo_position,
-                                'get_trajectories': self.stc.get_trajectories,
-                                'hide_trajectories': self.stc.hide_trajectories,
-                                'show_trajectories': self.stc.show_trajectories,
-                                'get_semantic_names': self.stc.get_semantic_names,
-                                'select_semantic': self.stc.select_colored_semantic,
-                                'darkness': self.stc.set_floor_darkness,
-                                'wiggle': self.set_wiggle,
-                                'dates': self.stc_dates,
-                                'resize': self.stc_resize,
-                                'set_updatable_floor': self.stc.set_updatable_floor,
-                                'reset_cube_height': self.stc.reset_cube_height
-                                })
+        self.stc_server.start({ \
+                    'test':                 self.stc_test,
+                    'image':                self.stc_image,
+                    'move':                 self.mmotion,
+                    'click':                self.mclick,
+                    'wheel':                self.stc.on_wheel,
+                    'reset_zoom':           self.stc.reset_zoom,
+                    'reset_position':       self.stc.reset_projo_position,
+                    'get_trajectories':     self.stc.get_trajectories,
+                    'hide_trajectories':    self.stc.hide_trajectories,
+                    'show_trajectories':    self.stc.show_trajectories,
+                    'get_semantic_names':   self.stc.get_semantic_names,
+                    'select_semantic':      self.stc.select_colored_semantic,
+                    'darkness':             self.stc.set_floor_darkness,
+                    'wiggle':               self.set_wiggle,
+                    'dates':                self.stc_dates,
+                    'resize':               self.stc_resize,
+                    'set_updatable_floor':  self.stc.set_updatable_floor,
+                    'reset_cube_height':    self.stc.reset_cube_height
+                    })
 
     def loop(self):
         if self.server_mode:

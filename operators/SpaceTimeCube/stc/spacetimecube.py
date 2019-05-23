@@ -10,7 +10,7 @@ from PIL        import  Image
 try:
     from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
 except:
-    SAKURA_GPU_PERFORMANCE = 'high'
+    SAKURA_GPU_PERFORMANCE = 'low'
 
 try:
     from OpenGL.GL      import *
@@ -556,33 +556,23 @@ class SpaceTimeCube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        if self.cube.height > 0.00000000001:
-            '''
-            glDisable(GL_DEPTH_TEST)
-            if SAKURA_GPU_PERFORMANCE == 'high':
-                sh.display_list([self.sh_back_shadows])
-            glEnable(GL_DEPTH_TEST)
-            '''
-            sh.display_list([   self.sh_shadows])
-
-            if SAKURA_GPU_PERFORMANCE == 'high':
-                sh.display_list([   self.sh_back_trajects]);
-
+        if SAKURA_GPU_PERFORMANCE == 'low':
+            sh.display_list([self.sh_shadows])
+            sh.display_list([self.trajs.sh])
+            if self.fshapes.displayed and self.floor_shapes_file:
+                sh.display_list([self.fshapes.sh])
+            sh.display_list([   self.cube.sh])
+            sh.display_list([self.lines.sh, self.floor.sh])
         else:
-            if SAKURA_GPU_PERFORMANCE == 'high':
-                sh.display_list([ self.sh_back_trajects ])
-
-        if self.fshapes.displayed and self.floor_shapes_file:
-            sh.display_list([self.fshapes.sh])
-        sh.display_list([   self.cube.sh])
-        #if self.cube.height > 0.00000000001 and not self.floor.updatable_height:
-        #    sh.display_list([self.quad.sh])
-
-        glDisable(GL_DEPTH_TEST)
-        sh.display_list([self.trajs.sh])
-        glEnable(GL_DEPTH_TEST)
-
-        sh.display_list([ self.lines.sh, self.floor.sh])
+            if self.cube.height > 0.01:
+                sh.display_list([self.sh_back_shadows])
+            sh.display_list([self.sh_shadows])
+            sh.display_list([ self.sh_back_trajects ])
+            sh.display_list([self.trajs.sh])
+            if self.fshapes.displayed and self.floor_shapes_file:
+                sh.display_list([self.fshapes.sh])
+            sh.display_list([   self.cube.sh])
+            sh.display_list([self.lines.sh, self.floor.sh])
 
 
     def send_new_dates(self, th_value = None):
