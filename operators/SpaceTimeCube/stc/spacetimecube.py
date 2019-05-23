@@ -563,35 +563,26 @@ class SpaceTimeCube:
                 sh.display_list([self.sh_back_shadows])
             glEnable(GL_DEPTH_TEST)
             '''
-
             sh.display_list([   self.sh_shadows])
 
-            if SAKURA_GPU_PERFORMANCE != 'low':
-                glDisable(GL_DEPTH_TEST)
+            if SAKURA_GPU_PERFORMANCE == 'high':
                 sh.display_list([   self.sh_back_trajects]);
-                glEnable(GL_DEPTH_TEST)
 
         else:
-            glDisable(GL_DEPTH_TEST)
-            if SAKURA_GPU_PERFORMANCE == 'low':
-                sh.display_list([ self.floor.sh ])
-            else:
-                sh.display_list([   self.floor.sh,
-                                    self.sh_back_trajects
-                                ])
-            glEnable(GL_DEPTH_TEST)
+            if SAKURA_GPU_PERFORMANCE == 'high':
+                sh.display_list([ self.sh_back_trajects ])
 
         if self.fshapes.displayed and self.floor_shapes_file:
             sh.display_list([self.fshapes.sh])
-
         sh.display_list([   self.cube.sh])
         #if self.cube.height > 0.00000000001 and not self.floor.updatable_height:
         #    sh.display_list([self.quad.sh])
+
+        glDisable(GL_DEPTH_TEST)
         sh.display_list([self.trajs.sh])
+        glEnable(GL_DEPTH_TEST)
 
-        sh.display_list([ self.lines.sh])
-
-        sh.display_list([ self.floor.sh ])
+        sh.display_list([ self.lines.sh, self.floor.sh])
 
 
     def send_new_dates(self, th_value = None):

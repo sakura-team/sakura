@@ -19,7 +19,10 @@ class floor_shape:
     def __init__(self, name, points):
         self.name   = name
         self.points = points
+        self.triangles = []
 
+    def triangulate(self):
+        pass
 
 class floor_shapes:
     def __init__(self):
@@ -48,8 +51,9 @@ class floor_shapes:
 
                 out.reverse()
                 out = np.reshape(np.array(out), (-1, 2))
-                self.shapes.append( floor_shape(n, out))
-
+                fs = floor_shape(n, out)
+                self.shapes.append(fs)
+                fs.triangulate()
 
     def generate_buffers_and_attributes(self):
         self.vbo_vertices       = glGenBuffers(1)
