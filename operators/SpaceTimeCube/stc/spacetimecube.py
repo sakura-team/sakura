@@ -34,7 +34,8 @@ from .libs.display_objs import floor        as obj_fl
 from .libs.display_objs import floor_shape  as obj_fs
 
 
-init_zoom = 2
+init_position   = [0,0,2]
+init_viewpoint  = [0,0,0]
 
 class SpaceTimeCube:
     def __init__(self):
@@ -42,7 +43,7 @@ class SpaceTimeCube:
         spacetimecube_py_path = Path(inspect.getabsfile(self.__class__))
         self.spacetimecube_dir = spacetimecube_py_path.parent
 
-        self.projo = pr.projector(position = [0, 0, 2])
+        self.projo = pr.projector(position = init_position, viewpoint= init_viewpoint)
 
         self.label          = "3D cube"
 
@@ -666,11 +667,21 @@ class SpaceTimeCube:
 
     def on_wheel(self, delta):
         self.projo.zoom(-delta/10.)
+        self.compute_proj_cube_corners()
+        self.send_new_dates()
 
     def reset_zoom(self):
         dir = gm.vector(self.projo.position, self.projo.viewpoint)
-        diff = init_zoom - gm.norm(dir)
+        diff = self.projo.init_zoom - gm.norm(dir)
         self.on_wheel(diff*10)
+
+    def reset_cube_height(self):
+        print('reset_cube_height')
+        self.cube.height = 1
+
+    def reset_projo_position(self):
+        self.projo.reset_position()
+        self.compute_proj_cube_corners()
 
     def on_key_press(self, key, x, y):
         if key == b'\x1b':
@@ -797,20 +808,19 @@ class SpaceTimeCube:
                     if id in self.data.displayed:
                         index = self.data.displayed.index(id)
                         self.data.displayed.pop(index)
-                        self.trajs.geometry(self.data)
+            self.trajs.geometry(self.data)
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()
 
     def show_trajectories(self, l):
-        print('show', l)
         if len(l):
             for id in l:
                 if id >= 0 and id < len(self.data.trajects):
                     if id not in self.data.displayed:
                         self.data.displayed.append(id)
-                        self.data.displayed.sort()
-                        self.trajs.geometry(self.data)
+            self.data.displayed.sort()
+            self.trajs.geometry(self.data)
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()

@@ -42,6 +42,7 @@ function init_server() {
             }
             else if (j.key == 'get_trajectories') {
                 fill_trajectories_dd(j.value);
+                console.log(j.value.length);
             }
             else if (j.key == 'get_semantic_names') {
                 fill_semantics_dd(j.value);
@@ -65,7 +66,8 @@ function init_server() {
                       'show_trajectories',
                       'wiggle',
                       'dates',
-                      'reset_zoom'].indexOf(j.key) < 0) {
+                      'reset_zoom',
+                      'reset_cube_height'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
             else {
@@ -106,7 +108,8 @@ function refresh() {
     canvas.width = 800;
     canvas.height = 600;
     send('resize', [canvas.width, canvas.height]);
-    send('reset_zoom');
+    send('reset_position');
+    send('reset_cube_height');
 }
 
 function fill_trajectories_dd(trajs) {

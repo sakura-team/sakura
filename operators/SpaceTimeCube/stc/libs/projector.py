@@ -100,9 +100,15 @@ def projectPointOnPlane(p0,p,n):
 class projector:
     """Parametres extrinseques et intrinseques d'un projecteur"""
     def __init__(self, viewpoint= [0,0,0], position = [1000, 1000, 1000], width = 800, height = 600):
+
+        self.init_position  = position
+        self.init_viewpoint = viewpoint
+        self.init_zoom      = gm.norm(gm.vector(self.init_position, self.init_viewpoint))
+
         self.position       = position
         self.viewpoint      = viewpoint
         self.direction      = None
+
         self.up             = [0, 1, 0]
         self.near           = .1
         self.far            = 1000
@@ -122,6 +128,12 @@ class projector:
 
         self.change_ratio(width/height)
         self.compute_direction()
+
+    def reset_position(self):
+        self.position = self.init_position
+        self.viewpoint = self.init_viewpoint
+        self.compute_direction()
+        self.compute_up()
 
     def change_ratio(self, new_ratio):
         self.ratio = new_ratio

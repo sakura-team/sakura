@@ -141,6 +141,7 @@ class wsock:
                                 'click': self.mclick,
                                 'wheel': self.stc.on_wheel,
                                 'reset_zoom': self.stc.reset_zoom,
+                                'reset_position': self.stc.reset_projo_position,
                                 'get_trajectories': self.stc.get_trajectories,
                                 'hide_trajectories': self.stc.hide_trajectories,
                                 'show_trajectories': self.stc.show_trajectories,
@@ -150,7 +151,8 @@ class wsock:
                                 'wiggle': self.set_wiggle,
                                 'dates': self.stc_dates,
                                 'resize': self.stc_resize,
-                                'set_updatable_floor': self.stc.set_updatable_floor
+                                'set_updatable_floor': self.stc.set_updatable_floor,
+                                'reset_cube_height': self.stc.reset_cube_height
                                 })
 
     def loop(self):
