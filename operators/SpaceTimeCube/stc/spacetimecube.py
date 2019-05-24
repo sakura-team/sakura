@@ -8,11 +8,6 @@ from pathlib    import  Path
 from PIL        import  Image
 
 try:
-    from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
-except:
-    SAKURA_GPU_PERFORMANCE = 'low'
-
-try:
     from OpenGL.GL      import *
     from OpenGL.GLU     import *
     from OpenGL.GL      import shaders
@@ -25,25 +20,30 @@ from .libs import trajectory    as tr
 from .libs import mercator      as mc
 from .libs import tilenames     as tn
 from .libs import geomaths      as gm
+from .libs import geo_shapes    as gs
 
-from .libs.display_objs import cube         as obj_cube
-from .libs.display_objs import lines        as obj_lines
-from .libs.display_objs import quad         as obj_quad
-from .libs.display_objs import trajectories as obj_trajs
-from .libs.display_objs import floor        as obj_fl
-from .libs.display_objs import floor_shape  as obj_fs
+from .libs.display_objs import cube             as obj_cube
+from .libs.display_objs import lines            as obj_lines
+from .libs.display_objs import quad             as obj_quad
+from .libs.display_objs import trajectories     as obj_trajs
+from .libs.display_objs import floor            as obj_fl
+from .libs.display_objs import floor_shapes     as obj_fs
 
 
-init_position   = [0,0,2]
-init_viewpoint  = [0,0,0]
 
 class SpaceTimeCube:
     def __init__(self):
+
+        try:
+            from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
+        except:
+            self.SAKURA_GPU_PERFORMANCE = 'low'
+
         # import local libs
         spacetimecube_py_path = Path(inspect.getabsfile(self.__class__))
         self.spacetimecube_dir = spacetimecube_py_path.parent
 
-        self.projo = pr.projector(position = init_position, viewpoint= init_viewpoint)
+        self.projo = pr.projector(position = [0,0,2], viewpoint= [0,0,0])
 
         self.label          = "3D cube"
 
@@ -53,15 +53,17 @@ class SpaceTimeCube:
         self.sh_back_trajects   = sh.shader()
 
         #Trajectory data
-        self.data = tr.data()
+        self.data       = tr.data()
+        self.geo_shapes = gs.geo_shapes()
 
         #Global display data
-        self.cube   = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
-        self.lines  = obj_lines.lines()
-        self.quad   = obj_quad.quad()
-        self.trajs  = obj_trajs.trajectories()
-        self.floor  = obj_fl.floor()
-        self.fshapes= obj_fs.floor_shapes()
+        self.cube       = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
+        self.lines      = obj_lines.lines()
+        self.quad       = obj_quad.quad()
+        self.trajs      = obj_trajs.trajectories()
+        self.floor      = obj_fl.floor()
+        self.fcontours  = obj_fs.contours()
+        self.fareas     = obj_fs.areas()
 
         self.trajs.geometry(self.data)
 
@@ -86,7 +88,7 @@ class SpaceTimeCube:
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_BLEND)
-        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         if self.debug:
             print('\n-------------------------')
@@ -149,7 +151,6 @@ class SpaceTimeCube:
         self.cube.generate_buffers_and_attributes()
         self.cube.update_arrays()
         load_shader('Cube', self.cube.sh, self.cube)
-
         #-----------------------------------------------
 
         #-----------------------------------------------
@@ -177,20 +178,27 @@ class SpaceTimeCube:
         #-----------------------------------------------
 
         #-----------------------------------------------
-        # floor shapes
-        def update_uni_fshape(_sh):
+        # floor contours
+        def update_uni_fcontours(_sh):
             _sh.set_uniform("cube_height", self.cube.height, 'f')
             _sh.set_uniform("maxs", self.data.maxs, '4fv')
             _sh.set_uniform("mins", self.data.mins, '4fv')
             _sh.set_uniform("curr_date", self.data.curr_floor_date, 'f')
             _sh.set_uniform("projection_mat", self.projo.projection().T, 'm4fv')
             _sh.set_uniform("modelview_mat", self.projo.modelview().T, 'm4fv')
-        self.fshapes.update_uniforms = update_uni_fshape
-        self.fshapes.generate_buffers_and_attributes()
-        self.fshapes.update_arrays()
-        load_shader('FShap', self.fshapes.sh, self.fshapes)
+        self.fcontours.update_uniforms = update_uni_fcontours
+        self.fcontours.generate_buffers_and_attributes()
+        self.fcontours.update_arrays()
+        load_shader('FCont', self.fcontours.sh, self.fcontours)
         #-----------------------------------------------
 
+        #-----------------------------------------------
+        # floor areas
+        self.fareas.update_uniforms = update_uni_fcontours
+        self.fareas.generate_buffers_and_attributes()
+        self.fareas.update_arrays()
+        load_shader('FArea', self.fareas.sh, self.fareas)
+        #-----------------------------------------------
 
         #-----------------------------------------------
         # Floor
@@ -208,7 +216,6 @@ class SpaceTimeCube:
         self.floor.update_arrays()
         load_shader('Floor', self.floor.sh, self.floor)
         #-----------------------------------------------
-
 
         #-----------------------------------------------
         # shadows
@@ -263,7 +270,7 @@ class SpaceTimeCube:
         if self.debug:
             print('\t\33[1;32mBack shadows shader...\33[m', end='')
         sys.stdout.flush()
-        if SAKURA_GPU_PERFORMANCE != 'low':
+        if self.SAKURA_GPU_PERFORMANCE != 'low':
             self.sh_back_shadows.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_shadows.vert'),
                                                 str(self.spacetimecube_dir / 'shaders/back_shadows.geom'),
                                                 str(self.spacetimecube_dir / 'shaders/back_shadows.frag'),
@@ -302,7 +309,7 @@ class SpaceTimeCube:
         if self.debug:
             print('\t\33[1;32mBack trajects shader...\33[m', end='')
         sys.stdout.flush()
-        if SAKURA_GPU_PERFORMANCE != 'low':
+        if self.SAKURA_GPU_PERFORMANCE != 'low':
             self.sh_back_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_trajects.vert'),
                                                 str(self.spacetimecube_dir / 'shaders/back_trajects.geom'),
                                                 str(self.spacetimecube_dir / 'shaders/back_trajects.frag'),
@@ -353,14 +360,15 @@ class SpaceTimeCube:
                 print('\t\tOk')
         sys.stdout.flush()
 
-        #self.data.print_meta()
         self.trajs.geometry(self.data)
         self.trajs.update_arrays()
-        if self.fshapes.displayed and self.floor_shapes_file:
-            self.fshapes.geometry(self.data)
-            self.fshapes.update_arrays()
-            self.data.maxs[1:3] = np.max(self.fshapes.vertices, axis=0)[1:3]
-            self.data.mins[1:3] = np.min(self.fshapes.vertices, axis=0)[1:3]
+        if self.geo_shapes.displayed and self.floor_shapes_file:
+            self.fcontours.geometry(self.data, self.geo_shapes)
+            self.fcontours.update_arrays()
+            self.fareas.geometry(self.data, self.geo_shapes)
+            self.fareas.update_arrays()
+            self.data.maxs[1:3] = np.max(self.fcontours.vertices, axis=0)[1:3]
+            self.data.mins[1:3] = np.min(self.fcontours.vertices, axis=0)[1:3]
         self.update_cube_and_lines()
         self.send_new_dates()
 
@@ -419,7 +427,7 @@ class SpaceTimeCube:
 
     def compute_hovered_target(self):
         glClearColor(1.0,1.0,1.0,1.0)
-        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
 
         glDisable(GL_MULTISAMPLE)
         self.trajs.update_arrays('trajectories')
@@ -556,23 +564,18 @@ class SpaceTimeCube:
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
-        if SAKURA_GPU_PERFORMANCE == 'low':
-            sh.display_list([self.sh_shadows])
-            sh.display_list([self.trajs.sh])
-            if self.fshapes.displayed and self.floor_shapes_file:
-                sh.display_list([self.fshapes.sh])
-            sh.display_list([   self.cube.sh])
-            sh.display_list([self.lines.sh, self.floor.sh])
+        if self.SAKURA_GPU_PERFORMANCE == 'low':
+            sh.display_list([self.sh_shadows, self.trajs.sh])
+            if self.geo_shapes.displayed and self.floor_shapes_file:
+                sh.display_list([self.fcontours.sh, self.fareas.sh])
+            sh.display_list([self.cube.sh, self.lines.sh, self.floor.sh])
         else:
             if self.cube.height > 0.01:
                 sh.display_list([self.sh_back_shadows])
-            sh.display_list([self.sh_shadows])
-            sh.display_list([ self.sh_back_trajects ])
-            sh.display_list([self.trajs.sh])
-            if self.fshapes.displayed and self.floor_shapes_file:
-                sh.display_list([self.fshapes.sh])
-            sh.display_list([   self.cube.sh])
-            sh.display_list([self.lines.sh, self.floor.sh])
+            sh.display_list([self.sh_shadows, self.sh_back_trajects, self.trajs.sh])
+            if self.geo_shapes.displayed and self.floor_shapes_file:
+                sh.display_list([self.fcontours.sh, self.fareas.sh])
+            sh.display_list([self.cube.sh, self.lines.sh, self.floor.sh])
 
 
     def send_new_dates(self, th_value = None):
@@ -734,7 +737,7 @@ class SpaceTimeCube:
         if self.debug:
             print('\t\33[1;32mReading floor shape...\33[m', end='')
         self.floor_shapes_file = fname
-        self.fshapes.read_shapes(fname)
+        self.geo_shapes.read_shapes(fname)
         if self.debug:
             print('\tOk')
 

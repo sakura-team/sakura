@@ -31,21 +31,26 @@ class wsock:
         if '-server' in sys.argv:
             self.server_mode = True
 
-        if '-c' in sys.argv:
-            ind = sys.argv.index('-c')
+        if '-color' in sys.argv:
+            ind = sys.argv.index('-color')
             self.stc.set_colors_file(sys.argv[ind+1])
 
         if '-shape' in sys.argv:
             ind = sys.argv.index('-shape')
             self.stc.set_floor_shape_file(sys.argv[ind+1])
 
+        if '-performance' in sys.argv:
+            ind = sys.argv.index('-performance')
+            self.stc.SAKURA_GPU_PERFORMANCE = sys.argv[ind+1]
+
+
     def init(self):
         glutInit(sys.argv)
         if pl.system() == 'Darwin':
-            glutInitDisplayString('double rgba samples=8 core depth')
+            glutInitDisplayString('double stencil rgba samples=8 core depth')
         else:
             try:
-                glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE | GLUT_DEPTH)
+                glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_MULTISAMPLE | GLUT_DEPTH | GLUT_STENCIL)
             except Exception as e:
                 print('Issue detected')
                 print(e)
