@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from sakura.common.bottle import fix_bottle
+fix_bottle()
+
 import sys
 from gevent import Greenlet
 from sakura.common.tools import set_unbuffered_stdout, \

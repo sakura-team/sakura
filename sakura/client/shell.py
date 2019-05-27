@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+from sakura.common.bottle import fix_bottle
+fix_bottle()
+
 from sakura.client import api
 from sakura.common.errors import APIReturningError
 import sys, code, readline, os.path, atexit, rlcompleter

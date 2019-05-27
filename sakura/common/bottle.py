@@ -1,4 +1,20 @@
-import os.path, mimetypes, time, os, bottle
+import os.path, mimetypes, time, os
+import sys, threading, gevent.local
+
+# bottle uses thread-local-storage for HTTP request and
+# response objects.
+# in our context, we have greenlets, so bottle should
+# use greenlet-local-storage instead.
+# actually, we just have to fix the bottle import,
+# since these request and response objects are created
+# at this time.
+def fix_bottle():
+    if 'bottle' in sys.modules:
+        sys.exit('Error: fix_bottle() called too late (bottle already imported)')
+    saved_th_local = threading.local
+    threading.local = gevent.local.local
+    import bottle
+    threading.local = saved_th_local
 
 # When the hub receives a HTTP request for an operator's file,
 # it has to transmit this request to the appropriate daemon,
@@ -47,7 +63,8 @@ class PicklableFileRequest:
 
         ims = self.environ.get('HTTP_IF_MODIFIED_SINCE')
         if ims:
-            ims = bottle.parse_date(ims.split(";")[0].strip())
+            from bottle import parse_date
+            ims = parse_date(ims.split(";")[0].strip())
         if ims is not None and ims >= int(stats.st_mtime):
             headers['Date'] = time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
             return True, '', 304, headers

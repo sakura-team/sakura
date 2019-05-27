@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from sakura.common.bottle import fix_bottle
+fix_bottle()
 
 import os, sys
 from gevent import Greenlet
