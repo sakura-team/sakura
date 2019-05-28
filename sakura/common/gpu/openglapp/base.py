@@ -1,18 +1,34 @@
-import io, gevent
+import io, gevent, shlex, fcntl, os, time, itertools
+from subprocess import Popen, PIPE
 from gevent.queue import Queue, Empty
+from gevent.event import Event
+from gevent.socket import wait_read, wait_write
 from sakura.common.events import EventSourceMixin
-from sakura.common.gpu.tools import write_jpg
+from sakura.common.gpu.tools import write_bmp
 from sakura.common.gpu.openglapp import \
                 MouseMoveReporting, SAKURA_DISPLAY_STREAMING
 
-# parameters of jpeg streams
-# * we compute images as soon as possible, with default jpeg quality (low quality)
-# * if we are idle during MAX_LOW_QUALITY_DELAY seconds, we compute and deliver a
-#   high quality image
-# * if we are still idle after MAX_HIGH_QUALITY_DELAY, we deliver the same high
-#   quality image again (in order to avoid timeouts on the browser)
-MAX_LOW_QUALITY_DELAY =  0.1
-MAX_HIGH_QUALITY_DELAY = 2.0
+# parameters of ffmpeg output video stream
+# * FPS: frames per second
+# * KEYFRAME_INTERVAL: caution not to increase this too much, because
+#   it has an impact on the browser side (more data have to be buffered
+#   in RAM)
+FPS = 25
+KEYFRAME_INTERVAL = 5
+KEYFRAME_RATE = KEYFRAME_INTERVAL * FPS
+
+# parameters of ffmpeg input frame stream
+# * if there has been recent changes on the display, continue to input frames to ffmpeg
+#   at FPS rate, for a small period of time (CHANGE_FLUSH_INTERVAL), to be sure those
+#   changes are not buffered in ffmpeg output.
+# * if we are idle for more time, lower down input frame rate according to MAX_INPUT_FRAME_INTERVAL.
+CHANGE_FLUSH_INTERVAL = 0.5
+MAX_INPUT_FRAME_INTERVAL = 2.0
+
+FFMPEG_CMD_PATTERN = '''\
+ffmpeg -y -f image2pipe -use_wallclock_as_timestamps 1 -probesize %(bmp_size)d -fflags nobuffer -max_delay 50000 -i - \
+    -flush_packets 1 -tune zerolatency -vcodec libx264 -pix_fmt yuv420p -frag_duration 50000 -frag_size 1024 \
+    -filter:v fps=fps=%(fps)d -g %(keyframe_rate)d -movflags +dash -max_delay 50000 -f mp4 - '''
 
 class Streamer:
     def __init__(self, app, width, height):
@@ -20,26 +36,42 @@ class Streamer:
         self.app = app
         self.width = width
         self.height = height
+        self.ffmpeg = None
 
     @property
     def active(self):
         return self.app.is_streamer_active(self)
 
     def __del__(self):
+        if self.ffmpeg is not None:
+            self.ffmpeg.terminate()
         self.app.drop_streamer(self)
 
-    def stream_jpeg_frames(self):
-        high_quality = False
+    def stream_bmp_frames(self):
         i = 0
+        last = None
+        last_update = None
         self.app.on_resize(self.width, self.height)
         while True:
+            # in case we are both busy at inputting frames and at
+            # reading ffmpeg output, favor the later
+            gevent.idle()
             timed_out = False
-            if i == 0:
-                timeout = None  # wait long enough for 1st frame
-            elif high_quality:
-                timeout = MAX_HIGH_QUALITY_DELAY
+            now = time.time()
+            if last is not None:
+                # if there has been a recent display update
+                # continue input at FPS rate for a little period
+                # to be sure ffmpeg output does not buffer those
+                # updates too long.
+                # otherwise (no change, same image), input frames
+                # according to MAX_INPUT_FRAME_INTERVAL.
+                if now - last_update < CHANGE_FLUSH_INTERVAL:
+                    timeout = (last+ (1/FPS)) - now
+                else:
+                    timeout = (last + MAX_INPUT_FRAME_INTERVAL) - now
             else:
-                timeout = MAX_LOW_QUALITY_DELAY
+                timeout = 0
+            #print(' -- timeout:', timeout)
             try:
                 self.change_queue.get(timeout=timeout)
                 # if there were more change notifications queued,
@@ -50,14 +82,48 @@ class Streamer:
                 timed_out = True
             if not self.active:
                 break
-            high_quality = timed_out
-            quality = 95 if high_quality else 75
+            last = time.time()
+            if last_update is None or not timed_out:
+                last_update = last
+            #print(' -- wait:', last-now)
             #print(i, timed_out)
             frame = self.app.get_frame(unchanged = timed_out)
-            #with open('frames/%dx%d-%02d.jpg' % (self.app.width, self.app.height, i), 'wb') as g:
+            #with open('frames/%dx%d-%02d.bmp' % (self.app.width, self.app.height, i), 'wb') as g:
             #    g.write(frame)
+            self.last_frame_input = time.time()
+            #print(' -- get-frame:', self.last_frame_input-last)
+            # next loop step will have to wait until at least one chunk is output from ffmpeg
             yield frame
             i += 1
+
+    def feed_ffmpeg(self, it):
+        for frame in it:
+            wait_write(self.ffmpeg.stdin.fileno())
+            self.ffmpeg.stdin.write(frame)
+            self.ffmpeg.stdin.flush()
+
+    def stream_video(self):
+        # we peek the first frame, to get its size, and use it as a parameter to
+        # ffmpeg option "-probesize"
+        it = self.stream_bmp_frames()
+        first_frame = next(it)
+        cmd = FFMPEG_CMD_PATTERN % dict(
+                fps = FPS,
+                keyframe_rate = KEYFRAME_RATE,
+                bmp_size = len(first_frame)
+        )
+        self.ffmpeg = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, bufsize=0)
+        rebuilt_it = itertools.chain([first_frame], it)
+        gevent.Greenlet.spawn(self.feed_ffmpeg, rebuilt_it)
+        #fcntl.fcntl(self.ffmpeg.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
+        while self.active:
+            wait_read(self.ffmpeg.stdout.fileno())
+            out = self.ffmpeg.stdout.read(2048)
+            if len(out) == 0:
+                break
+            #print('ffmpeg-encode:', time.time() - self.last_frame_input)
+            yield (time.time(), out)
+            #yield os.read(self.ffmpeg.stdout, 2048)
 
 class OpenglAppBase(EventSourceMixin):
     def __init__ (self, handler):
@@ -115,7 +181,7 @@ class OpenglAppBase(EventSourceMixin):
         self.greenlets.append(g_task)
 
     def pack(self):
-        return { "mjpeg_url_pattern": self.url_pattern,
+        return { "video_url_pattern": self.url_pattern,
                  "mouse_move_reporting": self.mouse_move_reporting.name }
 
     def on_resize(self, w, h):
@@ -163,18 +229,18 @@ class OpenglAppBase(EventSourceMixin):
         if self.active_streamer is not None and not self.streaming_is_busy:
             self.active_streamer.change_queue.put(1)
 
-    def stream_jpeg_frames(self, width, height):
+    def stream_video(self, width, height):
         streamer = Streamer(app=self, width=width, height=height)
         self.streamers.append(streamer)
-        yield from streamer.stream_jpeg_frames()
+        yield from streamer.stream_video()
+        self.streamers.remove(streamer)
 
     def get_frame(self, unchanged):
-        quality = 95 if unchanged else 75
         self.make_current()
         if not unchanged:
             self.display()  # really draw a new frame
         f = io.BytesIO()
-        write_jpg(f, self.width, self.height, quality = quality)
+        write_bmp(f, self.width, self.height)
         return f.getvalue()
 
     def trigger_local_display(self):
