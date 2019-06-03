@@ -3,7 +3,9 @@ from sakura.common.errors import APIRequestError, APIObjectDeniedError
 
 def serve_video_stream(context, op_id, ogl_id, width, height):
     try:
+        import time
         # TODO: check rights on operator
+        t = time.time()
         op = context.op_instances.get(id=op_id)
         if op is None:
             raise bottle.HTTPError(404, 'Invalid operator identifier.')
@@ -16,9 +18,9 @@ def serve_video_stream(context, op_id, ogl_id, width, height):
         bottle.response.content_type = content_type
         bottle.response.headers['Access-Control-Allow-Origin'] = '*'
         # yield frames from operator on daemon.
-        import time
+        print('serve_video_stream - ', time.time() - t)
         for ts, chunk in opengl_app.stream_video(width, height):
-            print(time.time() - ts)
+            #print(time.time() - ts, len(chunk))
             yield chunk
         #yield from opengl_app.stream_video(width, height)
     except APIObjectDeniedError as e:
@@ -36,5 +38,5 @@ def serve_video_stream(context, op_id, ogl_id, width, height):
         # get here.
         print('stream ended (on daemon)')
     except BaseException as e:
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         raise bottle.HTTPError(400, str(e))

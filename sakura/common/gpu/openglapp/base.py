@@ -1,4 +1,4 @@
-import io, gevent, shlex, fcntl, os, time, itertools
+import io, gevent, shlex, fcntl, os, time, itertools, time
 from subprocess import Popen, PIPE
 from gevent.queue import Queue, Empty
 from gevent.event import Event
@@ -29,6 +29,12 @@ FFMPEG_CMD_PATTERN = '''\
 ffmpeg -y -f image2pipe -use_wallclock_as_timestamps 1 -probesize %(bmp_size)d -fflags nobuffer -max_delay 50000 -i - \
     -flush_packets 1 -tune zerolatency -vcodec libx264 -pix_fmt yuv420p -frag_duration 50000 -frag_size 1024 \
     -filter:v fps=fps=%(fps)d -g %(keyframe_rate)d -movflags +dash -max_delay 50000 -f mp4 - '''
+
+mike_wait_time  = 0
+mike_read_time  = 0
+mike_back_time  = 0
+mike_back_date  = time.time()
+mike_nb_times   = 0
 
 class Streamer:
     def __init__(self, app, width, height):
@@ -105,6 +111,10 @@ class Streamer:
     def stream_video(self):
         # we peek the first frame, to get its size, and use it as a parameter to
         # ffmpeg option "-probesize"
+
+        global mike_wait_time, mike_read_time
+        global mike_back_time, mike_back_date, mike_nb_times
+
         it = self.stream_bmp_frames()
         first_frame = next(it)
         cmd = FFMPEG_CMD_PATTERN % dict(
@@ -114,14 +124,34 @@ class Streamer:
         )
         self.ffmpeg = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, bufsize=0)
         rebuilt_it = itertools.chain([first_frame], it)
+
         gevent.Greenlet.spawn(self.feed_ffmpeg, rebuilt_it)
         #fcntl.fcntl(self.ffmpeg.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         while self.active:
+            t = time.time()
+            mike_back_time += t - mike_back_date
+
             wait_read(self.ffmpeg.stdout.fileno())
+            mike_wait_time += time.time() - t
+
+            t = time.time()
             out = self.ffmpeg.stdout.read(2048)
             if len(out) == 0:
                 break
             #print('ffmpeg-encode:', time.time() - self.last_frame_input)
+
+            mike_read_time += time.time() - t
+            mike_nb_times += 1
+
+            if mike_nb_times > 10:
+                print('********** stream_video - wait', mike_wait_time/mike_nb_times)
+                print('********** stream_video - read', mike_read_time/mike_nb_times)
+                print('********** stream_video - loop', mike_back_time/mike_nb_times)
+                mike_wait_time, mike_read_time, \
+                mike_back_time, mike_nb_times  = 0, 0, 0, 0
+
+            mike_back_date = time.time()
+
             yield (time.time(), out)
             #yield os.read(self.ffmpeg.stdout, 2048)
 

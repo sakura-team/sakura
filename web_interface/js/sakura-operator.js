@@ -1,6 +1,9 @@
 //Code started by Etienne Dublé for the LIG
 //February 16th, 2017
 
+var MOUSE_REPORTING_RATE = 20; // updates per sec
+var mouse_prev_date = Date.now()/1000.;
+
 sakura.internal.get_operator_interface = function () {
     // parse the operator instance id from the page url
     var url_path = window.location.pathname;
@@ -195,7 +198,14 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, div_id) {
         // MOUSE INTERACTION
         let report_move = function(evt) {
             var pos = sakura.internal.get_mouse_pos(video, evt);
-            remote_app.fire_event('on_mouse_motion', pos.x, pos.y);
+            var t = Date.now()/1000.;
+            if ((t - mouse_prev_date) >= 1/MOUSE_REPORTING_RATE) {
+                mouse_prev_date = t;
+                remote_app.fire_event('on_mouse_motion', pos.x, pos.y);
+            }
+            else {
+                console.log('dropped event');
+            }
         };
 
         let update_mouse_reports = function() {
