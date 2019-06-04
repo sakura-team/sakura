@@ -9,6 +9,8 @@ P6
 255
 """
 
+mike_var = False
+
 def write_ppm(filename, width, height):
     img_buf = gl.glReadPixels(0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
     # GL_RGB => 3 components per pixel
@@ -47,7 +49,13 @@ class BMPWriter(struct.Struct):
                 b'BM', length, 0, 0, data_offset,
                 40, width, height, 1, 24, 0, 0, 10000, 10000, 0, 0)
         f.write(headers)
-        args = (0, 0, width, height, gl.GL_BGR, gl.GL_UNSIGNED_BYTE)
+        
+        global mike_var
+        mike_var = not mike_var
+        if mike_var:
+            args = (0, 0, width, height, gl.GL_BGR, gl.GL_UNSIGNED_BYTE)
+        else:
+            args = (0, 0, width, height, gl.GL_RGB, gl.GL_UNSIGNED_BYTE)
         array = gl.glReadPixels(*args)
         f.write(array)
 
