@@ -14,7 +14,7 @@ from sakura.common.gpu.openglapp import \
 #   it has an impact on the browser side (more data have to be buffered
 #   in RAM)
 FPS = 25
-KEYFRAME_INTERVAL = 5
+KEYFRAME_INTERVAL = 1
 KEYFRAME_RATE = KEYFRAME_INTERVAL * FPS
 
 # parameters of ffmpeg input frame stream
@@ -27,7 +27,7 @@ MAX_INPUT_FRAME_INTERVAL = 2.0
 
 FFMPEG_CMD_PATTERN = '''\
 ffmpeg -y -f image2pipe -use_wallclock_as_timestamps 1 -probesize %(bmp_size)d -fflags nobuffer -max_delay 50000 -i - \
-    -flush_packets 1 -tune zerolatency -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -frag_duration 50000 -frag_size 1024 \
+    -flush_packets 1 -tune zerolatency -vcodec libx264 -pix_fmt yuv420p -frag_duration 50000 -frag_size 1024 \
     -filter:v fps=fps=%(fps)d -g %(keyframe_rate)d -movflags +dash -max_delay 50000 -f mp4 - '''
 
 mike_wait_time  = 0
@@ -71,10 +71,14 @@ class Streamer:
                 # updates too long.
                 # otherwise (no change, same image), input frames
                 # according to MAX_INPUT_FRAME_INTERVAL.
+
+                timeout = (last+ (1/FPS)) - now
+                '''
                 if now - last_update < CHANGE_FLUSH_INTERVAL:
                     timeout = (last+ (1/FPS)) - now
                 else:
                     timeout = (last + MAX_INPUT_FRAME_INTERVAL) - now
+                '''
             else:
                 timeout = 0
             #print(' -- timeout:', timeout)
@@ -128,18 +132,19 @@ class Streamer:
         gevent.Greenlet.spawn(self.feed_ffmpeg, rebuilt_it)
         #fcntl.fcntl(self.ffmpeg.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         while self.active:
-            t = time.time()
-            mike_back_time += t - mike_back_date
+            #t = time.time()
+            #mike_back_time += t - mike_back_date
 
             wait_read(self.ffmpeg.stdout.fileno())
-            mike_wait_time += time.time() - t
+            #mike_wait_time += time.time() - t
 
-            t = time.time()
+            #t = time.time()
             out = self.ffmpeg.stdout.read(2048)
             if len(out) == 0:
                 break
             #print('ffmpeg-encode:', time.time() - self.last_frame_input)
 
+            '''
             mike_read_time += time.time() - t
             mike_nb_times += 1
 
@@ -151,7 +156,7 @@ class Streamer:
                 mike_back_time, mike_nb_times  = 0, 0, 0, 0
 
             mike_back_date = time.time()
-
+            '''
             yield (time.time(), out)
             #yield os.read(self.ffmpeg.stdout, 2048)
 

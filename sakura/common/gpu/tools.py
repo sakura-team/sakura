@@ -49,7 +49,7 @@ class BMPWriter(struct.Struct):
                 b'BM', length, 0, 0, data_offset,
                 40, width, height, 1, 24, 0, 0, 10000, 10000, 0, 0)
         f.write(headers)
-        
+
         global mike_var
         mike_var = not mike_var
         if mike_var:
