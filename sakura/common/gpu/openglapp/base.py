@@ -27,7 +27,7 @@ MAX_INPUT_FRAME_INTERVAL = 2.0
 
 FFMPEG_CMD_PATTERN = '''\
 ffmpeg -y -f image2pipe -use_wallclock_as_timestamps 1 -probesize %(bmp_size)d -fflags nobuffer -max_delay 50000 -i - \
-    -flush_packets 1 -tune zerolatency -vcodec libx264 -pix_fmt yuv420p -frag_duration 50000 -frag_size 1024 \
+    -flush_packets 1 -tune zerolatency -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -frag_duration 50000 -frag_size 1024 \
     -filter:v fps=fps=%(fps)d -g %(keyframe_rate)d -movflags +dash -max_delay 50000 -f mp4 - '''
 
 mike_wait_time  = 0
