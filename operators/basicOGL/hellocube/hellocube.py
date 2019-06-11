@@ -74,7 +74,8 @@ class HelloCube:
         self.init_shader()
 
     def init_shader(self):
-        glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8").replace('.', '')
+        glsl_version = glGetString(GL_SHADING_LANGUAGE_VERSION).decode("utf-8")
+        glsl_version = glsl_version.replace('.', '').split()[0]
 
         ##########################
         # general vertex array object
