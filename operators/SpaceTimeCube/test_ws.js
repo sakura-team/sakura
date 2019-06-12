@@ -6,6 +6,8 @@ var mouse_move_pre_date = new Date();
 var prev_moves = [];
 var max_messages_per_seconds = 25;
 
+var imageQ = 'high'; //or low, or very_low
+
 function init_server() {
     ws.onopen = function(event) {
         console.log('Connection: open');
@@ -28,7 +30,7 @@ function init_server() {
         else {
             var j = JSON.parse(event.data);
             if (j.key == 'resize') {
-                send('image');
+                send('image', [imageQ]);
             }
             else if (j.key == 'data_directories') {
                 var dirs = JSON.parse(j.value);
@@ -48,13 +50,13 @@ function init_server() {
                 fill_semantics_dd(j.value);
             }
             else if (j.key == 'set_updatable_floor') {
-                send('image')
+                send('image', [imageQ])
             }
             else if (j.key == 'darkness') {
-                send('image');
+                send('image', [imageQ]);
             }
             else if(j.key == 'select_semantic') {
-                send('image');
+                send('image', [imageQ]);
             }
             else if (j.key == 'dates') {
                 update_dates(j.value);
@@ -72,7 +74,7 @@ function init_server() {
             }
             else {
                 send('dates');
-                send('image');
+                send('image', [imageQ]);
             }
         }
         return;
@@ -81,7 +83,7 @@ function init_server() {
         var wcbv = $('#wiggle_checkbox').is(":checked");
         send('wiggle', [wcbv]);
         if (wcbv) {
-            interval_id = setInterval(function(){send('image');}, 50);
+            interval_id = setInterval(function(){send('image', [imageQ]);}, 50);
         }
         else {
             clearInterval(interval_id);
@@ -231,6 +233,7 @@ canvas.addEventListener('mousemove', function(evt) {
 }, false);
 
 canvas.addEventListener('mousedown', function(evt) {
+    imageQ = 'low';
     evt.preventDefault();
     var button = 'right';
     var pos = getMousePos(canvas, evt);
@@ -238,6 +241,7 @@ canvas.addEventListener('mousedown', function(evt) {
 }, false);
 
 canvas.addEventListener('mouseup', function(evt) {
+    imageQ = 'high';
     evt.preventDefault();
     var button = 'right';
     var pos = getMousePos(canvas, evt);

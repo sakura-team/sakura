@@ -130,11 +130,16 @@ class wsock:
         self.stc.toggle_wiggle(value)
         glutPostRedisplay()
 
-    def stc_image(self):
+    def stc_image(self, imageQ):
         if self.stc.is_wiggle_on():
             self.stc.animation()
         buf = BytesIO()
-        self.image_to_send.save(buf, format= 'JPEG', quality= 90)
+        if imageQ == 'very_low':
+            self.image_to_send.save(buf, format= 'JPEG', quality= 20)
+        elif imageQ == 'low':
+            self.image_to_send.save(buf, format= 'JPEG', quality= 50)
+        else:
+            self.image_to_send.save(buf, format= 'JPEG', quality= 100)
         return buf.getvalue()
 
     def stc_dates(self):
