@@ -67,7 +67,7 @@ class GlutApp(OpenglAppBase):
 
         self.last_glut_idle_time = time.time()
         glut.glutIdleFunc(self.on_glut_idle)
-        if self.streamed:
+        if self.currently_streamed:
             # sakura core defines the main program loop,
             # so we have to run GLUT's own loop in another
             # greenlet.

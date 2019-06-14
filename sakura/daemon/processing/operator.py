@@ -45,7 +45,7 @@ class Operator:
         return self.register('_tabs', Tab(tab_label, html_path))
     def register_opengl_app(self, ogl_app):
         ogl_id = len(self.opengl_apps)
-        url_pattern = '/streams/%d/opengl/%d/video-${width}x${height}.mjpeg' % (self.op_id, ogl_id)
+        url_pattern = '/streams/%d/opengl/%d/video-${width}x${height}.mp4' % (self.op_id, ogl_id)
         ogl_app.url_pattern = url_pattern
         ogl_app.init()
         self.opengl_apps.append(ogl_app)
