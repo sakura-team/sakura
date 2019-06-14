@@ -110,12 +110,21 @@ sakura.internal.video = {
 
     readLoop: function(context) {
         context.reader.read().then(({ done, value }) => {
-            // When no more data needs to be consumed, exit
+            // Check if our stream is still the valid one
+            // (it may not be, if another stream was opened after a page resize)
+            if (context.url != context.video.src) {
+              console.log('END OF STREAM (obsolete stream)');
+              context.sourceBuffer.onupdateend = null;
+              context.reader.releaseLock();
+              context.stream.cancel();
+              return;
+            }
+            // If end of stream, restart
             if (done) {
-              console.log('END OF STREAM');
+              console.log('END OF STREAM (unexpected, will reconnect)');
               context.sourceBuffer.onupdateend = null;
               context.video.pause();
-              context.ending_cb();
+              context.restart_cb();
               return;
             }
             // Enqueue the chunk into our target stream
@@ -129,7 +138,8 @@ sakura.internal.video = {
     stream_video: function(video, url) {
         let context = { video: video };
         context.mediaSource = new MediaSource();
-        context.video.src = window.URL.createObjectURL(context.mediaSource);
+        context.url = window.URL.createObjectURL(context.mediaSource);
+        context.video.src = context.url;
         context.video.muted = true;
         context.pendingChunks = [];
         context.sourceBuffer = null;
@@ -142,8 +152,9 @@ sakura.internal.video = {
         });
         // Start fetching the video as a stream
         fetch(url).then(response => {
+            context.stream = response.body;
             context.reader = response.body.getReader();
-            context.ending_cb = function(){ sakura.internal.video.stream_video(video, url); };    // restart when disconnected
+            context.restart_cb = function(){ sakura.internal.video.stream_video(video, url); };    // restart when disconnected
             sakura.internal.video.readLoop(context);
         });
     }

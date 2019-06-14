@@ -18,6 +18,12 @@ def serve_video_stream(context, op_id, ogl_id, width, height):
         # yield frames from operator on daemon.
         streamer = opengl_app.get_streamer(width, height)
         yield from streamer.stream_video()
+        # when the video size changes on browser, a new stream with
+        # different width & height is opened.
+        # the old stream detects it is now obsolete, stops and we
+        # get here.
+        print('stream ended (on daemon)')
+        streamer.stop()
     except APIObjectDeniedError as e:
         raise bottle.HTTPError(403, str(e))
     except GeneratorExit:
@@ -27,13 +33,6 @@ def serve_video_stream(context, op_id, ogl_id, width, height):
         # in case this is unexpected, notify javascript code so that it
         # reopens a new stream.
         opengl_app.push_event('browser_disconnect', width, height)
-    except StopIteration:
-        streamer.stop()
-        # when the video size changes on browser, a new stream with
-        # different width & height is opened.
-        # the old stream detects it is now obsolete, stops and we
-        # get here.
-        print('stream ended (on daemon)')
     except BaseException as e:
         #import pdb; pdb.set_trace()
         raise bottle.HTTPError(400, str(e))
