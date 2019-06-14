@@ -11,38 +11,29 @@ def serve_video_stream(context, op_id, ogl_id, width, height):
             raise bottle.HTTPError(404, 'Invalid opengl app ID.')
         opengl_app = op.opengl_apps[ogl_id]
         print('serving video stream... %dx%d' % (width, height))
-        # let browser know our content type (i.e. motion jpeg format)
-        content_type = 'multipart/x-mixed-replace; boundary=boundary'
+        # let browser know our content type
+        content_type = 'video/mp4'
         bottle.response.content_type = content_type
+        bottle.response.headers['Access-Control-Allow-Origin'] = '*'
         # yield frames from operator on daemon.
-        # note: due to a bug in chrome and firefox
-        # (https://bugs.chromium.org/p/chromium/issues/detail?id=527446)
-        # a frame is not displayed before the header of the next one is
-        # received. That's why we first yield the multipart boundary and
-        # the content-type before waiting for the frame to be generated.
-        iterator = enumerate(opengl_app.stream_jpeg_frames(width, height))
-        while True:
-            yield (b'--boundary\r\n' +
-               b'Content-Type: image/jpeg\r\n\r\n')
-            i, frame = next(iterator)
-            print(i, len(frame))
-            # send 1024-bytes chunks
-            for j in range((len(frame)-1)//1024 + 1):
-                yield frame[j*1024:(j+1)*1024]
-            yield b'\r\n'
+        streamer = opengl_app.get_streamer(width, height)
+        yield from streamer.stream_video()
     except APIObjectDeniedError as e:
         raise bottle.HTTPError(403, str(e))
     except GeneratorExit:
+        streamer.stop()
         # the browser closed the connection.
         print('stream ended (browser disconnection)')
         # in case this is unexpected, notify javascript code so that it
         # reopens a new stream.
         opengl_app.push_event('browser_disconnect', width, height)
     except StopIteration:
+        streamer.stop()
         # when the video size changes on browser, a new stream with
         # different width & height is opened.
         # the old stream detects it is now obsolete, stops and we
         # get here.
         print('stream ended (on daemon)')
     except BaseException as e:
+        #import pdb; pdb.set_trace()
         raise bottle.HTTPError(400, str(e))

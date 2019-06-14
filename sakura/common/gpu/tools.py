@@ -52,3 +52,25 @@ class BMPWriter(struct.Struct):
         f.write(array)
 
 write_bmp = BMPWriter()
+
+class FrameWriter:
+    def __init__(self, pixel_fmt):
+        self.gl_px_fmt = {
+            'BGR': gl.GL_BGR,
+            'RGB': gl.GL_RGB
+        }.get(pixel_fmt)
+        if self.gl_px_fmt is None:
+            raise Exception('Unknown pixel format for FrameWriter: ' + repr(pixel_fmt))
+        self.arrays = {}
+    def __call__(self, f, width, height):
+        size = 3*width*height
+        array = self.arrays.get(size)
+        if array is None:
+            array = bytearray(size)
+            self.arrays[size] = array
+        gl.glPixelStorei(gl.GL_PACK_ALIGNMENT, 1)
+        args = (0, 0, width, height, self.gl_px_fmt, gl.GL_UNSIGNED_BYTE, array)
+        gl.glReadPixels(*args)
+        f.write(array)
+
+write_rgb_frame = FrameWriter('RGB')

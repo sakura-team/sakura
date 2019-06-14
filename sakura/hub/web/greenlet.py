@@ -67,7 +67,7 @@ def web_greenlet(context, webapp_path):
         with db_session_wrapper():
             yield from export_table_as_csv(context, table_id, gzip_compression=True)
 
-    @app.route('/streams/<op_id:int>/opengl/<ogl_id:int>/video-<width:int>x<height:int>.mjpeg')
+    @app.route('/streams/<op_id:int>/opengl/<ogl_id:int>/video-<width:int>x<height:int>.mp4')
     def route_serve_video_stream(op_id, ogl_id, width, height):
         with db_session_wrapper():
             yield from serve_video_stream(context, op_id, ogl_id, width, height)
