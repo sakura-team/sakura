@@ -32,11 +32,12 @@ class Streamer:
 
     def stop(self):
         if self.ffmpeg is not None:
-            print('**** STREAMER BEING KILLED')
-            self.ffmpeg.stdin.close()
-            self.ffmpeg.wait()
-            print('**** STREAMER KILLED')
+            ffmpeg = self.ffmpeg
             self.ffmpeg = None
+            print('**** STREAMER BEING KILLED')
+            ffmpeg.stdin.close()
+            ffmpeg.wait()
+            print('**** STREAMER KILLED')
 
     def __del__(self):
         self.stop()
