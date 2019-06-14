@@ -1,17 +1,11 @@
 //Code started by Etienne Dublé for the LIG
 //February 16th, 2017
 
-var MIN_MOUSE_REPORTING_RATE = 10; // updates per sec
-var MIN_MOUSE_REPORTING_MOVE = 10; // pixels
-var mouse_prev_date = Date.now()/1000.;
-var mouse_prev_pos = { x:0, y:0 };
-
-sakura.internal.test_significant_mouse_move = function (mouse_pos) {
-    let dx, dy;
-    dx = mouse_pos.x - mouse_prev_pos.x;
-    dy = mouse_pos.y - mouse_prev_pos.y;
-    return dx*dx + dy*dy > MIN_MOUSE_REPORTING_MOVE*MIN_MOUSE_REPORTING_MOVE;
-}
+var MOUSE_REPORTING_RATE = 12; // updates per sec
+var MOUSE_REPORTING_PERIOD = 1000.0 / MOUSE_REPORTING_RATE; // milliseconds
+var last_mouse_update = Date.now(); // milliseconds
+var last_mouse_pos = { x:0, y:0 };
+var pending_mouse_update = false;
 
 sakura.internal.get_operator_interface = function () {
     // parse the operator instance id from the page url
@@ -195,17 +189,41 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, div_id) {
         window.addEventListener('resize', reconnect);
 
         // MOUSE INTERACTION
-        let report_move = function(evt) {
-            var pos = sakura.internal.get_mouse_pos(video, evt);
-            var t = Date.now()/1000.;
-            if (((t - mouse_prev_date) >= 1/MIN_MOUSE_REPORTING_RATE) ||
-                sakura.internal.test_significant_mouse_move(pos)) {
-                mouse_prev_date = t;
-                mouse_prev_pos = pos;
-                remote_app.fire_event('on_mouse_motion', pos.x, pos.y);
+        let report_mouse_move = function() {
+            last_mouse_update = Date.now();
+            remote_app.fire_event('on_mouse_motion', last_mouse_pos.x, last_mouse_pos.y);
+        };
+
+        /*  If mouse events come faster than MOUSE_REPORTING_RATE, we
+            delay or drop updates. However, in case of dropped updates,
+            we should make sure than the last known mouse position is
+            reported. Let's consider we get events A, B and C in a very
+            short period of time:
+            1- Event A causes an 'on_mouse_motion' event to be fired
+            2- Event B does not, because event A is too recent. However, it
+               causes a timeout to be setup for an update.
+            3- Event C is still coming too early, and timeout prepared by B
+               is not expired yet. In this case, event C will just cause the
+               last known mouse position to be updated.
+            4- When the timeout setup by event B expires, it fires an
+               'on_mouse_motion' event, indicating the last known mouse
+               position, which is the one of event C.
+         */
+        let on_mouse_move = function(evt) {
+            last_mouse_pos = sakura.internal.get_mouse_pos(video, evt);
+            let t = Date.now();
+            if ((t - last_mouse_update) >= MOUSE_REPORTING_PERIOD) {
+                report_mouse_move();
             }
             else {
-                //console.log('dropped event');
+                if (!pending_mouse_update) {
+                    pending_mouse_update = true;
+                    let delay = last_mouse_update + MOUSE_REPORTING_PERIOD - t;
+                    setTimeout(function() {
+                        report_mouse_move();
+                        pending_mouse_update = false;
+                    }, delay);
+                }
             }
         };
 
@@ -219,7 +237,7 @@ sakura.apis.operator.attach_opengl_app = function (opengl_app_id, div_id) {
                 should_activate = clicked_buttons & mask;
             }
             if (should_activate > 0) {
-                video.onmousemove = report_move;
+                video.onmousemove = on_mouse_move;
             }
             else {
                 video.onmousemove = null;
