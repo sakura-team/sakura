@@ -5,10 +5,10 @@ from sakura.common.errors import APIRequestError
 class OpClassMixin(BaseMixin):
     @property
     def enabled(self):
-        return self.daemon.enabled
+        return get_context().daemons.any_enabled() is not None
     @property
     def disabled_message(self):
-        return self.daemon.disabled_message
+        return "No sakura daemon connected."
 
     def pack(self):
         return dict(
