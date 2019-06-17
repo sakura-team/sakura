@@ -1,7 +1,6 @@
 // Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
 var nb_trajectories = 0;
-var _loading = false;
 
 function display_loading(val) {
     var l = [ $('#loading_back_image')[0], $('#loading_div')[0]  ];
@@ -24,10 +23,11 @@ function display_info(val) {
 function init() {
     if (navigator.userAgent.indexOf("Chrome") == -1 ) {
         //Not a Chrome browser
-        console.log('Not a Chrome Browser');
         display_info('none');
     }
     else {
+        $('#not_Chrome_message')[0].style.display = 'none';
+
         //Chrome browser
         opengl_app = sakura.apis.operator.attach_opengl_app(0, 'ogl-div');
         opengl_app.subscribe_event('hovered_gps_point', function(evt, tim, lng, lat, ele, tname) {
@@ -61,15 +61,11 @@ function init() {
         });
 
         opengl_app.subscribe_event('loading_data_start', function(evt) {
-            console.log('Loading start');
-            loading = true;
             display_loading('block');
             display_info('none');
         });
 
         opengl_app.subscribe_event('loading_data_end', function(evt) {
-            console.log('Loading end');
-            loading = false;
             display_loading('none');
             display_info('block');
         });
