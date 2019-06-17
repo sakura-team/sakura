@@ -1,18 +1,31 @@
 // Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-var nb_trajectories = 0
+var nb_trajectories = 0;
+var _loading = false;
+
+function display_loading(val) {
+    var l = [ $('#loading_back_image')[0], $('#loading_div')[0]  ];
+
+    l.forEach( function(elt) {
+        elt.style.display = val;
+    });
+}
+
+function display_info(val) {
+    var l  = [$('#info_div')[0],      $('#time_start_div')[0],
+              $('#time_end_div')[0],  $('#time_inter_div')[0],
+              $('#main_navbar')[0]]
+
+    l.forEach(function(elt) {
+      elt.style.display = val;
+    });
+}
 
 function init() {
     if (navigator.userAgent.indexOf("Chrome") == -1 ) {
         //Not a Chrome browser
         console.log('Not a Chrome Browser');
-        var l  = [$('#info_div')[0],      $('#time_start_div')[0],
-                  $('#time_end_div')[0],  $('#time_inter_div')[0],
-                  $('#main_navbar')[0]]
-
-        l.forEach(function(elt) {
-          elt.style.display = "none";
-        });
+        display_info('none');
     }
     else {
         //Chrome browser
@@ -49,10 +62,16 @@ function init() {
 
         opengl_app.subscribe_event('loading_data_start', function(evt) {
             console.log('Loading start');
+            loading = true;
+            display_loading('block');
+            display_info('none');
         });
 
         opengl_app.subscribe_event('loading_data_end', function(evt) {
             console.log('Loading end');
+            loading = false;
+            display_loading('none');
+            display_info('block');
         });
 
         //possible map layers

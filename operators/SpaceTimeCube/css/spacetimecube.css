@@ -15,6 +15,17 @@ img {
     z-index: 0;
 }
 
+.loading-div {
+    z-index:3;
+    position:absolute;
+    width: 50px;
+    height: 50px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    display: none;
+}
+
 .navbar {
   position: absolute;
   width: 100%;
