@@ -20,7 +20,7 @@ img {
   width: 100%;
   z-index: 1;
 }
-.navbar-nav > li > a, .navbar-brand {
+.navbar-nav > li > a {
     padding-top:5px;
     padding-bottom:0;
     height: 30px;
