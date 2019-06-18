@@ -69,9 +69,15 @@ class OpInstanceMixin(BaseMixin):
         if self.enabled:
            res.update(**self.remote_instance.pack())
         return res
+
+    @property
+    def sorted_params(self):
+        # sort params according to param_id
+        yield from sorted(self.params, key=lambda param: param.param_id)
+
     def recheck_params(self):
-        # recheck params in order (according to param_id)
-        for param in sorted(self.params, key=lambda param: param.param_id):
+        # recheck params in order
+        for param in self.sorted_params:
             param.recheck()
 
     @property
@@ -116,8 +122,8 @@ class OpInstanceMixin(BaseMixin):
         for param_id in (remote_ids - local_ids):
             param = context.op_params(op = self, param_id = param_id) # instanciate in local db
             context.db.commit()
-        # send previously recorded param value, subscribe to remote events
-        for param in self.params:
+        # setup parameters with remote daemon
+        for param in self.sorted_params:
             param.setup()
     def delete_on_daemon(self):
         self.enabled = False
@@ -272,7 +278,6 @@ class OpInstanceMixin(BaseMixin):
         # if we just got ready, recurse with operators
         # on downlinks.
         if altered or len(self.uplinks) == 0:
-            self.recheck_params()
             if self.ready():
                 for link in self.downlinks:
                     link.dst_op.restore_links()

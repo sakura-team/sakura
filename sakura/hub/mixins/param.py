@@ -3,19 +3,13 @@ class OpParamMixin:
     def remote_param(self):
         return self.op.remote_instance.parameters[self.param_id]
     def setup(self):
-        self.remote_param.on_auto_fill.subscribe(self.retrieve_auto_filled)
-        if self.value is not None:
-            self.remote_param.set_requested_value(self.value)
-            self.remote_param.recheck()
-        else:
-            # the parameter may have auto-selected a default value
-            # before we subscribed to its on_auto_fill event.
-            self.retrieve_auto_filled()
+        self.remote_param.setup(self.value, self.retrieve_auto_filled)
     def set_value(self, gui_value):
         self.remote_param.set_requested_gui_value(gui_value)
         self.value = self.remote_param.recheck()
         self.op.check_move()
     def retrieve_auto_filled(self):
+        print('retrieve_auto_filled')
         if self.value is None:
             value = self.remote_param.get_value()
             if value is not None:

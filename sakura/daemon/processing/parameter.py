@@ -13,6 +13,14 @@ class Parameter(StatusMixin):
         self.requested_value = None
         self.value = None
         self.check_mode = False
+        self.is_setup = False
+
+    def setup(self, requested_value, auto_fill_cb):
+        print(self.__class__.__name__ + ' setup -- requested value ' + str(requested_value) + ' + auto-fill cb')
+        self.requested_value = requested_value
+        self.on_auto_fill.subscribe(auto_fill_cb)
+        self.is_setup = True
+        self.recheck()
 
     def set_check_mode(self, check_mode):
         self.check_mode = check_mode
@@ -30,7 +38,6 @@ class Parameter(StatusMixin):
             self.on_change.notify()
 
     def pack_base(self):
-        self.recheck()
         info = dict(
             gui_type = self.gui_type,
             label = self.label,
@@ -75,6 +82,8 @@ class Parameter(StatusMixin):
         raise NotImplementedError
 
     def recheck(self):
+        if not self.is_setup:
+            return None
         # if we can now set the value requested by the user, do it
         if self.requested_value is not None and self.requested_value != self.value:
             if self.check_valid(self.requested_value):
@@ -95,12 +104,12 @@ class Parameter(StatusMixin):
             if self.auto_fill():
                 changed, auto_filled = True, True
         print(self.__class__.__name__ + ' recheck -- returning value ' + str(self.value))
-        if changed and not self.check_mode:
-            print(self.__class__.__name__ + ' notify change!')
-            self.on_change.notify()
         if auto_filled and not self.check_mode:
             print(self.__class__.__name__ + ' notify auto-fill!')
             self.on_auto_fill.notify()
+        if changed and not self.check_mode:
+            print(self.__class__.__name__ + ' notify change!')
+            self.on_change.notify()
         return self.value
 
     def set_requested_value(self, value):

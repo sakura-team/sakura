@@ -43,7 +43,6 @@ class DaemonEngine(object):
             raise APIOperatorError(str(e))
         self.op_instances[op_id] = op
         print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
-        op.auto_fill_parameters()
     def delete_operator_instance(self, op_id):
         if op_id in self.op_instances:
             print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
