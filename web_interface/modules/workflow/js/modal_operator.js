@@ -121,7 +121,6 @@ function fill_params(id) {
             tbl.align = 'center';
 
             result['parameters'].forEach( function (item, index) {
-
                 if (item['gui_type'] == 'COMBO') {
                     var tr   = document.createElement("tr");
                     var td1   = document.createElement("td");
@@ -135,17 +134,19 @@ function fill_params(id) {
                         td2.innerHTML = '&nbsp;'+'&nbsp;'+'&nbsp;'+item['label']+'&nbsp;'+'&nbsp;'+'&nbsp;';
 
                     //Select & warn icon
-                    var select      = document.createElement('select');
-                    select.id       = 'modal_'+id+'_tab_params_select_'+index;
-                    select.onchange = function(){
-                        params_onChange(id, index, select.id);
-                    };
+                    var select = $('<select/>', { 'class': "selectpicker",
+                                                  'multiple': "multiple"});
+                    select.attr("id", 'modal_'+id+'_tab_params_select_'+index);
+                    select.change(function(){
+                        params_onChange(id, index, $(this));
+                    });
+                    select.prop('my_val', []);
 
                     var warn_icon = document.createElement("span");
                     warn_icon.className ="glyphicon glyphicon-exclamation-sign icon-large";
 
                     if (!item['enabled']) {
-                        select.disabled = true;
+                        select.attr('disabled', 'true');
                         warn_icon.title = item['disabled_message'];
                         warn_icon.style = 'color:red;';
                     }
@@ -154,22 +155,23 @@ function fill_params(id) {
                             var pvalue = item['possible_values'][i];
                             if (pvalue.length > 40)
                                 pvalue = pvalue.substring(0,37) + '...';
-                            select.add(new Option(pvalue));
+                            select.append(new Option(pvalue));
+
                             if (i == item['value']) {
-                                select.selectedIndex = i;
+                                select.val(pvalue);
+                                select.prop('my_val').push(pvalue);
                             }
                         }
-                        if ((item.value == 'None' || !item.value) && item.value !== 0) {
-                            select.add(new Option('None'));
-                            select.selectedIndex = item['possible_values'].length;
-                        }
+                        //if ((item.value == 'None' || !item.value) && item.value !== 0) {
+                        //    //select.selectpicker('deselectAll');
+                        //}
 
                         if (item['warning_message']) {
                             warn_icon.title = item['warning_message'];
                             warn_icon.style = 'color:orange;';
                         }
                     }
-                    td3.appendChild(select);
+                    select.appendTo(td3).selectpicker('refresh');
 
                     if (!item['enabled'] || item['warning_message']) {
                         td1.appendChild(warn_icon);
@@ -202,9 +204,18 @@ function release_tabs(id) {
     });
 }
 
-function params_onChange(op_id, param_index, select_id) {
+function params_onChange(op_id, param_index, select) {
 
-    let index = document.getElementById(select_id).selectedIndex;
+    var selected = '';
+    select.val().forEach( function (item) {
+        if (select.prop('my_val').indexOf(item) == -1)
+            selected = item
+    });
+    select.val(selected);
+    select.prop('my_val').pop(0);
+    select.prop('my_val').push(selected);
+
+    let index = select[0].selectedIndex;
     let hub_remote_op = sakura.apis.hub.operators[parseInt(op_id.split("_")[2])];
     hub_remote_op.info().then(function (instance_info) {
         let param_value = index;

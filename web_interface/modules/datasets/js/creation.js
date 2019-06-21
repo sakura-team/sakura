@@ -96,8 +96,7 @@ function datasets_send_new(database_id) {
 
     //Which table body ?
     var from_what = 'fs';
-    //var body = $('#datasets_creation_fs_columns').find('tbody');
-
+    
     $('#datasets_creation_ff_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
             from_what = 'ff';
