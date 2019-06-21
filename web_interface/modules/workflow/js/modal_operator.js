@@ -174,7 +174,12 @@ function fill_params(id) {
                     select.appendTo(td3).selectpicker('refresh');
 
                     if (!item['enabled'] || item['warning_message']) {
-                        td1.appendChild(warn_icon);
+                        $('#tab_button_params_a')[0].innerHTML = 'Params&nbsp;&nbsp;';
+                        $('#tab_button_params_a')[0].appendChild(warn_icon);
+                        td1.appendChild(warn_icon.cloneNode(true));
+                    }
+                    else {
+                        $('#tab_button_params_a')[0].innerHTML = 'Params';
                     }
 
                     tr.appendChild(td1);
