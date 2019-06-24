@@ -2,6 +2,7 @@ import sys, importlib, inspect
 from sakura.common.errors import APIRequestError
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.code.git import get_commit_metadata
+from sakura.daemon.code.importer import pathlib_import
 
 def load_op_class(worktree_dir, code_subdir):
     op_dir = worktree_dir / code_subdir
@@ -18,11 +19,8 @@ def load_op_class(worktree_dir, code_subdir):
     # in the module path. This allows to avoid conflicts with built-in modules ('operator'), and
     # to be able to reload modules of a different commit hash without hitting python module cache.
     loading_dir = worktree_dir.parent
-    saved_path = sys.path[:]
-    sys.path.insert(0, str(loading_dir))
     operator_module_path = '.'.join(op_dir.relative_to(loading_dir).parts + ('operator',))
-    mod = importlib.import_module(operator_module_path)
-    sys.path = saved_path
+    mod = pathlib_import(loading_dir, operator_module_path)
     # look for the Operator subclass defined in this module
     def match(obj):
         return  inspect.isclass(obj) and \
@@ -38,4 +36,4 @@ def load_op_class(worktree_dir, code_subdir):
     with icon_path.open() as icon_file:
         op_cls.ICON = icon_file.read()
     op_cls.COMMIT_INFO = get_commit_metadata(op_dir)
-    return op_cls
+    return op_cls, op_dir

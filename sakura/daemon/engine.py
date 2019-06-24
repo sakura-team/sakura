@@ -33,8 +33,8 @@ class DaemonEngine(object):
                     origin_id = self.origin_id)
     def create_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
         try:
-            op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
-            op = op_cls(op_id)
+            op_cls, op_dir = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
+            op = op_cls(op_id, op_dir)
             op.api = self.hub.operator_apis[op_id]
             op.construct()
         except BaseException as e:
@@ -107,7 +107,7 @@ class DaemonEngine(object):
         worktree_dir = get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
         return load_op_class(worktree_dir, code_subdir)
     def get_op_class_metadata(self, code_url, code_ref, commit_hash, code_subdir):
-        op_cls = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
+        op_cls, op_dir = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
         return dict(
             name = op_cls.NAME,
             tags = op_cls.TAGS,

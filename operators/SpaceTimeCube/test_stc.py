@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys
+from pathlib import Path
 from sakura.common.gpu.openglapp import OpenglApp
 from stc.spacetimecube import SpaceTimeCube
 from sakura.common.gpu.openglapp import MouseMoveReporting
@@ -9,7 +10,8 @@ if len(sys.argv) < 2:
     print("\33[1;31mERROR !! We need a csv file\33[m")
     sys.exit()
 
-oapp = OpenglApp(SpaceTimeCube())
+current_dir = Path(__file__).parent
+oapp = OpenglApp(SpaceTimeCube(current_dir))
 oapp.handler.debug = True
 
 if '-shape' in sys.argv:

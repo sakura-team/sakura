@@ -1,5 +1,3 @@
-import inspect
-from pathlib import Path
 from sakura.common.io import pack, ORIGIN_ID
 from sakura.common.tools import ObservableEvent
 from sakura.daemon.processing.plugs.input import InputPlug
@@ -9,10 +7,9 @@ from gevent.lock import Semaphore
 
 class Operator:
     IGNORED_FILENAMES = ("__pycache__", ".DS_Store")
-    def __init__(self, op_id):
+    def __init__(self, op_id, op_dir):
         self.op_id = op_id
-        operator_py_path = Path(inspect.getabsfile(self.__class__))
-        self.root_dir = operator_py_path.parent
+        self.root_dir = op_dir
         self.event_lock = Semaphore()
         self.opengl_apps = []
         self._last_sources_origins = (None, None)

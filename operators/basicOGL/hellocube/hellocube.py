@@ -4,9 +4,8 @@
 
 #################################
 ## GLOBAL LIBS
-import sys, math, time, inspect
+import sys, math, time
 import numpy as np
-from pathlib import Path
 
 try:
     from OpenGL.GL      import *
@@ -50,10 +49,9 @@ def wire_cube(pos, edge):
 
 
 class HelloCube:
-    def __init__(self):
+    def __init__(self, op_dir):
         # import local libs
-        hellocube_py_path = Path(inspect.getabsfile(self.__class__))
-        self.hellocube_dir = hellocube_py_path.parent
+        self.hellocube_dir = op_dir / 'hellocube'
         # display attributes
         self.width = 100
         self.height = 100

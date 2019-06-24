@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 #Michael ORTEGA for PIMLIG/LIG/CNRS- 10/12/2018
 
-import sys, math, time, inspect, datetime, copy
+import sys, math, time, datetime, copy
 import numpy    as      np
-from pathlib    import  Path
 from PIL        import  Image
 
 try:
@@ -34,10 +33,9 @@ from .libs.display_objs import floor        as obj_fl
 from .libs.display_objs import floor_shape  as obj_fs
 
 class SpaceTimeCube:
-    def __init__(self):
+    def __init__(self, op_dir):
         # import local libs
-        spacetimecube_py_path = Path(inspect.getabsfile(self.__class__))
-        self.spacetimecube_dir = spacetimecube_py_path.parent
+        self.spacetimecube_dir = op_dir / 'stc'
 
         self.projo = pr.projector(position = [0, 0, 2])
         #self.projo.v_rotation(-45.)
