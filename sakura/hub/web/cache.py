@@ -1,10 +1,29 @@
 import bottle, urllib.request, urllib.error
 import sakura.hub.conf as conf
 from pathlib import Path
+import socket
+import gevent.socket
+saved_create_connection = socket.create_connection
 
 WEBCACHE_CDNS = {
     'cdnjs': 'https://cdnjs.cloudflare.com/ajax/libs'
 }
+EXT_CONNECTION_TIMEOUT = 5
+
+def fix_create_connection(*args, **kwargs):
+    # restore for next time
+    socket.create_connection = saved_create_connection
+    # create gevent-compliant socket
+    res = gevent.socket.create_connection(*args, **kwargs)
+    # return
+    return res
+
+def gevent_urlopen(*args, **kwargs):
+    # temporary patch stdlib socket.create_connection()
+    # to get gevent-compliant behaviour
+    socket.create_connection = fix_create_connection
+    # call urlopen
+    return urllib.request.urlopen(*args, **kwargs)
 
 def webcache_serve(cdn, filepath):
     webcache_dir = conf.work_dir + '/webcache/'
@@ -18,7 +37,7 @@ def webcache_serve(cdn, filepath):
         url = WEBCACHE_CDNS[cdn] + '/' + filepath
         print('webcache: fetching ' + url)
         try:
-            with urllib.request.urlopen(url) as web_f:
+            with gevent_urlopen(url, None, EXT_CONNECTION_TIMEOUT) as web_f:
                 with cachepath.open(mode='wb') as cache_f:
                     cache_f.write(web_f.read())
         except urllib.error.HTTPError as e:
