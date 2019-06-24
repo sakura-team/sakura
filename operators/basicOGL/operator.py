@@ -11,5 +11,5 @@ class basicOGL(Operator):
         # additional tab
         self.register_tab('OGL', 'basic-ogl.html')
         # opengl app
-        ogl_app = OpenglApp(HelloCube())
+        ogl_app = OpenglApp(HelloCube(self.root_dir))
         self.register_opengl_app(ogl_app)
