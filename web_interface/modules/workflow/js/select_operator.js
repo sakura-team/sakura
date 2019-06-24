@@ -5,6 +5,7 @@
 var select_op_divs      = []
 var select_op_selected  = []
 var nb_cols_in_displayed_table = 4
+var svg_up_div  = null;
 
 //This function ask about all the operators, and then update the "operators selection" modal
 function select_op_new_modal() {
@@ -193,12 +194,16 @@ function select_op_on_change() {
     pdiv.appendChild(select_op_make_table(nb_cols_in_displayed_table, select_op_divs));
 }
 
+function dragging_svg(event, id) {
+    svg_up_div = document.getElementById(id);
+}
 
 function select_op_new_operator(id, removable) {
     var cl = class_from_id(id);
     var ndiv = document.createElement('div');
     var s = '';
     var svg = cl.svg;
+
     if (!cl.enabled) {
         var v0 = cl.svg.indexOf('<svg');
         if (v0 == -1)
@@ -215,27 +220,27 @@ function select_op_new_operator(id, removable) {
                         <text x="0" y="13" font-size="10"> disabled</text>';
         svg = head+middle+new_layer+end;
     }
+
     if (removable) {
         ndiv.id = "select_op_selected_"+cl.id+'_rem';
         s = '   <div> \
                     <table> \
                         <tr> \
-                            <td align="center">'+svg+ ' \
-                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+cl.id+'\');" style="cursor: pointer;"/> \
-                        <tr>';
+                            <td align="center">'+svg+ '</td> \
+                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+cl.id+'\');" style="cursor: pointer;"></td>';
     }
     else {
         ndiv.id = "select_op_selected_"+cl.id+"_static";
         if (cl.enabled) {
-            ndiv.setAttribute('draggable', 'true');
+            //ndiv.setAttribute('draggable', 'true');
         }
         ndiv.style.zIndex = '2';
         ndiv.classList.add("sakura_static_operator");
         s = '   <div> \
                     <table> \
                         <tr> \
-                            <td align="center">'+svg+ ' \
-                        <tr>';
+                            <td align="center"><div draggable="true" ondragstart="dragging_svg(event,\''+ndiv.id+'\')">'+svg+ '</div></td> \
+                        </tr>';
     }
 
     var l = cl.name.length;
@@ -244,18 +249,18 @@ function select_op_new_operator(id, removable) {
         fname = cl.name.substring(0,7)+'.';
     }
 
-    s += '<td align="center"> <font size="1">'+fname+'</font>';
+    s += '<tr><td align="center"> <font size="1">'+fname+'</font></td></tr>';
     s += '</table>';
+
     if (!removable)
-    s += '<div style="position: absolute; top:-5px; left: 32px;visibility: hidden;"> \
-              <span class="glyphicon glyphicon-question-sign" style="cursor: pointer;"/> \
-          </div>';
-          s += '<div style="position: absolute; font-size: 1.2em; top:7px; left: 11px;visibility: hidden;"> \
-                    <span class="glyphicon glyphicon-exclamation-sign" style="cursor: pointer;"/> \
+      s += '<div style="position: absolute; top:-5px; left: 32px;visibility: hidden;"> \
+                <span class="glyphicon glyphicon-question-sign" style="cursor: pointer;"/> \
                 </div>';
+    s += '<div style="position: absolute; font-size: 1.2em; top:7px; left: 11px;visibility: hidden;"> \
+            <span class="glyphicon glyphicon-exclamation-sign" style="cursor: pointer;"/> \
+        </div>';
 
     s += '</div>';
-
 
     ndiv.innerHTML = s;
     return (ndiv);
