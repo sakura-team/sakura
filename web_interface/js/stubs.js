@@ -15,10 +15,22 @@ function buildListStub(idDiv,result,elt) {
     var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
     var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
 
+    var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Date', 'Owner'];
+    var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'date', 'owner'];
+
     new_row_head.append('<th>Name</th>');
-    list_cols_gui.forEach( function (lelt) {
-    if (document.getElementById("cbColSelect"+lelt).checked)
-        new_row_head.append('<th>'+lelt+'</th>');
+
+    var lcg = list_cols_gui;
+    var lch = list_cols_hub;
+
+    if (elt.indexOf('Operator') != -1) {
+        lcg = list_cols_gui_op;
+        lch = list_cols_hub_op;
+    }
+
+    lcg.forEach( function (lelt) {
+        if (document.getElementById("cbColSelect"+lelt).checked)
+            new_row_head.append('<th>'+lelt+'</th>');
     });
 
     //Last col for the wrench
