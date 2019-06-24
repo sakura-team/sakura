@@ -25,6 +25,9 @@ class FileWSock(object):
     def flush(self):
         self.wsock.send(self.msg)
         self.msg = ''
+    @property
+    def closed(self):
+        return self.wsock.closed
 
 def get_web_session_wrapper(session_id):
     @contextmanager
