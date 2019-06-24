@@ -25,14 +25,20 @@ main_div.addEventListener("drop", function( e ) {
     e.preventDefault();
 
     //Operators
+    var op = null;
     if (currently_dragged.id.includes("static")) {
+        op = currently_dragged;
+    }
+    else if (svg_up_div != null) {
+        op = svg_up_div;
+        svg_up_div = null;
+    }
+    if (op != null) {
         var rect = main_div.getBoundingClientRect();
         create_operator_instance_on_hub(e.clientX - rect.left - drag_delta[0],
                                         e.clientY - rect.top - drag_delta[1] + e.target.scrollTop,
-                                        currently_dragged.id.split("_").slice(-2)[0]);
+                                        op.id.split("_").slice(-2)[0]);
     }
-
-
     //Link params
     else if (currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
         var param_out = currently_dragged;
@@ -95,7 +101,7 @@ main_div.addEventListener("drop", function( e ) {
         save_dataflow();
     }
     else {
-        console.log("Unknown Drop !!!");
+        console.log("Unknown Drop !!!", currently_dragged.id);
         currently_dragged = null;
     }
 }, false);
