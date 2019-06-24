@@ -2,6 +2,7 @@ import ssl, json, time, contextlib, pathlib
 from sakura.common.io import APIEndpoint
 from websocket import create_connection
 from sakura.client.apiobject.root import APIRoot
+from gevent.socket import wait_read, wait_write
 
 class FileWSock(object):
     def __init__(self, url):
@@ -24,8 +25,10 @@ class FileWSock(object):
                 if self.connected:
                     # we send the message only now
                     # in order to ease exception catching
+                    wait_write(self.wsock.fileno())
                     self.wsock.send(self.msg)
                     # ... and read the answer
+                    wait_read(self.wsock.fileno())
                     msg = self.wsock.recv()
                     if msg == None:
                         msg = ''
@@ -49,6 +52,9 @@ class FileWSock(object):
     def close(self):
         if self.wsock is not None:
             self.wsock.close()
+    @property
+    def closed(self):
+        return self.wsock.closed
     def flush(self):
         # actually, we only detect errors when we read the response,
         # so we cannot just send the message here and forget it.
@@ -60,8 +66,8 @@ class FileWSock(object):
 def get_api_for_url(ws_url):
     ws = FileWSock(ws_url)
     ws.connect()
-    remote_api = APIEndpoint(ws, json, None, sync=True).proxy
-    return APIRoot(remote_api, ws)
+    endpoint = APIEndpoint(ws, json, None)
+    return APIRoot(endpoint, ws)
 
 def get_conf():
     conf_path = pathlib.Path.home() / '.sakura' / 'client.conf'
