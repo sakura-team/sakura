@@ -125,6 +125,8 @@ class OpInstanceMixin(BaseMixin):
         # setup parameters with remote daemon
         for param in self.sorted_params:
             param.setup()
+        # discard any move request queued during the process
+        self.remote_instance.pop_pending_move_check()
     def delete_on_daemon(self):
         self.enabled = False
         self.daemon_api.delete_operator_instance(self.id)
@@ -239,6 +241,8 @@ class OpInstanceMixin(BaseMixin):
             daemon = best[0]
             self.move_out()
             self.move_in(daemon)
+        # discard any move request queued during the process
+        self.remote_instance.pop_pending_move_check()
         self.moving = False
     def move_out(self):
         if self.enabled:

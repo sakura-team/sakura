@@ -186,7 +186,7 @@ class Operator:
     def move(self):
         self.pending_move_check = True
     def pop_pending_move_check(self):
-        if self.pending_move_check:
+        if self.is_ready() and self.pending_move_check:
             self.pending_move_check = False     # clear for next request
             return True
         else:
