@@ -54,7 +54,8 @@ function creation_operator_check_URL() {
         empty_revision_select();
         operators_creation_check_possible_submission();
 
-        alert(error);
+        var msg = error.split(':')[1];
+        main_alert('Error in URL checking !', msg);
     });
 }
 
@@ -95,7 +96,7 @@ function operators_creation_url_input_change(event) {
 function creation_operator_check_sub_dir() {
     var code_url  = byID('operators_creation_url_input').value;
     var sub_dir   = byID('operators_creation_sub_dir').value;
-    var url       = code_url + '/' + sub_dir;
+    var url       = code_url + sub_dir;
 
     var butt = byID('operators_creation_sub_dir_button');
     butt.innerHTML = '<span class="glyphicon glyphicon-hourglass"></span>';
@@ -117,7 +118,8 @@ function creation_operator_check_sub_dir() {
         empty_revision_select();
         operators_creation_check_possible_submission();
 
-        alert(error);
+        var msg = error.split(':')[1];
+        main_alert('Error in checking !', msg+'<br>Given url : '+url);
     });
 }
 
