@@ -17,6 +17,14 @@ function not_yet(s) {
     }
 }
 
+function main_alert(header_str, body_str) {
+    var h = $('#main_alert_header');
+    var b = $('#main_alert_body');
+    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#main_alert_modal').modal();
+}
+
 function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     var h = $('#stub_asking_header');
     var b = $('#stub_asking_body');
