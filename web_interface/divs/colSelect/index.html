@@ -1,4 +1,67 @@
 
+<!-- MAIN ALERT MODAL -->
+<div id="colSelectModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-md" role="dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color : rgba(91,192,222);">
+                <h3><font color='white'>Columns selection</font></h3>
+            </div>
+            <div id="main_col_select_body" class="modal-body">
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" disabled="disabled" id="cbColSelectName" type="radio" /> Name
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input id="cbColSelectId" type="checkbox" />  Id
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" id="cbColSelectTags" type="checkbox" /> Tag
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" id="cbColSelectShortDesc" type="checkbox" /> Short Description
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" id="cbColSelectDate" type="checkbox" /> Date
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input id="cbColSelectModification" type="checkbox" /> Modification
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" id="cbColSelectOwner"type="checkbox" /> Owner
+                    </label>
+                </div>
+                <hr>
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" id="cbColSelectCodeURL" type="checkbox" /> CodeURL (Operators Only)
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input checked="true" id="cbColSelectSubDir"type="checkbox" /> SubDir (Operators Only)
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" onclick="chgShowColumns(event);">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--
 <div class="modal fade" id="colSelectModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
     <div class="modal-dialog modal-lg" id="fullwidthmodal" style="width: 35%;">
         <div class="modal-content">
@@ -10,45 +73,42 @@
                             <h6>Select columns</h6>
                             <div class="panel panel-default">
                                 <div class="panel-body">
-                                    <!--form role="form" method="post" id="colSelectForm"-->
-                                        <div class="checkbox">
-                                            <label>
-                                                <input checked="true" disabled="disabled" id="cbColSelectName" name="cbColSelectName" type="checkbox" /> Name
-                                            </label>
-                                        </div>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input id="cbColSelectId" name="cbColSelectId" type="checkbox" />  Id
-                                            </label>
-                                        </div>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input checked="true" id="cbColSelectTags" name="cbColSelectTags" type="checkbox" /> Tag
-                                            </label>
-                                        </div>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input checked="true" id="cbColSelectShortDesc" name="cbColSelectShortDesc" type="checkbox" /> Short Description
-                                            </label>
-                                        </div>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input checked="true" id="cbColSelectDate" name="cbColSelectDate" type="checkbox" /> Date
-                                            </label>
-                                        </div>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input id="cbColSelectModification" name="cbColSelectModification" type="checkbox" /> Modification
-                                            </label>
-                                        </div>
-                                        <div class="checkbox">
-                                            <label>
-                                                <input checked="true" id="cbColSelectOwner" name="cbColSelectOwner" type="checkbox" /> Owner
-                                            </label>
-                                        </div>
-                                        <button type="button" id="idButtonReturn" class="btn btn-default"  onclick="chgShowColumns(event);" data-dismiss="modal" aria-hidden="true">Return</button>
-                                        <!--button type="submit" class="btn btn-default" id="colSelectSubmit" onclick=";">Apply</button-->
-                                    <!--/form  -->
+                                    <div class="checkbox">
+                                        <label>
+                                            <input checked="true" disabled="disabled" id="cbColSelectName" name="cbColSelectName" type="checkbox" /> Name
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="cbColSelectId" name="cbColSelectId" type="checkbox" />  Id
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input checked="true" id="cbColSelectTags" name="cbColSelectTags" type="checkbox" /> Tag
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input checked="true" id="cbColSelectShortDesc" name="cbColSelectShortDesc" type="checkbox" /> Short Description
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input checked="true" id="cbColSelectDate" name="cbColSelectDate" type="checkbox" /> Date
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input id="cbColSelectModification" name="cbColSelectModification" type="checkbox" /> Modification
+                                        </label>
+                                    </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input checked="true" id="cbColSelectOwner" name="cbColSelectOwner" type="checkbox" /> Owner
+                                        </label>
+                                    </div>
+                                    <button type="button" id="idButtonReturn" class="btn btn-default"  onclick="chgShowColumns(event);" data-dismiss="modal" aria-hidden="true">Return</button>
                                 </div>
                             </div>
                         </div>
@@ -58,3 +118,4 @@
         </div>
     </div>
 </div>
+-->
