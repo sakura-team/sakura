@@ -15,8 +15,8 @@ function buildListStub(idDiv,result,elt) {
     var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
     var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
 
-    var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Date', 'Owner'];
-    var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'date', 'owner'];
+    var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Owner', 'CodeURL', 'SubDir'];
+    var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'owner', 'code_url', 'subdir'];
 
     new_row_head.append('<th>Name</th>');
 
@@ -42,7 +42,7 @@ function buildListStub(idDiv,result,elt) {
     new_row_head.append(cell);
 
     //Body of the list
-    result.forEach( function (row) {
+    result.forEach( function (row, index) {
         var new_row = $(tbody[0].insertRow());
         var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
 
@@ -53,8 +53,7 @@ function buildListStub(idDiv,result,elt) {
         n_table.append(n_row);
 
         var n_td1 = $('<td>');
-        var n_td2 = $('<td align="right">');
-
+        var n_td2 = $('<td>');
         var warn_icon = create_warn_icon(row);
         if (warn_icon)
             n_td1.append(warn_icon);
@@ -71,6 +70,38 @@ function buildListStub(idDiv,result,elt) {
                 n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
             }
         }
+        else if (tmp_elt.indexOf('Operators') != -1){
+
+            //Updating svg
+            var svg_div = $('<div>');
+            svg_div.append(row.svg);
+            var svg     = svg_div.children()[0];
+
+            var width   = svg.getAttribute('width').split('px')[0];
+            var height  = svg.getAttribute('height').split('px')[0];
+            var viewbox = svg.getAttribute('viewBox');
+            vb_vals = [0, 0];
+            if (viewbox != null)
+                vb_vals = viewbox.split(' ')
+
+            svg.setAttribute('width', '20px');
+            svg.setAttribute('height', '20px');
+            svg.setAttribute('viewBox', ""+vb_vals[0]+" "+vb_vals[1]+" "+width+" "+height);
+
+            //Adding svg and name
+            var op_table = $('<table>');
+            var op_tr = $('<tr>');
+            var op_td1 = $('<td>');
+            var op_td2 = $('<td>');
+
+            op_td1.append(svg);
+
+            op_td2.append('&nbsp;'+row.name);
+            op_tr.append(op_td1);
+            op_tr.append(op_td2);
+            op_table.append(op_tr);
+            n_td1.append(op_table);
+        }
         else
             n_td1.append(row.name);
 
@@ -78,15 +109,15 @@ function buildListStub(idDiv,result,elt) {
         new_td.append(n_table);
         new_row.append(new_td);
 
-        list_cols_gui.forEach( function (lelt, index) {
+        lcg.forEach( function (lelt, index) {
             if (document.getElementById("cbColSelect"+lelt).checked) {
-                if (lelt == 'Date' && row[list_cols_hub[index]] instanceof Date) {
-                    var d = row[list_cols_hub[index]].toDateString();
-                    var h = row[list_cols_hub[index]].toLocaleTimeString();
+                if (lelt == 'Date' && row[lch[index]] instanceof Date) {
+                    var d = row[lch[index]].toDateString();
+                    var h = row[lch[index]].toLocaleTimeString();
                     new_row.append('<td>'+d+'</td>');
                 }
                 else {
-                    new_row.append('<td>'+replace_undefined(row[list_cols_hub[index]])+'</td>');
+                    new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
                 }
             }
         });
@@ -206,7 +237,9 @@ function listRequestStub(idDiv, n, elt, bd) {
                                 'svg': op.svg,
                                 'date': op.date,
                                 'owner': op.owner,
-                                'modif': op.modification_date};
+                                'modif': op.modification_date,
+                                'code_url': op.code_url,
+                                'subdir': op.subdir};
 
                 //Display of undefined fields
                 Object.keys(result_info).forEach( function(key) {
