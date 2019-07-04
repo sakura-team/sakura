@@ -14,21 +14,20 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         ndiv.id = "op_" + id + "_" + hub_id;
         ndiv.classList.add("sakura_dynamic_operator");
         ndiv.setAttribute('draggable', 'false');
-        ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
-        ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
-        ndiv.childNodes[1].childNodes[3].id = ndiv.id+"_warning";
+        ndiv.childNodes[1].id = ndiv.id+"_help";
+        ndiv.childNodes[2].id = ndiv.id+"_warning";
 
         ndiv.style.left     = drop_x+"px";
         ndiv.style.top      = drop_y+"px";
         ndiv.ondblclick     = open_op_modal;
-        ndiv.oncontextmenu  = open_op_menu;
+        //ndiv.oncontextmenu  = open_op_menu;
         ndiv.onmouseenter   = op_mouse_enter;
         ndiv.onmouseleave   = op_mouse_leave;
 
         main_div.appendChild(ndiv);
 
         //Plumbery: draggable + connections
-        jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
+        jsPlumb.draggable(ndiv.id, {start: jsp_drag_start, stop: jsp_drag_stop});
 
         var e_in = null;
         var e_out = null;
@@ -72,23 +71,23 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     ndiv.id = "op_" + id + "_" + info.op_id;
     ndiv.classList.add("sakura_dynamic_operator");
     ndiv.setAttribute('draggable', 'false');
-    ndiv.childNodes[1].childNodes[2].id = ndiv.id+"_help";
-    ndiv.childNodes[1].childNodes[2].childNodes[0].onclick = open_op_help;
-    ndiv.childNodes[1].childNodes[3].id = ndiv.id+"_warning";
+    ndiv.childNodes[1].id = ndiv.id+"_help";
+    ndiv.childNodes[2].id = ndiv.id+"_warning";
 
     ndiv.style.left     = drop_x+"px";
     ndiv.style.top      = drop_y+"px";
     if (info['enabled']) {
         ndiv.ondblclick     = open_op_modal;
     }
-    ndiv.oncontextmenu  = open_op_menu;
+    ndiv.onclick        = op_click;
+    //ndiv.oncontextmenu  = open_op_menu;
     ndiv.onmouseenter   = op_mouse_enter;
     ndiv.onmouseleave   = op_mouse_leave;
 
     main_div.appendChild(ndiv);
 
     //Plumbery: draggable + connections
-    jsPlumb.draggable(ndiv.id, {stop: jsp_drag_stop});
+    jsPlumb.draggable(ndiv.id, {start: jsp_drag_start, stop: jsp_drag_stop});
 
     var e_in = null;
     var e_out = null;
@@ -143,23 +142,25 @@ function check_operator(op) {
         op.parameters.forEach( function(param) { check_elt(param); });
 
         var inst = global_ops_inst[instance_index_from_id(op.op_id)];
-        var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
-        w_div = document.getElementById(id+"_warning");
+        if (inst) {
 
-        if (disabled) {
-            w_div.style.color       = 'red';
-            w_div.title             = d_message;
-            w_div.style.visibility  = "visible";
-        }
-        else if (warning) {
-            w_div.style.color       = 'orange';
-            w_div.title             = w_message;
-            w_div.style.visibility  = "visible";
-        }
-        else {
-            w_div.style.visibility  = "hidden";
-        }
+            var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
+            w_div = document.getElementById(id+"_warning");
 
+            if (disabled) {
+                w_div.style.color       = 'red';
+                w_div.title             = d_message;
+                w_div.style.visibility  = "visible";
+            }
+            else if (warning) {
+                w_div.style.color       = 'orange';
+                w_div.title             = w_message;
+                w_div.style.visibility  = "visible";
+            }
+            else {
+                w_div.style.visibility  = "hidden";
+            }
+        }
 
     }
 }
@@ -221,6 +222,20 @@ function open_op_menu(e) {
     });
     op_focus_id = this.id;
     return false;
+}
+
+function op_click(e) {
+    if (e.target.parentNode.id.indexOf('_help') != -1) {
+      e.preventDefault();
+      e.stopPropagation();
+      $('#sakura_operator_contextMenu').css({
+        display: "block",
+        left: e.clientX,
+        top: e.clientY
+      });
+      op_focus_id = e.target.parentNode.parentNode.id;
+      return false;
+    }
 }
 
 

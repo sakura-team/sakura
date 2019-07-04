@@ -5,6 +5,7 @@ document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
     currently_dragged = e.target;
+    console.log(e.target);
     drag_delta = [e.clientX - e.target.left, e.clientY - e.target.top];
 
     if (currently_dragged.id.includes("svg_modal_link")) {
@@ -125,19 +126,25 @@ $(window).bind('keypress', function(e){
 });
 
 
-$('#sakura_operator_contextMenu').on("click", "a", function() {
+$('#sakura_operator_contextMenu').on("click", "a", function(e) {
+    var val = e.target.attributes['value'].value;
+    if (val == 'Delete') {
+      remove_operator_instance(op_focus_id, true);
+      jsPlumb.repaintEverything();
+    }
+    else {
+        alert('Sorry, this functionnality is not yet implemented !')
+    }
     $('#sakura_operator_contextMenu').hide();
-    remove_operator_instance(op_focus_id, true);
-    jsPlumb.repaintEverything();
 });
 
 $('#sakura_link_contextMenu').on("click", "a", function() {
-    $('#sakura_link_contextMenu').hide();
+  $('#sakura_link_contextMenu').hide();
     remove_link(link_focus_id);
 });
 
 
-$('#sakura_main_div').on("click", function () {
+$('#sakura_main_div').on("click", function (e) {
     $('#sakura_operator_contextMenu').hide();
     $('#sakura_link_contextMenu').hide();
     link_focus_id = null;
@@ -163,4 +170,8 @@ function jsp_drag_stop(e) {
         save_dataflow()
     }
     jsPlumb.repaintEverything();        //Very Important when dragging elements manually
+}
+
+function jsp_drag_start(e) {
+    //nothing for now
 }

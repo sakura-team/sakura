@@ -221,6 +221,55 @@ function select_op_new_operator(id, removable) {
         svg = head+middle+new_layer+end;
     }
 
+    ndiv.id = "select_op_selected_"+cl.id+"_static";
+    if (removable) {
+        ndiv.id = "select_op_selected_"+cl.id+'_rem';
+    }
+
+    //Main div with svg
+    var div1  = $('<div>');
+    var table = $('<table>');
+    var tr    = $('<tr>');
+    if (removable) {
+        var td1 = $('<td>', {align: "center"});
+        var td2 = $('<td>', {valign: "top"});
+        var td_span = $('<span>', {class: "glyphicon glyphicon-remove", onclick: "select_op_delete_op(\'"+cl.id+"\');", style: "cursor: pointer;"});
+        td1.html(svg);
+        table.append(tr.append([td1, td2.append(td_span)]));
+    }
+    else {
+      var td = $('<td>', {align: "center"});
+      var svg_div = $('<div>', {draggable:"true", ondragstart:"dragging_svg(event,\'"+ndiv.id+"\')"});
+      svg_div.html(svg);
+      table.append(tr.append(td.append(svg_div)));
+    }
+
+    var l = cl.name.length;
+    var fname = cl.name;
+    if (l > 7) {
+        fname = cl.name.substring(0,7)+'.';
+    }
+    var tr2 = $('<tr>');
+    var td3 = $('<td>', {align: "center"});
+    td3.html('<font size="1">'+fname+'</font>');
+    table.append(tr2.append(td3));
+
+    $(ndiv).append(div1.append(table));
+
+    //exclamation
+    var excl_div = $('<div>', {style: "position: absolute; top:7px; left: 11px;visibility: hidden;"});
+    var excl_span = $('<span>', {class: "glyphicon glyphicon-exclamation-sign", style: "cursor: pointer;"});
+    excl_div.append(excl_span);
+
+    //list button
+    if (!removable) {
+      var list_div = $('<div>', {style: "position: absolute; font-size: 1.2em; top:-5px; left: 32px; visibility: hidden;"});
+      var list_span = $('<span>', {class: "glyphicon glyphicon-menu-hamburger", style:"cursor: pointer;"});
+      $(ndiv).append(list_div.append(list_span));
+    }
+    $(ndiv).append(excl_div);
+
+    /*
     if (removable) {
         ndiv.id = "select_op_selected_"+cl.id+'_rem';
         s = '   <div> \
@@ -231,15 +280,13 @@ function select_op_new_operator(id, removable) {
     }
     else {
         ndiv.id = "select_op_selected_"+cl.id+"_static";
-        if (cl.enabled) {
-            //ndiv.setAttribute('draggable', 'true');
-        }
         ndiv.style.zIndex = '2';
         ndiv.classList.add("sakura_static_operator");
         s = '   <div> \
                     <table> \
                         <tr> \
-                            <td align="center"><div draggable="true" ondragstart="dragging_svg(event,\''+ndiv.id+'\')">'+svg+ '</div></td> \
+                            <td align="center">
+                            <div draggable="true" ondragstart="dragging_svg(event,\''+ndiv.id+'\')">'+svg+ '</div></td> \
                         </tr>';
     }
 
@@ -259,10 +306,10 @@ function select_op_new_operator(id, removable) {
     s += '<div style="position: absolute; font-size: 1.2em; top:7px; left: 11px;visibility: hidden;"> \
             <span class="glyphicon glyphicon-exclamation-sign" style="cursor: pointer;"/> \
         </div>';
-
     s += '</div>';
 
     ndiv.innerHTML = s;
+    */
     return (ndiv);
 }
 
