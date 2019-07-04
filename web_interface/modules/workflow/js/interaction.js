@@ -131,11 +131,8 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
     if (val == 'Delete') {
       remove_operator_instance(op_focus_id, true);
       jsPlumb.repaintEverything();
+      $('#sakura_operator_contextMenu').hide();
     }
-    else {
-        alert('Sorry, this functionnality is not yet implemented !')
-    }
-    $('#sakura_operator_contextMenu').hide();
 });
 
 $('#sakura_link_contextMenu').on("click", "a", function() {
