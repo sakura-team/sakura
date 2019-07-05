@@ -3,7 +3,7 @@ from pathlib import Path
 from sakura.common.errors import InputUncompatible
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.loading import load_datastores
-from sakura.daemon.code.git import get_worktree, list_code_revisions
+from sakura.daemon.code.git import get_worktree, list_code_revisions, list_operator_subdirs
 from sakura.daemon.code.loading import load_op_class
 from sakura.common.errors import APIOperatorError
 from sakura.common.io import ORIGIN_ID
@@ -119,5 +119,7 @@ class DaemonEngine(object):
         get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
     def list_code_revisions(self, repo_url):
         return list_code_revisions(repo_url)
+    def list_operator_subdirs(self, repo_url, code_ref):
+        return list_operator_subdirs(self.code_workdir, repo_url, code_ref)
     def set_col_tags(self, col_tags_info):
         self.col_tags_info = col_tags_info

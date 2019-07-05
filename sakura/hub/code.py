@@ -1,14 +1,19 @@
 from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestError
 
-def list_code_revisions(repo_url, reference_cls_id = None, reference_op_id = None):
-    if reference_cls_id is not None and reference_op_id is not None:
-        raise APIRequestError('Cannot consider 2 references when listing code revisions!')
+def get_one_connected_daemon():
     context = get_context()
     daemon = context.daemons.any_enabled()
     if daemon is None:
         raise APIRequestError('Unable to proceed because no daemon is connected.')
+    return daemon
+
+def list_code_revisions(repo_url, reference_cls_id = None, reference_op_id = None):
+    if reference_cls_id is not None and reference_op_id is not None:
+        raise APIRequestError('Cannot consider 2 references when listing code revisions!')
+    daemon = get_one_connected_daemon()
     # prepare comparisons
+    context = get_context()
     current_revision, current_code_ref, current_commit_hash = None, None, None
     recommended_revision, recommended_commit_hash = None, None
     if reference_cls_id is not None:
@@ -60,3 +65,7 @@ def list_code_revisions(repo_url, reference_cls_id = None, reference_op_id = Non
         tags_str = '(' + ', '.join(tags) + ')'
         sorted_revisions.append(revision + (tags_str,))
     return sorted_revisions
+
+def list_operator_subdirs(repo_url, code_ref):
+    daemon = get_one_connected_daemon()
+    return daemon.api.list_operator_subdirs(repo_url, code_ref)

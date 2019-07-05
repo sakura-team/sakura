@@ -16,6 +16,9 @@ class APIMisc:
                     else:
                         raise APIRequestError('list_code_revisions() expects an operator class or instance as a reference.')
                 return remote_api.misc.list_code_revisions(repo_url, **opts)
+            def list_operator_subdirs(self, repo_url, code_ref):
+                """List repository subdirs defining an operator class"""
+                return remote_api.misc.list_operator_subdirs(repo_url, code_ref)
         return APIMiscImpl()
 
 def get_misc(remote_api):

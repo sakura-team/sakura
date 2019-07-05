@@ -1,5 +1,5 @@
 from sakura.hub.web.apitools import api_init
-from sakura.hub.code import list_code_revisions
+from sakura.hub.code import list_code_revisions, list_operator_subdirs
 
 api = api_init()
 
@@ -365,3 +365,7 @@ class GuiToHubAPI:
     @api.misc.list_code_revisions
     def list_code_revisions(self, repo_url, **opts):
         return list_code_revisions(repo_url, **opts)
+
+    @api.misc.list_operator_subdirs
+    def list_operator_subdirs(self, repo_url, code_ref):
+        return list_operator_subdirs(repo_url, code_ref)
