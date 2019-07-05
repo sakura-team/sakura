@@ -80,3 +80,31 @@ def list_code_revisions(code_url, ref_type = None):
     refs = list(ref_type + ':' + w for w in words[3::4])
     rev_tags = [ rev_tags ] * len(commits)
     return tuple(zip(refs, commits, rev_tags))
+
+def get_last_commit_hash(repo_url, code_ref):
+    words = code_ref.split(':')
+    if len(words) != 2 or words[0] not in ('branch', 'tag'):
+        raise APIRequestError('Invalid code ref.')
+    short_ref = words[1]
+    try:
+        info = run_cmd("git ls-remote %(url)s %(ref)s" % \
+                    dict(url = repo_url, ref = short_ref), timeout = 3.0)
+    except:
+        raise APIRequestError('Querying repository failed. Verify given URL.')
+    return info.split()[0]
+
+def list_operator_subdirs(code_workdir, repo_url, code_ref):
+    commit_hash = get_last_commit_hash(repo_url, code_ref)
+    worktree_dir = get_worktree(code_workdir, repo_url, code_ref, commit_hash)
+    return sorted(str(op_dir.relative_to(worktree_dir)) \
+           for op_dir in yield_operator_subdirs(worktree_dir))
+
+def yield_operator_subdirs(worktree_dir):
+    # find all operator.py file
+    for op_py_file in worktree_dir.glob('**/operator.py'):
+        op_dir = op_py_file.parent
+        # verify we also have the icon file
+        if not (op_dir / 'icon.svg').exists():
+            continue
+        # ok for this one
+        yield op_dir
