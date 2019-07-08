@@ -19,9 +19,9 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
         ndiv.style.left     = drop_x+"px";
         ndiv.style.top      = drop_y+"px";
+
         ndiv.ondblclick     = open_op_modal;
         ndiv.onclick        = op_click;
-        //ndiv.oncontextmenu  = open_op_menu;
         ndiv.onmouseenter   = op_mouse_enter;
         ndiv.onmouseleave   = op_mouse_leave;
 
@@ -81,7 +81,6 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
         ndiv.ondblclick     = open_op_modal;
     }
     ndiv.onclick        = op_click;
-    //ndiv.oncontextmenu  = open_op_menu;
     ndiv.onmouseenter   = op_mouse_enter;
     ndiv.onmouseleave   = op_mouse_leave;
 

@@ -25,7 +25,7 @@
                         <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 1<font color=red>*</font></h4>
                     </div>
                     <div id="operators_creation_div_step1" class="panel-body" style="padding-top:5px; padding-bottom: 5px;">
-                        <label>Code URL <font color=red>*</font></label>
+                        <label>Repository URL <font color=red>*</font></label>
                         <div class="input-group has-error" id="operators_creation_url_input_div">
                           <input  type = 'text'
                                   class="form-control"
@@ -39,27 +39,6 @@
                             </button>
                           </span>
                         </div>
-
-                        <label>Sub-directory <font color=red>*</font></label>
-                        <div class="input-group" id="operators_creation_sub_dir_div">
-                          <input  type = 'text'
-                                  class="form-control"
-                                  id="operators_creation_sub_dir"
-                                  placeholder="/"
-                                  onkeyup="operators_creation_sub_dir_change(event);"
-                                  disabled/>
-                          <span class="input-group-btn">
-                            <button id="operators_creation_sub_dir_button"
-                                    class="btn btn-primary"
-                                    type="button"
-                                    onclick='creation_operator_check_sub_dir();'
-                                    disabled>
-                              <span class="glyphicon glyphicon-search">
-                              </span>
-                            </button>
-                          </span>
-                        </div>
-
                     </div>
                 </div>
                 <br>
@@ -68,14 +47,22 @@
                     <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px;">
                         <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 2<font color=red>*</font></h4>
                     </div>
-                    <div id="operators_creation_div_step2" class="panel-body" style="padding-top:5px; padding-bottom: 5px;">
-                      <label>Default Revision <font color=red>*</font></label>
+                    <div id="operators_creation_div_step2" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;">
+                      <label>Revision <font color=red>*</font></label>
                       <select class="selectpicker"
                               id="operators_creation_revision"
                               data-width="100%"
                               onchange="operators_creation_revision_change(event);"/>
                       </select>
-                    </div>
+                      <br>
+                      <br>
+                      <label>Sub-directory <font color=red>*</font></label>
+                      <select class="selectpicker"
+                              id="operators_creation_sub_dir"
+                              data-width="100%"/>
+                      </select>
+
+                  </div>
                 </div>
 
 
