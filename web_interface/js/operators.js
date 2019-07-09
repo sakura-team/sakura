@@ -26,8 +26,11 @@ function creation_operator_check_URL() {
         return;
     }
 
+    //var code_url = 'https://github.com/sakura-team/sakura';
+
     var butt = byID('operators_creation_url_input_button');
     butt.innerHTML = '<span class="glyphicon glyphicon-hourglass"></span>';
+    $('#operators_creation_sub_dir_refresh_icon').show();
 
     sakura.apis.hub.misc.list_code_revisions(code_url).then(function(result) {
         var butt = byID('operators_creation_url_input_button');
@@ -94,8 +97,10 @@ function fill_sub_dir_select(code_url, revision) {
         });
         select.selectpicker('refresh');
         operators_creation_check_possible_submission();
+        $('#operators_creation_sub_dir_refresh_icon').hide();
     }).catch(function (error) {
         main_alert('Error in filling sub dir select !', error);
+        $('#operators_creation_sub_dir_refresh_icon').hide();
     });
 }
 
@@ -119,6 +124,8 @@ function operators_update_creation_modal() {
 
 function operators_creation_revision_change(event) {
     byID('operators_submit_button').disabled = true;
+    $('#operators_creation_sub_dir_refresh_icon').show();
+
     var code_url  = byID('operators_creation_url_input').value;
     var select    = byID('operators_creation_revision');
     var opt       = select.options[select.selectedIndex];
@@ -145,9 +152,16 @@ function operators_creation_new() {
     var sub_dir   = byID('operators_creation_sub_dir').value;
     var revision  = opt.branch
 
-    console.log('Should send:', url, revision, hash, sub_dir);
+
+    sakura.apis.hub.op_classes.register(url, revision, hash, sub_dir).then(function (result){
+        main_success_alert('Operator Registration', 'Registered !', function () {
+            operators_close_modal();
+        }, 3);
+    }).catch( function(error_msg) {
+        main_alert('Error while Registering Operator !', error_msg);
+    });
 }
 
-function operators_close_modal(id) {
-    $('#'+id).modal('hide');
+function operators_close_modal() {
+    $('#declare_operators_modal').modal('hide');
 }

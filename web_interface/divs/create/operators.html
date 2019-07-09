@@ -31,7 +31,7 @@
                                   class="form-control"
                                   id="operators_creation_url_input"
                                   placeholder="Give the git URL of your operator, then click the magnifier"
-                                  onkeyup="operators_creation_url_input_change(event);"/>
+                                  onkeyup="operators_creation_url_input_change(event);">
                           <span class="input-group-btn">
                             <button id="operators_creation_url_input_button" class="btn btn-primary" type="button" onclick='creation_operator_check_URL();'>
                               <span class="glyphicon glyphicon-search">
@@ -45,7 +45,8 @@
                 <!-- STEP 2 -->
                 <div class="panel panel-default" style="margin-bottom: 0px;">
                     <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px;">
-                        <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 2<font color=red>*</font></h4>
+                        <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 2<font color=red>*</font>
+                        </h4>
                     </div>
                     <div id="operators_creation_div_step2" class="panel-body collapse" style="padding-top:5px; padding-bottom: 5px;">
                       <label>Revision <font color=red>*</font></label>
@@ -56,7 +57,13 @@
                       </select>
                       <br>
                       <br>
-                      <label>Sub-directory <font color=red>*</font></label>
+                      <label>
+                          Sub-directory
+                          <font color=red>*</font>
+                          &nbsp;&nbsp;&nbsp;
+                          <span id='operators_creation_sub_dir_refresh_icon' class="glyphicon glyphicon-refresh glyphicon-refresh-animate">
+                          </span>
+                      </label>
                       <select class="selectpicker"
                               id="operators_creation_sub_dir"
                               data-width="100%"/>
@@ -69,7 +76,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" disabled id="operators_submit_button" onclick="operators_creation_new();">Submit</button>
-                <button type="button" class="btn" id="operators_close_button" onclick="operators_close_modal('declare_operators_modal');">Close</button>
+                <button type="button" class="btn" id="operators_close_button" onclick="operators_close_modal();">Close</button>
             </div>
         </div>
     </div>
