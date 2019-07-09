@@ -25,9 +25,6 @@ function creation_operator_check_URL() {
     if (code_url == "") {
         return;
     }
-
-    //var code_url = 'https://github.com/sakura-team/sakura';
-
     var butt = byID('operators_creation_url_input_button');
     butt.innerHTML = '<span class="glyphicon glyphicon-hourglass"></span>';
     $('#operators_creation_sub_dir_refresh_icon').show();
@@ -156,7 +153,8 @@ function operators_creation_new() {
     sakura.apis.hub.op_classes.register(url, revision, hash, sub_dir).then(function (result){
         main_success_alert('Operator Registration', 'Registered !', function () {
             operators_close_modal();
-        }, 3);
+        }, 2);
+        showDiv(null, 'Operators', null);
     }).catch( function(error_msg) {
         main_alert('Error while Registering Operator !', error_msg);
     });
