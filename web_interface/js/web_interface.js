@@ -1,4 +1,4 @@
-/// LIG March 2017
+main_alert/// LIG March 2017
 
 ////////////GLOBALS
 var web_interface_current_id = -1;  //database or dataflow id
@@ -23,6 +23,21 @@ function main_alert(header_str, body_str) {
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     $('#main_alert_modal').modal();
+}
+
+function main_success_alert(header_str, body_str, callback, time=0) {
+    //displayig success modal during 'time' sec
+    var h = $('#web_interface_success_modal_header');
+    var b = $('#web_interface_success_modal_body');
+    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
+    b.html('<h4 align="center" style="margin: 5px;"><font color="black"> '+body_str+'</font></h4>');
+
+    $('#web_interface_success_modal').modal('show');
+        setTimeout( function () {
+            $('#web_interface_success_modal').modal('hide');
+            if (callback)
+                callback();
+        }, time*1000, callback);
 }
 
 function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
