@@ -333,6 +333,7 @@ function web_interface_save_large_description(id) {
 
 
 function showDiv(event, dir, div_id) {
+
     //set url
     if (event instanceof PopStateEvent) {
         // rien dans l'history
