@@ -54,7 +54,8 @@ setup(
         console_scripts = [ 'sakura-hub = sakura.hub.hub:run',
                             'sakura-daemon = sakura.daemon.daemon:run',
                             'sakura-encode-password = sakura.common.password:password_encoder_tool',
-                            'sakura-shell = sakura.client.shell:run' ]
+                            'sakura-shell = sakura.client.shell:run',
+                            'sakura-op-skeleton = sakura.client.opskeleton:run' ]
     ),
     include_package_data = True
 )
