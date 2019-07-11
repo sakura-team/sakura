@@ -6,27 +6,34 @@ from sakura.client.apiobject.misc import get_misc
 from sakura.client.apiobject.base import APIObjectBase
 
 class APIRoot:
+    proxy = None
+    endpoint_greenlet = None
     def __new__(cls, endpoint, ws):
-        proxy = endpoint.proxy
-        g = Greenlet.spawn(endpoint.loop)
+        def get_proxy():
+            if APIRoot.proxy is None:
+                ws.connect()
+                APIRoot.proxy = endpoint.proxy
+                APIRoot.endpoint_greenlet = Greenlet.spawn(endpoint.loop)
+            return APIRoot.proxy
         class APIRootImpl(APIObjectBase):
             "Sakura API root"
             @property
             def __ap__(self):
-                return proxy
+                return get_proxy()
             @property
             def op_classes(self):
-                return get_op_classes(proxy)
+                return get_op_classes(get_proxy())
             @property
             def dataflows(self):
-                return get_dataflows(proxy)
+                return get_dataflows(get_proxy())
             @property
             def databases(self):
-                return get_databases(proxy)
+                return get_databases(get_proxy())
             @property
             def misc(self):
-                return get_misc(proxy)
+                return get_misc(get_proxy())
             def _close(self):
-                ws.close()
-                g.kill()
+                if APIRoot.proxy is not None:
+                    ws.close()
+                    APIRoot.endpoint_greenlet.kill()
         return APIRootImpl()

@@ -1,4 +1,4 @@
-import inspect
+import socket, inspect
 
 def short_repr(obj):
     if isinstance(obj, APIObjectBase):
@@ -25,6 +25,8 @@ def get_attrs_desc(obj):
             continue
         try:
             attrs[attr_name] = getattr(obj, attr_name)
+        except socket.error:
+            raise   # probably a connection error with hub
         except Exception as e:
             attrs[attr_name] = e
     if len(attrs) == 0:

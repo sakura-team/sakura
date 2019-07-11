@@ -5,14 +5,22 @@ from sakura.client.apiobject.root import APIRoot
 from gevent.socket import wait_read, wait_write
 
 class FileWSock(object):
-    def __init__(self, url):
-        self.url = url
+    def __init__(self):
+        self.conf = None
         self.connected = False
         self.ever_connected = False
         self.msg = ''
         self.wsock = None
     def connect(self):
-        self.wsock = create_connection(self.url)
+        if self.conf is None:
+            self.conf = get_conf()
+        try:
+            self.connect_with_url(get_ws_url(ssl = True, **self.conf))
+        except ssl.SSLError:
+            print('WARNING: SSL-handshake failed. Setting up a clear text connection!')
+            self.connect_with_url(get_ws_url(ssl = False, **self.conf))
+    def connect_with_url(self, url):
+        self.wsock = create_connection(url)
         self.connected = True
         self.ever_connected = True
     def write(self, s):
@@ -63,12 +71,6 @@ class FileWSock(object):
         # (see the read() method above)
         pass
 
-def get_api_for_url(ws_url):
-    ws = FileWSock(ws_url)
-    ws.connect()
-    endpoint = APIEndpoint(ws, json, None)
-    return APIRoot(endpoint, ws)
-
 def get_conf():
     conf_path = pathlib.Path.home() / '.sakura' / 'client.conf'
     if not conf_path.exists():
@@ -92,12 +94,9 @@ def get_ws_url(hub_host, hub_port, ssl):
     return "%s://%s:%d/websocket" % (protocol, hub_host, hub_port)
 
 def get_api():
-    conf = get_conf()
-    try:
-        return get_api_for_url(get_ws_url(ssl = True, **conf))
-    except ssl.SSLError:
-        print('WARNING: SSL-handshake failed. Setting up a clear text connection!')
-        return get_api_for_url(get_ws_url(ssl = False, **conf))
+    ws = FileWSock()
+    endpoint = APIEndpoint(ws, json, None)
+    return APIRoot(endpoint, ws)
 
 @contextlib.contextmanager
 def connect_to_hub():
