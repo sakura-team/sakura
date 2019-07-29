@@ -1,4 +1,5 @@
 import ssl, json, time, contextlib, pathlib
+from sakura.common.tools import JSON_PROTOCOL
 from sakura.common.io import APIEndpoint
 from websocket import create_connection
 from sakura.client.apiobject.root import APIRoot
@@ -9,7 +10,6 @@ class FileWSock(object):
         self.conf = None
         self.connected = False
         self.ever_connected = False
-        self.msg = ''
         self.wsock = None
     def connect(self):
         if self.conf is None:
@@ -24,24 +24,27 @@ class FileWSock(object):
         self.connected = True
         self.ever_connected = True
     def write(self, s):
-        self.msg += s
+        if len(s) == 0:
+            return 0
+        return self.loop_io_do(self.raw_write, s)
+    def raw_write(self, s):
+        wait_write(self.wsock.fileno())
+        self.wsock.send(s)
     def read(self):
+        return self.loop_io_do(self.raw_read)
+    def raw_read(self):
+        wait_read(self.wsock.fileno())
+        msg = self.wsock.recv()
+        if msg == None:
+            msg = ''
+        return msg
+    def loop_io_do(self, func, *args):
         if not self.ever_connected:
             print('Connecting...', end='', flush=True)
         while True:
             try:
                 if self.connected:
-                    # we send the message only now
-                    # in order to ease exception catching
-                    wait_write(self.wsock.fileno())
-                    self.wsock.send(self.msg)
-                    # ... and read the answer
-                    wait_read(self.wsock.fileno())
-                    msg = self.wsock.recv()
-                    if msg == None:
-                        msg = ''
-                    self.msg = ''   # ok, done
-                    return msg
+                    return func(*args)
                 else:
                     ever_connected = self.ever_connected
                     self.connect()
@@ -49,7 +52,7 @@ class FileWSock(object):
                         print(' ok, repaired.')
                     else:
                         print(' ok.')
-                    # loop again to send
+                    # loop again
             except BaseException as e:
                 if self.connected:
                     print('Disconnected. Will try to reconnect...', end='', flush=True)
@@ -62,13 +65,8 @@ class FileWSock(object):
             self.wsock.close()
     @property
     def closed(self):
-        return self.wsock.closed
+        return self.wsock is None or not self.wsock.connected
     def flush(self):
-        # actually, we only detect errors when we read the response,
-        # so we cannot just send the message here and forget it.
-        # instead, we will actually do nothing here, and really send the
-        # request when the calling read-eval-loop asks for the answer
-        # (see the read() method above)
         pass
 
 def get_conf():
@@ -95,7 +93,7 @@ def get_ws_url(hub_host, hub_port, ssl):
 
 def get_api():
     ws = FileWSock()
-    endpoint = APIEndpoint(ws, json, None)
+    endpoint = APIEndpoint(ws, JSON_PROTOCOL, None)
     return APIRoot(endpoint, ws)
 
 @contextlib.contextmanager

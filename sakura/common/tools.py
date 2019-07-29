@@ -1,4 +1,4 @@
-import os, sys, gevent
+import os, sys, gevent, json
 from pathlib import Path
 from gevent.queue import Queue
 import ctypes
@@ -183,3 +183,38 @@ def run_cmd(cmd, cwd=None, **options):
     if cwd is not None:
         os.chdir(str(saved_cwd))
     return status.stdout.decode(sys.stdout.encoding)
+
+class JsonProtocol:
+    def adapt(self, obj):
+        if isinstance(obj, str) and obj.startswith('__bytes_'):
+            return bytes.fromhex(obj[8:])
+        if isinstance(obj, (tuple, list)):
+            return tuple(self.adapt(item) for item in obj)
+        elif isinstance(obj, dict):
+            return { self.adapt(k): self.adapt(v) for k, v in obj.items() }
+        else:
+            return obj
+    def load(self, f):
+        return self.adapt(json.load(f))
+    def fallback_handler(self, obj):
+        if isinstance(obj, bytes):
+            return '__bytes_' + obj.hex()
+        else:
+            return obj
+    def dump(self, obj, f):
+        try:
+            # json.dump() function causes performance issues
+            # because it performs many small writes on f.
+            # So we json-encode in a string (json.dumps)
+            # and then write this whole string at once.
+            res_json = json.dumps(obj,
+                separators=(',', ':'),
+                default=self.fallback_handler)
+            f.write(res_json)
+        except BaseException as e:
+            print(e)
+            raise Exception('Dont know how to serialize "' + repr(obj) + \
+                        '" class=' + repr(obj.__class__))
+
+JSON_PROTOCOL = JsonProtocol()
+

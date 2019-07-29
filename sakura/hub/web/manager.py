@@ -1,5 +1,6 @@
-import collections, json, numpy as np
+import collections, numpy as np
 from contextlib import contextmanager
+from sakura.common.tools import JsonProtocol
 from sakura.common.io import APIEndpoint
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
@@ -23,11 +24,15 @@ class FileWSock(object):
             msg = ''
         return msg
     def flush(self):
-        self.wsock.send(self.msg)
-        self.msg = ''
+        if len(self.msg) > 0:
+            self.wsock.send(self.msg)
+            self.msg = ''
     @property
     def closed(self):
         return self.wsock.closed
+    def close(self):
+        print('closing ws')
+        self.wsock.close()
 
 def get_web_session_wrapper(session_id):
     @contextmanager
@@ -43,48 +48,24 @@ def get_web_session_wrapper(session_id):
             yield
     return web_session_wrapper
 
-def gui_fallback_handler(obj):
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
-        return tuple(o for o in obj.select())
-    elif hasattr(obj, 'pack'):
-        return obj.pack()
-    elif hasattr(obj, '_asdict'):
-        return obj._asdict()
-    elif hasattr(obj, '__iter__'):
-        return tuple(o for o in obj)
-    elif hasattr(obj, 'item'):
-        return obj.item()   # convert numpy scalar to native
-    else:
-        raise Exception('Dont know how to serialize "' + repr(obj) + \
-                    '" class=' + repr(obj.__class__))
+class GUILocalAPIProtocol(JsonProtocol):
+    def fallback_handler(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
+            return tuple(o for o in obj.select())
+        elif hasattr(obj, 'pack'):
+            return obj.pack()
+        elif hasattr(obj, '_asdict'):
+            return obj._asdict()
+        elif hasattr(obj, '__iter__'):
+            return tuple(o for o in obj)
+        elif hasattr(obj, 'item'):
+            return obj.item()   # convert numpy scalar to native
+        else:
+            return super().fallback_handler(obj)
 
-class GUILocalAPIProtocol:
-    @staticmethod
-    def load(f):
-        try:
-            return json.load(f)
-        except:
-            raise APIInvalidRequest('json decoding failed.')
-    @staticmethod
-    def dump(res_info, f):
-        try:
-            # json.dump() function causes performance issues
-            # because it performs many small writes on f.
-            # So we json-encode in a string (json.dumps)
-            # and then write this whole string at once.
-            res_json = json.dumps(res_info,
-                separators=(',', ':'),
-                default=gui_fallback_handler)
-            f.write(res_json)
-        except BaseException as e:
-            print(e)
-            raise Exception('Hub->GUI: Hub could not serialize object ' + \
-                                repr(res_info))
-    @staticmethod
-    def is_transferable(obj):
-        return True
+GUI_LOCAL_API_PROTOCOL = GUILocalAPIProtocol()
 
 def rpc_manager(context, wsock):
     print('New GUI RPC connection.')
@@ -93,7 +74,7 @@ def rpc_manager(context, wsock):
     # manage api requests
     local_api = GuiToHubAPI(context)
     web_session_wrapper = get_web_session_wrapper(context.session.id)
-    handler = APIEndpoint(f, GUILocalAPIProtocol, local_api,
+    handler = APIEndpoint(f, GUI_LOCAL_API_PROTOCOL, local_api,
                 session_wrapper = web_session_wrapper)
     context.session.num_ws += 1
     try:

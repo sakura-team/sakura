@@ -51,7 +51,7 @@ class APIEndpoint:
     def handle_next_message(self):
         try:
             msg = self.protocol.load(self.f)
-            print_debug('received message', str(msg))
+            print_debug('received message', msg)
         except BaseException as e:
             if isinstance(e, (EOFError, ConnectionResetError)):
                 print('remote end disconnected!')

@@ -2,6 +2,7 @@ import itertools, gc
 from sakura.common.io.debug import print_debug
 from sakura.common.io.proxy import Proxy
 from sakura.common.io.origin import ORIGIN_ID
+from sakura.common.io.tools import traverse
 
 class HeldObjectsStore:
     instance = None
@@ -17,7 +18,6 @@ class HeldObjectsStore:
         self.__held_ids__ = itertools.count()
     def hold(self, obj):
         # hold obj locally then return id and origin.
-        print_debug('held:', obj)
         # check if this object is already held
         held_id = self.__ids_per_object__.get(obj, None)
         if held_id is None:
@@ -27,7 +27,8 @@ class HeldObjectsStore:
             self.__refcount_per_id__[held_id] = 1
         else:
             self.__refcount_per_id__[held_id] += 1
-        origin = ORIGIN_ID, held_id
+        print_debug('held:', held_id, obj)
+        origin = ORIGIN_ID, ('held_objects', (held_id,))
         if isinstance(obj, Proxy):
             if obj.__internals.get_origin() is not None:
                 origin = obj.__internals.get_origin()
@@ -38,7 +39,7 @@ class HeldObjectsStore:
     def __delitem__(self, held_id):
         if self.__refcount_per_id__[held_id] == 1:
             obj = self.__objects_per_id__[held_id]
-            print_debug('released:', obj)
+            print_debug('released:', held_id, obj)
             del self.__objects_per_id__[held_id]
             del self.__ids_per_object__[obj]
             del self.__refcount_per_id__[held_id]
@@ -47,14 +48,14 @@ class HeldObjectsStore:
             self.__refcount_per_id__[held_id] -= 1
     @classmethod
     def get_proxy(cls, api_endpoint, held_info):
-        remote_held_id, origin = held_info[0], held_info[1:]
-        origin_id, origin_held_id = origin
+        remote_held_id, origin = held_info[0], tuple(held_info[1:])
+        origin_id, origin_path = origin
         if origin_id == ORIGIN_ID:
             # the object is actually a local object!
             # (may occur in case of several bounces)
             # we can short out those bounces and use the object directly.
             # first, retrieve a reference to this object
-            obj = cls.get()[origin_held_id]
+            obj = traverse(api_endpoint, origin_path)
             print_debug('shortcut:', obj, 'is actually local.')
             # tell the remote end it can release it
             api_endpoint.delete_remotely_held(remote_held_id)

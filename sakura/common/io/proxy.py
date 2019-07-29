@@ -1,29 +1,42 @@
 from sakura.common.io.tools import Internals
 
+# note about Proxy.__internals.proxy_extend() function:
+# we keep a link to our parent, otherwise it might be garbage collected
+# which can cause problems in some cases, such as:
+# (op_dir / 'operator.py').exists()
+# here, after accessing attribute 'exists' and returning a new proxy,
+# parent (result of '/' expression) would be garbage-collected, then
+# trying to run its exists() function would cause an exception.
 class Proxy:
-    def __init__(self, manager, path=(), origin=None, delete_callback=None):
+    def __init__(self, manager, path=(), origin=None, delete_callback=None, parent=None):
+        def proxy_extend(path_extension, **kwargs):
+            new_path = path + path_extension
+            if origin is None:
+                new_origin = None
+            else:
+                new_origin = origin[0], origin[1] + path_extension
+            return Proxy(manager, new_path, new_origin, parent=self)
         self.__internals = Internals(
             manager = manager,
             path = path,
             origin = origin,
             delete_callback = delete_callback,
-            proxy_at = lambda new_path: Proxy(manager, new_path, origin),
-            call_special = lambda func_name: manager.func_call(path + (func_name,)),
-            get_origin = lambda : origin
+            proxy_extend = proxy_extend,
+            call_special = lambda func_name, *args, **kwargs: manager.func_call(path + (func_name,), args, kwargs),
+            get_origin = lambda : origin,
+            parent = parent
         )
     # attr access
     def __getattr__(self, attr):
         if attr.endswith('__internals'):
             return self.__internals     # workaround name mangling
-        path = self.__internals.path + (attr,)
         if attr.startswith('_'):
-            return self.__internals.manager.attr_call(path)
+            return self.__internals.manager.attr_call(self.__internals.path + (attr,))
         else:
-            return self.__internals.proxy_at(path)
+            return self.__internals.proxy_extend((attr,))
     # subscript access
     def __getitem__(self, index):
-        path = self.__internals.path + ((index,),)
-        return self.__internals.proxy_at(path)
+        return self.__internals.proxy_extend(((index,),))
     # function call
     def __call__(self, *args, **kwargs):
         return self.__internals.manager.func_call(self.__internals.path, args, kwargs)
@@ -38,6 +51,12 @@ class Proxy:
         return self.__internals.call_special('__next__')
     def __len__(self):
         return self.__internals.call_special('__len__')
+    def __truediv__(self, other):   # handle '/' operator for remote pathlib.Path objects
+        return self.__internals.call_special('__truediv__', other)
+    def __enter__(self):
+        return self.__internals.call_special('__enter__')
+    def __exit__(self, *args):
+        return self.__internals.call_special('__exit__', *args)
     # optional deletion callback management
     def __del__(self):
         if self.__internals.delete_callback is not None:
