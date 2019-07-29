@@ -2,6 +2,9 @@ from pathlib import Path
 from sakura.common.tools import run_cmd
 from sakura.common.errors import APIRequestError
 
+GIT_CLONE_TIMEOUT       = 60.0      # seconds
+GIT_LS_REMOTE_TIMEOUT   =  5.0      # seconds
+
 def fetch_updates(code_dir, code_ref):
     if code_ref.startswith('branch:'):
         remote_ref = code_ref[7:]
@@ -26,7 +29,7 @@ def get_worktree(code_workdir, code_url, code_ref, commit_hash):
             run_cmd('git clone --no-checkout %(url)s %(dest)s' % dict(
                     url = code_url,
                     dest = code_repodir),
-                timeout = 5.0)
+                timeout = GIT_CLONE_TIMEOUT)
         except:
             raise APIRequestError('Cloning repository failed. Verify given URL.')
     # get worktree if needed
@@ -72,7 +75,7 @@ def list_code_revisions(code_url, ref_type = None):
         rev_tags = ('HEAD',)
     try:
         info = run_cmd("git ls-remote %(opt)s %(url)s" % \
-                    dict(opt = opt, url = code_url), timeout = 3.0)
+                    dict(opt = opt, url = code_url), timeout = GIT_LS_REMOTE_TIMEOUT)
     except:
         raise APIRequestError('Querying repository failed. Verify given URL.')
     words = info.strip().replace('\t', ' ').replace('/', ' ').replace('\n', ' ').split(' ')
@@ -88,7 +91,7 @@ def get_last_commit_hash(repo_url, code_ref):
     short_ref = words[1]
     try:
         info = run_cmd("git ls-remote %(url)s %(ref)s" % \
-                    dict(url = repo_url, ref = short_ref), timeout = 3.0)
+                    dict(url = repo_url, ref = short_ref), timeout = GIT_LS_REMOTE_TIMEOUT)
     except:
         raise APIRequestError('Querying repository failed. Verify given URL.')
     return info.split()[0]
