@@ -31,9 +31,8 @@ class GuiToHubAPI:
         return self.context.op_classes[cls_id]
 
     @api.op_classes.register
-    def register_op_class(self, code_url, default_code_ref, default_commit_hash, code_subdir):
-        return self.context.op_classes.register(self.context, code_url, \
-                            default_code_ref, default_commit_hash, code_subdir)
+    def register_op_class(self, **cls_repo_info):
+        return self.context.op_classes.register(self.context, **cls_repo_info)
 
     @api.op_classes.__getitem__.update_default_revision
     def update_op_class_default_revision(self, cls_id, code_ref, commit_hash):

@@ -51,13 +51,10 @@ def define_schema(db):
         op_instances = Set('OpInstance')
 
     class OpClass(db.Entity, OpClassMixin):
-        code_url = Required(str)
+        repo = Required(Json)
         code_subdir = Required(str)
-        default_code_ref = Required(str)
-        default_commit_hash = Required(str)
         metadata = Optional(Json, default = {})
         op_instances = Set('OpInstance')
-        UNIQUE(code_url, code_subdir)
 
     class OpInstance(db.Entity, OpInstanceMixin):
         daemon = Optional(Daemon)

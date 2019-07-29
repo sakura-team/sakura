@@ -150,7 +150,12 @@ function operators_creation_new() {
     var revision  = opt.branch
 
 
-    sakura.apis.hub.op_classes.register(url, revision, hash, sub_dir).then(function (result){
+    sakura.apis.hub.op_classes.register({
+                "repo_type": "git",
+                "repo_url": url,
+                "default_code_ref": revision,
+                "default_commit_hash": hash,
+                "repo_subdir": sub_dir}).then(function (result){
         main_success_alert('Operator Registration', 'Registered !', function () {
             operators_close_modal();
         }, 2);

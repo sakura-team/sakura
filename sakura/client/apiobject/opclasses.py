@@ -30,8 +30,12 @@ class APIOpClassDict:
             """Sakura operator classes registry"""
             def register(self, repo_url, default_code_ref, default_commit_hash, repo_subdir='/'):
                 """Registration of a new operator class"""
-                cls_info = remote_api.op_classes.register( \
-                        repo_url, default_code_ref, default_commit_hash, repo_subdir)
+                cls_info = remote_api.op_classes.register(
+                        repo_type = 'git',
+                        repo_url = repo_url,
+                        default_code_ref = default_code_ref,
+                        default_commit_hash = default_commit_hash,
+                        repo_subdir = repo_subdir)
                 return APIOpClass(remote_api, cls_info['id'])
         return APIOpClassDictImpl()
 
