@@ -210,4 +210,5 @@ class wsock:
 
 mainwin = wsock()
 mainwin.init()
+#mainwin.stc.highlight_shapes((101,102,203,204,310,311,518))
 mainwin.loop()

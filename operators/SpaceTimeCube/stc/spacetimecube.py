@@ -820,3 +820,12 @@ class SpaceTimeCube:
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()
+
+    def get_shapes(self):
+        return self.geo_shapes.get_shapes_info()
+
+    def highlight_shapes(self, l):
+        self.geo_shapes.highlight_shapes(l)
+        self.fareas.geometry(self.data, self.geo_shapes)
+        self.fareas.update_arrays()
+        

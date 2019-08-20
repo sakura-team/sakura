@@ -4,12 +4,17 @@
 
 import geojson  as gj
 import numpy    as np
+import copy
+
+
 
 class geo_shape:
-    def __init__(self, name, points):
-        self.name   = name
-        self.points = points
-        self.triangles = []
+    def __init__(self, name, id, points):
+        self.name       = name
+        self.id         = id
+        self.points     = points
+        self.triangles  = []
+        self.color      = [1,1,1,.7]
 
     def triangulate(self):
         def _strip_range(stop):
@@ -24,9 +29,25 @@ class geo_shape:
             self.triangles.append(self.points[i])
 
 class geo_shapes:
+
     def __init__(self):
         self.shapes         = []
         self.displayed      = True
+        self.LOW_COLOR = [1,1,1,.7]
+        self.HIGH_COLOR = [1,0,0,.7]
+
+    def get_shapes_info(self):
+        infos = []
+        for s in self.shapes:
+            infos.append({'name': s.name, 'id': s.id})
+        return infos
+
+    def highlight_shapes(self, l):
+        for s in self.shapes:
+            if s.id in l:
+                s.color = self.HIGH_COLOR
+            else:
+                s.color = self.LOW_COLOR
 
     def read_shapes(self, fname):
         if fname:
@@ -35,6 +56,7 @@ class geo_shapes:
             for f in geoj['features']:
                 n = f['properties']['name']
                 c = f['geometry']['coordinates']
+                id = int(f['properties']['code'])
                 out = []
 
                 #-------------
@@ -53,6 +75,6 @@ class geo_shapes:
 
                 out.reverse()
                 out = np.reshape(np.array(out), (-1, 2))
-                fs = geo_shape(n, out)
+                fs = geo_shape(n, id, out)
                 self.shapes.append(fs)
                 fs.triangulate()

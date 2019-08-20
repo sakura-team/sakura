@@ -68,6 +68,8 @@ class areas:
     def __init__(self):
         self.vertices       = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
         self.colors         = np.array([[0,0,0,1], [0,0,0,1], [0,0,0,1]])
+        self.starts         = [0]
+        self.sizes          = [3]
         self.sh             = sh.shader()
         self.sh.display     = self.display
 
@@ -87,18 +89,22 @@ class areas:
 
     def display(self):
         self.update_uniforms(self.sh)
-        glEnable(GL_STENCIL_TEST)
-        glDisable(GL_DEPTH_TEST)
-        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
-        glStencilFunc(GL_ALWAYS, 0, -1)
-        glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT)
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, len(self.vertices))
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
-        glEnable(GL_DEPTH_TEST)
-        glStencilFunc(GL_NOTEQUAL, 0, -1);
-        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE)
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, len(self.vertices))
-        glDisable(GL_STENCIL_TEST)
+        for i in range(len(self.starts)):
+            glEnable(GL_STENCIL_TEST)
+
+            glDisable(GL_DEPTH_TEST)
+            glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE)
+            glStencilFunc(GL_ALWAYS, 0, -1)
+            glStencilOp(GL_INVERT, GL_INVERT, GL_INVERT)
+            glDrawArrays(GL_TRIANGLE_STRIP, self.starts[i], self.sizes[i])
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE)
+            glEnable(GL_DEPTH_TEST)
+
+            glStencilFunc(GL_NOTEQUAL, 0, -1);
+            glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE)
+            glDrawArrays(GL_TRIANGLE_STRIP, self.starts[i], self.sizes[i])
+
+            glDisable(GL_STENCIL_TEST)
 
 
     def update_arrays(self):
@@ -108,8 +114,11 @@ class areas:
     def geometry(self, data, fsc):
         vertices   = []
         colors     = []
+        starts     = []
+        sizes      = []
 
         for shape in fsc.shapes:
+            starts.append(len(vertices))
             m = mrc.mercator(*shape.triangles[0], 0)
             vertices.append([data.mins[0], *m])
             colors.append([0,0,0,0])
@@ -117,11 +126,14 @@ class areas:
             for p in shape.triangles:
                 m = mrc.mercator(*p, 0)
                 vertices.append([data.mins[0], *m])
-                colors.append([1,1,1,.7])
+                colors.append(shape.color)
 
             m = mrc.mercator(*shape.triangles[-1], 0)
             vertices.append([data.mins[0], *m])
             colors.append([0,0,0,0])
+            sizes.append(len(shape.triangles)+2)
 
         self.vertices   = np.array(vertices)
         self.colors     = np.array(colors)
+        self.starts     = starts
+        self.sizes      = sizes
