@@ -828,4 +828,3 @@ class SpaceTimeCube:
         self.geo_shapes.highlight_shapes(l)
         self.fareas.geometry(self.data, self.geo_shapes)
         self.fareas.update_arrays()
-        

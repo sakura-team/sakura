@@ -25,12 +25,12 @@ class wsock:
                 [-shape path] [-performance string] [-shadows bool]')
         print()
         print("  h, help\t: print this help")
-        print("  data\t\t: csv fale path (mandatory)")
+        print("  data\t\t: csv file path (mandatory)")
         print("  server\t: server mode activation")
-        print("  color\t\t: color file path (random colors if option not given)")
-        print("  shape\t\t: shape file path (no shapes if option not given)")
-        print("  performance\t: 'high' (default) or 'low'")
-        print("  shadows\t: 'yes' (default) or no")
+        print("  color\t\t: color file path (random colors if option not defined)")
+        print("  shape\t\t: shape file path (no shapes if option not defined)")
+        print("  performance\t: high (default), low")
+        print("  shadows\t: yes (default), no")
         print()
 
     def __init__(self):
@@ -196,7 +196,9 @@ class wsock:
                     'dates':                self.stc_dates,
                     'resize':               self.stc_resize,
                     'set_updatable_floor':  self.stc.set_updatable_floor,
-                    'reset_cube_height':    self.stc.reset_cube_height
+                    'reset_cube_height':    self.stc.reset_cube_height,
+                    'get_shapes':           self.stc.get_shapes,
+                    'highlight_shapes':     self.stc.highlight_shapes
                     })
 
     def loop(self):
@@ -210,5 +212,4 @@ class wsock:
 
 mainwin = wsock()
 mainwin.init()
-#mainwin.stc.highlight_shapes((101,102,203,204,310,311,518))
 mainwin.loop()

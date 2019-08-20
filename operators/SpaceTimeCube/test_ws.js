@@ -7,6 +7,8 @@ var prev_moves = [];
 var max_messages_per_seconds = 25;
 
 var imageQ = 'high'; //or low, or very_low
+var highlighted_shapes = []
+var shapes = []
 
 function init_server() {
     ws.onopen = function(event) {
@@ -44,7 +46,13 @@ function init_server() {
             }
             else if (j.key == 'get_trajectories') {
                 fill_trajectories_dd(j.value);
-                console.log(j.value.length);
+            }
+            else if (j.key == 'get_shapes') {
+                shapes = j.value;
+                fill_shapes_dd();
+            }
+            else if (j.key == 'highlight_shapes') {
+                send('image', [imageQ])
             }
             else if (j.key == 'get_semantic_names') {
                 fill_semantics_dd(j.value);
@@ -69,7 +77,10 @@ function init_server() {
                       'wiggle',
                       'dates',
                       'reset_zoom',
-                      'reset_cube_height'].indexOf(j.key) < 0) {
+                      'reset_cube_height',
+                      'highlight_shapes',
+                      'get_shapes',
+                      'reset_position'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
             else {
@@ -95,7 +106,7 @@ function init_server() {
         send('set_updatable_floor', [wcbv]);
     });
 
-    refresh()
+    refresh();
 }
 
 function refresh() {
@@ -106,6 +117,7 @@ function refresh() {
     send('set_updatable_floor', [false])
 
     send('get_trajectories');
+    send('get_shapes');
     send('get_semantic_names');
     canvas.width = 800;
     canvas.height = 600;
@@ -153,8 +165,61 @@ function check_trajectory(index) {
               l.push(i);
         }
     }
-    console.log(func);
     send(func, [l]);
+}
+
+function fill_shapes_dd() {
+    nb_shapes = shapes.length;
+    var sdd = $('#shapes_dropdown');
+    var butt_hid = $('<button class="btn btn-default btn-xs" onclick=\'check_shape(-1);\'>unsel all</button>&nbsp;');
+    var butt_sho = $('<button class="btn btn-default btn-xs" onclick=\'check_shape(-2);\'>sel all</button>');
+    var table = $('<table width = 100%>');
+
+    shapes.forEach( function(shape, index) {
+        if (shape.highlighted)
+            table.append("<tr><td><input type='checkbox' checked id='shape_checkbox_"+shape.id+"' \
+                          onclick='check_shape("+shape.id+");'></td><td>"+shape.name+"</td></tr>");
+        else
+            table.append("<tr><td><input type='checkbox' id='shape_checkbox_"+shape.id+"' \
+                          onclick='check_shape("+shape.id+");'></td><td>"+shape.name+"</td></tr>");
+
+    });
+
+    sdd.append(butt_hid);
+    sdd.append(butt_sho);
+    sdd.append(table);
+}
+
+function check_shape(id) {
+    //only one shape
+    if (id != -1 && id != -2) {
+        if ($('#shape_checkbox_'+id).is(":checked")) {
+            highlighted_shapes.push(id);
+        }
+        else {
+            var i = highlighted_shapes.indexOf(id);
+            if (i !== -1)
+              highlighted_shapes.splice(i, 1)
+        }
+    }
+    else if (id == -1) {
+        highlighted_shapes = [];
+        for (var i=0; i< shapes.length;i++) {
+            $('#shape_checkbox_'+shapes[i].id).each(  function() {
+                this.checked = false;
+            });
+        };
+    }
+    else if (id == -2) {
+        highlighted_shapes = [];
+        for (var i=0; i< shapes.length;i++) {
+            $('#shape_checkbox_'+shapes[i].id).each(  function() {
+                this.checked = true;
+            });
+            highlighted_shapes.push(shapes[i].id);
+        };
+    }
+    send('highlight_shapes', [highlighted_shapes]);
 }
 
 function fill_semantics_dd(sems){

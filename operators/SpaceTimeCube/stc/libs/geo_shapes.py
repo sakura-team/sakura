@@ -7,7 +7,6 @@ import numpy    as np
 import copy
 
 
-
 class geo_shape:
     def __init__(self, name, id, points):
         self.name       = name
@@ -15,6 +14,7 @@ class geo_shape:
         self.points     = points
         self.triangles  = []
         self.color      = [1,1,1,.7]
+        self.highlighted= False
 
     def triangulate(self):
         def _strip_range(stop):
@@ -39,15 +39,17 @@ class geo_shapes:
     def get_shapes_info(self):
         infos = []
         for s in self.shapes:
-            infos.append({'name': s.name, 'id': s.id})
+            infos.append({'name': s.name, 'id': s.id, 'highlighted': s.highlighted})
         return infos
 
     def highlight_shapes(self, l):
         for s in self.shapes:
             if s.id in l:
                 s.color = self.HIGH_COLOR
+                s.highlighted = True
             else:
                 s.color = self.LOW_COLOR
+                s.highlighted = False
 
     def read_shapes(self, fname):
         if fname:
