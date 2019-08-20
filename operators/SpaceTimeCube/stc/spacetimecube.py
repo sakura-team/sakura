@@ -36,6 +36,7 @@ class SpaceTimeCube:
 
         try:
             from sakura.common.gpu import SAKURA_GPU_PERFORMANCE
+            self.SAKURA_GPU_PERFORMANCE = 'high'
         except:
             self.SAKURA_GPU_PERFORMANCE = 'low'
 
@@ -80,6 +81,7 @@ class SpaceTimeCube:
         self.current_point      = None
         self.colors_file        = None
         self.floor_shapes_file  = None
+        self.display_shadows    = True
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -565,14 +567,21 @@ class SpaceTimeCube:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         if self.SAKURA_GPU_PERFORMANCE == 'low':
-            sh.display_list([self.sh_shadows, self.trajs.sh])
+            if self.display_shadows:
+                sh.display_list([self.sh_shadows, self.trajs.sh])
+            else:
+                sh.display_list([self.trajs.sh])
             if self.geo_shapes.displayed and self.floor_shapes_file:
                 sh.display_list([self.fcontours.sh, self.fareas.sh])
             sh.display_list([self.cube.sh, self.lines.sh, self.floor.sh])
         else:
-            if self.cube.height > 0.01:
-                sh.display_list([self.sh_back_shadows])
-            sh.display_list([self.sh_shadows, self.sh_back_trajects, self.trajs.sh])
+            if self.display_shadows:
+                if self.cube.height > 0.01:
+                    sh.display_list([self.sh_back_shadows])
+                sh.display_list([self.sh_shadows, self.sh_back_trajects, self.trajs.sh])
+            else:
+                sh.display_list([self.sh_back_trajects, self.trajs.sh])
+
             if self.geo_shapes.displayed and self.floor_shapes_file:
                 sh.display_list([self.fcontours.sh, self.fareas.sh])
             sh.display_list([self.cube.sh, self.lines.sh, self.floor.sh])
@@ -783,6 +792,9 @@ class SpaceTimeCube:
                     self.new_selections.append(i)
             else:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
+
+    def toggle_shadows(self, b):
+        self.display_shadows = b
 
     def hide_trajectories(self, l):
         print('hide', l)

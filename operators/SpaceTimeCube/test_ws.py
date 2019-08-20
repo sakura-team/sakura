@@ -18,16 +18,36 @@ except:
 
 
 class wsock:
+
+    def print_help(self):
+        print()
+        print('usage: exe.py -data csv_file_name [-h] [-help] [-server] [-color path]\n \
+                [-shape path] [-performance string] [-shadows bool]')
+        print()
+        print("  h, help\t: print this help")
+        print("  data\t\t: csv fale path (mandatory)")
+        print("  server\t: server mode activation")
+        print("  color\t\t: color file path (random colors if option not given)")
+        print("  shape\t\t: shape file path (no shapes if option not given)")
+        print("  performance\t: 'high' (default) or 'low'")
+        print("  shadows\t: 'yes' (default) or no")
+        print()
+
     def __init__(self):
 
-        if len(sys.argv) < 2:
-            print("\33[1;31mERROR !! We need a csv file\33[m")
+        if len(sys.argv) < 2 or sys.argv[1] in ('-h', '-help'):
+            self.print_help()
             sys.exit()
 
         self.stc = SpaceTimeCube()
         self.stc.debug = True
         self.stc.app = self
         self.server_mode = False
+
+        if '-data' in sys.argv:
+            ind = sys.argv.index('-data')
+            self.data_file = sys.argv[ind+1]
+
         if '-server' in sys.argv:
             self.server_mode = True
 
@@ -39,9 +59,16 @@ class wsock:
             ind = sys.argv.index('-shape')
             self.stc.set_floor_shape_file(sys.argv[ind+1])
 
+        if '-shadows' in sys.argv:
+            ind = sys.argv.index('-shadows')
+            if sys.argv[ind+1] != 'yes':
+                self.stc.toggle_shadows(False)
+
         if '-performance' in sys.argv:
             ind = sys.argv.index('-performance')
             self.stc.SAKURA_GPU_PERFORMANCE = sys.argv[ind+1]
+        else:
+            self.stc.SAKURA_GPU_PERFORMANCE = 'high'
 
 
     def init(self):
@@ -62,7 +89,7 @@ class wsock:
         self.stc.on_resize(400, 300)
         self.stc.init()
         self.stc.clean_data()
-        self.stc.load_data(file=sys.argv[1])
+        self.stc.load_data(file = self.data_file)
         self.stc.update_floor()
 
         glutDisplayFunc(self.display)
