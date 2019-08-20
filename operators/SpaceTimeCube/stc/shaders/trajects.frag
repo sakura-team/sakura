@@ -11,9 +11,5 @@ void main() {
     else
         gl_FragDepth = gl_FragCoord.z;
 
-    if (vert_color.w != 0.5)
-        fragColor = vert_color;
-    else
-        fragColor = vec4(vert_color.xyz, 1.0);
-
+    fragColor = vert_color;
 }

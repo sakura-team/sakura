@@ -69,8 +69,11 @@ function init_server() {
             else if (j.key == 'dates') {
                 update_dates(j.value);
             }
-            else if (['click',
-                      'move',
+            else if (j.key == 'click') {
+                console.log(j);
+                send('image', [imageQ]);
+            }
+            else if (['move',
                       'wheel',
                       'hide_trajectories',
                       'show_trajectories',
@@ -300,7 +303,6 @@ canvas.addEventListener('mousemove', function(evt) {
 canvas.addEventListener('mousedown', function(evt) {
     imageQ = 'low';
     evt.preventDefault();
-    var button = 'right';
     var pos = getMousePos(canvas, evt);
     send('click', [evt.button, 0, pos.x, pos.y]);
 }, false);
@@ -308,7 +310,6 @@ canvas.addEventListener('mousedown', function(evt) {
 canvas.addEventListener('mouseup', function(evt) {
     imageQ = 'high';
     evt.preventDefault();
-    var button = 'right';
     var pos = getMousePos(canvas, evt);
     send('click', [evt.button, 1, pos.x, pos.y]);
 }, false);

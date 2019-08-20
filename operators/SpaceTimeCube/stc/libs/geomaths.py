@@ -9,6 +9,11 @@ import math, copy, random
 def distance_2D(a, b):
     return math.sqrt(   (b[0]-a[0])**2 +
                         (b[1]-a[1])**2  )
+def mult_v_f(v, f):
+    res = []
+    for _v in v:
+        res.append(_v*f)
+    return res
 
 def m_mult(a, b):
     i, j = 0, 0

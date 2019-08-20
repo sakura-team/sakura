@@ -8,6 +8,7 @@ import copy
 from . import geomaths as gm
 from . import mercator as mrc
 
+LOW_LIGHT = .3
 
 class trajectory:
     def __init__(self, id=0):
@@ -155,27 +156,39 @@ class data:
         print('\ttime duration:\t'+ str(datetime.timedelta(seconds=(self.maxs[0] - self.mins[0]))))
         print('\tCube size:\t\t'+str(self.maxs[1:] - self.mins[1:] )+'\n')
 
-    def compute_geometry(self, semantic = False):
+    def compute_geometry(self, selected = []):
 
         vertices    = []
         colors      = []
         sem_colors  = []
+
         for t, i in zip(self.trajects, range(len(self.trajects))):
             if i in self.displayed:
                 t.display_indice =  len(vertices)
                 vertices.append(t.points[0])
                 colors.append([0,0,0,0])
+
                 if len(t.sem_colors) > 0:
                     sem_colors.append([0,0,0,0])
-                    for p, i in zip(t.points, range(len(t.points))):
+                    for p, i2 in zip(t.points, range(len(t.points))):
                         vertices.append(p)
-                        colors.append(t.color)
-                        sem_colors.append(t.sem_colors[i])
+                        col  = copy.copy(t.color)
+                        scol = copy.copy(t.sem_colors[i2])
+                        if len(selected) > 0 and not i in selected:
+                            col[3] = LOW_LIGHT
+                            scol[3] = LOW_LIGHT
+                        colors.append(col)
+                        sem_colors.append(scol)
                     sem_colors.append([0,0,0,0])
                 else:
                     for p in t.points:
                         vertices.append(p)
-                        colors.append(t.color)
+                        col = copy.copy(t.color)
+                        if len(selected):
+                            if not i in selected:
+                                col[3] = LOW_LIGHT
+                        colors.append(col)
+
                 vertices.append(t.points[-1])
                 colors.append([0,0,0,0])
 

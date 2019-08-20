@@ -129,9 +129,10 @@ class wsock:
             glutPostRedisplay()
 
     def mclick(self, button, state, x, y):
-        self.stc.on_mouse_click(button, state, x, y)
+        res = self.stc.on_mouse_click(button, state, x, y)
         if not self.server_mode:
             glutPostRedisplay()
+        return res
 
     def mmotion(self, x, y):
         self.stc.on_mouse_motion(x, y)

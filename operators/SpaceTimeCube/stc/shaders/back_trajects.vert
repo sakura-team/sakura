@@ -27,4 +27,6 @@ void main() {
 
     vert_cam_pos  = projection_mat * modelview_mat * vec4(cam_pos, 1);
     vert_color = in_color;
+    //vec4 tmp = in_color;
+    //vert_color = vec4(1,1,1,0);
 }

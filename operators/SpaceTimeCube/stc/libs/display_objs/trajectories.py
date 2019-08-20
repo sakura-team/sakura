@@ -63,5 +63,5 @@ class trajectories:
                             ['in_vertex', 'in_color'],
                             glsl_version)
 
-    def geometry(self, data):
-        self.vertices, self.colors, self.sem_colors = np.array(data.compute_geometry())
+    def geometry(self, data, selected = []):
+        self.vertices, self.colors, self.sem_colors = np.array(data.compute_geometry(selected))

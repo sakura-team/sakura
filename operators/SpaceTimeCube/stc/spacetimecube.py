@@ -72,7 +72,7 @@ class SpaceTimeCube:
         self.width = 100
         self.height = 100
         self.projo.wiggle = False
-        self.thickness_of_backs = 8 #pixels
+        self.thickness_of_backs = 4 #pixels
         self.hovered_target     = -1
         self.selected_trajects  = []
         self.displayed_trajects = []
@@ -86,6 +86,7 @@ class SpaceTimeCube:
     def init(self):
         self.mouse = [ -1, -1 ]
         self.imode = 'none'
+        self.idate = time.time()
         self.cube.reset()
         glEnable(GL_MULTISAMPLE)
         glEnable(GL_DEPTH_TEST)
@@ -402,7 +403,7 @@ class SpaceTimeCube:
         self.cube.update_arrays()
         self.lines.update_arrays()
 
-    def compute_closest_color(self, edge_size):
+    def closest_color(self, edge_size):
         '''Reads a square from the framebuffer,
             and returns id of the closest color'''
         pixels = glReadPixels(self.mouse[0]-edge_size/2, self.height-self.mouse[1]-edge_size/2, edge_size, edge_size, GL_RGB, GL_UNSIGNED_BYTE)
@@ -427,14 +428,15 @@ class SpaceTimeCube:
         except:
             return -1
 
-    def compute_hovered_target(self):
+    def hovered_trajectory(self):
         glClearColor(1.0,1.0,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
 
         glDisable(GL_MULTISAMPLE)
+        glDisable(GL_BLEND)
         self.trajs.update_arrays('trajectories')
         sh.display_list([self.trajs.sh])
-        ccolor = self.compute_closest_color(10)
+        ccolor = self.closest_color(10)
         t_indice = -1
         if ccolor != -1 and ccolor in self.data.trajects_ids:
             t_indice = self.data.trajects_ids.index(ccolor)
@@ -442,10 +444,11 @@ class SpaceTimeCube:
         if self.trajs.display_color != 'trajectories':
             self.trajs.update_arrays()
 
+        glEnable(GL_BLEND)
         glEnable(GL_MULTISAMPLE)
         return t_indice
 
-    def compute_hovered_point(self, traject):
+    def hovered_point(self, traject):
         '''Here we compute the closest trajectory point from the mouse'''
         glClearColor(1.0,1.0,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -462,7 +465,7 @@ class SpaceTimeCube:
 
         self.trajs.update_arrays('trajectories')
         sh.display_list([self.sh_shadows, self.trajs.sh])
-        p_indice = self.compute_closest_color(10)
+        p_indice = self.closest_color(10)
 
         self.trajs.vertices = copy.copy(cop_vertices)
         self.trajs.colors = copy.copy(cop_colors)
@@ -471,7 +474,7 @@ class SpaceTimeCube:
         glEnable(GL_MULTISAMPLE)
         return p_indice
 
-
+    '''
     def update_transparency(self, indice, value):
         t_ind = self.data.trajects[indice].display_indice
         t_len = len(self.data.trajects[indice].points)
@@ -484,13 +487,14 @@ class SpaceTimeCube:
         if len(sarr) > 0:
             sarr[:, 3] = value
             self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len] = sarr
-
+    '''
 
     def display(self):
         # Hovering
         if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]) and self.imode == 'none':
-            t_indice = self.compute_hovered_target()
+            self.hovered_target = self.hovered_trajectory()
 
+            '''
             if self.trajs.display_color == 'trajectories':
                 #Highlighting the trajectory
                 if t_indice != -1 and not t_indice in self.selected_trajects:
@@ -506,19 +510,20 @@ class SpaceTimeCube:
                     self.hovered_target =  -1
 
             self.trajs.update_arrays()
+            '''
 
             lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
             quad_vertices = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
 
             #Computing the closest point
-            if t_indice != -1 and self.imode == 'none':
-                p_indice = self.compute_hovered_point(t_indice)
+            if self.hovered_target != -1 and self.imode == 'none':
+                p_indice = self.hovered_point(self.hovered_target)
                 if p_indice != -1:
                     try:
-                        pt = self.data.trajects[t_indice].points[p_indice]
+                        pt = self.data.trajects[self.hovered_target].points[p_indice]
                     except:
-                        print(t_indice, len(self.data.trajects))
-                        print(p_indice, len(self.data.trajects[t_indice].points))
+                        print(self.hovered_target, len(self.data.trajects))
+                        print(p_indice, len(self.data.trajects[self.hovered_target].points))
                     lines_vertices = self.data.compute_line_vertices(pt)
                     quad_vertices = self.data.compute_quad_vertices(pt)
                     lon, lat = mc.lonlat_from_mercator(pt[1], pt[2])
@@ -528,8 +533,8 @@ class SpaceTimeCube:
                         self.data.curr_floor_date = pt[0]
                     else:
                         self.data.curr_floor_date = self.data.mins[0]
-                    self.current_point = [t_indice, p_indice]
-                    self.app.push_event('hovered_gps_point', pt[0], lon, lat, pt[3], self.data.trajects_names[t_indice])
+                    self.current_point = [self.hovered_target, p_indice]
+                    self.app.push_event('hovered_gps_point', pt[0], lon, lat, pt[3], self.data.trajects_names[self.hovered_target])
                     self.send_new_dates()
             else:
                 if self.current_point != None:
@@ -544,13 +549,16 @@ class SpaceTimeCube:
             self.quad.update_arrays()
 
 
+        '''
         if self.trajs.display_color != 'trajectories':
             for i in range(len(self.data.trajects)):
                 self.update_transparency(i, 0.5)
             self.trajs.update_arrays()
+        '''
 
         #Selection
         if len(self.new_selections):
+            '''
             while len(self.new_selections):
                 i = self.new_selections[0]
                 if i not in self.selected_trajects:
@@ -561,31 +569,39 @@ class SpaceTimeCube:
                     index = self.selected_trajects.index(self.new_selections.pop(0))
                     self.selected_trajects.pop(index)
             self.trajs.update_arrays()
+            '''
+            if len(self.new_selections):
+                while len(self.new_selections):
+                    i = self.new_selections[0]
+                    if i not in self.selected_trajects:
+                        self.selected_trajects.append(self.new_selections.pop(0))
+                    else:
+                        index = self.selected_trajects.index(self.new_selections.pop(0))
+                        self.selected_trajects.pop(index)
+                self.trajs.geometry(self.data, self.selected_trajects)
+                self.trajs.update_arrays()
+
 
         # Main display
         glClearColor(.31,.63,1.0,1.0)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
+        if self.geo_shapes.displayed and self.floor_shapes_file:
+            sh.display_list([self.fcontours.sh, self.fareas.sh])
+        sh.display_list([self.floor.sh])
+
         if self.SAKURA_GPU_PERFORMANCE == 'low':
             if self.display_shadows:
-                sh.display_list([self.sh_shadows, self.trajs.sh])
-            else:
-                sh.display_list([self.trajs.sh])
-            if self.geo_shapes.displayed and self.floor_shapes_file:
-                sh.display_list([self.fcontours.sh, self.fareas.sh])
-            sh.display_list([self.cube.sh, self.lines.sh, self.floor.sh])
+                sh.display_list([self.sh_shadows])
+            sh.display_list([self.trajs.sh])
         else:
             if self.display_shadows:
                 if self.cube.height > 0.01:
                     sh.display_list([self.sh_back_shadows])
-                sh.display_list([self.sh_shadows, self.sh_back_trajects, self.trajs.sh])
-            else:
-                sh.display_list([self.sh_back_trajects, self.trajs.sh])
+                sh.display_list([self.sh_shadows])
+            sh.display_list([self.sh_back_trajects])
 
-            if self.geo_shapes.displayed and self.floor_shapes_file:
-                sh.display_list([self.fcontours.sh, self.fareas.sh])
-            sh.display_list([self.cube.sh, self.lines.sh, self.floor.sh])
-
+        sh.display_list([self.cube.sh, self.lines.sh])
 
     def send_new_dates(self, th_value = None):
         if len(self.cube.proj_corners_bottom):
@@ -617,21 +633,43 @@ class SpaceTimeCube:
         #projecting cube corners
         self.compute_proj_cube_corners()
 
+        msg = [{'action': 'none'}]
         if state == UP: #leaving any interaction modes
+            ndate = time.time()
+            if self.imode == 'double-click':
+                self.unselect_trajectories(self.selected_trajects)
+                self.idate = ndate
+                msg = [{'action': 'unselectall'}]
+            elif ndate - self.idate < 0.15 and self.hovered_target != -1:
+                if not self.hovered_target in self.selected_trajects:
+                    self.select_trajectories([self.hovered_target])
+                    msg = [{'action': 'select', 'id': self.hovered_target}]
+                else:
+                    self.unselect_trajectories([self.hovered_target])
+                    msg = [{'action': 'unselect', 'id': self.hovered_target}]
+
             self.cube.reset()
             self.imode = 'none'
-            return
-
-        if self.cube.current_edge == -1: #Not on an edge !!!
-            if button == LEFT_BUTTON and state == DOWN:
-                self.imode = 'rotation'
-            elif button == RIGHT_BUTTON and state == DOWN:
-                self.imode = 'translation'
-        else:   #On an edge !!!!
-            if button == LEFT_BUTTON and state == DOWN:
-                self.imode = 'scale'
-            elif button == RIGHT_BUTTON and state == DOWN:
-                self.imode = self.cube.crop_mode(self.mouse)
+        else: #STATE == DOWN
+            if self.cube.current_edge == -1: #Not on an edge !!!
+                if button == LEFT_BUTTON:
+                    ndate = time.time()
+                    if ndate - self.idate < 0.2:
+                            self.imode = 'double-click'
+                    else:
+                        self.imode = 'rotation'
+                    self.idate = time.time()
+                elif button == RIGHT_BUTTON:
+                    self.imode = 'translation'
+                    self.idate = time.time()
+            else:   #On an edge !!!!
+                if button == LEFT_BUTTON:
+                    self.imode = 'scale'
+                    self.idate = time.time()
+                elif button == RIGHT_BUTTON:
+                    self.imode = self.cube.crop_mode(self.mouse)
+                    self.idate = time.time()
+        return msg
 
     def on_mouse_motion(self, x, y):
         #if self.imode == 'none':
