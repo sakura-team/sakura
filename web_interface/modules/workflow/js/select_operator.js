@@ -257,7 +257,7 @@ function select_op_new_operator(id, removable) {
     $(ndiv).append(div1.append(table));
 
     //exclamation
-    var excl_div = $('<div>', {style: "position: absolute; top:7px; left: 11px;visibility: hidden;"});
+    var excl_div = $('<div>', {style: "position: absolute; top:8px; left: 13px;visibility: hidden;"});
     var excl_span = $('<span>', {class: "glyphicon glyphicon-exclamation-sign", style: "cursor: pointer;"});
     excl_div.append(excl_span);
 
@@ -269,47 +269,6 @@ function select_op_new_operator(id, removable) {
     }
     $(ndiv).append(excl_div);
 
-    /*
-    if (removable) {
-        ndiv.id = "select_op_selected_"+cl.id+'_rem';
-        s = '   <div> \
-                    <table> \
-                        <tr> \
-                            <td align="center">'+svg+ '</td> \
-                            <td valign="top"> <span class="glyphicon glyphicon-remove" onclick="select_op_delete_op(\''+cl.id+'\');" style="cursor: pointer;"></td>';
-    }
-    else {
-        ndiv.id = "select_op_selected_"+cl.id+"_static";
-        ndiv.style.zIndex = '2';
-        ndiv.classList.add("sakura_static_operator");
-        s = '   <div> \
-                    <table> \
-                        <tr> \
-                            <td align="center">
-                            <div draggable="true" ondragstart="dragging_svg(event,\''+ndiv.id+'\')">'+svg+ '</div></td> \
-                        </tr>';
-    }
-
-    var l = cl.name.length;
-    var fname = cl.name;
-    if (l > 7) {
-        fname = cl.name.substring(0,7)+'.';
-    }
-
-    s += '<tr><td align="center"> <font size="1">'+fname+'</font></td></tr>';
-    s += '</table>';
-
-    if (!removable)
-      s += '<div style="position: absolute; top:-5px; left: 32px;visibility: hidden;"> \
-                <span class="glyphicon glyphicon-question-sign" style="cursor: pointer;"/> \
-                </div>';
-    s += '<div style="position: absolute; font-size: 1.2em; top:7px; left: 11px;visibility: hidden;"> \
-            <span class="glyphicon glyphicon-exclamation-sign" style="cursor: pointer;"/> \
-        </div>';
-    s += '</div>';
-
-    ndiv.innerHTML = s;
-    */
     return (ndiv);
 }
 
