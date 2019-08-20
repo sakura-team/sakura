@@ -21,7 +21,7 @@ class wsock:
 
     def print_help(self):
         print()
-        print('usage: exe.py -data csv_file_name [-h] [-help] [-server] [-color path]\n \
+        print('usage: stc_ws.py -data csv_path [-h] [-help] [-server] [-color path]\n \
                 [-shape path] [-performance string] [-shadows bool]')
         print()
         print("  h, help\t: print this help")
