@@ -22,7 +22,7 @@ class wsock:
     def print_help(self):
         print()
         print('usage: stc_ws.py -data csv_path [-h] [-help] [-server] [-color path]\n \
-                [-shape path] [-performance string] [-shadows bool]')
+                [-shape path] [-performance string] [-shadows bool] [-verbose]')
         print()
         print("  h, help\t: print this help")
         print("  data\t\t: csv file path (mandatory)")
@@ -31,6 +31,7 @@ class wsock:
         print("  shape\t\t: shape file path (no shapes if option not defined)")
         print("  performance\t: high (default), low")
         print("  shadows\t: yes (default), no")
+        print("  verbose\t: display some activaty infos in prompt")
         print()
 
     def __init__(self):
@@ -63,6 +64,9 @@ class wsock:
             ind = sys.argv.index('-shadows')
             if sys.argv[ind+1] != 'yes':
                 self.stc.toggle_shadows(False)
+
+        if '-verbose' in sys.argv:
+            self.stc.verbose = True
 
         if '-performance' in sys.argv:
             ind = sys.argv.index('-performance')

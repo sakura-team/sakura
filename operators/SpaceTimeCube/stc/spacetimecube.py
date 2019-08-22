@@ -47,6 +47,7 @@ class SpaceTimeCube:
         self.projo = pr.projector(position = [0,0,2], viewpoint= [0,0,0])
 
         self.label          = "3D cube"
+        self.verbose        = False
 
         #Shaders
         self.sh_shadows         = sh.shader()
@@ -337,18 +338,32 @@ class SpaceTimeCube:
             self.data.add(chunk)
         elif file != '':
             if self.debug:
-                print('\t\33[1;32mReading data...\33[m', end='')
-            sys.stdout.flush()
+                print('\t\33[1;32mReading data file...\33[m', end='')
+                sys.stdout.flush()
+
+            if self.verbose:
+                print('\n\t\t\33[1;32mRec from csv...\33[m', end='')
+                sys.stdout.flush()
             big_chunk = np.recfromcsv(file, delimiter=',', encoding='utf-8')
+            if self.verbose:
+                print('\t', len(big_chunk), 'lines')
+                sys.stdout.flush()
 
             if type(big_chunk[0][1]) != int:
+
                 #convert
                 for i in range(len(big_chunk)):
+                    if self.verbose:
+                        print('\r\t\t\33[1;32mTimestamps to dates...\33[m '+str(int(i/len(big_chunk)*100))+'%', end='')
+                        sys.stdout.flush()
                     d = big_chunk[i][1]
                     if d.find('24:00') != -1:
                         d = d.replace('24:00', '23:59')
                     d = datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
                     big_chunk[i][1] = int(d.strftime("%s"))
+                if self.verbose:
+                    print('\r\t\t\33[1;32mTimestamps to dates...\33[m 100%')
+                    sys.stdout.flush()
 
                 #change type
                 dt = big_chunk.dtype
@@ -357,10 +372,28 @@ class SpaceTimeCube:
                 dt[1] = ('date', np.dtype('int'))
                 big_chunk = big_chunk.astype(dt)
 
-            self.data.add(big_chunk[ : int(len(big_chunk)/2)])
-            self.data.add(big_chunk[int(len(big_chunk)/2) : ])
-            if self.debug:
-                print('\t\tOk')
+            nb_pieces = 20
+            piece = int(len(big_chunk)/nb_pieces)
+
+            start_t = time.time()
+            curr_t = 0
+            for i in range(nb_pieces-1):
+                if self.verbose:
+                    est_time = '...'
+                    if i != 0:
+                        est_time = str(int(curr_t/i*nb_pieces))+'s'
+                    print('\r\t\t\33[1;32mLines to data structure...\33[m '+
+                                str(int(i/nb_pieces*100))+
+                                '%  (estimated time: '+est_time+')', end='')
+                    sys.stdout.flush()
+                self.data.add(big_chunk[ i*piece: (i+1)*piece])
+                curr_t = time.time() - start_t
+
+            self.data.add(big_chunk[ (nb_pieces-1)*piece: ])
+            print('\r\t\t\33[1;32mLines to data structure...\33[m 100%')
+
+            if self.debug and not self.verbose:
+                print('\tOk')
         sys.stdout.flush()
 
         self.trajs.geometry(self.data)
