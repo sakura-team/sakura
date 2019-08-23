@@ -1,5 +1,22 @@
 import pony.orm
+import numpy as np
 from sakura.common.errors import APIInvalidRequest
+
+def pack(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
+        return tuple(o.pack() for o in obj.select())
+    elif hasattr(obj, 'pack'):
+        return obj.pack()
+    elif hasattr(obj, '_asdict'):
+        return obj._asdict()
+    elif hasattr(obj, '__iter__'):
+        return tuple(pack(o) for o in obj)
+    elif hasattr(obj, 'item'):
+        return obj.item()   # convert numpy scalar to native
+    else:
+        return obj
 
 class APILevel:
     def __init__(self):

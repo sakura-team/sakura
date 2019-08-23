@@ -1,4 +1,4 @@
-from sakura.hub.web.apitools import api_init
+from sakura.hub.web.apitools import api_init, pack
 from sakura.hub.code import list_code_revisions, list_operator_subdirs
 
 api = api_init()
@@ -12,7 +12,7 @@ class GuiToHubAPI:
     # Daemons
     @api.daemons.list
     def list_daemons(self):
-        return self.context.daemons
+        return pack(self.context.daemons)
 
     ########################################
     # Datastores
@@ -24,11 +24,11 @@ class GuiToHubAPI:
     # Operators
     @api.op_classes.list
     def list_operators_classes(self):
-        return self.context.op_classes
+        return pack(self.context.op_classes)
 
     @api.op_classes.__getitem__.info
     def get_operator_class_info(self, cls_id):
-        return self.context.op_classes[cls_id]
+        return pack(self.context.op_classes[cls_id])
 
     @api.op_classes.register
     def register_op_class(self, **cls_repo_info):
@@ -41,7 +41,8 @@ class GuiToHubAPI:
     # instantiate an operator and return the instance info
     @api.operators.create
     def create_operator_instance(self, dataflow_id, cls_id):
-        return self.dataflows[dataflow_id].create_operator_instance(cls_id)
+        op = self.dataflows[dataflow_id].create_operator_instance(cls_id)
+        return op.pack()
 
     # delete operator instance and links involved
     @api.operators.__getitem__.delete
@@ -51,7 +52,7 @@ class GuiToHubAPI:
     # returns info about operator instance: cls_name, inputs, outputs, parameters
     @api.operators.__getitem__.info
     def get_operator_instance_info(self, op_id):
-        return self.context.op_instances[op_id]
+        return pack(self.context.op_instances[op_id])
 
     @api.operators.__getitem__.next_events
     def operator_instance_next_events(self, op_id, timeout):
@@ -69,19 +70,19 @@ class GuiToHubAPI:
 
     @api.operators.__getitem__.inputs.__getitem__.info
     def get_operator_input_info(self, op_id, in_id):
-        return self.context.op_instances[op_id].input_plugs[in_id]
+        return pack(self.context.op_instances[op_id].input_plugs[in_id])
 
     @api.operators.__getitem__.inputs.__getitem__.get_range
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
-        return self.context.op_instances[op_id].input_plugs[in_id].get_range(row_start, row_end)
+        return pack(self.context.op_instances[op_id].input_plugs[in_id].get_range(row_start, row_end))
 
     @api.operators.__getitem__.outputs.__getitem__.info
     def get_operator_output_info(self, op_id, out_id):
-        return self.context.op_instances[op_id].output_plugs[out_id]
+        return pack(self.context.op_instances[op_id].output_plugs[out_id])
 
     @api.operators.__getitem__.outputs.__getitem__.get_range
     def get_operator_output_range(self, op_id, out_id, row_start, row_end):
-        return self.context.op_instances[op_id].output_plugs[out_id].get_range(row_start, row_end)
+        return pack(self.context.op_instances[op_id].output_plugs[out_id].get_range(row_start, row_end))
 
     @api.operators.__getitem__.outputs.__getitem__.get_link_id
     def get_operator_outputplug_link_id(self, op_id, out_id):
@@ -89,7 +90,7 @@ class GuiToHubAPI:
 
     @api.operators.__getitem__.internals.__getitem__.get_range
     def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):
-        return self.context.op_instances[op_id].internal_plugs[intern_id].get_range(row_start, row_end)
+        return pack(self.context.op_instances[op_id].internal_plugs[intern_id].get_range(row_start, row_end))
 
     @api.operators.__getitem__.fire_event
     def fire_operator_event(self, op_id, *args, **kwargs):
@@ -97,7 +98,7 @@ class GuiToHubAPI:
 
     @api.operators.__getitem__.opengl_apps.__getitem__.info
     def get_opengl_app_info(self, op_id, ogl_id):
-        return self.context.op_instances[op_id].opengl_apps[ogl_id]
+        return pack(self.context.op_instances[op_id].opengl_apps[ogl_id])
 
     @api.operators.__getitem__.opengl_apps.__getitem__.fire_event
     def fire_opengl_app_event(self, op_id, ogl_id, *args, **kwargs):
@@ -144,7 +145,7 @@ class GuiToHubAPI:
     # Links
     @api.links.__getitem__.info
     def get_link_info(self, link_id):
-        return self.context.links[link_id]
+        return pack(self.context.links[link_id])
 
     @api.links.create
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
@@ -190,7 +191,7 @@ class GuiToHubAPI:
 
     @api.datastores.list
     def list_datastores(self):
-        return self.datastores
+        return pack(self.datastores)
 
     @api.datastores.__getitem__.update
     def update_datastore_info(self, datastore_id, **kwargs):
@@ -202,7 +203,7 @@ class GuiToHubAPI:
 
     @api.databases.list
     def list_databases(self):
-        return self.databases
+        return pack(self.databases)
 
     @api.databases.__getitem__.info
     def get_database_info(self, database_id):
@@ -238,7 +239,7 @@ class GuiToHubAPI:
 
     @api.tables.__getitem__.info
     def get_table_info(self, table_id):
-        return self.context.tables[table_id]
+        return pack(self.context.tables[table_id])
 
     @api.tables.create
     def new_table(self, database_id, name, columns, **kwargs):
@@ -259,7 +260,7 @@ class GuiToHubAPI:
 
     @api.tables.__getitem__.get_rows
     def get_rows_from_table(self, table_id, row_start, row_end):
-        return self.context.tables[table_id].get_range(row_start, row_end)
+        return pack(self.context.tables[table_id].get_range(row_start, row_end))
 
     @api.tables.__getitem__.delete
     def delete_table(self, table_id):
@@ -338,8 +339,8 @@ class GuiToHubAPI:
                 login_or_email, current_password_or_rec_token, new_password)
 
     @api.users.current.info
-    def get_current_login_name(self):
-        return None if self.context.user is None else self.context.user
+    def get_current_login_info(self):
+        return None if self.context.user is None else self.context.user.pack()
 
     @api.users.list
     def list_all_users(self):

@@ -1,6 +1,5 @@
-import collections, numpy as np
 from contextlib import contextmanager
-from sakura.common.tools import JsonProtocol
+from sakura.common.tools import JSON_PROTOCOL
 from sakura.common.io import APIEndpoint
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
@@ -48,25 +47,6 @@ def get_web_session_wrapper(session_id):
             yield
     return web_session_wrapper
 
-class GUILocalAPIProtocol(JsonProtocol):
-    def fallback_handler(self, obj):
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, type) and hasattr(obj, 'select'):    # for pony entities
-            return tuple(o for o in obj.select())
-        elif hasattr(obj, 'pack'):
-            return obj.pack()
-        elif hasattr(obj, '_asdict'):
-            return obj._asdict()
-        elif hasattr(obj, '__iter__'):
-            return tuple(o for o in obj)
-        elif hasattr(obj, 'item'):
-            return obj.item()   # convert numpy scalar to native
-        else:
-            return super().fallback_handler(obj)
-
-GUI_LOCAL_API_PROTOCOL = GUILocalAPIProtocol()
-
 def rpc_manager(context, wsock):
     print('New GUI RPC connection.')
     # make wsock a file-like object
@@ -74,12 +54,13 @@ def rpc_manager(context, wsock):
     # manage api requests
     local_api = GuiToHubAPI(context)
     web_session_wrapper = get_web_session_wrapper(context.session.id)
-    handler = APIEndpoint(f, GUI_LOCAL_API_PROTOCOL, local_api,
+    handler = APIEndpoint(f, JSON_PROTOCOL, local_api,
                 session_wrapper = web_session_wrapper)
     context.session.num_ws += 1
     try:
         handler.loop()
     except BaseException as e:
+        print(e)
         pass    # hub must stay alive
     context.session.num_ws -= 1
     print('GUI RPC disconnected.')
