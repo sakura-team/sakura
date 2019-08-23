@@ -21,21 +21,21 @@ function display_as_nothing(div) {
 }
 
 function creation_operator_check_URL() {
-    var code_url = byID('operators_creation_url_input').value;
-    if (code_url == "") {
+    var repo_url = byID('operators_creation_url_input').value;
+    if (repo_url == "") {
         return;
     }
     var butt = byID('operators_creation_url_input_button');
     butt.innerHTML = '<span class="glyphicon glyphicon-hourglass"></span>';
     $('#operators_creation_sub_dir_refresh_icon').show();
 
-    sakura.apis.hub.misc.list_code_revisions(code_url).then(function(result) {
+    sakura.apis.hub.misc.list_code_revisions(repo_url).then(function(result) {
         var butt = byID('operators_creation_url_input_button');
         butt.innerHTML = '<span class="glyphicon glyphicon-search"></span>';
 
         display_as_success(byID('operators_creation_url_input_div'));
         fill_revision_select(result);
-        fill_sub_dir_select(code_url, result[0][0]);
+        fill_sub_dir_select(repo_url, result[0][0]);
 
         $("#operators_creation_div_step2").show();
         operators_creation_check_possible_submission();
@@ -82,11 +82,11 @@ function fill_revision_select(result) {
     select.selectpicker('refresh');
 }
 
-function fill_sub_dir_select(code_url, revision) {
+function fill_sub_dir_select(repo_url, revision) {
     var select = $('#operators_creation_sub_dir');
     select.empty();
     select.selectpicker('refresh');
-    sakura.apis.hub.misc.list_operator_subdirs(code_url, revision).then (function(result) {
+    sakura.apis.hub.misc.list_operator_subdirs(repo_url, revision).then (function(result) {
         result.forEach( function(item) {
           var opt = $('<option>', { value: item});
           opt.html(item);
@@ -123,11 +123,11 @@ function operators_creation_revision_change(event) {
     byID('operators_submit_button').disabled = true;
     $('#operators_creation_sub_dir_refresh_icon').show();
 
-    var code_url  = byID('operators_creation_url_input').value;
+    var repo_url  = byID('operators_creation_url_input').value;
     var select    = byID('operators_creation_revision');
     var opt       = select.options[select.selectedIndex];
     var revision  = opt.value;
-    fill_sub_dir_select(code_url, revision);
+    fill_sub_dir_select(repo_url, revision);
 }
 
 function operators_creation_check_possible_submission() {

@@ -55,7 +55,8 @@ setup(
                             'sakura-daemon = sakura.daemon.daemon:run',
                             'sakura-encode-password = sakura.common.password:password_encoder_tool',
                             'sakura-shell = sakura.client.shell:run',
-                            'sakura-op-skeleton = sakura.client.opskeleton:run' ]
+                            'sakura-op-skeleton = sakura.client.opskeleton:run',
+                            'sakura-sandbox = sakura.client.sandbox:run' ]
     ),
     include_package_data = True
 )

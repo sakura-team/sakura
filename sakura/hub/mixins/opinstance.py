@@ -55,15 +55,23 @@ class OpInstanceMixin(BaseMixin):
         """Indicates how many instances of this class the user has."""
         return len(tuple(self.iterate_all_ops_of_cls()))
 
+    def pack_repo_info(self, **flags):
+        info = self.op_class.pack_repo_info(revision_prefix='', **flags)
+        if info['repo_type'] == 'git':
+            info.update(
+                code_ref = self.revision['code_ref'],
+                commit_hash = self.revision['commit_hash']
+            )
+        return info
+
     def pack(self):
         res = dict(
             op_id = self.id,
             cls_id = self.op_class.id,
             cls_name = self.op_class.metadata['name'],
-            code_ref = self.code_ref,
-            commit_hash = self.commit_hash,
             gui_data = self.gui_data,
             num_ops_of_cls = self.num_ops_of_cls,
+            **self.pack_repo_info(),
             **self.pack_status_info()
         )
         if self.enabled:
@@ -80,33 +88,26 @@ class OpInstanceMixin(BaseMixin):
         for param in self.sorted_params:
             param.recheck()
 
-    @property
-    def revision(self):
-        return self.code_ref, self.commit_hash
-
     def update_revision(self, code_ref, commit_hash, all_ops_of_cls=False):
         if all_ops_of_cls:
             ops = self.iterate_all_ops_of_cls()
         else:
             ops = [ self ]
         for op in ops:
-            old_revision = op.code_ref, op.commit_hash
-            op.code_ref, op.commit_hash = code_ref, commit_hash
+            old_revision = op.revision
+            op.revision = dict(code_ref = code_ref, commit_hash = commit_hash)
             try:
                 op.reload_on_daemon()
             except:
                 # failed, restore
-                op.code_ref, op.commit_hash = old_revision
+                op.revision = old_revision
                 op.reload_on_daemon()
                 raise
 
     def instanciate_on_daemon(self):
         self.daemon_api.create_operator_instance(
             self.id,
-            self.op_class.code_url,
-            self.code_ref,
-            self.commit_hash,
-            self.op_class.code_subdir
+            **self.pack_repo_info(include_sandbox_dir=True)
         )
         self.resync_params()
         # we have it instanciated
@@ -137,10 +138,7 @@ class OpInstanceMixin(BaseMixin):
     def reload_on_daemon(self):
         self.daemon_api.reload_operator_instance(
             self.id,
-            self.op_class.code_url,
-            self.code_ref,
-            self.commit_hash,
-            self.op_class.code_subdir
+            **self.pack_repo_info(include_sandbox_dir=True)
         )
         self.resync_params()
     def on_daemon_disconnect(self):
@@ -160,25 +158,10 @@ class OpInstanceMixin(BaseMixin):
                 return False
         return True
     @classmethod
-    def create_instance(cls, dataflow, op_cls_id, revision):
+    def create_instance(cls, dataflow, op_cls_id, **revision_kwargs):
         context = get_context()
-        # if not provided, select a revision (commit hash) appropriate for this user:
-        # - if he has already instanciated operators of this class, and all of them
-        #   are linked to the same revision, re-use this revision
-        # - otherwise use the default revision defined for this class of operators
-        if revision is None:
-            revisions = set()
-            for op in cls.select():
-                if op.op_class.id == op_cls_id and op.dataflow.owner == context.user.login:
-                    revisions.add(op.revision)
-            if len(revisions) == 1:
-                revision = revisions.pop()
-            else:
-                revision = context.op_classes[op_cls_id].default_revision
-        code_ref, commit_hash = revision
         # create in local db
-        op = cls(daemon = None, dataflow = dataflow, op_class = op_cls_id,
-                 code_ref = code_ref, commit_hash = commit_hash)
+        op = cls(daemon = None, dataflow = dataflow, op_class = op_cls_id, **revision_kwargs)
         # refresh op id
         context.db.commit()
         # run on most appropriate daemon

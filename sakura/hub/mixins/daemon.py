@@ -62,16 +62,7 @@ class DaemonMixin:
         return daemon
 
     def prefetch_code(self):
-        commit_refs = set()
-        for op_cls in get_context().op_classes.select():
-            # code of operator instances
-            for op in op_cls.op_instances:
-                commit_refs.add((op_cls.code_url, op.code_ref, op.commit_hash))
-            # default code ref of op_class
-            commit_refs.add((op_cls.code_url, op_cls.default_code_ref, op_cls.default_commit_hash))
-        # fetch all this
-        for ref in commit_refs:
-            self.api.prefetch_code(*ref)
+        get_context().op_classes.prefetch_code(self.api)
 
     def restore_op_instances(self):
         for op in self.op_instances:

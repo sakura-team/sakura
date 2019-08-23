@@ -59,8 +59,7 @@ def define_schema(db):
     class OpInstance(db.Entity, OpInstanceMixin):
         daemon = Optional(Daemon)
         dataflow = Required(Dataflow)
-        code_ref = Required(str)
-        commit_hash = Required(str)
+        revision = Optional(Json, default = {})
         op_class = Required(OpClass)
         gui_data = Optional(str)
         uplinks = Set('Link')

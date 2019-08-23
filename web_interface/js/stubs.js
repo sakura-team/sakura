@@ -16,7 +16,7 @@ function buildListStub(idDiv,result,elt) {
     var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
 
     var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Owner', 'CodeURL', 'SubDir'];
-    var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'owner', 'code_url', 'subdir'];
+    var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'owner', 'repo_url', 'subdir'];
 
     new_row_head.append('<th>Name</th>');
 
@@ -238,7 +238,7 @@ function listRequestStub(idDiv, n, elt, bd) {
                                 'date': op.date,
                                 'owner': op.owner,
                                 'modif': op.modification_date,
-                                'code_url': op.code_url,
+                                'repo_url': op.repo_url,
                                 'subdir': op.subdir};
 
                 //Display of undefined fields

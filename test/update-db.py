@@ -14,7 +14,7 @@ if len(missing_op_dirs) > 0:
 for op_dir in missing_op_dirs:
     print('Registering ' + op_dir, end='... ')
     try:
-        api.op_classes.register(SAKURA_REPO_URL, 'branch:master', master_commit_hash, op_dir)
+        api.op_classes.register_from_git_repo(SAKURA_REPO_URL, 'branch:master', master_commit_hash, op_dir)
     except:
         print('FAILED. Ignored. Probably this operator does not exist in master branch.')
         continue

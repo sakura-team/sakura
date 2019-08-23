@@ -184,6 +184,20 @@ def run_cmd(cmd, cwd=None, **options):
         os.chdir(str(saved_cwd))
     return status.stdout.decode(sys.stdout.encoding)
 
+def yield_operator_subdirs(repo_dir):
+    # find all operator.py file
+    for op_py_file in repo_dir.glob('**/operator.py'):
+        op_dir = op_py_file.parent
+        # verify we also have the icon file
+        if not (op_dir / 'icon.svg').exists():
+            continue
+        # discard probably unwanted ones (virtual env, hidden files)
+        op_subpath = str(op_dir.relative_to(repo_dir))
+        if '/venv' in op_subpath or '/.' in op_subpath:
+            continue
+        # ok for this one
+        yield op_dir
+
 class JsonProtocol:
     def adapt(self, obj):
         if isinstance(obj, str) and obj.startswith('__bytes_'):

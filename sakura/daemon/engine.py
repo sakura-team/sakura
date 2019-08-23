@@ -31,9 +31,9 @@ class DaemonEngine(object):
         return dict(name=self.name,
                     datastores=tuple(ds.pack() for ds in self.datastores.values()),
                     origin_id = self.origin_id)
-    def create_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
+    def create_operator_instance(self, op_id, **repo_info):
         try:
-            op_cls, op_dir = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
+            op_cls, op_dir = self.load_op_class(**repo_info)
             op = op_cls(op_id, op_dir)
             op.api = self.hub.operator_apis[op_id]
             op.construct()
@@ -47,9 +47,9 @@ class DaemonEngine(object):
         if op_id in self.op_instances:
             print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
             del self.op_instances[op_id]
-    def reload_operator_instance(self, op_id, code_url, code_ref, commit_hash, code_subdir):
+    def reload_operator_instance(self, op_id, **repo_info):
         self.delete_operator_instance(op_id)
-        self.create_operator_instance(op_id, code_url, code_ref, commit_hash, code_subdir)
+        self.create_operator_instance(op_id, **repo_info)
     def is_foreign_operator(self, op_id):
         return op_id not in self.op_instances
     def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id,
@@ -103,20 +103,31 @@ class DaemonEngine(object):
                     links.append((src_out_id, dst_in_id))
         dst_op.set_check_mode(False)
         return links
-    def load_op_class(self, code_url, code_ref, commit_hash, code_subdir):
-        worktree_dir = get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
-        return load_op_class(worktree_dir, code_subdir)
-    def get_op_class_metadata(self, code_url, code_ref, commit_hash, code_subdir):
-        op_cls, op_dir = self.load_op_class(code_url, code_ref, commit_hash, code_subdir)
-        return dict(
+    def load_op_class(self, code_subdir, repo_type, **other_repo_info):
+        if repo_type == 'git':
+            worktree_dir = get_worktree(
+                        self.code_workdir,
+                        other_repo_info['repo_url'],
+                        other_repo_info['code_ref'],
+                        other_repo_info['commit_hash'])
+        elif repo_type == 'sandbox':
+            worktree_dir = other_repo_info['sandbox_dir']
+        return load_op_class(worktree_dir, code_subdir, repo_type)
+    def get_op_class_metadata(self, code_subdir, **repo_info):
+        op_cls, op_dir = self.load_op_class(code_subdir, **repo_info)
+        metadata = dict(
             name = op_cls.NAME,
             tags = op_cls.TAGS,
             short_desc = op_cls.SHORT_DESC,
-            svg = op_cls.ICON,
-            commit_metadata = op_cls.COMMIT_INFO
+            svg = op_cls.ICON
         )
-    def prefetch_code(self, code_url, code_ref, commit_hash):
-        get_worktree(self.code_workdir, code_url, code_ref, commit_hash)
+        if hasattr(op_cls, 'COMMIT_INFO'):
+            metadata.update(
+                commit_metadata = op_cls.COMMIT_INFO
+            )
+        return metadata
+    def prefetch_code(self, repo_url, code_ref, commit_hash):
+        get_worktree(self.code_workdir, repo_url, code_ref, commit_hash)
     def list_code_revisions(self, repo_url):
         return list_code_revisions(repo_url)
     def list_operator_subdirs(self, repo_url, code_ref):

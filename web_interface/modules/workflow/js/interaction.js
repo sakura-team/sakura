@@ -135,7 +135,7 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
     }
     else if (val == 'Info') {
         var op_cl = class_from_id(parseInt(op_focus_id.split("_")[1]));
-        var url   = op_cl.code_url;
+        var url   = op_cl.repo_url;
         var dir   = op_cl.code_subdir;
         var rev   = op_cl.default_code_ref.split(":")[1];
         $('#sakura_operator_contextMenu').hide();

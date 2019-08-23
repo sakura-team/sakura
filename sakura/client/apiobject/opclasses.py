@@ -28,14 +28,26 @@ class APIOpClassDict:
     def __new__(cls, remote_api, d):
         class APIOpClassDictImpl(APIObjectRegistry(d)):
             """Sakura operator classes registry"""
-            def register(self, repo_url, default_code_ref, default_commit_hash, repo_subdir='/'):
-                """Registration of a new operator class"""
-                cls_info = remote_api.op_classes.register(
+            def register_from_git_repo(self, repo_url, default_code_ref, default_commit_hash, repo_subdir='/'):
+                """Registration of a new operator class from a git repository"""
+                return self.register(
                         repo_type = 'git',
                         repo_url = repo_url,
                         default_code_ref = default_code_ref,
                         default_commit_hash = default_commit_hash,
-                        repo_subdir = repo_subdir)
+                        repo_subdir = repo_subdir
+                )
+            def register_from_sandbox(self, sandbox_uuid, sandbox_dir, repo_subdir='/'):
+                """Registration of a new operator class from a sandbox process"""
+                return self.register(
+                        repo_type = 'sandbox',
+                        sandbox_uuid = sandbox_uuid,
+                        sandbox_dir = sandbox_dir,
+                        repo_subdir = repo_subdir
+                )
+            def register(self, **kwargs):
+                """Registration of a new operator class (generic procedure)"""
+                cls_info = remote_api.op_classes.register(**kwargs)
                 return APIOpClass(remote_api, cls_info['id'])
         return APIOpClassDictImpl()
 

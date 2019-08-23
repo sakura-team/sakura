@@ -4,18 +4,19 @@ from sakura.daemon.processing.operator import Operator
 from sakura.daemon.code.git import get_commit_metadata
 from sakura.daemon.code.importer import pathlib_import
 
-def load_op_class(worktree_dir, code_subdir):
+def load_op_class(worktree_dir, code_subdir, repo_type):
     op_dir = worktree_dir / code_subdir
     if not op_dir.exists():
         raise APIRequestError('Operator sub-directory specified was not found in this repository.')
     if not op_dir.is_dir():
         raise APIRequestError('Path specified for "operator sub-directory" is not a directory.')
-    if not (op_dir / 'operator.py').exists():
+    op_py = op_dir / 'operator.py'
+    if not op_py.exists():
         raise APIRequestError('No operator.py was found.')
     if not (op_dir / 'icon.svg').exists():
         raise APIRequestError('No icon.svg was found.')
     # load the module defined by operator.py
-    operator_module_path = '.'.join(op_dir.relative_to(worktree_dir).parts + ('operator',))
+    operator_module_path = '.'.join(tuple(op_dir.relative_to(worktree_dir).parts) + ('operator',))
     mod = pathlib_import(worktree_dir, operator_module_path, make_unique=True)
     # look for the Operator subclass defined in this module
     def match(obj):
@@ -31,5 +32,6 @@ def load_op_class(worktree_dir, code_subdir):
     icon_path = op_dir / 'icon.svg'
     with icon_path.open() as icon_file:
         op_cls.ICON = icon_file.read()
-    op_cls.COMMIT_INFO = get_commit_metadata(op_dir)
+    if repo_type == 'git':
+        op_cls.COMMIT_INFO = get_commit_metadata(op_dir)
     return op_cls, op_dir

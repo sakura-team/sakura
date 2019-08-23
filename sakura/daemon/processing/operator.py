@@ -126,17 +126,20 @@ class Operator:
         return tuple(self.iterate_file_tree(path))
     def iterate_file_tree(self, p):
         for f in p.iterdir():
-            if f.name in Operator.IGNORED_FILENAMES:
+            # note: calling str() below is mandatory if exploring
+            # the remote filesystem of a sandbox.
+            direntry_name = str(f.name)
+            if direntry_name in Operator.IGNORED_FILENAMES:
                 continue
             if f.is_dir():
                 yield dict(
-                    name = f.name,
+                    name = direntry_name,
                     is_dir = True,
                     dir_entries = self.get_file_tree(f)
                 )
             else:
                 yield dict(
-                    name = f.name,
+                    name = direntry_name,
                     is_dir = False
                 )
     def save_file_content(self, file_path, file_content):
