@@ -210,7 +210,10 @@ class wsock:
                     'set_updatable_floor':  self.stc.set_updatable_floor,
                     'reset_cube_height':    self.stc.reset_cube_height,
                     'get_shapes':           self.stc.get_shapes,
-                    'highlight_shapes':     self.stc.highlight_shapes
+                    'highlight_shapes':     self.stc.highlight_shapes,
+                    'select_trajects':      self.stc.select_trajects,
+                    'unselect_trajects':    self.stc.unselect_trajects,
+                    'unselect_all_trajects':self.stc.unselect_all_trajects
                     })
 
     def loop(self):

@@ -623,21 +623,21 @@ class SpaceTimeCube:
         if state == UP: #leaving any interaction modes
             ndate = time.time()
             if self.imode == 'double-click':
-                self.unselect_trajectories(self.selected_trajects)
+                self.unselect_trajects(self.selected_trajects)
                 self.idate = ndate
                 msg = [{'action': 'unselectall'}]
             elif ndate - self.idate < 0.15 and self.hovered_target != -1:
                 name = self.data.trajects_names[self.hovered_target]
                 if not self.hovered_target in self.selected_trajects:
-                    self.select_trajectories([self.hovered_target])
+                    self.select_trajects([self.hovered_target])
                     msg = [{'action': 'select', 'id': self.hovered_target, 'name': name}]
                 else:
-                    self.unselect_trajectories([self.hovered_target])
+                    self.unselect_trajects([self.hovered_target])
                     msg = [{'action': 'unselect', 'id': self.hovered_target, 'name': name}]
 
             self.cube.reset()
             self.imode = 'none'
-            
+
         else: #STATE == DOWN
             if self.cube.current_edge == -1: #Not on an edge !!!
                 if button == LEFT_BUTTON:
@@ -733,9 +733,9 @@ class SpaceTimeCube:
             self.floor.set_updatable_height(not self.floor.updatable_height)
         elif int(key) in range(0,10):
             if not int(key) in self.selected_trajects:
-                self.select_trajectories([int(key)])
+                self.select_trajects([int(key)])
             else:
-                self.unselect_trajectories([int(key)])
+                self.unselect_trajects([int(key)])
         else:
             print('\33[1;32m\tUnknown key\33[m', key)
 
@@ -803,7 +803,7 @@ class SpaceTimeCube:
         self.update_floor()
         return
 
-    def select_trajectories(self, l):
+    def select_trajects(self, l):
         for i in l:
             if i >= 0 and i < len(self.data.trajects):
                 if i not in self.selected_trajects:
@@ -811,13 +811,16 @@ class SpaceTimeCube:
             else:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
 
-    def unselect_trajectories(self, l):
+    def unselect_trajects(self, l):
         for i in l:
             if i >= 0 and i < len(self.data.trajects):
                 if i in self.selected_trajects:
                     self.new_selections.append(i)
             else:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
+
+    def unselect_all_trajects(self):
+        self.unselect_trajects(self.selected_trajects)
 
     def toggle_shadows(self, b):
         self.display_shadows = b

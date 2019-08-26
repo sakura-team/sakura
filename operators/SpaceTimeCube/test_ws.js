@@ -74,6 +74,9 @@ function init_server() {
                     console.log(j.value[0]);
                 send('image', [imageQ]);
             }
+            else if (j.key == 'unselect_all_trajects') {
+                send('image', [imageQ]);
+            }
             else if (['move',
                       'wheel',
                       'hide_trajectories',
@@ -170,7 +173,12 @@ function check_trajectory(index) {
         }
     }
     send(func, [l]);
-}
+  }
+
+  function unselect_all() {
+      send('unselect_all_trajects')
+  }
+
 
 function fill_shapes_dd() {
     nb_shapes = shapes.length;
