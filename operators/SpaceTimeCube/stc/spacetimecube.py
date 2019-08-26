@@ -386,11 +386,12 @@ class SpaceTimeCube:
                                 str(int(i/nb_pieces*100))+
                                 '%  (estimated time: '+est_time+')', end='')
                     sys.stdout.flush()
-                self.data.add(big_chunk[ i*piece: (i+1)*piece])
+                self.data.add(big_chunk[ i*piece: (i+1)*piece], meta = False)
                 curr_t = time.time() - start_t
 
-            self.data.add(big_chunk[ (nb_pieces-1)*piece: ])
+            self.data.add(big_chunk[ (nb_pieces-1)*piece: ], meta = False)
             print('\r\t\t\33[1;32mLines to data structure...\33[m 100%')
+            self.data.make_meta()
 
             if self.debug and not self.verbose:
                 print('\tOk')
@@ -674,12 +675,13 @@ class SpaceTimeCube:
                 self.idate = ndate
                 msg = [{'action': 'unselectall'}]
             elif ndate - self.idate < 0.15 and self.hovered_target != -1:
+                name = self.data.trajects_names[self.hovered_target]
                 if not self.hovered_target in self.selected_trajects:
                     self.select_trajectories([self.hovered_target])
-                    msg = [{'action': 'select', 'id': self.hovered_target}]
+                    msg = [{'action': 'select', 'id': self.hovered_target, 'name': name}]
                 else:
                     self.unselect_trajectories([self.hovered_target])
-                    msg = [{'action': 'unselect', 'id': self.hovered_target}]
+                    msg = [{'action': 'unselect', 'id': self.hovered_target, 'name': name}]
 
             self.cube.reset()
             self.imode = 'none'

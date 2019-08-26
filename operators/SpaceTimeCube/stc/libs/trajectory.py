@@ -42,7 +42,7 @@ class data:
     def clean(self):
         self.init()
 
-    def add(self, chunk):
+    def add(self, chunk, meta = True):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''
         for c in chunk:
             if len(self.trajects_names) == 0:
@@ -78,7 +78,8 @@ class data:
                 self.trajects[ind].semantics.append(arr)
 
         self.displayed = list(range(len(self.trajects)))
-        self.make_meta()
+        if meta:
+            self.make_meta()
 
     def make_meta(self):
         '''making meta data from current data: min and max times, size, ...'''

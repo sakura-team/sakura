@@ -70,7 +70,8 @@ function init_server() {
                 update_dates(j.value);
             }
             else if (j.key == 'click') {
-                console.log(j);
+                if (j.value[0].action != 'none')
+                    console.log(j.value[0]);
                 send('image', [imageQ]);
             }
             else if (['move',
