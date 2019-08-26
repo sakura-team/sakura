@@ -18,6 +18,7 @@ class trajectory:
         self.display_indice             = 0             # indice of begining of the trajectory in the whole array of data display
         self.semantics                  = []            # each point can have a semantic, then a color could be used for
         self.sem_colors                 = np.array([])
+        self.densities                  = []
 
 class data:
     def  __init__(self):
@@ -38,9 +39,13 @@ class data:
         self.colors_file    = None
         self.hl_semantic    = 0                 # the current semantic that gives the trakectory its color
         self.semantic_names = []
+        self.display_density = False
 
     def clean(self):
         self.init()
+
+    def toggle_density(self, b):
+        self.display_density = b
 
     def add(self, chunk, meta = True):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''
@@ -67,6 +72,15 @@ class data:
             ind = self.trajects_names.index(c[0])
             m = mrc.mercator(c['longitude'], c['latitude'], c['elevation'])
             self.trajects[ind].points.append([c[1], *m])
+
+            density = [1, 1]
+            if self.display_density == True:
+                try:
+                    density = [float(c['nb_trajs'])/10, 1]
+                    #density = [1, 1]
+                except:
+                    pass
+            self.trajects[ind].densities.append(density)
 
             self.semantic_names = []
             if len(c) > 5:  #We have a semantic
@@ -160,6 +174,7 @@ class data:
     def compute_geometry(self, selected = []):
 
         vertices    = []
+        densities   = []
         colors      = []
         sem_colors  = []
 
@@ -167,12 +182,14 @@ class data:
             if i in self.displayed:
                 t.display_indice =  len(vertices)
                 vertices.append(t.points[0])
+                densities.append(t.densities[0])
                 colors.append([0,0,0,0])
 
                 if len(t.sem_colors) > 0:
                     sem_colors.append([0,0,0,0])
-                    for p, i2 in zip(t.points, range(len(t.points))):
-                        vertices.append(p)
+                    for i2 in range(len(t.points)):
+                        vertices.append(t.points[i2])
+                        densities.append(t.densities[i2])
                         col  = copy.copy(t.color)
                         scol = copy.copy(t.sem_colors[i2])
                         if len(selected) > 0 and not i in selected:
@@ -182,8 +199,9 @@ class data:
                         sem_colors.append(scol)
                     sem_colors.append([0,0,0,0])
                 else:
-                    for p in t.points:
-                        vertices.append(p)
+                    for i2 in range(len(t.points)):
+                        vertices.append(t.points[i2])
+                        densities.append(t.densities[i2])
                         col = copy.copy(t.color)
                         if len(selected):
                             if not i in selected:
@@ -191,9 +209,10 @@ class data:
                         colors.append(col)
 
                 vertices.append(t.points[-1])
+                densities.append(t.densities[-1])
                 colors.append([0,0,0,0])
 
-        return np.array(vertices), np.array(colors), np.array(sem_colors)
+        return np.array(vertices), np.array(densities), np.array(colors), np.array(sem_colors)
 
     def compute_line_vertices(self, pt):
         return np.array([   pt, [self.mins[0],*pt[1:]],

@@ -32,6 +32,7 @@ class wsock:
         print("  performance\t: high (default), low")
         print("  shadows\t: yes (default), no")
         print("  verbose\t: display some activaty infos in prompt")
+        print("  density\t: activate density display")
         print()
 
     def __init__(self):
@@ -44,6 +45,7 @@ class wsock:
         self.stc.debug = True
         self.stc.app = self
         self.server_mode = False
+        self.density = False
 
         if '-data' in sys.argv:
             ind = sys.argv.index('-data')
@@ -74,6 +76,9 @@ class wsock:
         else:
             self.stc.SAKURA_GPU_PERFORMANCE = 'high'
 
+        if '-density' in sys.argv:
+            self.density = True
+
 
     def init(self):
         glutInit(sys.argv)
@@ -93,6 +98,8 @@ class wsock:
         self.stc.on_resize(400, 300)
         self.stc.init()
         self.stc.clean_data()
+        if self.density:
+            self.stc.toggle_density(True)
         self.stc.load_data(file = self.data_file)
         self.stc.update_floor()
 

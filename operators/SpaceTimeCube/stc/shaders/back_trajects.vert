@@ -5,10 +5,13 @@ uniform mat4 modelview_mat;
 
 uniform vec3 cam_pos;
 
-in  vec4 in_vertex;
-in  vec4 in_color;
-out vec4 vert_color;
-out vec4 vert_cam_pos;
+in  vec4  in_vertex;
+in  vec2  in_density;
+in  vec4  in_color;
+
+out vec4  vert_color;
+out vec2  vert_density;
+out vec4  vert_cam_pos;
 
 uniform vec4  maxs;
 uniform vec4  mins;
@@ -29,4 +32,6 @@ void main() {
     vert_color = in_color;
     //vec4 tmp = in_color;
     //vert_color = vec4(1,1,1,0);
+
+    vert_density = in_density;
 }

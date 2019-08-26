@@ -13,9 +13,10 @@ void main() {
   }
   */
   fragColor = geom_color;
-  if (geom_color.w == 0)
-      gl_FragDepth = 2;
-  else
-      gl_FragDepth = gl_FragCoord.z+.001;
-
+  //if (geom_color.w != 1)
+  //    gl_FragDepth = 1-.001;
+  //if (geom_color.w == 1)
+  //    gl_FragDepth = 0;
+  //else
+  //    gl_FragDepth = gl_FragCoord.z+.001;
 }

@@ -83,6 +83,7 @@ class SpaceTimeCube:
         self.colors_file        = None
         self.floor_shapes_file  = None
         self.display_shadows    = True
+        self.display_density    = False
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -317,8 +318,8 @@ class SpaceTimeCube:
             self.sh_back_trajects.sh = sh.create(str(self.spacetimecube_dir / 'shaders/back_trajects.vert'),
                                                 str(self.spacetimecube_dir / 'shaders/back_trajects.geom'),
                                                 str(self.spacetimecube_dir / 'shaders/back_trajects.frag'),
-                                                [self.trajs.attr_vertices, self.trajs.attr_colors],
-                                                ['in_vertex', 'in_color'],
+                                                [self.trajs.attr_vertices, self.trajs.attr_colors, self.trajs.attr_densities],
+                                                ['in_vertex', 'in_color', 'in_density'],
                                                 glsl_version)
 
             if not self.sh_back_trajects.sh: exit(1)
@@ -469,7 +470,11 @@ class SpaceTimeCube:
         glDisable(GL_MULTISAMPLE)
         glDisable(GL_BLEND)
         self.trajs.update_arrays('trajectories')
-        sh.display_list([self.trajs.sh])
+        if self.SAKURA_GPU_PERFORMANCE == 'low':
+            sh.display_list([self.trajs.sh])
+        else:
+            sh.display_list([self.sh_back_trajects])
+
         ccolor = self.closest_color(10)
         t_indice = -1
         if ccolor != -1 and ccolor in self.data.trajects_ids:
@@ -508,43 +513,10 @@ class SpaceTimeCube:
         glEnable(GL_MULTISAMPLE)
         return p_indice
 
-    '''
-    def update_transparency(self, indice, value):
-        t_ind = self.data.trajects[indice].display_indice
-        t_len = len(self.data.trajects[indice].points)
-        arr = self.trajs.colors[t_ind+1: t_ind +1+ t_len]
-        if len(arr) > 0:
-            arr[:, 3] = value
-            self.trajs.colors[t_ind+1: t_ind +1+ t_len] = arr
-
-        sarr = self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len]
-        if len(sarr) > 0:
-            sarr[:, 3] = value
-            self.trajs.sem_colors[t_ind+1: t_ind +1+ t_len] = sarr
-    '''
-
     def display(self):
         # Hovering
         if gm.pt_in_frame(self.mouse, [0, 0], [self.width, self.height]) and self.imode == 'none':
             self.hovered_target = self.hovered_trajectory()
-
-            '''
-            if self.trajs.display_color == 'trajectories':
-                #Highlighting the trajectory
-                if t_indice != -1 and not t_indice in self.selected_trajects:
-                    if self.hovered_target == -1:
-                        self.update_transparency(t_indice, 0.5)
-                    elif self.hovered_target != t_indice:
-                        self.update_transparency(self.hovered_target, 1.0)
-                        self.update_transparency(t_indice, 0.5)
-                    self.hovered_target =  t_indice
-
-                elif self.hovered_target != -1:
-                    self.update_transparency(self.hovered_target, 1.0)
-                    self.hovered_target =  -1
-
-            self.trajs.update_arrays()
-            '''
 
             lines_vertices = np.array([[0,0,0,0], [0,0,0,0]])
             quad_vertices = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
@@ -582,28 +554,8 @@ class SpaceTimeCube:
             self.quad.vertices = copy.copy(quad_vertices)
             self.quad.update_arrays()
 
-
-        '''
-        if self.trajs.display_color != 'trajectories':
-            for i in range(len(self.data.trajects)):
-                self.update_transparency(i, 0.5)
-            self.trajs.update_arrays()
-        '''
-
         #Selection
         if len(self.new_selections):
-            '''
-            while len(self.new_selections):
-                i = self.new_selections[0]
-                if i not in self.selected_trajects:
-                    self.update_transparency(i, 0.5)
-                    self.selected_trajects.append(self.new_selections.pop(0))
-                else:
-                    self.update_transparency(i, 1.0)
-                    index = self.selected_trajects.index(self.new_selections.pop(0))
-                    self.selected_trajects.pop(index)
-            self.trajs.update_arrays()
-            '''
             if len(self.new_selections):
                 while len(self.new_selections):
                     i = self.new_selections[0]
@@ -685,6 +637,7 @@ class SpaceTimeCube:
 
             self.cube.reset()
             self.imode = 'none'
+            
         else: #STATE == DOWN
             if self.cube.current_edge == -1: #Not on an edge !!!
                 if button == LEFT_BUTTON:
@@ -901,3 +854,6 @@ class SpaceTimeCube:
         self.geo_shapes.highlight_shapes(l)
         self.fareas.geometry(self.data, self.geo_shapes)
         self.fareas.update_arrays()
+
+    def toggle_density(self, b):
+        self.data.toggle_density(b)

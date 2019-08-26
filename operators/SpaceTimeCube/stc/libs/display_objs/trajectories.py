@@ -17,6 +17,7 @@ class trajectories:
 
         self.vertices       = np.array([[0,0,0,0], [0,0,0,0], [0,0,0,0]])
         self.colors         = np.array([[0,0,0,1], [0,0,0,1], [0,0,0,1]])
+        self.densities      = np.array([1,1,1])
         self.sh             = sh.shader()
         self.sh.display     = self.display
         self.display_color  = 'trajectories'   #other option is 'semantic'
@@ -31,12 +32,16 @@ class trajectories:
     def generate_buffers_and_attributes(self):
         self.vbo_vertices      = glGenBuffers(1)
         self.vbo_colors        = glGenBuffers(1)
+        self.vbo_densities     = glGenBuffers(1)
         self.attr_vertices     = sh.new_attribute_index()
         self.attr_colors       = sh.new_attribute_index()
+        self.attr_densities    = sh.new_attribute_index()
 
     def update_arrays(self, dcolor = 'none'):
         sh.bind(self.vbo_vertices, self.vertices, self.attr_vertices, 4, GL_FLOAT)
+        sh.bind(self.vbo_densities, self.densities, self.attr_densities, 2, GL_FLOAT)
 
+        '''
         tempd = self.display_color
         if dcolor != 'none':
             self.display_color = dcolor
@@ -47,6 +52,12 @@ class trajectories:
             sh.bind(self.vbo_colors, self.sem_colors, self.attr_colors, 4, GL_FLOAT)
 
         self.display_color = tempd
+        '''
+        if dcolor == 'trajectories':
+            sh.bind(self.vbo_colors, self.colors, self.attr_colors, 4, GL_FLOAT)
+        else:
+            sh.bind(self.vbo_colors, self.sem_colors, self.attr_colors, 4, GL_FLOAT)
+
 
     def display(self):
         self.update_uniforms(self.sh)
@@ -59,9 +70,9 @@ class trajectories:
         return sh.create(   dir+'/trajects.vert',
                             None,
                             dir+'/trajects.frag',
-                            [self.attr_vertices, self.attr_colors],
-                            ['in_vertex', 'in_color'],
+                            [self.attr_vertices, self.attr_colors, self.attr_densities],
+                            ['in_vertex', 'in_color', 'in_density'],
                             glsl_version)
 
     def geometry(self, data, selected = []):
-        self.vertices, self.colors, self.sem_colors = np.array(data.compute_geometry(selected))
+        self.vertices, self.densities, self.colors, self.sem_colors = data.compute_geometry(selected)
