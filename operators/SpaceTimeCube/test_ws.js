@@ -9,6 +9,7 @@ var max_messages_per_seconds = 25;
 var imageQ = 'high'; //or low, or very_low
 var highlighted_shapes = []
 var shapes = []
+var trajectories = []
 
 function init_server() {
     ws.onopen = function(event) {
@@ -77,10 +78,11 @@ function init_server() {
             else if (j.key == 'unselect_all_trajects') {
                 send('image', [imageQ]);
             }
+            else if (j.key == 'hide_trajectories' || j.key == 'show_trajectories') {
+                console.log(j.value);
+            }
             else if (['move',
                       'wheel',
-                      'hide_trajectories',
-                      'show_trajectories',
                       'wiggle',
                       'dates',
                       'reset_zoom',
@@ -134,6 +136,7 @@ function refresh() {
 }
 
 function fill_trajectories_dd(trajs) {
+    trajectories = trajs;
     nb_trajectories = trajs.length;
     var tdd = $('#trajectories_dropdown');
     var butt_hid = $('<button class="btn btn-default btn-xs" onclick=\'check_trajectory(-1);\'>hide all</button>&nbsp;');
@@ -142,7 +145,7 @@ function fill_trajectories_dd(trajs) {
     var table = $('<table width = 100%>');
 
     trajs.forEach( function(traj, index) {
-        table.append("<tr><td><input type='checkbox' checked id='traj_checkbox_"+index+"' onclick='check_trajectory("+index+");'></td><td>"+traj+"</td></tr>");
+        table.append("<tr><td><input type='checkbox' checked id='traj_checkbox_"+index+"' onclick='check_trajectory("+index+", \""+traj+"\");'></td><td>"+traj+"</td></tr>");
     });
 
     tdd.append(butt_hid);
@@ -150,8 +153,8 @@ function fill_trajectories_dd(trajs) {
     tdd.append(table);
 }
 
-function check_trajectory(index) {
-    var l = [index];
+function check_trajectory(index, code) {
+    var l = [code];
     var func = "hide_trajectories"
 
     //only one trajectory
@@ -169,9 +172,10 @@ function check_trajectory(index) {
         l = []
         for (var i=0; i< nb_trajectories;i++) {
               $('#traj_checkbox_'+i).each(function(){ this.checked = val; });
-              l.push(i);
+              l.push(trajectories[i]);
         }
     }
+    console.log(l);
     send(func, [l]);
   }
 

@@ -47,6 +47,12 @@ class data:
     def toggle_density(self, b):
         self.display_density = b
 
+    def traject_from_name(self, name):
+        for i in range(len(self.trajects_names)):
+            if self.trajects_names[i] == name:
+                return self.trajects[i], i
+        return None, None
+
     def add(self, chunk, meta = True):
         ''' adding new data: maybe new trajectories, maybe a new piece of existing trajectory'''
         for c in chunk:

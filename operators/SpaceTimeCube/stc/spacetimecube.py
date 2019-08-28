@@ -819,36 +819,103 @@ class SpaceTimeCube:
             else:
                 print('\t\33[1;31mTrajectory index out of range !!!\33[m')
 
+    def select_trajects_by_name(self, names):
+        res = []
+        for n in names:
+            traj, id = self.data.traject_from_name(n)
+            if id == None:
+                res.append({'name': n, 'answer': 'unkown trajectory'})
+            else:
+                if id not in self.selected_trajects:
+                    self.new_selections.append(id)
+                    res.append({'name': n, 'answer': 'selected'})
+                else:
+                    res.append({'name': n, 'answer': 'already selected'})
+        return res
+
+    def unselect_trajects_by_name(self, names):
+        res = []
+        for n in names:
+            traj, id = self.data.traject_from_name(n)
+            if id == None:
+                res.append({'name': n, 'answer': 'unkown trajectory'})
+            else:
+                if id in self.selected_trajects:
+                    self.new_selections.append(id)
+                    res.append({'name': n, 'answer': 'unselected'})
+                else:
+                    res.append({'name': n, 'answer': 'already unselected'})
+
     def unselect_all_trajects(self):
         self.unselect_trajects(self.selected_trajects)
 
     def toggle_shadows(self, b):
         self.display_shadows = b
 
-    def hide_trajectories(self, l):
-        print('hide', l)
-        if len(l):
-            for id in l:
-                if id >= 0 and id < len(self.data.trajects):
-                    if id in self.data.displayed:
-                        index = self.data.displayed.index(id)
-                        self.data.displayed.pop(index)
+    # def hide_trajectories(self, l):
+    #     print('hide', l)
+    #     if len(l):
+    #         for id in l:
+    #             if id >= 0 and id < len(self.data.trajects):
+    #                 if id in self.data.displayed:
+    #                     index = self.data.displayed.index(id)
+    #                     self.data.displayed.pop(index)
+    #         self.trajs.geometry(self.data)
+    #         self.data.make_meta()
+    #         self.trajs.update_arrays()
+    #         self.update_cube_and_lines()
+
+    def hide_trajectories(self, names):
+        res = []
+        if len(names):
+            for n in names:
+                traj, id = self.data.traject_from_name(n)
+                if id == None:
+                    res.append({'name': n, 'answer': 'unknown trajectory'})
+                elif id in self.data.displayed:
+                    index = self.data.displayed.index(id)
+                    self.data.displayed.pop(index)
+                    res.append({'name': n, 'answer': 'hidden'})
+                else:
+                    res.append({'name': n, 'answer': 'already hidden'})
             self.trajs.geometry(self.data)
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()
 
-    def show_trajectories(self, l):
-        if len(l):
-            for id in l:
-                if id >= 0 and id < len(self.data.trajects):
-                    if id not in self.data.displayed:
-                        self.data.displayed.append(id)
+        return res
+
+    # def show_trajectories(self, l):
+    #     if len(l):
+    #         for id in l:
+    #             if id >= 0 and id < len(self.data.trajects):
+    #                 if id not in self.data.displayed:
+    #                     self.data.displayed.append(id)
+    #         self.data.displayed.sort()
+    #         self.trajs.geometry(self.data)
+    #         self.data.make_meta()
+    #         self.trajs.update_arrays()
+    #         self.update_cube_and_lines()
+
+    def show_trajectories(self, names):
+        res = []
+        if len(names):
+            for n in names:
+                traj, id = self.data.traject_from_name(n)
+                if id == None:
+                    res.append({'name': n, 'answer': 'unknown trajectory'})
+                elif id not in self.data.displayed:
+                    res.append({'name': n, 'answer': 'shown'})
+                    self.data.displayed.append(id)
+                else:
+                    res.append({'name': n, 'answer': 'already shown'})
             self.data.displayed.sort()
             self.trajs.geometry(self.data)
             self.data.make_meta()
             self.trajs.update_arrays()
             self.update_cube_and_lines()
+
+        return res
 
     def get_shapes(self):
         return self.geo_shapes.get_shapes_info()
