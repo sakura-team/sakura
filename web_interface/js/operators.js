@@ -1,6 +1,8 @@
 //Code started by Michael Ortega for the LIG
 //February, 13, 2019
 
+var waiting_icon = '<span class="fa fa-cog fa-spin" style="font-size:18px"></span>';
+
 function byID(id) {
     return document.getElementById(id);
 }
@@ -26,7 +28,7 @@ function creation_operator_check_URL() {
         return;
     }
     var butt = byID('operators_creation_url_input_button');
-    butt.innerHTML = '<span class="glyphicon glyphicon-hourglass"></span>';
+    butt.innerHTML = waiting_icon;
     $('#operators_creation_sub_dir_refresh_icon').show();
 
     sakura.apis.hub.misc.list_code_revisions(repo_url).then(function(result) {
@@ -111,12 +113,13 @@ function operators_creation_url_input_change(event) {
 }
 
 function operators_update_creation_modal() {
-    $("#operators_submit_button").html('Submit');
+    $("#operators_submit_button").html('Register');
 
     var select1 = $('#operators_creation_revision');
     select1.selectpicker('refresh');
     var select2 = $('#operators_creation_sub_dir');
     select2.selectpicker('refresh');
+    creation_operator_check_URL();
 }
 
 function operators_creation_revision_change(event) {
@@ -141,6 +144,10 @@ function operators_creation_check_possible_submission() {
 }
 
 function operators_creation_new() {
+
+    $("#operators_submit_button").html('Please wait ... '+waiting_icon);
+    byID('operators_submit_button').disabled = true;
+
     var select  = byID('operators_creation_revision');
     var opt     = select.options[select.selectedIndex];
 
@@ -159,8 +166,12 @@ function operators_creation_new() {
         main_success_alert('Operator Registration', 'Registered !', function () {
             operators_close_modal();
         }, 2);
+        $("#operators_submit_button").html('Succefully Registered !');
+        //byID('operators_submit_button').disabled = False;
         showDiv(null, 'Operators', null);
     }).catch( function(error_msg) {
+        $("#operators_submit_button").html('Register');
+        byID('operators_submit_button').disabled = false;
         main_alert('Error while Registering Operator !', error_msg);
     });
 }
