@@ -84,6 +84,7 @@ class SpaceTimeCube:
         self.floor_shapes_file  = None
         self.display_shadows    = True
         self.display_density    = False
+        self.selection_activated = True
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -626,14 +627,15 @@ class SpaceTimeCube:
                 self.unselect_trajects(self.selected_trajects)
                 self.idate = ndate
                 msg = [{'action': 'unselectall'}]
-            elif ndate - self.idate < 0.15 and self.hovered_target != -1:
-                name = self.data.trajects_names[self.hovered_target]
-                if not self.hovered_target in self.selected_trajects:
-                    self.select_trajects([self.hovered_target])
-                    msg = [{'action': 'select', 'id': self.hovered_target, 'name': name}]
-                else:
-                    self.unselect_trajects([self.hovered_target])
-                    msg = [{'action': 'unselect', 'id': self.hovered_target, 'name': name}]
+            elif self.selection_activated:
+                if ndate - self.idate < 0.15 and self.hovered_target != -1:
+                    name = self.data.trajects_names[self.hovered_target]
+                    if not self.hovered_target in self.selected_trajects:
+                        self.select_trajects([self.hovered_target])
+                        msg = [{'action': 'select', 'id': self.hovered_target, 'name': name}]
+                    else:
+                        self.unselect_trajects([self.hovered_target])
+                        msg = [{'action': 'unselect', 'id': self.hovered_target, 'name': name}]
 
             self.cube.reset()
             self.imode = 'none'
@@ -642,7 +644,7 @@ class SpaceTimeCube:
             if self.cube.current_edge == -1: #Not on an edge !!!
                 if button == LEFT_BUTTON:
                     ndate = time.time()
-                    if ndate - self.idate < 0.2:
+                    if ndate - self.idate < 0.2 and self.selection_activated:
                             self.imode = 'double-click'
                     else:
                         self.imode = 'rotation'
@@ -927,3 +929,6 @@ class SpaceTimeCube:
 
     def toggle_density(self, b):
         self.data.toggle_density(b)
+
+    def toggle_selection(self, b):
+        self.selection_activated = b

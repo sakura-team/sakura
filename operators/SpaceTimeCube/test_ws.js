@@ -89,7 +89,8 @@ function init_server() {
                       'reset_cube_height',
                       'highlight_shapes',
                       'get_shapes',
-                      'reset_position'].indexOf(j.key) < 0) {
+                      'reset_position',
+                      'toggle_selection'].indexOf(j.key) < 0) {
                 console.log('Unknown answer:', j);
             }
             else {
@@ -180,7 +181,8 @@ function check_trajectory(index, code) {
   }
 
   function unselect_all() {
-      send('unselect_all_trajects')
+      send('select_trajects', [[328, 329]])
+      //send('unselect_all_trajects')
   }
 
 
@@ -249,6 +251,10 @@ function fill_semantics_dd(sems){
 
 function select_semantic(index) {
     send('select_semantic', [index])
+}
+
+function toggle_selection(event) {
+    send('toggle_selection', [$('#selection_checkbox').is(":checked")]);
 }
 
 function send(key, data) {

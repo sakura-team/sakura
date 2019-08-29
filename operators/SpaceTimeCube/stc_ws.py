@@ -215,7 +215,8 @@ class wsock:
                     'unselect_trajects':    self.stc.unselect_trajects,
                     'unselect_trajects_by_name':    self.stc.unselect_trajects_by_name,
                     'select_trajects_by_name':      self.stc.select_trajects_by_name,
-                    'unselect_all_trajects':self.stc.unselect_all_trajects
+                    'unselect_all_trajects':self.stc.unselect_all_trajects,
+                    'toggle_selection':     self.stc.toggle_selection
                     })
 
     def loop(self):
