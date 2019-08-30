@@ -1,12 +1,13 @@
 #!/usr/bin/env python
-from pkg_resources import resource_string
 import zlib, pickle, numpy as np
 from sakura.daemon.processing.source import NumpyArraySource
 
 def load_data():
     print('Loading data file gpsparis.dat... ',)
     # data is compressed in file gpsparis.dat
-    compressed_data = resource_string(__name__, 'gpsparis.dat')
+    this_file_path = __module_path__
+    with (this_file_path.parent / 'gpsparis.dat').open('rb') as f:
+        compressed_data = f.read()
     info = pickle.loads(zlib.decompress(compressed_data))
     data = info['data']
     data = data.astype(float) / info['factor']

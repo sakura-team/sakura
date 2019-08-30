@@ -15,12 +15,8 @@ def load_op_class(worktree_dir, code_subdir):
     if not (op_dir / 'icon.svg').exists():
         raise APIRequestError('No icon.svg was found.')
     # load the module defined by operator.py
-    # note: we load from parent dir of worktree_dir, in order to include the commit hash
-    # in the module path. This allows to avoid conflicts with built-in modules ('operator'), and
-    # to be able to reload modules of a different commit hash without hitting python module cache.
-    loading_dir = worktree_dir.parent
-    operator_module_path = '.'.join(op_dir.relative_to(loading_dir).parts + ('operator',))
-    mod = pathlib_import(loading_dir, operator_module_path)
+    operator_module_path = '.'.join(op_dir.relative_to(worktree_dir).parts + ('operator',))
+    mod = pathlib_import(worktree_dir, operator_module_path, make_unique=True)
     # look for the Operator subclass defined in this module
     def match(obj):
         return  inspect.isclass(obj) and \
