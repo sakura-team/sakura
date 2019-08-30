@@ -42,7 +42,7 @@ class Proxy:
         return self.__internals.manager.func_call(self.__internals.path, args, kwargs)
     # special methods
     def __str__(self):
-        return 'REMOTE(' + self.__internals.call_special('__str__') + ')'
+        return self.__internals.call_special('__str__')
     def __repr__(self):
         return 'REMOTE(' + self.__internals.call_special('__repr__') + ')'
     def __iter__(self):
