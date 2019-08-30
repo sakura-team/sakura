@@ -1,11 +1,10 @@
 from sakura.client.opskeleton.tools import join_blocks
-from sakura.client.opskeleton.param import generate_param_imports_line, generate_params_declaration
+from sakura.client.opskeleton.param import generate_param_import_lines, generate_params_declaration
 from sakura.client.opskeleton.plug import generate_plugs_declaration
 from sakura.client.opskeleton.tab import generate_tabs_declaration
 
 OP_FILE_TEMPLATE = '''\
-from sakura.daemon.processing.operator import Operator
-%(other_imports)s
+%(imports)s
 
 %(custom_top_level_code)s
 
@@ -21,11 +20,15 @@ class %(op_cls_name)s(Operator):
 '''
 
 def generate_operator_py(op_f, skel_info):
-    # parameter class imports
-    other_imports = [ generate_param_imports_line(skel_info.params) ]
-    other_imports.extend((output.custom_imports for output in skel_info.outputs))
-    other_imports.extend((tab.custom_imports for tab in skel_info.tabs))
-    other_imports = join_blocks(other_imports, '\n', 0)
+    # imports
+    imports = ('from sakura.daemon.processing.operator import Operator',)
+    imports += generate_param_import_lines(skel_info.params)
+    for output in skel_info.outputs:
+        imports += output.custom_imports
+    for tab in skel_info.tabs:
+        imports += tab.custom_imports
+    imports = sorted(set(imports))  # sort and make unique
+    imports = join_blocks(imports, '\n', 0)
     # custom top level code
     custom_top_level_code = join_blocks(
         (param.generate_top_level_code() for param in skel_info.params),
@@ -46,7 +49,7 @@ def generate_operator_py(op_f, skel_info):
     print(OP_FILE_TEMPLATE % dict(
         op_name = skel_info.op_name,
         op_cls_name = skel_info.op_cls_name,
-        other_imports = other_imports,
+        imports = imports,
         custom_top_level_code = custom_top_level_code,
         construct_body = construct_body,
         custom_methods = custom_methods

@@ -25,7 +25,7 @@ class Plug:
 
     @property
     def custom_imports(self):
-        return ''
+        return ()
 
 CUSTOM_COMBO_OUTPUT_DECL_PATTERN = '''\
 days_output_source = ComputedSource('Days', self.compute_days)
@@ -103,7 +103,7 @@ class CustomComboOutput(Plug):
         )).strip()
     @property
     def custom_imports(self):
-        return 'import datetime'
+        return ('import datetime', 'from sakura.daemon.processing.source import ComputedSource')
 
 class MeanOutput(Plug):
     def __init__(self, param, *args):
@@ -123,6 +123,9 @@ class MeanOutput(Plug):
             param_name = self.param.name,
             input_name = self.param.linked_input.name
         )).strip()
+    @property
+    def custom_imports(self):
+        return ('from sakura.daemon.processing.source import ComputedSource',)
 
 def generate_plugs(num, plug_type, factory=Plug):
     if num == 0:

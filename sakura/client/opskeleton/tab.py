@@ -56,7 +56,7 @@ class Tab:
 
     @property
     def custom_imports(self):
-        return ''
+        return ()
 
     def get_custom_css_links(self):
         return ()
@@ -214,7 +214,7 @@ class CounterTab(Tab):
         )).strip()
     @property
     def custom_imports(self):
-        return 'from time import time'
+        return ('from time import time',)
     def get_custom_css_links(self):
         return ("/webcache/cdnjs/twitter-bootstrap/3.3.7/css/bootstrap.min.css",)
     def generate_html_body(self):

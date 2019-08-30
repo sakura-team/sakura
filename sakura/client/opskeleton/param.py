@@ -87,13 +87,12 @@ PARAM_IMPORT_TEMPLATE = '''\
 from sakura.daemon.processing.parameter import %(cls_names)s\
 '''
 
-def generate_param_imports_line(params):
+def generate_param_import_lines(params):
     if len(params) == 0:
-        return ''
+        return ()
     cls_names = set(param.get_cls_imports() for param in params)
-    return PARAM_IMPORT_TEMPLATE % dict(
-        cls_names = ', '.join(cls_names)
-    )
+    return (PARAM_IMPORT_TEMPLATE % dict(
+        cls_names = ', '.join(cls_names)),)
 
 PARAM_DESCR_TEMPLATE = '''\
 self.%(param_name)s = self.register_parameter(
