@@ -85,6 +85,7 @@ class SpaceTimeCube:
         self.display_shadows    = True
         self.display_density    = False
         self.selection_activated = True
+        self.back_color         = [.31,.63,1.0,1.0]
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -570,7 +571,7 @@ class SpaceTimeCube:
 
 
         # Main display
-        glClearColor(.31,.63,1.0,1.0)
+        glClearColor(*self.back_color)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
 
         if self.geo_shapes.displayed and self.floor_shapes_file:
@@ -784,6 +785,9 @@ class SpaceTimeCube:
             self.floor.set_updatable_height(updatable)
         else:
             self.floor.set_updatable_height(not self.floor.updatable_height)
+
+    def set_back_color(self, c):
+        self.back_color = c
 
     def select_colored_semantic(self, index):
         self.data.update_sem_colors(index)

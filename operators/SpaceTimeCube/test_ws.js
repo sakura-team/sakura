@@ -124,7 +124,8 @@ function refresh() {
     send('wiggle', [false]);
 
     $('#dynamic_floor_checkbox').prop('checked', false);
-    send('set_updatable_floor', [false])
+    send('set_updatable_floor', [false]);
+    send('set_back_color', [[1,1,1,1]]);
 
     send('get_trajectories');
     send('get_shapes');

@@ -208,6 +208,7 @@ class wsock:
                     'dates':                self.stc_dates,
                     'resize':               self.stc_resize,
                     'set_updatable_floor':  self.stc.set_updatable_floor,
+                    'set_back_color':       self.stc.set_back_color,
                     'reset_cube_height':    self.stc.reset_cube_height,
                     'get_shapes':           self.stc.get_shapes,
                     'highlight_shapes':     self.stc.highlight_shapes,
