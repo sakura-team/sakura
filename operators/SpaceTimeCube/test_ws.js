@@ -71,8 +71,8 @@ function init_server() {
                 update_dates(j.value);
             }
             else if (j.key == 'click') {
-                if (j.value[0].action != 'none')
-                    console.log(j.value[0]);
+                //if (j.value[0].action != 'none')
+                console.log(j.value[0]);
                 send('image', [imageQ]);
             }
             else if (j.key == 'unselect_all_trajects') {
@@ -182,8 +182,7 @@ function check_trajectory(index, code) {
   }
 
   function unselect_all() {
-      send('select_trajects', [[328, 329]])
-      //send('unselect_all_trajects')
+      send('unselect_all_trajects')
   }
 
 
