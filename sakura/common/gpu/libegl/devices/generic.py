@@ -48,6 +48,8 @@ class GenericEGLDevice:
         if not hasattr(egl, 'eglQueryDeviceStringEXT'):
             return "EGL device unknown"
         devstr = egl.eglQueryDeviceStringEXT(self.egl_dev, EGL_DRM_DEVICE_FILE_EXT)
+        if devstr is None:
+            return "EGL device unknown"
         return "EGL device " + devstr.decode('ASCII')
     def create_surface(self, egl_dpy, egl_config):
         return GenericEGLSurface(egl_dpy, egl_config)

@@ -7,12 +7,22 @@ from sakura.common.tools import TransactionMixin
 class EGLContext(TransactionMixin):
     def initialize(self, width, height):
         for device in devices.probe():
-            if not self.initialize_on_device(device, width, height):
+            print("selected: " + device.name)
+            try:
+                if not self.initialize_on_device(device, width, height):
+                    print('device init failed.')
+                    continue
+            except:
+                try:
+                    self.rollback()
+                except:
+                    pass
+                print('device init failed.')
                 continue
+            print('device init OK!')
             return True
         return False
     def initialize_on_device(self, device, width, height):
-        print("selected: " + device.name)
         # step 1
         if device.initialize():
             self.add_rollback_cb(lambda: device.release())
