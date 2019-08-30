@@ -62,8 +62,7 @@ class Parameter(StatusMixin):
         raise NotImplementedError
 
     def is_linked_to_plug(self, plug):
-        print('is_linked_to_plug() must be implemented in Parameter subclasses.')
-        raise NotImplementedError
+        return False    # override in subclass if parameter is linked to a given input plug
 
     def check_input_compatible(self):
         print('check_input_compatible() must be implemented in Parameter subclasses.')
