@@ -3,7 +3,7 @@ from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestError
 
 class OpClassMixin(BaseMixin):
-    SANDBOX_DIRS = {}
+    SANDBOX_INFO = {}
     @property
     def enabled(self):
         return get_context().daemons.any_enabled() is not None
@@ -11,7 +11,7 @@ class OpClassMixin(BaseMixin):
     def disabled_message(self):
         return "No sakura daemon connected."
 
-    def pack_repo_info(self, revision_prefix='default_', include_sandbox_dir=False):
+    def pack_repo_info(self, revision_prefix='default_', include_sandbox_attrs=False):
         info = dict(
             repo_type = self.repo['type'],
             code_subdir = self.code_subdir
@@ -24,12 +24,10 @@ class OpClassMixin(BaseMixin):
             })
         elif self.repo['type'] == 'sandbox':
             info.update(
-                sandbox_uuid = self.repo['sandbox_uuid'],
+                sandbox_uuid = self.repo['sandbox_uuid']
             )
-            if include_sandbox_dir:
-                info.update(
-                    sandbox_dir = self.get_sandbox_dir()
-                )
+            if include_sandbox_attrs:
+                info.update(**self.get_sandbox_attrs())
         return info
 
     def pack(self):
@@ -49,8 +47,12 @@ class OpClassMixin(BaseMixin):
         self.check_revision_handling()
         return self.repo['default_code_ref'], self.repo['default_commit_hash']
 
-    def get_sandbox_dir(self):
-        return OpClassMixin.SANDBOX_DIRS[self.repo['sandbox_uuid']]
+    def get_sandbox_attrs(self):
+        info = OpClassMixin.SANDBOX_INFO[self.repo['sandbox_uuid']]
+        return {
+            'sandbox_dir': info['dir'],
+            'sandbox_streams': info['streams']
+        }
 
     def update_default_revision(self, code_ref, commit_hash):
         self.check_revision_handling()
@@ -63,7 +65,7 @@ class OpClassMixin(BaseMixin):
             if daemon.enabled:
                 repo_info = self.pack_repo_info(revision_prefix='')
                 if self.repo['type'] == 'sandbox':
-                    repo_info.update(sandbox_dir = self.get_sandbox_dir())
+                    repo_info.update(**self.get_sandbox_attrs())
                 metadata = daemon.api.get_op_class_metadata(**repo_info)
                 break
         if metadata is None:
@@ -74,7 +76,7 @@ class OpClassMixin(BaseMixin):
     @classmethod
     def register(cls, context, repo_type = 'git', repo_subdir = None,
                 repo_url = None, default_code_ref = None, default_commit_hash = None,
-                sandbox_uuid = None, sandbox_dir = None):
+                sandbox_uuid = None, sandbox_dir = None, sandbox_streams = None):
         if repo_subdir == None:
             raise APIRequestError('Invalid operator class registration request: repo_subdir not specified.')
         if repo_type == 'git':
@@ -88,9 +90,9 @@ class OpClassMixin(BaseMixin):
                              default_code_ref = default_code_ref,
                              default_commit_hash = default_commit_hash)
         elif repo_type == 'sandbox':
-            if None in (sandbox_uuid, sandbox_dir):
-                raise APIRequestError('Invalid operator class registration request: need sandbox_uuid and sandbox_dir.')
-            cls.SANDBOX_DIRS[sandbox_uuid] = sandbox_dir
+            if None in (sandbox_uuid, sandbox_dir, sandbox_streams):
+                raise APIRequestError('Invalid operator class registration request: need sandbox_uuid, sandbox_dir, sandbox_streams.')
+            cls.SANDBOX_INFO[sandbox_uuid] = { 'dir': sandbox_dir, 'streams': sandbox_streams }
             repo_info = dict(type = 'sandbox',
                              sandbox_uuid = sandbox_uuid)
         else:

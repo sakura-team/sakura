@@ -107,7 +107,7 @@ class OpInstanceMixin(BaseMixin):
     def instanciate_on_daemon(self):
         self.daemon_api.create_operator_instance(
             self.id,
-            **self.pack_repo_info(include_sandbox_dir=True)
+            **self.pack_repo_info(include_sandbox_attrs=True)
         )
         self.resync_params()
         # we have it instanciated
@@ -138,7 +138,7 @@ class OpInstanceMixin(BaseMixin):
     def reload_on_daemon(self):
         self.daemon_api.reload_operator_instance(
             self.id,
-            **self.pack_repo_info(include_sandbox_dir=True)
+            **self.pack_repo_info(include_sandbox_attrs=True)
         )
         self.resync_params()
     def on_daemon_disconnect(self):

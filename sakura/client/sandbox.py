@@ -17,6 +17,7 @@ def run():
         usage_and_exit()
     sandbox_uuid = str(uuid.uuid4())
     sandbox_dir = sandbox_dir.resolve()
+    sandbox_streams = sys
     op_dirs = list(yield_operator_subdirs(sandbox_dir))
     if len(op_dirs) == 0:
         print('Did not find sakura operator source code in this directory. Giving up.', file=sys.stderr)
@@ -24,7 +25,7 @@ def run():
     for op_dir in op_dirs:
         op_subdir = str(op_dir.relative_to(sandbox_dir))
         api.op_classes.register_from_sandbox(
-            sandbox_uuid, sandbox_dir, op_subdir
+            sandbox_uuid, sandbox_dir, sandbox_streams, op_subdir
         )
         print('Exposing operator class at ' + str(op_dir))
     gevent.get_hub().join()

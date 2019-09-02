@@ -3,6 +3,13 @@ from pathlib import Path
 from sakura.daemon.code.importer import pathlib_import
 import sys, importlib, sakura.daemon.conf as conf
 
+# contextlib.nullcontext does not exist before python 3.7
+class NullContext:
+    def __enter__(self):
+        return None
+    def __exit__(self, *exc_info):
+        pass
+
 def connect_to_hub():
     sock = create_connection((conf.hub_host, conf.hub_port))
     sock_file = sock.makefile(mode='rwb')

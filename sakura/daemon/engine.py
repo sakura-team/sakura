@@ -3,10 +3,12 @@ from pathlib import Path
 from sakura.common.errors import InputUncompatible
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.loading import load_datastores
+from sakura.daemon.tools import NullContext
 from sakura.daemon.code.git import get_worktree, list_code_revisions, list_operator_subdirs
 from sakura.daemon.code.loading import load_op_class
 from sakura.common.errors import APIOperatorError
 from sakura.common.io import ORIGIN_ID
+from sakura.common.streams import get_stream_redirector, StreamRedirectorProxy
 
 class DaemonEngine(object):
     def __init__(self):
@@ -32,17 +34,18 @@ class DaemonEngine(object):
                     datastores=tuple(ds.pack() for ds in self.datastores.values()),
                     origin_id = self.origin_id)
     def create_operator_instance(self, op_id, **repo_info):
-        try:
-            op_cls, op_dir = self.load_op_class(**repo_info)
-            op = op_cls(op_id, op_dir)
-            op.api = self.hub.operator_apis[op_id]
-            op.construct()
-        except BaseException as e:
-            print('Operator ERROR detected!')
-            traceback.print_exc()
-            raise APIOperatorError(str(e))
-        self.op_instances[op_id] = op
-        print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
+        with self.redirected_streams(**repo_info):
+            try:
+                op_cls, op_dir = self.load_op_class(**repo_info)
+                op = op_cls(op_id, op_dir)
+                op.api = self.hub.operator_apis[op_id]
+                op.construct()
+            except BaseException as e:
+                print('Operator ERROR detected!')
+                traceback.print_exc()
+                raise APIOperatorError(str(e))
+            self.op_instances[op_id] = self.stream_redirector_proxy(op, **repo_info)
+            print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
     def delete_operator_instance(self, op_id):
         if op_id in self.op_instances:
             print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
@@ -103,6 +106,16 @@ class DaemonEngine(object):
                     links.append((src_out_id, dst_in_id))
         dst_op.set_check_mode(False)
         return links
+    def redirected_streams(self, sandbox_streams = None, **kwargs):
+        if sandbox_streams is None:
+            return NullContext()
+        else:
+            return get_stream_redirector(sandbox_streams)
+    def stream_redirector_proxy(self, obj, sandbox_streams = None, **kwargs):
+        if sandbox_streams is None:
+            return obj
+        else:
+            return StreamRedirectorProxy(obj, sandbox_streams)
     def load_op_class(self, code_subdir, repo_type, **other_repo_info):
         if repo_type == 'git':
             worktree_dir = get_worktree(
@@ -114,18 +127,19 @@ class DaemonEngine(object):
             worktree_dir = other_repo_info['sandbox_dir']
         return load_op_class(worktree_dir, code_subdir, repo_type)
     def get_op_class_metadata(self, code_subdir, **repo_info):
-        op_cls, op_dir = self.load_op_class(code_subdir, **repo_info)
-        metadata = dict(
-            name = op_cls.NAME,
-            tags = op_cls.TAGS,
-            short_desc = op_cls.SHORT_DESC,
-            svg = op_cls.ICON
-        )
-        if hasattr(op_cls, 'COMMIT_INFO'):
-            metadata.update(
-                commit_metadata = op_cls.COMMIT_INFO
+        with self.redirected_streams(**repo_info):
+            op_cls, op_dir = self.load_op_class(code_subdir, **repo_info)
+            metadata = dict(
+                name = op_cls.NAME,
+                tags = op_cls.TAGS,
+                short_desc = op_cls.SHORT_DESC,
+                svg = op_cls.ICON
             )
-        return metadata
+            if hasattr(op_cls, 'COMMIT_INFO'):
+                metadata.update(
+                    commit_metadata = op_cls.COMMIT_INFO
+                )
+            return metadata
     def prefetch_code(self, repo_url, code_ref, commit_hash):
         get_worktree(self.code_workdir, repo_url, code_ref, commit_hash)
     def list_code_revisions(self, repo_url):

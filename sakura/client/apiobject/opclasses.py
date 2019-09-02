@@ -37,12 +37,13 @@ class APIOpClassDict:
                         default_commit_hash = default_commit_hash,
                         repo_subdir = repo_subdir
                 )
-            def register_from_sandbox(self, sandbox_uuid, sandbox_dir, repo_subdir='/'):
+            def register_from_sandbox(self, sandbox_uuid, sandbox_dir, sandbox_streams, repo_subdir='/'):
                 """Registration of a new operator class from a sandbox process"""
                 return self.register(
                         repo_type = 'sandbox',
                         sandbox_uuid = sandbox_uuid,
                         sandbox_dir = sandbox_dir,
+                        sandbox_streams = sandbox_streams,
                         repo_subdir = repo_subdir
                 )
             def register(self, **kwargs):
