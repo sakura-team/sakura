@@ -2,9 +2,15 @@ from sakura.client.apiobject.operators import APIOperator
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 
 class APIOpClass:
+    _deleted = set()
     def __new__(cls, remote_api, cls_id):
         remote_obj = remote_api.op_classes[cls_id]
         info = remote_obj.info()
+        def get_remote_obj():
+            if remote_obj in APIOpClass._deleted:
+                raise ReferenceError('This class is no longer valid! (was unregistered)')
+            else:
+                return remote_obj
         class APIOpClassImpl(APIObjectBase):
             __doc__ = 'Sakura ' + info['name'] + ' Operator Class'
             def __doc_attrs__(self):
@@ -16,7 +22,11 @@ class APIOpClass:
                     raise AttributeError('No such attribute "%s"' % attr)
             def update_default_revision(self, code_ref, commit_hash):
                 """Update default code revision of this operator class"""
-                return remote_obj.update_default_revision(code_ref, commit_hash)
+                return get_remote_obj().update_default_revision(code_ref, commit_hash)
+            def unregister(self):
+                """Unregister this operator class"""
+                get_remote_obj().unregister()
+                APIOpClass._deleted.add(remote_obj)
             def create(self, dataflow):
                 """Create a new operator of this class in specified dataflow"""
                 op_info = remote_api.operators.create(dataflow.dataflow_id, cls_id)

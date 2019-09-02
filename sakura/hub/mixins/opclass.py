@@ -111,6 +111,15 @@ class OpClassMixin(BaseMixin):
         context.db.commit()     # get object ID from DB
         return op_cls.pack()
 
+    def unregister(self):
+        # delete operator instances first
+        op_instances = set(self.op_instances)
+        for op in op_instances:
+            op.delete_instance()
+        # delete this operator class in local db
+        self.delete()
+        get_context().db.commit()
+
     def create_instance(self, dataflow):
         context = get_context()
         revision_kwargs = {}

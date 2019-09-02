@@ -34,6 +34,10 @@ class GuiToHubAPI:
     def register_op_class(self, **cls_repo_info):
         return self.context.op_classes.register(self.context, **cls_repo_info)
 
+    @api.op_classes.__getitem__.unregister
+    def unregister_op_class(self, cls_id):
+        return self.context.op_classes[cls_id].unregister()
+
     @api.op_classes.__getitem__.update_default_revision
     def update_op_class_default_revision(self, cls_id, code_ref, commit_hash):
         return self.context.op_classes[cls_id].update_default_revision(code_ref, commit_hash)
