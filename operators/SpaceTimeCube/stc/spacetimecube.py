@@ -630,18 +630,22 @@ class SpaceTimeCube:
             #    msg = [{'action': 'unselectall'}]
             #elif self.selection_activated:
             if self.selection_activated:
-                if ndate - self.idate < 0.15 and self.hovered_target != -1:
-                    name = self.data.trajects_names[self.hovered_target]
-                    if not self.hovered_target in self.selected_trajects:
-                        self.select_trajects([self.hovered_target])
-                        msg = [{'action': 'select', 'id': self.hovered_target, 'name': name}]
-                    else:
-                        self.unselect_trajects([self.hovered_target])
-                        msg = [{'action': 'unselect', 'id': self.hovered_target, 'name': name}]
+                if ndate - self.idate < 0.15:
+                    self.hovered_target = self.hovered_trajectory()
+                    if self.hovered_target != -1 :
+                        name = self.data.trajects_names[self.hovered_target]
+                        if not self.hovered_target in self.selected_trajects:
+                            self.select_trajects([self.hovered_target])
+                            msg = [{'action': 'select', 'id': self.hovered_target, 'name': name}]
+                        else:
+                            self.unselect_trajects([self.hovered_target])
+                            msg = [{'action': 'unselect', 'id': self.hovered_target, 'name': name}]
             else:
-                if ndate - self.idate < 0.15 and self.hovered_target != -1:
-                    name = self.data.trajects_names[self.hovered_target]
-                    msg = [{'action': 'none', 'id': self.hovered_target, 'name': name}]
+                if ndate - self.idate < 0.15:
+                    self.hovered_target = self.hovered_trajectory()
+                    if self.hovered_target != -1:
+                        name = self.data.trajects_names[self.hovered_target]
+                        msg = [{'action': 'none', 'id': self.hovered_target, 'name': name}]
 
             self.cube.reset()
             self.imode = 'none'
