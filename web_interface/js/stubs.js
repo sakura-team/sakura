@@ -41,101 +41,122 @@ function buildListStub(idDiv,result,elt) {
         + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>');
     new_row_head.append(cell);
 
-    //Body of the list
-    result.forEach( function (row, index) {
-        var new_row = $(tbody[0].insertRow());
-        var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
+    //ask for the current login
+    sakura.apis.hub.users.current.info().then( function (curr_login) {
 
-        //adding link
-        var new_td = $('<td>');
-        var n_table = $('<table width=100%>');
-        var n_row = $('<tr>');
-        n_table.append(n_row);
+        //Body of the list
+        result.forEach( function (row, index) {
+            var new_row = $(tbody[0].insertRow());
+            var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
 
-        var n_td1 = $('<td>');
-        var n_td2 = $('<td>');
-        var warn_icon = create_warn_icon(row);
-        if (warn_icon)
-            n_td1.append(warn_icon);
+            //adding link
+            var new_td = $('<td>');
+            var n_table = $('<table width=100%>');
+            var n_row = $('<tr>');
+            n_table.append(n_row);
 
-        if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
-            var name = $('<a>');
-            name.html(row.name);
-            name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
-            name.attr('title', 'Accessing '+elt_type.slice(0, -1));
-            name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+            var n_td1 = $('<td>');
+            var n_td2 = $('<td align="right">');
+            var warn_icon = create_warn_icon(row);
+            if (warn_icon)
+                n_td1.append(warn_icon);
 
-            n_td1.append(name);
-            if (row.grant_level == 'own') {
-                n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
-            }
-        }
-        else if (tmp_elt.indexOf('Operators') != -1){
+            if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
+                var name = $('<a>');
+                name.html(row.name);
+                name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
+                name.attr('title', 'Accessing '+elt_type.slice(0, -1));
+                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
 
-            //Updating svg
-            var svg_div = $('<div>');
-            svg_div.append(row.svg);
-            var svg     = svg_div.children()[0];
-
-            var width   = svg.getAttribute('width').split('px')[0];
-            var height  = svg.getAttribute('height').split('px')[0];
-            var viewbox = svg.getAttribute('viewBox');
-            vb_vals = [0, 0];
-            if (viewbox != null)
-                vb_vals = viewbox.split(' ')
-
-            svg.setAttribute('width', '20px');
-            svg.setAttribute('height', '20px');
-            svg.setAttribute('viewBox', ""+vb_vals[0]+" "+vb_vals[1]+" "+width+" "+height);
-
-            //Adding svg and name
-            var op_table = $('<table>');
-            var op_tr = $('<tr>');
-            var op_td1 = $('<td>');
-            var op_td2 = $('<td>');
-
-            op_td1.append(svg);
-
-            op_td2.append('&nbsp;'+row.name);
-            op_tr.append(op_td1);
-            op_tr.append(op_td2);
-            op_table.append(op_tr);
-            n_td1.append(op_table);
-        }
-        else
-            n_td1.append(row.name);
-
-        n_row.append(n_td1, n_td2);
-        new_td.append(n_table);
-        new_row.append(new_td);
-
-        lcg.forEach( function (lelt, index) {
-            if (document.getElementById("cbColSelect"+lelt).checked) {
-                if (lelt == 'Date' && row[lch[index]] instanceof Date) {
-                    var d = row[lch[index]].toDateString();
-                    var h = row[lch[index]].toLocaleTimeString();
-                    new_row.append('<td>'+d+'</td>');
-                }
-                else {
-                    new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
+                n_td1.append(name);
+                if (row.grant_level == 'own') {
+                    n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
                 }
             }
+            else if (tmp_elt.indexOf('Operators') != -1){
+
+                //Updating svg
+                var svg_div = $('<div>');
+                svg_div.append(row.svg);
+                var svg     = svg_div.children()[0];
+
+                var width   = svg.getAttribute('width').split('px')[0];
+                var height  = svg.getAttribute('height').split('px')[0];
+                var viewbox = svg.getAttribute('viewBox');
+                vb_vals = [0, 0];
+                if (viewbox != null)
+                    vb_vals = viewbox.split(' ')
+
+                svg.setAttribute('width', '20px');
+                svg.setAttribute('height', '20px');
+                svg.setAttribute('viewBox', ""+vb_vals[0]+" "+vb_vals[1]+" "+width+" "+height);
+
+                //Adding svg and name
+                var op_table = $('<table width="100%">');
+                var op_tr = $('<tr>');
+                var op_td1 = $('<td style="width: 30px;">');
+                var op_td2 = $('<td>');
+                var op_td3 = $('<td align="right">');
+
+
+                op_td1.append(svg);
+                op_td2.append('&nbsp;'+row.name);
+                op_tr.append(op_td1);
+                op_tr.append(op_td2);
+
+                //Adding delete option if Owner
+                //No grant_level attribut for operators,
+                //so I make the test on the owner attribut
+                if (curr_login !== null) {
+                    if (row.owner == curr_login.login) {
+                        op_td3.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
+                        op_tr.append(op_td3);
+                        console.log('here');
+                    }
+                    else
+                        console.log('Not Owner');
+                }
+
+                op_table.append(op_tr);
+                n_td1.append(op_table);
+            }
+            else
+                n_td1.append(row.name);
+
+            n_row.append(n_td1, n_td2);
+            new_td.append(n_table);
+            new_row.append(new_td);
+
+            lcg.forEach( function (lelt, index) {
+                if (document.getElementById("cbColSelect"+lelt).checked) {
+                    if (lelt == 'Date' && row[lch[index]] instanceof Date) {
+                        var d = row[lch[index]].toDateString();
+                        var h = row[lch[index]].toLocaleTimeString();
+                        new_row.append('<td>'+d+'</td>');
+                    }
+                    else {
+                        new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
+                    }
+                }
+            });
+            var last_cell = new_row[0].cells[new_row[0].cells.length-1];
+            last_cell.colSpan = 2;
         });
-        var last_cell = new_row[0].cells[new_row[0].cells.length-1];
-        last_cell.colSpan = 2;
-    });
-    tbody[0].id = 'idTBodyList'+eltAncetre;
+        tbody[0].id = 'idTBodyList'+eltAncetre;
 
-    if (result.length == 0) {
-        var new_row = $(tbody[0].insertRow());
-        var msg = "There is no accessible "+elt_type+".";
-        new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
-    }
+        if (result.length == 0) {
+            var new_row = $(tbody[0].insertRow());
+            var msg = "There is no accessible "+elt_type+".";
+            new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
+        }
 
-    if (current_login == null)
-        $('#web_interface_'+elt_type+'_creation_button').addClass('invisible');
-    else
-        $('#web_interface_'+elt_type+'_creation_button').removeClass('invisible');
+        if (curr_login === null)
+            $('#web_interface_'+elt_type+'_creation_button').addClass('invisible');
+        else
+            $('#web_interface_'+elt_type+'_creation_button').removeClass('invisible');
+
+      });
+
 }
 
 
@@ -158,6 +179,14 @@ function stub_delete(db_id, idDiv, elt) {
         type = 'Database';
         asking_msg = 'Are you sure you want to definitely delete this database, with all its datasets ??'
         stub = sakura.apis.hub.databases;
+    }
+    else if (idDiv.indexOf('operators') != -1) {
+        /*type = 'Operator';
+        asking_msg = 'Are you sure you want to definitely delete this operator ??'
+        stub = sakura.apis.hub.operators;
+        */
+        alert('Not Yet Implemented');
+        return;
     }
 
     //Alert first
@@ -228,7 +257,12 @@ function listRequestStub(idDiv, n, elt, bd) {
     else if (elt == 'Operators/tmpOperator') {
         sakura.apis.hub.op_classes.list().then(function (operators) {
             var result = new Array();
+            console.log(result);
             operators.forEach( function(op) {
+                ///////////////SANDBOX - START
+                //op.owner = 'mike';
+                ///////////////SANDBOX - END
+
                 result_info = { 'name': op.name,
                                 'shortDesc': op.short_desc,
                                 'tags': op.tags,
