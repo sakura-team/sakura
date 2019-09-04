@@ -114,10 +114,7 @@ function buildListStub(idDiv,result,elt) {
                     if (row.owner == curr_login.login) {
                         op_td3.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
                         op_tr.append(op_td3);
-                        console.log('here');
                     }
-                    else
-                        console.log('Not Owner');
                 }
 
                 op_table.append(op_tr);
@@ -133,8 +130,33 @@ function buildListStub(idDiv,result,elt) {
             //Revision cell for operators
             if (tmp_elt.indexOf('Operators') != -1) {
                 var new_td = $('<td>');
-                new_td.append(row.default_code_ref);
+                var table = $('<table width=100%>');
+                var tr = $('<tr>');
+                var td1 = $('<td>');
+                td1.append(row.default_code_ref);
+                tr.append(td1);
+                if (curr_login !== null) {
+                    if (row.owner == curr_login.login) {
+                        var td2 = $('<td align="right">');
+                        var span = $('<span title="delete" class="glyphicon \
+                        glyphicon-pencil" style="cursor: pointer;" \
+                        onclick="update_operator_revision(\''+row.code_url+'\',\''+row.id+'\');"></span>');
+                        td2.append(span);
+                        tr.append(td2);
+                    }
+                }
+                table.append(tr);
+                new_td.append(table);
+
+                // var sel = $('<select>', { class: "selectpicker"});
+                // var op1 = $('<option>', { text: row.default_code_ref});
+                // var op2 = $('<option>', { text: 'Others'});
+                // sel.append(op1);
+                // sel.append(op2);
+                // new_td.append(sel);
+
                 new_row.append(new_td);
+                //sel.selectpicker('refresh');
             }
 
             lcg.forEach( function (lelt, index) {

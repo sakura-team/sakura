@@ -179,3 +179,14 @@ function operators_creation_new() {
 function operators_close_modal() {
     $('#declare_operators_modal').modal('hide');
 }
+
+function update_operator_revision(code_url, id) {
+    console.log(code_url, parseInt(id));
+    sakura.apis.hub.misc.list_code_revisions(code_url,
+                                            {'reference_cls_id': parseInt(id)}
+                                            ).then( function (result) {
+        console.log('List of code revisions');
+        console.log(result);
+    });
+    not_yet();
+}
