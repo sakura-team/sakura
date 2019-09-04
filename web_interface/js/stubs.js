@@ -3,46 +3,49 @@
 
 function buildListStub(idDiv,result,elt) {
 
-    var eltAncetre=elt.split("/")[0];
-    var elt_type = elt.split('/')[0].toLowerCase();
-
-    //Head of the list, according to the selected columns
-    var thead = $('#'+idDiv).find('thead');
-    var tbody = $('#'+idDiv).find('tbody');
-    thead.empty();
-    tbody.empty();
-    var new_row_head = $(thead[0].insertRow());
-    var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
-    var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
-
-    var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Owner', 'CodeURL', 'SubDir'];
-    var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'owner', 'repo_url', 'subdir'];
-
-    new_row_head.append('<th>Name</th>');
-
-    var lcg = list_cols_gui;
-    var lch = list_cols_hub;
-
-    if (elt.indexOf('Operator') != -1) {
-        lcg = list_cols_gui_op;
-        lch = list_cols_hub_op;
-    }
-
-    lcg.forEach( function (lelt) {
-        if (document.getElementById("cbColSelect"+lelt).checked)
-            new_row_head.append('<th>'+lelt+'</th>');
-    });
-
-    //Last col for the wrench
-    var last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
-    var cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
-    cell.append('<a class="btn" style="padding:6px;" data-toggle="modal" data-target="#colSelectModal">'
-        + '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></a>'
-        + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>');
-    new_row_head.append(cell);
-
     //ask for the current login
     sakura.apis.hub.users.current.info().then( function (curr_login) {
+
+        var eltAncetre=elt.split("/")[0];
+        var elt_type = elt.split('/')[0].toLowerCase();
+
+        //Head of the list, according to the selected columns
+        var thead = $('#'+idDiv).find('thead');
+        var tbody = $('#'+idDiv).find('tbody');
+        thead.empty();
+        tbody.empty();
+        var new_row_head = $(thead[0].insertRow());
+        var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
+        var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
+
+        var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Owner', 'CodeURL', 'SubDir'];
+        var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'owner', 'repo_url', 'code_subdir'];
+
+        var lcg = list_cols_gui;
+        var lch = list_cols_hub;
+
+        if (elt.indexOf('Operator') != -1) {
+            lcg = list_cols_gui_op;
+            lch = list_cols_hub_op;
+        }
+
+        new_row_head.append('<th>Name</th>');
+        if (elt.indexOf('Operator') != -1) {
+            new_row_head.append('<th>Revision</th>');
+        }
+
+        lcg.forEach( function (lelt) {
+            if (document.getElementById("cbColSelect"+lelt).checked)
+                new_row_head.append('<th>'+lelt+'</th>');
+        });
+
+        //Last col for the wrench
+        var last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
+        var cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
+        cell.append('<a class="btn" style="padding:6px;" data-toggle="modal" data-target="#colSelectModal">'
+            + '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></a>'
+            + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>');
+        new_row_head.append(cell);
 
         //Body of the list
         result.forEach( function (row, index) {
@@ -63,7 +66,7 @@ function buildListStub(idDiv,result,elt) {
 
             if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
                 var name = $('<a>');
-                name.html(row.name);
+                name.html(row.name+'&nbsp;');
                 name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
                 name.attr('title', 'Accessing '+elt_type.slice(0, -1));
                 name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
@@ -100,7 +103,7 @@ function buildListStub(idDiv,result,elt) {
 
 
                 op_td1.append(svg);
-                op_td2.append('&nbsp;'+row.name);
+                op_td2.append('&nbsp;'+row.name+'&nbsp;');
                 op_tr.append(op_td1);
                 op_tr.append(op_td2);
 
@@ -126,6 +129,13 @@ function buildListStub(idDiv,result,elt) {
             n_row.append(n_td1, n_td2);
             new_td.append(n_table);
             new_row.append(new_td);
+
+            //Revision cell for operators
+            if (tmp_elt.indexOf('Operators') != -1) {
+                var new_td = $('<td>');
+                new_td.append(row.default_code_ref);
+                new_row.append(new_td);
+            }
 
             lcg.forEach( function (lelt, index) {
                 if (document.getElementById("cbColSelect"+lelt).checked) {
@@ -257,23 +267,32 @@ function listRequestStub(idDiv, n, elt, bd) {
     else if (elt == 'Operators/tmpOperator') {
         sakura.apis.hub.op_classes.list().then(function (operators) {
             var result = new Array();
-            console.log(result);
             operators.forEach( function(op) {
                 ///////////////SANDBOX - START
-                //op.owner = 'mike';
+                op.owner = 'mike';
                 ///////////////SANDBOX - END
 
-                result_info = { 'name': op.name,
-                                'shortDesc': op.short_desc,
+                var result_info = { 'shortDesc': op.short_desc,
+                                    'modif': op.modification_date};
+                Object.keys(op).forEach( function(key){
+                    if (key != 'shortDesc' && key != 'modif') {
+                        result_info[key] = op[key];
+                    }
+                });
+
+                /*result_info = { 'shortDesc': op.short_desc,
+                                'modif': op.modification_date,
+
+
+                                'name': op.name,
                                 'tags': op.tags,
                                 'id': op.id,
-                                'daemon': op.daemon,
                                 'svg': op.svg,
                                 'date': op.date,
                                 'owner': op.owner,
-                                'modif': op.modification_date,
                                 'repo_url': op.repo_url,
-                                'subdir': op.subdir};
+                                'code_subdir': op.code_subdir,
+                              };*/
 
                 //Display of undefined fields
                 Object.keys(result_info).forEach( function(key) {
