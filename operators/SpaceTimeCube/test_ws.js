@@ -81,6 +81,9 @@ function init_server() {
             else if (j.key == 'hide_trajectories' || j.key == 'show_trajectories') {
                 console.log(j.value);
             }
+            else if (j.key == 'toggle_density') {
+                send('image', [imageQ]);
+            }
             else if (['move',
                       'wheel',
                       'wiggle',
@@ -255,6 +258,10 @@ function select_semantic(index) {
 
 function toggle_selection(event) {
     send('toggle_selection', [$('#selection_checkbox').is(":checked")]);
+}
+
+function toggle_density(event) {
+    send('toggle_density', [$('#density_checkbox').is(":checked")]);
 }
 
 function send(key, data) {

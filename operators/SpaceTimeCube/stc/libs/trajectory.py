@@ -39,6 +39,7 @@ class data:
         self.colors_file    = None
         self.hl_semantic    = 0                 # the current semantic that gives the trakectory its color
         self.semantic_names = []
+        self.density   = False
         self.display_density = False
 
     def clean(self):
@@ -46,6 +47,9 @@ class data:
 
     def toggle_density(self, b):
         self.display_density = b
+
+    def read_density(self, b):
+        self.density = b
 
     def traject_from_name(self, name):
         for i in range(len(self.trajects_names)):
@@ -80,10 +84,9 @@ class data:
             self.trajects[ind].points.append([c[1], *m])
 
             density = [1, 1]
-            if self.display_density == True:
+            if self.density == True:
                 try:
                     density = [float(c['nb_trajs'])/10, 1]
-                    #density = [1, 1]
                 except:
                     pass
             self.trajects[ind].densities.append(density)
@@ -188,14 +191,20 @@ class data:
             if i in self.displayed:
                 t.display_indice =  len(vertices)
                 vertices.append(t.points[0])
-                densities.append(t.densities[0])
+                if self.display_density:
+                    densities.append(t.densities[0])
+                else:
+                    densities.append([1,1])
                 colors.append([0,0,0,0])
 
                 if len(t.sem_colors) > 0:
                     sem_colors.append([0,0,0,0])
                     for i2 in range(len(t.points)):
                         vertices.append(t.points[i2])
-                        densities.append(t.densities[i2])
+                        if self.display_density:
+                            densities.append(t.densities[i2])
+                        else:
+                            densities.append([1,1])
                         col  = copy.copy(t.color)
                         scol = copy.copy(t.sem_colors[i2])
                         if len(selected) > 0 and not i in selected:
@@ -207,7 +216,10 @@ class data:
                 else:
                     for i2 in range(len(t.points)):
                         vertices.append(t.points[i2])
-                        densities.append(t.densities[i2])
+                        if self.display_density:
+                            densities.append(t.densities[i2])
+                        else:
+                            densities.append([1,1])
                         col = copy.copy(t.color)
                         if len(selected):
                             if not i in selected:
@@ -215,7 +227,10 @@ class data:
                         colors.append(col)
 
                 vertices.append(t.points[-1])
-                densities.append(t.densities[-1])
+                if self.display_density:
+                    densities.append(t.densities[-1])
+                else:
+                    densities.append([1,1])
                 colors.append([0,0,0,0])
 
         return np.array(vertices), np.array(densities), np.array(colors), np.array(sem_colors)

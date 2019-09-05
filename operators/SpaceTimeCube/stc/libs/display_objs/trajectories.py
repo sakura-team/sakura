@@ -70,8 +70,8 @@ class trajectories:
         return sh.create(   dir+'/trajects.vert',
                             None,
                             dir+'/trajects.frag',
-                            [self.attr_vertices, self.attr_colors, self.attr_densities],
-                            ['in_vertex', 'in_color', 'in_density'],
+                            [self.attr_vertices, self.attr_colors],
+                            ['in_vertex', 'in_color'],
                             glsl_version)
 
     def geometry(self, data, selected = []):

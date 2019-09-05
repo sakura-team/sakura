@@ -83,7 +83,6 @@ class SpaceTimeCube:
         self.colors_file        = None
         self.floor_shapes_file  = None
         self.display_shadows    = True
-        self.display_density    = False
         self.selection_activated = True
         self.back_color         = [.31,.63,1.0,1.0]
 
@@ -477,6 +476,11 @@ class SpaceTimeCube:
         else:
             sh.display_list([self.sh_back_trajects])
 
+        vp = glGetInteger(GL_VIEWPORT)
+        buffer = glReadPixels(0, 0, vp[2], vp[3], GL_RGB, GL_UNSIGNED_BYTE)
+        image = Image.frombuffer('RGB', (vp[2], vp[3]), buffer, 'raw', 'RGB', 0, 1).transpose(Image.FLIP_TOP_BOTTOM)
+        image.save('saved.png')
+
         ccolor = self.closest_color(10)
         t_indice = -1
         if ccolor != -1 and ccolor in self.data.trajects_ids:
@@ -505,7 +509,8 @@ class SpaceTimeCube:
         self.trajs.colors = self.trajs.basic_colors_list[0: len(self.trajs.vertices)]
 
         self.trajs.update_arrays('trajectories')
-        sh.display_list([self.sh_shadows, self.trajs.sh])
+        #sh.display_list([self.sh_shadows, self.trajs.sh])
+        sh.display_list([self.trajs.sh])
         p_indice = self.closest_color(10)
 
         self.trajs.vertices = copy.copy(cop_vertices)
@@ -744,6 +749,8 @@ class SpaceTimeCube:
             self.update_floor()
         elif key == b'F':
             self.floor.set_updatable_height(not self.floor.updatable_height)
+        elif key == b'q':
+            self.toggle_density(not self.data.display_density)
         elif int(key) in range(0,10):
             if not int(key) in self.selected_trajects:
                 self.select_trajects([int(key)])
@@ -943,6 +950,11 @@ class SpaceTimeCube:
 
     def toggle_density(self, b):
         self.data.toggle_density(b)
+        self.trajs.geometry(self.data)
+        self.trajs.update_arrays()
+
+    def read_density(self, b):
+        self.data.read_density(b)
 
     def toggle_selection(self, b):
         self.selection_activated = b

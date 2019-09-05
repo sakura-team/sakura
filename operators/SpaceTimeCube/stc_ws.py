@@ -32,7 +32,7 @@ class wsock:
         print("  performance\t: high (default), low")
         print("  shadows\t: yes (default), no")
         print("  verbose\t: display some activaty infos in prompt")
-        print("  density\t: activate density display")
+        print("  density\t: activate density reading")
         print()
 
     def __init__(self):
@@ -99,7 +99,7 @@ class wsock:
         self.stc.init()
         self.stc.clean_data()
         if self.density:
-            self.stc.toggle_density(True)
+            self.stc.read_density(True)
         self.stc.load_data(file = self.data_file)
         self.stc.update_floor()
 
@@ -217,7 +217,8 @@ class wsock:
                     'unselect_trajects_by_name':    self.stc.unselect_trajects_by_name,
                     'select_trajects_by_name':      self.stc.select_trajects_by_name,
                     'unselect_all_trajects':self.stc.unselect_all_trajects,
-                    'toggle_selection':     self.stc.toggle_selection
+                    'toggle_selection':     self.stc.toggle_selection,
+                    'toggle_density':       self.stc.toggle_density
                     })
 
     def loop(self):
