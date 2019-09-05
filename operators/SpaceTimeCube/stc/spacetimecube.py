@@ -85,6 +85,7 @@ class SpaceTimeCube:
         self.display_shadows    = True
         self.selection_activated = True
         self.back_color         = [.31,.63,1.0,1.0]
+        self.trajects_width      = 1
 
     def init(self):
         self.mouse = [ -1, -1 ]
@@ -259,7 +260,7 @@ class SpaceTimeCube:
 
         def update_uni_back_shadows():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
-            p_size  = h*2/(self.height)
+            p_size  = h*2/(self.height)*self.trajects_width
             self.sh_back_shadows.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_back_shadows.set_uniform("pixel_size", p_size, 'f')
             self.sh_back_shadows.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
@@ -299,7 +300,7 @@ class SpaceTimeCube:
 
         def update_uni_back_trajects():
             h       = self.projo.near*math.tan(self.projo.v_angle/2.0)
-            p_size  = h*2/(self.height)
+            p_size  = h*2/(self.height)*self.trajects_width
             self.sh_back_trajects.set_uniform("cube_height", self.cube.height, 'f')
             self.sh_back_trajects.set_uniform("pixel_size", p_size, 'f')
             self.sh_back_trajects.set_uniform("nb_pixels", self.thickness_of_backs, 'i')
@@ -952,6 +953,9 @@ class SpaceTimeCube:
         self.data.toggle_density(b)
         self.trajs.geometry(self.data)
         self.trajs.update_arrays()
+
+    def set_trajects_width(self, v):
+        self.trajects_width = v
 
     def read_density(self, b):
         self.data.read_density(b)

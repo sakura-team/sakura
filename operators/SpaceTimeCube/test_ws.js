@@ -81,7 +81,7 @@ function init_server() {
             else if (j.key == 'hide_trajectories' || j.key == 'show_trajectories') {
                 console.log(j.value);
             }
-            else if (j.key == 'toggle_density') {
+            else if (j.key == 'toggle_density' || j.key == 'set_trajects_width') {
                 send('image', [imageQ]);
             }
             else if (['move',
@@ -317,6 +317,12 @@ function full_screen() {
     canvas.height = $(window).height();
     send('resize', [$(window).width(), $(window).height()]);
 }
+
+function trajects_width() {
+    var val = document.getElementById('trajects_width_range').value/10;
+    send('set_trajects_width', [val]);
+}
+
 canvas.addEventListener('mousemove', function(evt) {
     var d = Date.now();
     if ((d - mouse_move_pre_date)/1000 > 1/max_messages_per_seconds) {

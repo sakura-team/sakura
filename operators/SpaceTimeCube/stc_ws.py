@@ -218,7 +218,8 @@ class wsock:
                     'select_trajects_by_name':      self.stc.select_trajects_by_name,
                     'unselect_all_trajects':self.stc.unselect_all_trajects,
                     'toggle_selection':     self.stc.toggle_selection,
-                    'toggle_density':       self.stc.toggle_density
+                    'toggle_density':       self.stc.toggle_density,
+                    'set_trajects_width':    self.stc.set_trajects_width
                     })
 
     def loop(self):

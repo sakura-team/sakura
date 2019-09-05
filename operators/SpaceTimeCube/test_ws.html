@@ -66,26 +66,44 @@
             <ul class="dropdown-menu" id="semantic_dropdown" overflow: auto>
               </ul>
             </li>
-            <button class="btn" style="margin-top: 9px" onclick='full_screen();'>
+            <li>
+              <button class="btn" style="margin-top: 9px" onclick='full_screen();'>
                 <span class="glyphicon glyphicon-resize-full" aria-hidden="true"></span>
               </button>
-            <button class="btn" style="margin-top: 9px" onclick='refresh();'>
+            </li>
+            <li>
+              <button class="btn" style="margin-top: 9px" onclick='refresh();'>
                 <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-            </button>
-            <button class="btn" style="margin-top: 9px" onclick='unselect_all();'>
-                <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
-            </button>
-            <div>
-                <input type="checkbox" class="custom-control-input" id="density_checkbox" onclick="toggle_density()">
-                <label class="custom-control-label">Density</label>
-            </div>
-            <div>
-                <input type="checkbox" checked class="custom-control-input" id="selection_checkbox" onclick="toggle_selection()">
-                <label class="custom-control-label">Selection</label>
-            </div>
-
-<!-- Material unchecked -->
-
+              </button>
+            </li>
+            <li>
+              <button class="btn" style="margin-top: 9px" onclick='unselect_all();'>
+                  <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+              </button>
+            </li>
+            <li>
+              &nbsp;
+              <div>
+                  &nbsp;
+                  <input type="checkbox" checked class="custom-control-input" id="selection_checkbox" onclick="toggle_selection()">
+                  <label class="custom-control-label">Selection</label>
+              </div>
+            </li>
+            <li>
+              &nbsp;
+              <div>
+                  &nbsp;
+                  <input type="checkbox" class="custom-control-input" id="density_checkbox" onclick="toggle_density()">
+                  <label class="custom-control-label">Density</label>
+              </div>
+            </li>
+            <li>
+              &nbsp;
+              Trajects width
+              <div class="slidecontainer" style="width: 100%">
+                &nbsp;<input type="range" min="1" max="100" value="1" class="slider" step=5 id="trajects_width_range" oninput="trajects_width();">
+              </div>
+            </li>
           </ul>
 
         </nav>
