@@ -43,6 +43,9 @@ class ColumnSelectionParam(Param):
                 param_label = self.label,
                 input_name = self.linked_input.name
         )
+    @classmethod
+    def needs_one_input(cls):
+        return True
 
 class TagBasedColumnSelection(ColumnSelectionParam):
     'tag-based input column selection (combobox)'
@@ -74,6 +77,9 @@ class ComboParameter(Param):
         return CUSTOM_COMBO_CODE % dict(cls_name = self.cls_name)
     def get_cls_imports(self):
         return 'ComboParameter' # this will be our base class
+    @classmethod
+    def needs_one_input(cls):
+        return False
 
 PARAM_CLASSES = [
     TagBasedColumnSelection,
