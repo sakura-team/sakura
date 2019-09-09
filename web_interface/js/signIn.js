@@ -165,9 +165,11 @@ function signInSubmitControl(event, login, passw) {
 
 function openUserProfil(event) {
     sakura.apis.hub.users.current.info().then(function (info) {
-        console.log(info);
+        fill_profil_modal(info);
     });
+}
 
+function logOut(event) {
     res = confirm("Sign Out?");
     if (res) {
       sakura.apis.hub.logout().then(function (result) {
@@ -249,14 +251,37 @@ function changePasswordSubmitControl(event) {
 
 function fill_profil_button() {
     sakura.apis.hub.users.current.info().then( function (login) {
+        var gul = null;
         if (login) {
-            var butt = $('<button>', {'onclick': "openUserProfil(event);",
-                                      'class': "btn btn-info dropdown-toggle"});
+            var butt = $('<button>', {'class': "btn btn-secondary dropdown-toggle",
+                                      'type': "button",
+                                      'data-toggle':"dropdown",
+                                      'id': "dropdownProfilButton"});
             var span = $('<span>', {'class': "glyphicon glyphicon-user",
                                     'aria-hidden': "true"})
             butt.append(span);
-            butt.append('&nbsp;&nbsp;'+login.login);
+            butt.append('&nbsp;&nbsp;'+login.login+'&nbsp;&nbsp;');
+            butt.append('<span class="caret"></span>');
+
+            gul = $('<ul>', { 'class':"dropdown-menu dropdown-menu-right",
+                                    'aria-labelledby': "dropdownProfilButton"});
+            var li1 = $('<li>', {'role': "presentation"});
+            var li2 = $('<li>', {'role': "presentation", 'class': "divider"});
+            var li3 = $('<li>', {'role': "presentation"});
+
+            var a1 = $('<a>', {     'class': "dropdown-item",
+                                    'text': "Profil",
+                                    'onclick': "openUserProfil(event);"});
+            var a2 = $('<a>', {     'class': "dropdown-item",
+                                    'href':"#",
+                                    'text': "Log Out",
+                                    'onclick': "logOut(event);"});
+            li1.append(a1);
+            li3.append(a2);
+            gul.append(li1, li2, li3);
+
             current_login = login;
+
         }
         else {
             var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
@@ -271,7 +296,39 @@ function fill_profil_button() {
         }
         $('#idSignInWidget').empty();
         $('#idSignInWidget').append(butt);
+        if (gul) {
+            $('#idSignInWidget').append(gul);
+        }
     });
+}
+
+function fill_profil_modal(user_infos) {
+    var keys = Object.keys(user_infos);
+
+    var bdy = $('#profil_body');
+    bdy.empty();
+
+    var div = $('<div>', {  'class': "panel panel-default"});
+    var divh = $('<div>', { 'class': "panel-heading",
+                            'text': "General Informations"})
+    var divb = $('<div>', { 'class': "panel-body"})
+
+    var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
+                        'style': "margin-bottom: 0px; width: 100%;"})
+    keys.forEach( function(key) {
+        var dt = $('<dt>', {'text': key});
+        var txt = user_infos[key];
+        if (user_infos[key] === '' || user_infos[key] == null) {
+            txt = '<i><font color="lightgrey">not specified</font></i>';
+        }
+        var dd = $('<dd>', {'html': txt});
+        dl.append(dt, dd);
+    });
+    divb.append(dl);
+    div.append(divh, divb);
+    bdy.append(div);
+
+    $('#profil_modal').modal('show');
 }
 
 function not_implemented(s = '') {
