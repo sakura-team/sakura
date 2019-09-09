@@ -36,6 +36,8 @@ class HubContext(object):
                         HubContext.PW_RECOVERY_SECRETS_LIFETIME)
         self.transfers = {}
         HubContext._instance = self
+    def restore(self):
+        self.op_classes.restore()
     @property
     def session(self):
         session_id = getattr(greenlet_env, 'session_id', None)

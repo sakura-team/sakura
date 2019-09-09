@@ -158,3 +158,11 @@ class OpClassMixin(BaseMixin):
         if len(commit_refs) > 0:
             for ref in commit_refs:
                 api.prefetch_code(*ref)
+
+    @classmethod
+    def restore(cls):
+        # hub was restarted.
+        # cleanup any sandbox class that was not properly unregistered.
+        for op_cls in cls.select():
+            if op_cls.repo['type'] == 'sandbox':
+                op_cls.unregister()

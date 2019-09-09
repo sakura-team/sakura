@@ -8,7 +8,7 @@ from sakura.hub.context import HubContext
 from sakura.hub.web.greenlet import web_greenlet
 from sakura.hub.daemons.greenlet import daemons_greenlet
 from sakura.hub.cleanup import plan_cleanup
-from sakura.hub.db import instanciate_db
+from sakura.hub.db import instanciate_db, db_session_wrapper
 from sakura.common.tools import set_unbuffered_stdout, \
                                 wait_greenlets, debug_ending_greenlets
 from sakura.common.planner import PlannerGreenlet
@@ -26,6 +26,8 @@ def run():
         planner_greenlet = PlannerGreenlet()
         # create shared context
         context = HubContext(db, planner_greenlet)
+        with db_session_wrapper():
+            context.restore()
         # run greenlets and wait until they end.
         g1 = planner_greenlet.spawn()
         g2 = Greenlet.spawn(daemons_greenlet, context)
