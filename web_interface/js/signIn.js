@@ -271,17 +271,20 @@ function fill_profil_button() {
 
             var a1 = $('<a>', {     'class': "dropdown-item",
                                     'text': "Profil",
-                                    'onclick': "openUserProfil(event);"});
+                                    'onclick': "openUserProfil(event);",
+                                    'style': "cursor: pointer;"});
             var a2 = $('<a>', {     'class': "dropdown-item",
                                     'href':"#",
-                                    'text': "Log Out",
+                                    'html': "Log Out&nbsp;&nbsp;",
                                     'onclick': "logOut(event);"});
+            var span_off = $('<span>', {'class': "glyphicon glyphicon-off",
+                                        'aria-hidden': "true"});
+            a2.append(span_off);
             li1.append(a1);
             li3.append(a2);
             gul.append(li1, li2, li3);
 
             current_login = login;
-
         }
         else {
             var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
@@ -303,33 +306,107 @@ function fill_profil_button() {
 }
 
 function fill_profil_modal(user_infos) {
-    var keys = Object.keys(user_infos);
-
     var bdy = $('#profil_body');
     bdy.empty();
 
-    var div = $('<div>', {  'class': "panel panel-default"});
-    var divh = $('<div>', { 'class': "panel-heading",
-                            'text': "General Informations"})
-    var divb = $('<div>', { 'class': "panel-body"})
+    var div   = $('<div>', {  'class': "panel panel-default"});
+    var divh  = $('<div>', {  'class': "panel-heading",
+                              'text': "General Informations"})
+    var divb  = $('<div>', {  'class': "panel-body"})
+    var dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
+                              'style': "margin-bottom: 0px; width: 100%;"})
 
-    var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
-                        'style': "margin-bottom: 0px; width: 100%;"})
-    keys.forEach( function(key) {
-        var dt = $('<dt>', {'text': key});
+    Object.keys(user_infos).forEach( function(key) {
         var txt = user_infos[key];
         if (user_infos[key] === '' || user_infos[key] == null) {
             txt = '<i><font color="lightgrey">not specified</font></i>';
         }
-        var dd = $('<dd>', {'html': txt});
-        dl.append(dt, dd);
+        dl.append($('<dt>', {'text': key}),
+                  $('<dd>', {'html': txt}));
     });
-    divb.append(dl);
-    div.append(divh, divb);
-    bdy.append(div);
+    bdy.append(div.append(divh, divb.append(dl)));
 
+    ////////////////////TEMP
+    user_infos['privileges'] = ['admin'];
+    ////////////////////TEMP
+
+    var div = $('<div>', {  'class': "panel panel-default"});
+    var divh = $('<div>', { 'class': "panel-heading",
+                            'text': "Parameters"})
+    var divb = $('<div>', { 'class': "panel-body"})
+
+    var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
+                        'style': "margin-bottom: 0px; width: 100%;"})
+
+    var privileges = ['admin', 'developer'];
+    privileges.forEach(function (privilege) {
+        var dd = $('<dd>');
+        if (user_infos['privileges'].indexOf(privilege) == -1) {
+            var a = $('<a>', {'style': "cursor: pointer;",
+                              'text': "ask for"});
+            a.attr('onclick', "ask_for_privilege_open_modal(\""+privilege+"\");");
+            dd.append(a);
+        }
+        else {
+            dd.append("yes");
+        }
+        dl.append($('<dt>', {'text': privilege}),
+                    dd);
+    });
+
+    bdy.append(div.append(divh, divb.append(dl)));
     $('#profil_modal').modal('show');
 }
+
+//Privilege Managment
+function ask_for_privilege_open_modal(privilege) {
+
+    var txt1 = "An email will be sent to the administrators for asking for \
+                a <b>"+privilege+"</b> status. Please describe your needs.";
+
+    var txt2 = "Hello,\n\nI am a ...,\n";
+    txt2 += "I would like to get "+privilege+" status for ...\n\n";
+    txt2 += "Thank you !";
+    h = $('#web_interface_asking_privilege_modal_header');
+    b = $('#web_interface_asking_privilege_modal_body');
+    h.empty();
+    b.empty();
+    h.append("<h3><font color='white'>Asking for "+privilege+" Access</font></h3>");
+    b.append($('<p>', {html: txt1}));
+
+    var ti = $('<textarea>', {  class: 'form-control',
+                                id: 'web_interface_asking_privilege_textarea',
+                                rows: '6',
+                                text: txt2});
+    b.append(ti);
+    $('#web_interface_asking_privilege_modal_button').click(function () { ask_for_privilege(privilege)});
+    $('#web_interface_asking_privilege_modal').modal('show');
+}
+
+function ask_for_privilege(grant, callback) {
+    /*var txt = $('#web_interface_asking_access_textarea').val();
+    current_remote_api_object().grants.request(grant, txt).then(function(result) {
+        if (!result) {
+            $('#web_interface_asking_access_modal').modal('hide');
+
+            //displayig success modal during 1 sec
+            $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
+            $('#web_interface_success_modal').modal('show');
+            setTimeout( function () {
+                $('#web_interface_success_modal').modal('hide');
+                if (callback)
+                    callback();
+            }, 1000, callback);
+        }
+        else {
+            console.log("SHIT");
+        }
+    });
+    */
+    not_yet();
+    $('#web_interface_asking_privilege_modal').modal('hide');
+}
+
 
 function not_implemented(s = '') {
   if (s == '') {

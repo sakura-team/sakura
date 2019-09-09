@@ -113,13 +113,15 @@ function operators_creation_url_input_change(event) {
 }
 
 function operators_update_creation_modal() {
-    //Before opening, we should be should the user can register an operator
+    //Before opening, we should be sure the user can register an operator
     if ( 1 == 1) {
         $("#operators_submit_button").html('Register');
         var select1 = $('#operators_creation_revision');
         select1.selectpicker('refresh');
         var select2 = $('#operators_creation_sub_dir');
         select2.selectpicker('refresh');
+        var select3 = $('#operators_creation_access_scope');
+        select3.selectpicker('refresh');
         creation_operator_check_URL();
     }
 }
@@ -156,10 +158,11 @@ function operators_creation_new() {
     var hash      = opt.commit_hash;
     var url       = byID('operators_creation_url_input').value;
     var sub_dir   = byID('operators_creation_sub_dir').value;
+    var access    = byID('operators_creation_access_scope').value;
     var revision  = opt.branch
 
 
-    sakura.apis.hub.op_classes.register(url, revision, hash, sub_dir).then(function (result){
+    sakura.apis.hub.op_classes.register(url, revision, hash, sub_dir, access).then(function (result){
         main_success_alert('Operator Registration', 'Registered !', function () {
             operators_close_modal();
         }, 2);
