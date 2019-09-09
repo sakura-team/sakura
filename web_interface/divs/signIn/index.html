@@ -21,17 +21,12 @@
 					  <label for="signInPassword">Password</label>
 					  <input name="signInPassword" class="form-control" id="signInPassword" placeholder="Password" type="password" required=""/>
 					</div>
-					<!--<div class="checkbox">
-					  <label>
-						<input id="signInRememberMe" name="signInRememberMe" type="checkbox" /> Remember me
-					  </label>
-					</div>-->
 					<input name="authentification" value="connect" type="hidden" />
 					<input type="button" class="col-md-5 pull-left btn btn-default" id="signInSubmit" value="Sign In" onclick="signInSubmitControl(event);">
-<!-- 					<button type="submit" class="btn btn-default" id="signInSubmit" onclick="signInSubmitControl(event);">Connect</button> -->
 				  </form>
 				</div>
 			  </div>
+
 			  <!-- Password Recovery -->
 			  <div id="pwdRecovery" class="panel panel-default">
 				<a data-toggle="collapse" data-parent="#accordion" href="#collapsePWD">
@@ -82,15 +77,6 @@
 			  <!-- Change Password [END] -->
 			</div>
 
-			<!--			<div class="bs-callout bs-callout-warning hidden">
-						  <h4>Oh snap!</h4>
-						  <p>This form seems to be invalid :(</p>
-						</div>
-
-						<div class="bs-callout bs-callout-info hidden">
-						  <h4>Yay!</h4>
-						  <p>Everything seems to be ok :)</p>
-						</div>-->
 			<!-- ----------------------- NEW ACCOUNT SECTION------------------------ -->
 			<div class="col-md-7">
 			  <h6>New account:</h6>
@@ -137,7 +123,6 @@
 						M: <input type="radio" name="gender" id="genderM" value="M" required="">
 						F: <input type="radio" name="gender" id="genderF" value="F">
 					  </p>
-
 					  <div class="form-group">
 						<label for="signUpCountry">Country *</label>
 						<select class="form-control" id="signUpCountry" name="country" placeholder="Your Country1" required=""/>
@@ -159,17 +144,12 @@
 						<label for="signUpDomain">Work domain</label>
 						<input type="text" class="form-control" id="signUpDomain" name="work_domain" placeholder="Your domain" />
 					  </div>
-
 					  <div class="form-group checkbox">
 						<label>
 						  <input id="signInCGU" value="cguNotRead" name="signInCGU" type="checkbox" required=""/> I have read and I accept <a data-toggle="modal" href="#idDivCGU">terms</a>&nbsp;*
 						</label>
 					  </div>
-
 					  <br/>
-
-<!--						<input name="authentification" value="newAccount" type="hidden" />-->
-
 					  <input type="button" class="col-md-5 pull-left btn btn-default" id="signUpSubmit" value="Create account" onclick="registerUser(event);">
 
 					</div>

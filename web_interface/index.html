@@ -52,23 +52,28 @@
                 cb = function() {};
             }
             w3IncludeHTML(cb);
+            fill_profil_button();
         }
     </script>
     </head>
     <body>
         <div class="container-fluid">
+            <table width =100%>
+            <tr>
+            <td>
             <h1>
                 <a onclick="showDiv(event,'');" href="http://sakura.imag.fr" style="cursor: pointer;">
                     <img src="media/logo_Sakura_beta.png" alt="logo_Sakura" height="65" width="280" />
                 </a>
             </h1>
             <p>Store and Analyse Data</p>
-            <div id="idTopRightWidget" style="top: 0px; right: 0px; width: 160px; position: absolute; text-align: right;">
+            <td align='right' valign='bottom'>
+            <div id="idTopRightWidget" style='margin-bottom: 10px;'>
                 <div id="idSignInWidget" name="signInWidget">
-                    <a onclick="initiateSignInModal(event);" class="btn" data-toggle="modal" href="#signInModal">
+                    <button onclick="initiateSignInModal(event);" class="btn btn-info dropdown-toggle" data-toggle="modal" href="#signInModal">
                         <span class="glyphicon glyphicon-user" aria-hidden="true">
-                        </span>&nbsp; Sign in &nbsp;
-                    </a>
+                        </span>&nbsp; Sign in
+                    </button>
                 </div>
                 <div id="idEditModeWidget" style="display:none;">
                     <a  onclick="editModeSubmitControl(event);" style="cursor: pointer;">
@@ -76,6 +81,7 @@
                     </a>
                 </div>
             </div>
+            </table>
             <nav class="navbar navbar-default" style="margin-bottom:1px; ">
                 <ul id="navbar_ul" class="nav navbar-nav">
                     <li id="idNavBarHome" class="active">
@@ -242,6 +248,22 @@
             </div>
         </div>
 
+        <div id="profil_modal" class="modal fade" role="dialog">
+            <div class="modal-dialog modal-md" role="dialog">
+                <div class="modal-content">
+                    <div id="profil_header" class="modal-header" style="background-color : rgba(255,255,255,1);">
+                        <h3>Profil</h3>
+                    </div>
+                    <div id="profil_body" class="modal-body">
+                        <p> Body</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script src="js/sakura-common.js"></script>
         <script>
             var DEBUG = true;
@@ -253,20 +275,6 @@
         <script src="/webcache/cdnjs/crypto-js/3.1.2/rollups/hmac-sha256.js"></script>
         <script src="/webcache/cdnjs/crypto-js/3.1.2/components/enc-base64-min.js"></script>
         <script src="js/signIn.js"></script>
-        <script>
-            //Here we ask the hub if there is a current login
-            sakura.apis.hub.users.current.info().then(function(result) {
-                if (result) {
-                    signInWidget = document.getElementsByName("signInWidget")[0];
-                    signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;&nbsp;'+result.login+'&nbsp;&nbsp;</a>';
-                    current_login = result;
-                }
-                else {
-                    current_login = null;
-                }
-            });
-        </script>
-
         <script src="js/web_interface.js"></script>
         <script src="js/databases.js"></script>
         <script src="js/operators.js"></script>
