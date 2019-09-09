@@ -113,13 +113,15 @@ function operators_creation_url_input_change(event) {
 }
 
 function operators_update_creation_modal() {
-    $("#operators_submit_button").html('Register');
-
-    var select1 = $('#operators_creation_revision');
-    select1.selectpicker('refresh');
-    var select2 = $('#operators_creation_sub_dir');
-    select2.selectpicker('refresh');
-    creation_operator_check_URL();
+    //Before opening, we should be should the user can register an operator
+    if ( 1 == 1) {
+        $("#operators_submit_button").html('Register');
+        var select1 = $('#operators_creation_revision');
+        select1.selectpicker('refresh');
+        var select2 = $('#operators_creation_sub_dir');
+        select2.selectpicker('refresh');
+        creation_operator_check_URL();
+    }
 }
 
 function operators_creation_revision_change(event) {

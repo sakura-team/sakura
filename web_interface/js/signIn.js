@@ -42,6 +42,8 @@ function initiateSignInModal(event) {
             }
         });
     });
+
+    $('#signInModal').show();
     // END: Populating the country codes -------------
 }
 
@@ -134,14 +136,12 @@ function signInSubmitControl(event, login, passw) {
             userSignInValues.login_or_email = loginOrEmail;
             userSignInValues.password = client_hashed;
             sakura.apis.hub.login(userSignInValues).then(function (wsResult) {
-    		    	  // console.log("wsResult:"+wsResult);
     		    	  $('#signInModal').on('hidden.bs.modal', function () {
     	    			    $(this).find('form').trigger('reset');
                 });
     	    		  $("#signInModal").modal("hide");
 
-                signInWidget = document.getElementsByName("signInWidget")[0];
-    	    		  signInWidget.innerHTML = '<a onclick="signOutSubmitControl(event);" style="cursor: pointer;"><span class="glyphicon glyphicon-user" aria-hidden="true"></span>&nbsp;&nbsp;'+wsResult+'&nbsp;&nbsp;</a>';
+                fill_profil_button();
     	    		  current_login = wsResult;
 
                 //Back to the current div
@@ -163,13 +163,15 @@ function signInSubmitControl(event, login, passw) {
     } //end if event click
 }
 
-function signOutSubmitControl(event) {
+function openUserProfil(event) {
+    sakura.apis.hub.users.current.info().then(function (info) {
+        console.log(info);
+    });
+
     res = confirm("Sign Out?");
     if (res) {
       sakura.apis.hub.logout().then(function (result) {
-            signInWidget = document.getElementsByName("signInWidget")[0];
-            signInWidget.innerHTML = '<a class="btn" data-toggle="modal" data-target="#signInModal"><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Sign in</a>';
-            showDiv(event, "");
+            fill_profil_button();
             current_login = null;
         });
     }
@@ -243,6 +245,33 @@ function changePasswordSubmitControl(event) {
   	       alert("Fill all the fields");
         }
     }
+}
+
+function fill_profil_button() {
+    sakura.apis.hub.users.current.info().then( function (login) {
+        if (login) {
+            var butt = $('<button>', {'onclick': "openUserProfil(event);",
+                                      'class': "btn btn-info dropdown-toggle"});
+            var span = $('<span>', {'class': "glyphicon glyphicon-user",
+                                    'aria-hidden': "true"})
+            butt.append(span);
+            butt.append('&nbsp;&nbsp;'+login.login);
+            current_login = login;
+        }
+        else {
+            var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
+                                      'class': "btn btn-info",
+                                      'data-toggle': "modal",
+                                      'href': "#signInModal"});
+            var span = $('<span>', {'class': "glyphicon glyphicon-user",
+                                    'aria-hidden': "true"})
+            butt.append(span);
+            butt.append('&nbsp;&nbsp;Sign In');
+            current_login = null;
+        }
+        $('#idSignInWidget').empty();
+        $('#idSignInWidget').append(butt);
+    });
 }
 
 function not_implemented(s = '') {
