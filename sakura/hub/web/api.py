@@ -351,6 +351,11 @@ class GuiToHubAPI:
         ##########
         return None if self.context.user is None else self.context.user
 
+    @api.users.current.grants.request
+    def request_user_grant(self, grant):
+        print(self.context.user, 'asking for grant', grant)
+        return None
+
     @api.users.list
     def list_all_users(self):
         return tuple(u.login for u in self.context.users.select())

@@ -382,7 +382,7 @@ function ask_for_privilege_open_modal(privilege) {
                                 rows: '6',
                                 text: txt2});
     b.append(ti);
-    $('#web_interface_asking_privilege_modal_button').click(function () { ask_for_privilege(privilege)});
+    $('#web_interface_asking_privilege_modal_button').click(function () { ask_for_privilege(privilege, null)});
     $('#web_interface_asking_privilege_modal').modal('show');
 }
 
@@ -406,8 +406,24 @@ function ask_for_privilege(grant, callback) {
         }
     });
     */
-    not_yet();
-    $('#web_interface_asking_privilege_modal').modal('hide');
+    sakura.apis.hub.users.current.grants.request(grant).then( function(result) {
+        if (!result) {
+            $('#web_interface_asking_privilege_modal').modal('hide');
+
+            //displayig success modal during 1 sec
+            $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
+            $('#web_interface_success_modal').modal('show');
+            setTimeout( function () {
+                $('#web_interface_success_modal').modal('hide');
+                if (callback)
+                    callback();
+            }, 1000, callback);
+        }
+        else {
+            alert('something went wrong !');
+        }
+    });
+
 }
 
 
