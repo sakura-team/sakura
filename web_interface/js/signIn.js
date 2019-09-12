@@ -270,7 +270,7 @@ function fill_profil_button() {
             var li3 = $('<li>', {'role': "presentation"});
 
             var a1 = $('<a>', {     'class': "dropdown-item",
-                                    'text': "Profil",
+                                    'text': "Profile",
                                     'onclick': "openUserProfil(event);",
                                     'style': "cursor: pointer;"});
             var a2 = $('<a>', {     'class': "dropdown-item",
@@ -311,7 +311,9 @@ function fill_profil_modal(user_infos) {
 
     var div   = $('<div>', {  'class': "panel panel-default"});
     var divh  = $('<div>', {  'class': "panel-heading",
-                              'text': "General Informations"})
+                              'html':  "<h4 style=\"margin-bottom: 0px; \
+                                        margin-top: 0px\">General Informations</h4>",
+                              'style': "margin-bottom: 0px; margin-top: 0px"})
     var divb  = $('<div>', {  'class': "panel-body"})
     var dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
                               'style': "margin-bottom: 0px; width: 100%;"})
@@ -327,12 +329,13 @@ function fill_profil_modal(user_infos) {
     bdy.append(div.append(divh, divb.append(dl)));
 
     ////////////////////TEMP
-    user_infos['privileges'] = ['admin'];
+    if (user_infos['privileges'] == null) user_infos['privileges'] = [];
     ////////////////////TEMP
 
     var div = $('<div>', {  'class': "panel panel-default"});
     var divh = $('<div>', { 'class': "panel-heading",
-                            'text': "Parameters"})
+                            'html': "<h4 style=\"margin-bottom: 0px; \
+                                    margin-top: 0px\">Parameters</h4>"})
     var divb = $('<div>', { 'class': "panel-body"})
 
     var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
