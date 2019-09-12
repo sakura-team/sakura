@@ -214,7 +214,9 @@ class JsonProtocol:
         if isinstance(obj, bytes):
             return '__bytes_' + obj.hex()
         else:
-            return obj
+            raise TypeError(
+                "Unserializable object {} of type {}".format(obj, type(obj))
+            )
     def dump(self, obj, f):
         try:
             # json.dump() function causes performance issues
@@ -226,9 +228,8 @@ class JsonProtocol:
                 default=self.fallback_handler)
             f.write(res_json)
         except BaseException as e:
-            print(e)
-            raise Exception('Dont know how to serialize "' + repr(obj) + \
-                        '" class=' + repr(obj.__class__))
+            print('FAILED to serialize an object, re-raise exception.')
+            raise
 
 JSON_PROTOCOL = JsonProtocol()
 
