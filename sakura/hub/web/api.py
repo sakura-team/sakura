@@ -32,7 +32,11 @@ class GuiToHubAPI:
 
     @api.op_classes.register
     def register_op_class(self, code_url, default_code_ref, default_commit_hash, code_subdir, access_scope):
-        #TODO: Dealing with the access_scope parameter
+        ########## TODO
+        ## Dealing with the access_scope parameter
+        print('OPERATORS ACCESS SCOPE is not implemented yet')
+        ##########
+
         return self.context.op_classes.register(self.context, code_url, \
                             default_code_ref, default_commit_hash, code_subdir)
 
@@ -341,6 +345,10 @@ class GuiToHubAPI:
 
     @api.users.current.info
     def get_current_login_name(self):
+        ########## TODO
+        ## Add privilege field in users info
+        print('USERS PRIVILEGE attribut is not implemented yet')
+        ##########
         return None if self.context.user is None else self.context.user
 
     @api.users.list

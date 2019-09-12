@@ -114,16 +114,31 @@ function operators_creation_url_input_change(event) {
 
 function operators_update_creation_modal() {
     //Before opening, we should be sure the user can register an operator
-    if ( 1 == 1) {
-        $("#operators_submit_button").html('Register');
-        var select1 = $('#operators_creation_revision');
-        select1.selectpicker('refresh');
-        var select2 = $('#operators_creation_sub_dir');
-        select2.selectpicker('refresh');
-        var select3 = $('#operators_creation_access_scope');
-        select3.selectpicker('refresh');
-        creation_operator_check_URL();
-    }
+    sakura.apis.hub.users.current.info().then( function(infos) {
+        if (infos.privileges != null &&
+            infos.privileges.indexOf('developper') != -1) {
+            $("#operators_submit_button").html('Register');
+            var select1 = $('#operators_creation_revision');
+            select1.selectpicker('refresh');
+            var select2 = $('#operators_creation_sub_dir');
+            select2.selectpicker('refresh');
+            var select3 = $('#operators_creation_access_scope');
+            select3.selectpicker('refresh');
+            creation_operator_check_URL();
+            $('#declare_operators_modal').modal('show');
+        }
+        else {
+            var mod = $('#main_alert_modal');
+            var mod_h = $('#main_alert_header');
+            var mod_b = $('#main_alert_body');
+            mod_h.empty();
+            mod_b.empty();
+
+            mod_h.append('<h3>Developer Status</h3>');
+            mod_b.append('<p>You do not have the <b>Developer</b> status needed for registering a new operator.<br>Please update your profile (user up-right button) and ask for it.');
+            mod.modal('show');
+        }
+    });
 }
 
 function operators_creation_revision_change(event) {
