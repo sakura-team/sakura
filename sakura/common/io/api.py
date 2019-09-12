@@ -1,4 +1,4 @@
-import collections, itertools, io, sys, traceback, builtins
+import collections, itertools, io, sys, traceback, builtins, random
 import gevent.pool
 from os import getpid
 from gevent.queue import Queue
@@ -37,6 +37,9 @@ class APIEndpoint:
             self.is_transferable = self.protocol.is_transferable
         else:
             self.is_transferable = lambda obj: isinstance(obj, IO_TRANSFERABLES)
+        self.debug_prefix = ''.join(random.choice('/*-+') for i in range(4)) + ' '
+    def print_debug(self, s, *args):
+        print_debug(self.debug_prefix + s, *args)
     def loop(self):
         try:
             # start
@@ -51,7 +54,6 @@ class APIEndpoint:
     def handle_next_message(self):
         try:
             msg = self.protocol.load(self.f)
-            print_debug('received message', msg)
         except BaseException as e:
             if isinstance(e, (EOFError, ConnectionResetError)):
                 print('remote end disconnected!')
@@ -65,9 +67,14 @@ class APIEndpoint:
             raise   # we should stop
         self.pool.spawn(self.handle_message, *msg)
     def handle_message(self, req_id, msg_type, *msg_args):
+        msg = (req_id, msg_type) + tuple(msg_args)
         if msg_type in (IO_REQ_FUNC_CALL, IO_REQ_ATTR):
+            self.print_debug('received request', msg)
+            self.debug_prefix += '  '
             self.handle_request(req_id, msg_type, *msg_args)
         else:
+            self.debug_prefix = self.debug_prefix[:-2]
+            self.print_debug('received response', msg)
             self.handle_response(req_id, msg_type, *msg_args)
     def handle_request(self, req_id, req_type, *req_args):
         with self.session_wrapper():
@@ -81,10 +88,11 @@ class APIEndpoint:
                 data = getattr(e, 'data', {})
                 out = (IO_RESP_REQUEST_ERROR, e.__class__.__name__, str(e), data)
             # send response
+            self.debug_prefix = self.debug_prefix[:-2]
             try:
                 self.protocol.dump((req_id,) + out, self.f)
                 self.f.flush()
-                print_debug("sent response", (req_id,) + out)
+                self.print_debug("sent response", (req_id,) + out)
             except BaseException as e:
                 print('could not send response:', e)
     def handle_response(self, req_id, *resp_info):
@@ -182,9 +190,10 @@ class APIEndpoint:
         req_id = self.req_ids.__next__()
         async_res = AsyncResult()
         self.reqs[req_id] = async_res
-        print_debug("sent request", (req_id,) + req)
+        self.print_debug("sent request", (req_id,) + req)
         self.protocol.dump((req_id,) + req, self.f)
         self.f.flush()
+        self.debug_prefix += '  '
         # synchronous mode, for web api
         if self.sync:
             self.handle_next_message()
