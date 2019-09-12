@@ -67,7 +67,7 @@ class Loader(SourceLoader):
 
     def get_filename(self, fullname):
         path = self.location
-        return str(path.relative_to(self.finder.root))
+        return str(path)
 
     def exec_module(self, module):
         if self.is_package:
