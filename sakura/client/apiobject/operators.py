@@ -14,7 +14,7 @@ class APIOperator:
             else:
                 return remote_obj
         def check_online():
-            if not get_remote_obj().info()['online']:
+            if not get_remote_obj().info()['enabled']:
                 raise APIRequestError('Operator is offline!')
         class APIOperatorImpl(APIObjectBase):
             __doc__ = 'Sakura ' + cls_name + ' Operator'
