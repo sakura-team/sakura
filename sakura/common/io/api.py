@@ -95,6 +95,7 @@ class APIEndpoint:
                 self.print_debug("sent response", (req_id,) + out)
             except BaseException as e:
                 print('could not send response:', e)
+            self.held_objects.flush()
     def handle_response(self, req_id, *resp_info):
         async_res = self.reqs[req_id]
         async_res.set(resp_info)

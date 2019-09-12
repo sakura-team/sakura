@@ -16,6 +16,7 @@ class HeldObjectsStore:
         self.__ids_per_object__ = {}
         self.__refcount_per_id__ = {}
         self.__held_ids__ = itertools.count()
+        self.__flushable_ids__ = set()
     def hold(self, obj):
         # hold obj locally then return id and origin.
         # check if this object is already held
@@ -37,15 +38,22 @@ class HeldObjectsStore:
     def __getitem__(self, held_id):
         return self.__objects_per_id__[held_id]
     def __delitem__(self, held_id):
-        if self.__refcount_per_id__[held_id] == 1:
-            obj = self.__objects_per_id__[held_id]
-            print_debug('released:', held_id, obj)
-            del self.__objects_per_id__[held_id]
-            del self.__ids_per_object__[obj]
-            del self.__refcount_per_id__[held_id]
+        self.__refcount_per_id__[held_id] -= 1
+        if self.__refcount_per_id__[held_id] == 0:
+            self.__flushable_ids__.add(held_id)
+    def flush(self):
+        if len(self.__flushable_ids__) > 0:
+            to_be_flushed = self.__flushable_ids__.copy()
+            self.__flushable_ids__ = set()
+            for held_id in to_be_flushed:
+                # verify that an async greenlet did not reuse the object
+                if self.__refcount_per_id__[held_id] == 0:
+                    obj = self.__objects_per_id__[held_id]
+                    print_debug('released:', held_id, obj)
+                    self.__objects_per_id__.pop(held_id)
+                    self.__ids_per_object__.pop(obj)
+                    self.__refcount_per_id__.pop(held_id)
             gc.collect()
-        else:
-            self.__refcount_per_id__[held_id] -= 1
     @classmethod
     def get_proxy(cls, api_endpoint, held_info):
         remote_held_id, origin = held_info[0], tuple(held_info[1:])
