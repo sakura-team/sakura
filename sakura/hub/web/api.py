@@ -351,6 +351,10 @@ class GuiToHubAPI:
 
     @api.users.current.info
     def get_current_login_info(self):
+        ########## TODO
+        ## Add privilege field in users info
+        print('USERS PRIVILEGE attribut is not implemented yet')
+        ##########
         return None if self.context.user is None else self.context.user.pack()
 
     @api.users.list
