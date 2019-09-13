@@ -36,7 +36,10 @@ class OpInstanceMixin(BaseMixin):
             OpInstanceMixin.MOVING.discard(self.id)
     @property
     def disabled_message(self):
-        return self.op_class.daemon.disabled_message
+        if self.op_class.enabled:
+            return 'Daemon running this operator was just stopped.'
+        else:
+            return self.op_class.disabled_message
     def __getattr__(self, attr):
         # find other attributes at the real operator
         # instance on the daemon side.
