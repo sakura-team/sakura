@@ -33,11 +33,11 @@ function main_success_alert(header_str, body_str, callback, time=0) {
     b.html('<h4 align="center" style="margin: 5px;"><font color="black"> '+body_str+'</font></h4>');
 
     $('#web_interface_success_modal').modal('show');
-        setTimeout( function () {
-            $('#web_interface_success_modal').modal('hide');
-            if (callback)
-                callback();
-        }, time*1000, callback);
+    setTimeout( function () {
+        $('#web_interface_success_modal').modal('hide');
+        if (callback)
+            callback();
+    }, time*1000, callback);
 }
 
 function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
@@ -57,6 +57,22 @@ function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     b_no.click(function() { func_no();  });
 
     $('#stub_asking_modal').modal();
+}
+
+function yes_no_asking(header_str, body_str, func_yes) {
+    var h = $('#web_interface_yes_no_modal_header');
+    var b = $('#web_interface_yes_no_modal_body');
+    var b_yes = $('#web_interface_yes_no_modal_button');
+
+    h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
+    b.html("<p>"+body_str+"</p>");
+    $('#web_interface_yes_no_modal').modal('show');
+
+    b_yes.unbind("click");
+    b_yes.click(function() {
+        func_yes();
+        $('#web_interface_yes_no_modal').modal('hide');
+    });
 }
 
 function matching_hub_name(obj) {
@@ -549,15 +565,9 @@ function web_interface_asking_access(grant, callback) {
     current_remote_api_object().grants.request(grant, txt).then(function(result) {
         if (!result) {
             $('#web_interface_asking_access_modal').modal('hide');
-
-            //displayig success modal during 1 sec
-            $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
-            $('#web_interface_success_modal').modal('show');
-            setTimeout( function () {
-                $('#web_interface_success_modal').modal('hide');
-                if (callback)
-                    callback();
-            }, 1000, callback);
+            var header = 'Asking for Access';
+            var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
+            main_success_alert(header, body, null, 1);
         }
         else {
             console.log("SHIT");
@@ -723,6 +733,10 @@ function web_interface_asking_change_access_scope() {
     h.html("<h3><font color='white'>Changing Access Scope on </font>"+web_interface_current_object_info.name+"</h3");
 
     b.html("Are you sure you want to change access scope from <b>'"+web_interface_current_object_info.access_scope+"'</b> to <b>'"+$('#web_interface_access_scope_select').val()+"'</b> ?");
+
+    var butt = $('#web_interface_yes_no_modal_button');
+    butt.unbind("click");
+    butt.click(function() { web_interface_change_access_scope(); });
 
     $('#web_interface_yes_no_modal').modal('show');
 }

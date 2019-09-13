@@ -170,13 +170,12 @@ function openUserProfil(event) {
 }
 
 function logOut(event) {
-    res = confirm("Sign Out?");
-    if (res) {
-      sakura.apis.hub.logout().then(function (result) {
+    yes_no_asking('Sign Out', 'Are you sure you want to sign out ?', function() {
+        sakura.apis.hub.logout().then(function (result) {
             fill_profil_button();
             current_login = null;
         });
-    }
+    });
 }
 
 function pwdRecoverySubmitControl(event) {
@@ -253,7 +252,7 @@ function fill_profil_button() {
     sakura.apis.hub.users.current.info().then( function (login) {
         var gul = null;
         if (login) {
-            var butt = $('<button>', {'class': "btn btn-secondary dropdown-toggle",
+            var butt = $('<button>', {'class': "btn btn-secondary dropdown-toggle btn-xs",
                                       'type': "button",
                                       'data-toggle':"dropdown",
                                       'id': "dropdownProfilButton"});
@@ -288,7 +287,7 @@ function fill_profil_button() {
         }
         else {
             var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
-                                      'class': "btn btn-info",
+                                      'class': "btn btn-info btn-xs",
                                       'data-toggle': "modal",
                                       'href': "#signInModal"});
             var span = $('<span>', {'class': "glyphicon glyphicon-user",
@@ -345,10 +344,11 @@ function fill_profil_modal(user_infos) {
     privileges.forEach(function (privilege) {
         var dd = $('<dd>');
         if (user_infos['privileges'].indexOf(privilege) == -1) {
-            var a = $('<a>', {'style': "cursor: pointer;",
-                              'text': "ask for"});
+            var a = $('<button>', { 'type': "button",
+                                    'style': "cursor: pointer;",
+                                    'text': "ask for"});
             a.attr('onclick', "ask_for_privilege_open_modal(\""+privilege+"\");");
-            dd.append(a);
+            dd.append('no&nbsp;&nbsp;', a);
         }
         else {
             dd.append("yes");
@@ -387,38 +387,12 @@ function ask_for_privilege_open_modal(privilege) {
 }
 
 function ask_for_privilege(grant, callback) {
-    /*var txt = $('#web_interface_asking_access_textarea').val();
-    current_remote_api_object().grants.request(grant, txt).then(function(result) {
-        if (!result) {
-            $('#web_interface_asking_access_modal').modal('hide');
-
-            //displayig success modal during 1 sec
-            $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
-            $('#web_interface_success_modal').modal('show');
-            setTimeout( function () {
-                $('#web_interface_success_modal').modal('hide');
-                if (callback)
-                    callback();
-            }, 1000, callback);
-        }
-        else {
-            console.log("SHIT");
-        }
-    });
-    */
     sakura.apis.hub.users.current.grants.request(grant).then( function(result) {
         if (!result) {
             $('#web_interface_asking_privilege_modal').modal('hide');
-
-            //displayig success modal during 1 sec
-            $('#web_interface_success_modal_header').html('<h3>Asking For New Status</h3>');
-            $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
-            $('#web_interface_success_modal').modal('show');
-            setTimeout( function () {
-                $('#web_interface_success_modal').modal('hide');
-                if (callback)
-                    callback();
-            }, 1000, callback);
+            var header = 'Asking For New Status';
+            var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
+            main_success_alert(header, body, null, 1);
         }
         else {
             alert('something went wrong !');
@@ -426,7 +400,6 @@ function ask_for_privilege(grant, callback) {
     });
 
 }
-
 
 function not_implemented(s = '') {
   if (s == '') {
