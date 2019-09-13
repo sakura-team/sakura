@@ -1,5 +1,6 @@
 from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestErrorOfflineDaemon
+from sakura.common.errors import APIOperatorError
 
 class DaemonMixin:
     APIS = {}
@@ -66,7 +67,12 @@ class DaemonMixin:
 
     def restore_op_instances(self):
         for op in self.op_instances:
-            op.restore()
+            try:
+                op.restore()
+            except APIOperatorError as e:
+                print('Could not restore an operator instance:', str(e))
+                op.delete_instance()
+                print('Operator instance was deleted.')
 
     def restore(self, name, origin_id, datastores, **kwargs):
         context = get_context()
