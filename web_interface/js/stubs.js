@@ -178,7 +178,7 @@ function buildListStub(idDiv,result,elt) {
 
         if (result.length == 0) {
             var new_row = $(tbody[0].insertRow());
-            var msg = "There is no accessible "+elt_type+".";
+            var msg = "There is no accessible "+elt_type;
             new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
         }
 
@@ -276,11 +276,15 @@ function listRequestStub(idDiv, n, elt, bd) {
             var result = new Array();
             dataflows.sort(dataflows_sort);
             dataflows.forEach( function(df) {
-                result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
-                                'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
-                                'tags': df.tags, 'owner': df.owner, 'grant_level': df.grant_level, 'access_scope': df.access_scope };
 
-                result.push(result_info);
+                ///////////////TEMP
+                if (df.owner == current_login.login) {
+                ///////////////TEMP
+                    result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
+                                  'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
+                                  'tags': df.tags, 'owner': df.owner, 'grant_level': df.grant_level, 'access_scope': df.access_scope };
+                    result.push(result_info);
+                }
             });
             buildListStub(idDiv,result,elt);
         });
