@@ -12,7 +12,7 @@ class NullContext:
 
 def connect_to_hub():
     sock = create_connection((conf.hub_host, conf.hub_port))
-    sock_file = sock.makefile(mode='rwb')
+    sock_file = sock.makefile(mode='rwb', buffering=0)
     return sock_file
 
 def iter_load_all_in_dir(package_name, exc_handler):

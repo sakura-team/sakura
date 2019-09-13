@@ -5,6 +5,7 @@ from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.context import greenlet_env
 from sakura.common.errors import APIRequestError, APIInvalidRequest
+from gevent.local import local
 
 # caution: the object should be sent all at once,
 # otherwise it will be received as several messages
@@ -14,7 +15,13 @@ from sakura.common.errors import APIRequestError, APIInvalidRequest
 class FileWSock(object):
     def __init__(self, wsock):
         self.wsock = wsock
-        self.msg = ''
+        self.local = local()
+    @property
+    def msg(self):
+        return getattr(self.local, 'msg', '')
+    @msg.setter
+    def msg(self, val):
+        self.local.msg = val
     def write(self, s):
         self.msg += s
     def read(self):
@@ -24,8 +31,9 @@ class FileWSock(object):
         return msg
     def flush(self):
         if len(self.msg) > 0:
-            self.wsock.send(self.msg)
+            msg = self.msg
             self.msg = ''
+            self.wsock.send(msg)
     @property
     def closed(self):
         return self.wsock.closed

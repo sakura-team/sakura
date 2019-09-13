@@ -7,7 +7,7 @@ import sakura.hub.conf as conf
 def daemons_greenlet(context):
     @monitored
     def handle(socket, address):
-        sock_file = socket.makefile(mode='rwb')
+        sock_file = socket.makefile(mode='rwb', buffering=0)
         daemon_name = pickle.load(sock_file)
         rpc_manager(context, daemon_name, sock_file)
     server = StreamServer(('', conf.hub_port), handle)
