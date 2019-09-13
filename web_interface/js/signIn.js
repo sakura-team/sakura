@@ -411,6 +411,7 @@ function ask_for_privilege(grant, callback) {
             $('#web_interface_asking_privilege_modal').modal('hide');
 
             //displayig success modal during 1 sec
+            $('#web_interface_success_modal_header').html('<h3>Asking For New Status</h3>');
             $('#web_interface_success_modal_body').html('<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>');
             $('#web_interface_success_modal').modal('show');
             setTimeout( function () {
