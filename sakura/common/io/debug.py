@@ -22,4 +22,4 @@ def print_debug(*args):
         OUT.seek(110)
         OUT.write('...\n')
         OUT.truncate()
-    sys.stdout.write(OUT.getvalue())
+    sys.__stdout__.write(OUT.getvalue())

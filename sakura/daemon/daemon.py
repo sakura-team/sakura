@@ -6,16 +6,20 @@ import sys
 from gevent import Greenlet
 from sakura.common.tools import set_unbuffered_stdout, \
                                 wait_greenlets, debug_ending_greenlets
+from sakura.daemon.pdb import hook_pdb
 from sakura.daemon.engine import DaemonEngine
 from sakura.daemon.greenlets import HubRPCGreenlet
 from sakura.common.planner import PlannerGreenlet
 from sakura.common.cache import Cache
+from sakura.common.streams import enable_standard_streams_redirection
 
 DEBUG_ENDING_GREENLETS = False
 
 def run():
     try:
+        hook_pdb()
         set_unbuffered_stdout()
+        enable_standard_streams_redirection()
         print('Starting...')
 
         # load data, create engine
