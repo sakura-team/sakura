@@ -317,11 +317,9 @@ function fill_profil_modal(user_infos) {
     var dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
                               'style': "margin-bottom: 0px; width: 100%;"})
 
-    ////////////////////TEMP
     if (user_infos['privileges'] == null)
         user_infos['privileges'] = [{'name': 'admin',     'value':'not allowed'},
-                                    {'name': 'developer', 'value': 'not allowed'}];
-    ////////////////////TEMP
+                                    {'name': 'developer', 'value':'not allowed'}];
 
     Object.keys(user_infos).forEach( function(key) {
         if (key != 'privileges') {
@@ -353,8 +351,11 @@ function fill_profil_modal(user_infos) {
     var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
                         'style': "margin-bottom: 0px; width: 100%;"})
 
+    var priv_dict = { 'granted':      'btn btn-success btn-xs',
+                      'not allowed':  'btn btn-secondary btn-xs',
+                      'in progress':  'btn btn-warning btn-xs'};
+
     user_infos['privileges'].forEach(function (privilege) {
-        console.log(privilege);
         var dd = $('<dd>');
         if (privilege.value == 'ask for') {
             var a = $('<button>', { 'type': "button",
@@ -365,32 +366,15 @@ function fill_profil_modal(user_infos) {
             a.attr('onclick', "ask_for_privilege_open_modal(\""+privilege.name+"\");");
             dd.append(a);
         }
-        else if (privilege.value == 'granted') {
+        else {
           var a = $('<button>', { 'type': "button",
-                                  'class': "btn btn-success btn-xs",
+                                  'class': priv_dict[privilege.value],
                                   'style': "width: 150px;",
-                                  'text': "granted"});
+                                  'text': privilege.value});
           a.prop('disabled', true);
           dd.append(a);
         }
-        else if (privilege.value == 'not allowed') {
-          var a = $('<button>', { 'type': "button",
-                                  'class': "btn btn-secondary btn-xs",
-                                  'style': "width: 150px;",
-                                  'text': "not allowed"});
-          a.prop('disabled', true);
-          dd.append(a);
-        }
-        else if (privilege.value == 'in progress') {
-          var a = $('<button>', { 'type': "button",
-                                  'class': "btn btn-warning btn-xs",
-                                  'style': "width: 150px;",
-                                  'text': "in progess"});
-          a.prop('disabled', true);
-          dd.append(a);
-        }
-        dl.append($('<dt>', {'text': privilege.name}),
-                    dd);
+        dl.append($('<dt>', {'text': privilege.name}), dd);
     });
 
     bdy.append(div.append(divh, divb.append(dl)));
