@@ -1,4 +1,3 @@
-from sakura.client import apitools
 from sakura.common.errors import APIReturningError
 import sys, atexit, socket
 
@@ -14,5 +13,8 @@ def quiet_excepthook(t, value, traceback):
         saved_excepthook(t, value, traceback)
 sys.excepthook = quiet_excepthook
 
+from sakura.client import conftools
+conf = conftools.get_conf()
+from sakura.client import apitools
 api = apitools.get_api()
 atexit.register(api._close)

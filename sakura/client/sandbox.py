@@ -2,7 +2,7 @@
 import sys, pathlib, uuid, gevent, signal, atexit
 from sakura.common.tools import yield_operator_subdirs
 from sakura.common.streams import enable_standard_streams_redirection
-from sakura.client import api
+from sakura.client import api, conf
 
 def usage_and_exit():
     print('Usage: %s [<code-directory>]' % sys.argv[0])
@@ -33,6 +33,7 @@ def run():
     if len(op_dirs) == 0:
         print('Did not find sakura operator source code in this directory. Giving up.', file=sys.stderr)
         sys.exit(1)
+    conf.hub_host   # force loading conf now (if ever we need user interaction)
     enable_standard_streams_redirection()
     for op_dir in op_dirs:
         op_subdir = str(op_dir.relative_to(sandbox_dir))

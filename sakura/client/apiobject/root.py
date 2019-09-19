@@ -1,19 +1,27 @@
 from gevent import Greenlet
+from sakura.client import conf
 from sakura.client.apiobject.opclasses import get_op_classes
 from sakura.client.apiobject.dataflows import get_dataflows
 from sakura.client.apiobject.databases import get_databases
 from sakura.client.apiobject.misc import get_misc
 from sakura.client.apiobject.base import APIObjectBase
+from sakura.common.io import APIEndpoint
+from sakura.common.tools import JSON_PROTOCOL
 
 class APIRoot:
     proxy = None
     endpoint_greenlet = None
-    def __new__(cls, endpoint, ws):
+    def __new__(cls, ws):
+        def init_proxy():
+            endpoint = APIEndpoint(ws, JSON_PROTOCOL, None)
+            APIRoot.proxy = endpoint.proxy
+            APIRoot.endpoint_greenlet = Greenlet.spawn(endpoint.loop)
+        def login():
+            APIRoot.proxy.login(conf.username, conf.password_hash)
+        ws.on_connect.subscribe(login)
         def get_proxy():
             if APIRoot.proxy is None:
-                ws.connect()
-                APIRoot.proxy = endpoint.proxy
-                APIRoot.endpoint_greenlet = Greenlet.spawn(endpoint.loop)
+                init_proxy()
             return APIRoot.proxy
         class APIRootImpl(APIObjectBase):
             "Sakura API root"

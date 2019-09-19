@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from sakura.client import api
+from sakura.client import api, conf
 import sys, code, readline, os.path, atexit, rlcompleter
 
 def handle_cmd_history():
@@ -17,6 +17,7 @@ def enable_completion(env):
     readline.parse_and_bind('tab:complete')
 
 def run():
+    conf.hub_host   # force loading conf now (if ever we need user interaction)
     api.set_auto_reconnect()
     env = dict(api = api, sys = sys)
     handle_cmd_history()
