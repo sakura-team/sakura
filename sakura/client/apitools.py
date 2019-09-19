@@ -8,6 +8,7 @@ from gevent.socket import wait_read, wait_write
 class FileWSock(object):
     def __init__(self):
         self.conf = None
+        self.auto_reconnect = False
         self.connected = False
         self.ever_connected = False
         self.wsock = None
@@ -19,6 +20,8 @@ class FileWSock(object):
         except ssl.SSLError:
             print('WARNING: SSL-handshake failed. Setting up a clear text connection!')
             self.connect_with_url(get_ws_url(ssl = False, **self.conf))
+    def set_auto_reconnect(self, value):
+        self.auto_reconnect = value
     def connect_with_url(self, url):
         self.wsock = create_connection(url)
         self.connected = True
@@ -52,14 +55,19 @@ class FileWSock(object):
                         print(' ok, repaired.')
                     else:
                         print(' ok.')
-                    # loop again
+                    continue
             except BaseException as e:
-                if self.connected:
+                pass    # handle below
+            # handle exception
+            if self.connected:
+                self.connected = False
+                if self.auto_reconnect:
                     print('Disconnected. Will try to reconnect...', end='', flush=True)
-                    self.connected = False
                 else:
-                    print('.', end='', flush=True)
-                time.sleep(1)
+                    raise ConnectionResetError('Connection to hub was lost!')
+            else:
+                print('.', end='', flush=True)
+            time.sleep(1)
     def close(self):
         if self.wsock is not None:
             self.wsock.close()

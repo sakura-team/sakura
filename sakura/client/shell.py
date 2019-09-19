@@ -17,6 +17,7 @@ def enable_completion(env):
     readline.parse_and_bind('tab:complete')
 
 def run():
+    api.set_auto_reconnect()
     env = dict(api = api, sys = sys)
     handle_cmd_history()
     enable_completion(env)

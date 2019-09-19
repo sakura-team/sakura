@@ -36,4 +36,10 @@ class APIRoot:
                 if APIRoot.proxy is not None:
                     ws.close()
                     APIRoot.endpoint_greenlet.kill()
+            def set_auto_reconnect(self, value=True):
+                """Indicate how this api object should act in case of disconnection from hub."""
+                ws.set_auto_reconnect(value)
+            def is_connected(self):
+                """Indicate whether this api object is connected to hub."""
+                return not ws.closed
         return APIRootImpl()

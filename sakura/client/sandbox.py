@@ -13,6 +13,10 @@ def signal_handler(signal, frame):
     print('Ending sandbox.')
     sys.exit(0)
 
+def failsafe_unregister(op_cls):
+    if api.is_connected():
+        op_cls.unregister()
+
 def run():
     if len(sys.argv) < 2:
         sandbox_dir = '.'
@@ -35,7 +39,7 @@ def run():
         op_cls = api.op_classes.register_from_sandbox(
             sandbox_uuid, sandbox_dir, sandbox_streams, op_subdir
         )
-        atexit.register(op_cls.unregister)
+        atexit.register(failsafe_unregister, op_cls)
         print('Exposing operator class at ' + str(op_dir))
     gevent.get_hub().join()
 
