@@ -322,8 +322,17 @@ function fill_profil_modal(user_infos) {
         if (user_infos[key] === '' || user_infos[key] == null) {
             txt = '<i><font color="lightgrey">not specified</font></i>';
         }
+        if (key == 'login') {
+            txt = '<b>'+txt+'</b>';
+        }
+        else {
+            var txt = $('<a name="short_desc" href="#" data-type="text" data-title="txt">'+txt+'</a>');
+            txt.editable({emptytext: txt,
+                        url: function(params) {update_profile(key, txt, params);}});
+        }
         dl.append($('<dt>', {'text': key}),
                   $('<dd>', {'html': txt}));
+
     });
     bdy.append(div.append(divh, divb.append(dl)));
 
@@ -334,7 +343,7 @@ function fill_profil_modal(user_infos) {
     var div = $('<div>', {  'class': "panel panel-default"});
     var divh = $('<div>', { 'class': "panel-heading",
                             'html': "<h4 style=\"margin-bottom: 0px; \
-                                    margin-top: 0px\">Parameters</h4>"})
+                                    margin-top: 0px\">Privileges</h4>"})
     var divb = $('<div>', { 'class': "panel-body"})
 
     var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
@@ -348,7 +357,7 @@ function fill_profil_modal(user_infos) {
                                     'style': "cursor: pointer;",
                                     'text': "ask for"});
             a.attr('onclick', "ask_for_privilege_open_modal(\""+privilege+"\");");
-            dd.append('no&nbsp;&nbsp;', a);
+            dd.append(a);
         }
         else {
             dd.append("yes");
@@ -359,6 +368,14 @@ function fill_profil_modal(user_infos) {
 
     bdy.append(div.append(divh, divb.append(dl)));
     $('#profil_modal').modal('show');
+}
+
+function update_profile(key, a, params) {
+    sakura.apis.hub.users.current.update_info(key, params.value).then( function(result) {
+        if (result) {
+            alert('something went wrong');
+        }
+    });
 }
 
 //Privilege Managment
@@ -386,8 +403,8 @@ function ask_for_privilege_open_modal(privilege) {
     $('#web_interface_asking_privilege_modal').modal('show');
 }
 
-function ask_for_privilege(grant, callback) {
-    sakura.apis.hub.users.current.grants.request(grant).then( function(result) {
+function ask_for_privilege(privilege, callback) {
+    sakura.apis.hub.users.current.privilege.request(privilege).then( function(result) {
         if (!result) {
             $('#web_interface_asking_privilege_modal').modal('hide');
             var header = 'Asking For New Status';
@@ -398,7 +415,6 @@ function ask_for_privilege(grant, callback) {
             alert('something went wrong !');
         }
     });
-
 }
 
 function not_implemented(s = '') {
