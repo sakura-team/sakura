@@ -147,18 +147,8 @@ function buildListStub(idDiv,result,elt) {
                 }
                 table.append(tr);
                 new_td.append(table);
-
-                // var sel = $('<select>', { class: "selectpicker"});
-                // var op1 = $('<option>', { text: row.default_code_ref});
-                // var op2 = $('<option>', { text: 'Others'});
-                // sel.append(op1);
-                // sel.append(op2);
-                // new_td.append(sel);
-
                 new_row.append(new_td);
-                //sel.selectpicker('refresh');
             }
-
             lcg.forEach( function (lelt, index) {
                 if (document.getElementById("cbColSelect"+lelt).checked) {
                     if (lelt == 'Date' && row[lch[index]] instanceof Date) {
@@ -181,14 +171,11 @@ function buildListStub(idDiv,result,elt) {
             var msg = "There is no accessible "+elt_type;
             new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
         }
-
         if (curr_login === null)
             $('#web_interface_'+elt_type+'_creation_button').addClass('invisible');
         else
             $('#web_interface_'+elt_type+'_creation_button').removeClass('invisible');
-
       });
-
 }
 
 

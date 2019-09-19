@@ -351,10 +351,21 @@ class GuiToHubAPI:
         ##########
         return None if self.context.user is None else self.context.user
 
-    @api.users.current.grants.request
-    def request_user_grant(self, grant):
-        print(self.context.user, 'asking for grant', grant)
+    @api.users.current.privilege.request
+    def request_user_privilege(self, privilege):
+        print(self.context.user, 'asking for privilege', privilege)
+        print("NOT implemented yet")
         return None
+
+    @api.users.current.update_info
+    def update_user_info(self, key, value):
+        ########## TODO
+        ## Update an element of the user info
+        print(key,'attribut should be updated to',value)
+        print("NOT implemented yet")
+        ##########
+        return None
+
 
     @api.users.list
     def list_all_users(self):
