@@ -21,26 +21,33 @@ class GuiToHubAPI:
         return self.datastores[datastore_id].handle_grant_request(grant_name, text)
 
     ########################################
-    # Operators
+    # Operator classes
+    @property
+    def op_classes(self):
+        return self.context.op_classes.filter_for_current_user()
+
     @api.op_classes.list
     def list_operators_classes(self):
-        return pack(self.context.op_classes)
+        return pack(self.op_classes)
 
     @api.op_classes.__getitem__.info
     def get_operator_class_info(self, cls_id):
-        return pack(self.context.op_classes[cls_id])
+        return pack(self.op_classes[cls_id])
 
     @api.op_classes.register
     def register_op_class(self, **cls_repo_info):
-        return self.context.op_classes.register(self.context, **cls_repo_info)
+        return self.op_classes.register(self.context, **cls_repo_info)
 
     @api.op_classes.__getitem__.unregister
     def unregister_op_class(self, cls_id):
-        return self.context.op_classes[cls_id].unregister()
+        return self.op_classes[cls_id].unregister()
 
     @api.op_classes.__getitem__.update_default_revision
     def update_op_class_default_revision(self, cls_id, code_ref, commit_hash):
-        return self.context.op_classes[cls_id].update_default_revision(code_ref, commit_hash)
+        return self.op_classes[cls_id].update_default_revision(code_ref, commit_hash)
+
+    ########################################
+    # Operator instances
 
     # instantiate an operator and return the instance info
     @api.operators.create

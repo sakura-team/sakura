@@ -51,6 +51,8 @@ def define_schema(db):
         op_instances = Set('OpInstance')
 
     class OpClass(db.Entity, OpClassMixin):
+        access_scope = Required(int, default = ACCESS_SCOPES.public)
+        grants = Required(Json, default = {})
         repo = Required(Json)
         code_subdir = Required(str)
         metadata = Optional(Json, default = {})

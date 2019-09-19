@@ -1,6 +1,8 @@
 from sakura.hub.mixins.bases import BaseMixin
 from sakura.hub.context import get_context
+from sakura.hub.access import pack_gui_access_info, parse_gui_access_info
 from sakura.common.errors import APIRequestError
+from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
 
 class OpClassMixin(BaseMixin):
     SANDBOX_INFO = {}
@@ -35,6 +37,7 @@ class OpClassMixin(BaseMixin):
             id = self.id,
             **self.metadata,
             **self.pack_repo_info(),
+            **pack_gui_access_info(self),
             **self.pack_status_info()
         )
 
@@ -55,6 +58,8 @@ class OpClassMixin(BaseMixin):
         }
 
     def update_default_revision(self, code_ref, commit_hash):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                'Only owner can change the default revision of the operator class.')
         self.check_revision_handling()
         self.repo['default_code_ref'], self.repo['default_commit_hash'] = code_ref, commit_hash
         self.update_metadata()
@@ -76,7 +81,7 @@ class OpClassMixin(BaseMixin):
     @classmethod
     def register(cls, context, repo_type = 'git', repo_subdir = None,
                 repo_url = None, default_code_ref = None, default_commit_hash = None,
-                sandbox_uuid = None, sandbox_dir = None, sandbox_streams = None):
+                sandbox_uuid = None, sandbox_dir = None, sandbox_streams = None, **kwargs):
         if repo_subdir == None:
             raise APIRequestError('Invalid operator class registration request: repo_subdir not specified.')
         if repo_type == 'git':
@@ -100,9 +105,28 @@ class OpClassMixin(BaseMixin):
         if context.daemons.any_enabled() is None:
             raise APIRequestError(
                 'Cannot register an operator class until at least one sakura daemon is running.')
+        # parse access info from gui
+        kwargs = parse_gui_access_info(**kwargs)
+        if repo_type == 'sandbox':
+            # sandbox repo, access scope can only be private
+            kwargs['access_scope'] = ACCESS_SCOPES.private
+        else:
+            # git repo, access scope can be public or private
+            access_scope = kwargs.get('access_scope', None)
+            if access_scope is None:
+                raise APIRequestError("Invalid request: Access scope was not specified.")
+            if access_scope not in (ACCESS_SCOPES.public, ACCESS_SCOPES.private):
+                raise APIRequestError("Invalid request: Access scope for an operator class should be 'public' or 'private'.")
+        # owner is current user
+        if context.user is None:
+            raise APIRequestError("Invalid request: one has to login before registering an operator class.")
+        grants = kwargs.pop('grants', {})
+        grants[context.user.login] = GRANT_LEVELS.own
         # create
         op_cls = cls(   repo = repo_info,
-                        code_subdir = repo_subdir)
+                        code_subdir = repo_subdir,
+                        grants = grants,
+                        **kwargs)
         try:
             op_cls.update_metadata()
         except:
@@ -111,7 +135,10 @@ class OpClassMixin(BaseMixin):
         context.db.commit()     # get object ID from DB
         return op_cls.pack()
 
-    def unregister(self):
+    def unregister(self, maintenance_task=False):
+        if not maintenance_task:
+            self.assert_grant_level(GRANT_LEVELS.own,
+                    'Only owner is allowed to unregister this operator class.')
         # delete operator instances first
         op_instances = set(self.op_instances)
         for op in op_instances:
@@ -121,6 +148,8 @@ class OpClassMixin(BaseMixin):
         get_context().db.commit()
 
     def create_instance(self, dataflow):
+        self.assert_grant_level(GRANT_LEVELS.read,
+                'You are not allowed to use this operator class.')
         context = get_context()
         revision_kwargs = {}
         if self.repo['type'] == 'git':
@@ -165,4 +194,4 @@ class OpClassMixin(BaseMixin):
         # cleanup any sandbox class that was not properly unregistered.
         for op_cls in cls.select():
             if op_cls.repo['type'] == 'sandbox':
-                op_cls.unregister()
+                op_cls.unregister(maintenance_task=True)
