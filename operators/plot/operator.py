@@ -23,24 +23,25 @@ class PlotOperator(Operator):
         # additional tabs
         self.register_tab('Plot', 'plot.html')
 
-    def handle_event(self, ev_type):
+        self.iterator = None
+
+    def handle_event(self, ev_type, time_credit):
+        deadline = time() + time_credit
+
         if not self.input.connected():
             return { 'issue': 'NO DATA: Input is not connected.' }
 
-        if ev_type == 'get_data':
-            dp = []
-            column_x = self.input_column_param_x.col_index
-            column_y = self.input_column_param_y.col_index
-            #time_credit = 0.3
-            #deadline = time() + time_credit
-            source = self.input.source
-            source = source.select_columns(column_x, column_y)
-            for chunk in source.chunks():
-                for x, y in chunk:
-                    dp.append({'x': x, 'y': y})
-                #if time() > deadline:
-                #    break
+        if ev_type == 'get_data': #first time data is asked
+            column_x        = self.input_column_param_x.col_index
+            column_y        = self.input_column_param_y.col_index
+            source          = self.input.source
+            source          = source.select_columns(column_x, column_y)
+            self.iterator   = source.chunks()
 
-            return {'dp': dp}
-
-        return {'issue': 'Unknown event'}
+        dp = []
+        for chunk in self.iterator:
+            for x, y in chunk:
+                dp.append({'x': x, 'y': y})
+                if time() > deadline:
+                    return {'dp': dp, 'done': False}
+        return {'dp': dp, 'done': True}
