@@ -26,6 +26,7 @@ class PlotOperator(Operator):
         self.iterator = None
 
     def handle_event(self, ev_type, time_credit):
+        print(time())
         deadline = time() + time_credit
 
         if not self.input.connected():
