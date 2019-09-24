@@ -173,7 +173,7 @@ function operators_creation_new() {
     var hash      = opt.commit_hash;
     var url       = byID('operators_creation_url_input').value;
     var sub_dir   = byID('operators_creation_sub_dir').value;
-    var access    = byID('operators_creation_access_scope').value;
+    var access    = byID('operators_creation_access_scope').value.toLowerCase();
     var revision  = opt.branch
 
 
