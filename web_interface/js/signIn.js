@@ -382,7 +382,7 @@ function fill_profil_modal(user_infos) {
 }
 
 function update_profile(key, a, params) {
-    sakura.apis.hub.users.current.update_info(key, params.value).then( function(result) {
+    sakura.apis.hub.users.current.update({ key: params.value }).then( function(result) {
         if (result) {
             alert('something went wrong');
         }
@@ -415,7 +415,7 @@ function ask_for_privilege_open_modal(privilege) {
 }
 
 function ask_for_privilege(privilege, callback) {
-    sakura.apis.hub.users.current.privilege.request(privilege).then( function(result) {
+    sakura.apis.hub.users.current.privileges.request(privilege).then( function(result) {
         if (!result) {
             $('#web_interface_asking_privilege_modal').modal('hide');
             var header = 'Asking For New Status';
