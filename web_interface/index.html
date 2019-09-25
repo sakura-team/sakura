@@ -68,18 +68,18 @@
             </h1>
             <p>Store and Analyse Data</p>
             <td align='right' valign='bottom'>
-            <div id="idTopRightWidget" style='margin-bottom: 10px;'>
+            <div id="idTopRightWidget" style='margin-bottom: 10px; position: relative;'>
                 <div id="idSignInWidget" name="signInWidget" class="dropdown">
                     <button onclick="initiateSignInModal(event);" class="btn btn-info dropdown-toggle btn-xs" data-toggle="modal" href="#signInModal">
                         <span class="glyphicon glyphicon-user" aria-hidden="true">
                         </span>&nbsp; Sign in
                     </button>
                 </div>
-                <div id="idEditModeWidget" style="display:none;">
-                    <a  onclick="editModeSubmitControl(event);" style="cursor: pointer;">
-                        Edit Mode
-                    </a>
-                </div>
+                <span class= "glyphicon glyphicon-exclamation-sign"
+                      aria-hidden="true"
+                      style= 'color: orange; position: absolute; right:3px; top:-5px; display: none;'
+                      id= "profile_button_exclamation">
+                </span>
             </div>
             </table>
             <nav class="navbar navbar-default" style="margin-bottom:1px; ">

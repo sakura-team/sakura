@@ -141,8 +141,11 @@ function signInSubmitControl(event, login, passw) {
                 });
     	    		  $("#signInModal").modal("hide");
 
+                if (wsResult.privileges == null)
+                    wsResult.privileges = {'admin':     'not granted',
+                                            'developer': 'not granted'};
+                current_login = wsResult;
                 fill_profil_button();
-    	    		  current_login = wsResult;
 
                 //Back to the current div
                 var url = window.location.href.split('#');
@@ -164,16 +167,14 @@ function signInSubmitControl(event, login, passw) {
 }
 
 function openUserProfil(event) {
-    sakura.apis.hub.users.current.info().then(function (info) {
-        fill_profil_modal(info);
-    });
+        fill_profil_modal(current_login);
 }
 
 function logOut(event) {
     yes_no_asking('Sign Out', 'Are you sure you want to sign out ?', function() {
         sakura.apis.hub.logout().then(function (result) {
-            fill_profil_button();
             current_login = null;
+            fill_profil_button();
         });
     });
 }
@@ -283,6 +284,17 @@ function fill_profil_button() {
             li3.append(a2);
             gul.append(li1, li2, li3);
 
+            if (login.privileges == null)
+                login.privileges = {'admin':     'granted',
+                                    'developer': 'not granted'};
+
+            if (login.privileges.admin == 'granted') {
+                sakura.apis.hub.users.privileges.pendings().then(function(result) {
+                    if (result) {
+                        $('#profile_button_exclamation').css('display', 'block');
+                    }
+                });
+            }
             current_login = login;
         }
         else {
@@ -294,6 +306,7 @@ function fill_profil_button() {
                                     'aria-hidden': "true"})
             butt.append(span);
             butt.append('&nbsp;&nbsp;Sign In');
+            $('#profile_button_exclamation').css('display', 'none');
             current_login = null;
         }
         $('#idSignInWidget').empty();
@@ -317,10 +330,6 @@ function fill_profil_modal(user_infos) {
     var dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
                               'style': "margin-bottom: 0px; width: 100%;"})
 
-    if (user_infos['privileges'] == null)
-        user_infos['privileges'] = [{'name': 'admin',     'value':'not allowed'},
-                                    {'name': 'developer', 'value':'not allowed'}];
-
     Object.keys(user_infos).forEach( function(key) {
         if (key != 'privileges') {
             var txt = user_infos[key];
@@ -341,44 +350,143 @@ function fill_profil_modal(user_infos) {
     });
     bdy.append(div.append(divh, divb.append(dl)));
 
-    var div = $('<div>', {  'class': "panel panel-default",
-                            'style': "margin-bottom: 0px;"});
+    var div = $('<div>', {  'class': "panel panel-default"});
     var divh = $('<div>', { 'class': "panel-heading",
                             'html': "<h4 style=\"margin-bottom: 0px; \
-                                    margin-top: 0px\">Privileges</h4>"})
+                                    margin-top: 0px\">Your Privileges</h4>"})
     var divb = $('<div>', { 'class': "panel-body"})
 
     var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
                         'style': "margin-bottom: 0px; width: 100%;"})
 
     var priv_dict = { 'granted':      'btn btn-success btn-xs',
-                      'not allowed':  'btn btn-secondary btn-xs',
-                      'in progress':  'btn btn-warning btn-xs'};
+                      'not granted':  'btn btn-secondary btn-xs',
+                      'pending':      'btn btn-warning btn-xs'};
 
-    user_infos['privileges'].forEach(function (privilege) {
+    Object.keys(user_infos.privileges).forEach(function (key) {
         var dd = $('<dd>');
-        if (privilege.value == 'ask for') {
+        if (user_infos.privileges[key] == 'not granted') {
             var a = $('<button>', { 'type': "button",
                                     'style': "cursor: pointer;",
                                     'class': "btn btn-primary btn-xs btn-block",
                                     'style': "width: 150px;",
                                     'text': "ask for"});
-            a.attr('onclick', "ask_for_privilege_open_modal(\""+privilege.name+"\");");
+            a.attr('onclick', "ask_for_privilege_open_modal(\""+key+"\");");
             dd.append(a);
         }
         else {
-          var a = $('<button>', { 'type': "button",
-                                  'class': priv_dict[privilege.value],
-                                  'style': "width: 150px;",
-                                  'text': privilege.value});
-          a.prop('disabled', true);
-          dd.append(a);
+            var a = $('<button>', { 'type': "button",
+                                    'class': priv_dict[user_infos.privileges[key]],
+                                    'style': "width: 150px;",
+                                    'text': user_infos.privileges[key]});
+            a.prop('disabled', true);
+            dd.append(a);
         }
-        dl.append($('<dt>', {'text': privilege.name}), dd);
+        dl.append($('<dt>', {'text': key}), dd);
     });
 
     bdy.append(div.append(divh, divb.append(dl)));
-    $('#profil_modal').modal('show');
+
+    if (user_infos.privileges.admin == 'granted') {
+        sakura.apis.hub.users.list().then(function(users) {
+            console.log(users);
+            sakura.apis.hub.users.privileges.pendings().then(function(pendings) {
+                var pdiv = $('<div>', {  'class': "panel panel-default",
+                                        'style': "margin-bottom: 0px;"});
+                var pdivh = $('<div>', { 'class': "panel-heading",
+                                        'html': "<h4 style=\"margin-bottom: 0px; \
+                                                margin-top: 0px\">User Privileges</h4>"})
+                var pdivb = $('<div>', { 'class': "panel-body"})
+
+                /*var pdl = $('<dl>', {'class': "dl-horizontal col-md-6",
+                                    'style': "margin-bottom: 0px; width: 100%;"})
+                */
+                var ptable = $('<table>', { 'width': '100%',
+                                            'class': "table table-striped table-condensed table-list"});
+                var pthead = $('<thead>');
+                var ptbody = $('<tbody>');
+                var th1 = $('<td>', { 'html': '<b></b>',
+                                      'align': "center",
+                                      'style': "width: 33%;"});
+                var th2 = $('<td>', { 'html': '<b>admin</b>',
+                                      'align': "center",
+                                      'style': "background: lightgray; width: 33%;"});
+                var th3 = $('<td>', { 'html': '<b>developer</b>',
+                                      'align': "center",
+                                      'style': "background: lightgray; width: 33%;"});
+                var tr = $('<tr>');
+                pthead.append(tr.append(th1, th2, th3));
+
+
+                //first the pendings
+                Object.keys(pendings).forEach( function(user) {
+                    var index_in_list = users.indexOf(user);
+                    var tr = $('<tr>');
+                    var td1 = $('<td>', { 'html': user,
+                                          'align': "center"});
+                    var td2 = $('<td>', {'align': "center"});
+
+                    if (pendings[user] == 'admin')
+                        td2.attr('style', 'background: orange;');
+                    var td3 = $('<td>', {'align': "center"});
+
+                    if (pendings[user] == 'developer')
+                        td3.attr('style', 'background: orange;');
+                    var check1 = $('<input>', {'type': "checkbox",
+                                            'class':"custom-control-input",
+                                            'id':"defaultUnchecked"});
+                    var check2 = $('<input>', {'type': "checkbox",
+                                            'class':"custom-control-input",
+                                            'id':"defaultUnchecked"});
+
+                    ptbody.append(tr.append(td1, td2.append(check1), td3.append(check2)));
+                });
+
+                //then the others
+                users.forEach( function(user){
+                    if (Object.keys(pendings).indexOf(user) == -1){
+                        var tr = $('<tr>');
+                        var td1 = $('<td>', { 'html': user,
+                                              'align': "center"});
+                        var td2 = $('<td>', {'align': "center"});
+                        var td3 = $('<td>', {'align': "center"});
+                        var check1 = $('<input>', { 'type': "checkbox",
+                                                    'class':"custom-control-input",
+                                                    'id':"defaultUnchecked"});
+                        var check2 = $('<input>', {'type': "checkbox",
+                                                'class':"custom-control-input",
+                                                'id':"defaultUnchecked"});
+
+                        ptbody.append(tr.append(td1, td2.append(check1), td3.append(check2)));
+                    }
+                });
+                ptable.append(pthead,ptbody);
+
+                /*Object.keys(pendings).forEach( function(user) {
+
+                    var content = 'Asked for '+pendings[user]+' privilege';
+                    var y_button = $('<button>', {'html': '<span class="glyphicon glyphicon-ok" style="color:green;"></span>',
+                                                  'class': 'btn btn-xs'});
+                    var n_button = $('<button>', {'html': '<span class="glyphicon glyphicon-remove" style="color:red;"></span>',
+                                                  'class': 'btn btn-xs'});
+                    var dd1 = $('<dd>');
+                    var dd2 = $('<dd>');
+                    dd1.append(content);
+                    dd2.append(y_button, n_button)
+                    pdl.append($('<dt>', {'text': user}), dd1, dd2);
+
+                });*/
+
+                bdy.append(pdiv.append(pdivh, pdivb.append(ptable)));
+                $('#profil_modal').modal('show');
+            });
+        });
+    }
+    else {
+        $('#profil_modal').modal('show');
+    }
+
+
 }
 
 function update_profile(key, a, params) {

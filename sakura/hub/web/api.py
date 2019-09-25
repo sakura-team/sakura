@@ -381,6 +381,13 @@ class GuiToHubAPI:
         ##########
         return None
 
+    @api.users.privileges.pendings
+    def list_privileges_pendings(self):
+        ########## TODO
+        print("NOT implemented yet")
+        ##########
+        return {'mike': 'developer', 'mike2': 'admin'}
+
     @api.users.list
     def list_all_users(self):
         return tuple(u.pack() for u in self.context.users.select())
