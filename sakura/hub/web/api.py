@@ -395,6 +395,13 @@ class GuiToHubAPI:
     def deny_user_privilege(self, login, privilege):
         return self.context.users[login].deny_privilege(privilege)
 
+    @api.users.privileges.pendings
+    def list_privileges_pendings(self):
+        ########## TODO
+        print("NOT implemented yet")
+        ##########
+        return {'mike': 'developer', 'mike2': 'admin'}
+
     @api.users.list
     def list_all_users(self):
         return tuple(u.pack() for u in self.context.users.select())
