@@ -32,10 +32,7 @@ function init_server() {
         }
         else {
             var j = JSON.parse(event.data);
-            if (j.key == 'resize') {
-                send('image', [imageQ]);
-            }
-            else if (j.key == 'data_directories') {
+            if (j.key == 'data_directories') {
                 var dirs = JSON.parse(j.value);
                 for (var i in dirs) {
                   var select = document.getElementById("directories_select");
@@ -52,20 +49,8 @@ function init_server() {
                 shapes = j.value;
                 fill_shapes_dd();
             }
-            else if (j.key == 'highlight_shapes') {
-                send('image', [imageQ])
-            }
             else if (j.key == 'get_semantic_names') {
                 fill_semantics_dd(j.value);
-            }
-            else if (j.key == 'set_updatable_floor') {
-                send('image', [imageQ])
-            }
-            else if (j.key == 'darkness') {
-                send('image', [imageQ]);
-            }
-            else if(j.key == 'select_semantic') {
-                send('image', [imageQ]);
             }
             else if (j.key == 'dates') {
                 update_dates(j.value);
@@ -75,13 +60,18 @@ function init_server() {
                 console.log(j.value[0]);
                 send('image', [imageQ]);
             }
-            else if (j.key == 'unselect_all_trajects') {
-                send('image', [imageQ]);
-            }
             else if (j.key == 'hide_trajectories' || j.key == 'show_trajectories') {
                 console.log(j.value);
             }
-            else if (j.key == 'toggle_density' || j.key == 'set_trajects_width') {
+            else if ( j.key == 'toggle_density' ||
+                      j.key == 'set_trajects_width' ||
+                      j.key == 'reload_data'  ||
+                      j.key == 'select_semantic' ||
+                      j.key == 'darkness' ||
+                      j.key == 'set_updatable_floor' ||
+                      j.key == 'highlight_shapes' ||
+                      j.key == 'unselect_all_trajects' ||
+                      j.key == 'resize') {
                 send('image', [imageQ]);
             }
             else if (['move',
@@ -321,6 +311,10 @@ function full_screen() {
 function trajects_width() {
     var val = document.getElementById('trajects_width_range').value/10;
     send('set_trajects_width', [val]);
+}
+
+function load_data() {
+    send('reload_data', ['data/stc_cv_t90_mike.csv']);
 }
 
 canvas.addEventListener('mousemove', function(evt) {

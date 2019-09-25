@@ -110,6 +110,14 @@ class wsock:
         glutMotionFunc(self.mmotion)
         glutPassiveMotionFunc(self.mpassive)
 
+    def reload(self, path):
+        self.data_file = path
+        self.stc.clean_data()
+        if self.density:
+            self.stc.read_density(True)
+        self.stc.load_data(file = self.data_file)
+        self.stc.update_floor()
+        self.display()
 
     def push_event(self, evt, *args, **kwargs):
         pass
@@ -219,7 +227,8 @@ class wsock:
                     'unselect_all_trajects':self.stc.unselect_all_trajects,
                     'toggle_selection':     self.stc.toggle_selection,
                     'toggle_density':       self.stc.toggle_density,
-                    'set_trajects_width':    self.stc.set_trajects_width
+                    'set_trajects_width':   self.stc.set_trajects_width,
+                    'reload_data':          self.reload
                     })
 
     def loop(self):
