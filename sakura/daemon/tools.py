@@ -2,6 +2,7 @@ from gevent.socket import create_connection
 from pathlib import Path
 from sakura.daemon.code.importer import pathlib_import
 import sys, importlib, sakura.daemon.conf as conf
+from sakura.common.io.serializer import Serializer
 
 # contextlib.nullcontext does not exist before python 3.7
 class NullContext:
@@ -13,7 +14,7 @@ class NullContext:
 def connect_to_hub():
     sock = create_connection((conf.hub_host, conf.hub_port))
     sock_file = sock.makefile(mode='rwb', buffering=0)
-    return sock_file
+    return Serializer(sock_file)
 
 def iter_load_all_in_dir(package_name, exc_handler):
     package = sys.modules[package_name]

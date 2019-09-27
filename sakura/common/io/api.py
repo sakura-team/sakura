@@ -16,7 +16,7 @@ from sakura.common.io.const import IO_REQ_FUNC_CALL, IO_REQ_ATTR, \
 from sakura.common.io.proxy import Proxy
 
 class APIEndpoint:
-    def __init__(self, f, protocol, local_api, sync=False,
+    def __init__(self, f, protocol, local_api,
                  session_wrapper = void_context_manager):
         self.f = f
         self.protocol = protocol
@@ -27,7 +27,6 @@ class APIEndpoint:
         self.proxy = Proxy(self, ('local_api',))
         self.reqs = {}
         self.req_ids = itertools.count()
-        self.sync = sync
         self.on_remote_exception = ObservableEvent()
         # redirect exceptions of all sub-greenlets to the same queue
         self.do_loop = monitored(self.do_loop)
@@ -46,11 +45,13 @@ class APIEndpoint:
             self.pool.spawn(self.do_loop)
             # wait for an exception
             self.do_loop.catch_issues()
-        except (EOFError, ConnectionResetError):
+        except EOFError:
             return  # leave the loop
     def do_loop(self):
         while True:
-            self.handle_next_message()
+            if not self.handle_next_message():
+                break
+        raise EOFError
     def handle_next_message(self):
         try:
             msg = self.protocol.load(self.f)
@@ -58,14 +59,17 @@ class APIEndpoint:
             if isinstance(e, (EOFError, ConnectionResetError)):
                 print('remote end disconnected!')
             elif isinstance(e, APIInvalidRequest):
-                print('malformed request.')
+                print('invalid request.')
             else:
                 print('malformed request? Got exception:')
                 traceback.print_exc()
             self.handle_receive_exception(e)
-            self.f.close()
-            raise   # we should stop
+            print('closing this api channel.')
+            if not self.f.closed:
+                self.f.close()
+            return False  # we should stop
         self.pool.spawn(self.handle_message, *msg)
+        return True
     def handle_message(self, req_id, msg_type, *msg_args):
         msg = (req_id, msg_type) + tuple(msg_args)
         if msg_type in (IO_REQ_FUNC_CALL, IO_REQ_ATTR):
@@ -195,9 +199,6 @@ class APIEndpoint:
         self.protocol.dump((req_id,) + req, self.f)
         self.f.flush()
         self.debug_prefix += '  '
-        # synchronous mode, for web api
-        if self.sync:
-            self.handle_next_message()
         res = async_res.get()
         if isinstance(res, BaseException):
             raise APIRemoteError(str(res))

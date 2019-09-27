@@ -3,11 +3,12 @@ from gevent.server import StreamServer
 from sakura.hub.daemons.manager import rpc_manager
 from sakura.common.tools import monitored
 import sakura.hub.conf as conf
+from sakura.common.io.serializer import Serializer
 
 def daemons_greenlet(context):
     @monitored
     def handle(socket, address):
-        sock_file = socket.makefile(mode='rwb', buffering=0)
+        sock_file = Serializer(socket.makefile(mode='rwb', buffering=0))
         daemon_name = pickle.load(sock_file)
         rpc_manager(context, daemon_name, sock_file)
     server = StreamServer(('', conf.hub_port), handle)

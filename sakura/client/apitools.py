@@ -5,42 +5,45 @@ from sakura.client import conf
 from sakura.client.apiobject.root import APIRoot
 from gevent.socket import wait_read, wait_write
 from gevent.lock import BoundedSemaphore
+from sakura.common.io.serializer import Serializer
 
-class FileWSock(object):
+# add wait_read & wait_write to make websocket cooperate in a gevent context
+class GeventWSock(object):
+    def __init__(self, wsock):
+        self.wsock = wsock
+    def send(self, s):
+        wait_write(self.wsock.fileno())
+        return self.wsock.send(s)
+    def recv(self):
+        wait_read(self.wsock.fileno())
+        return self.wsock.recv()
+    def close(self):
+        self.wsock.close()
+    @property
+    def connected(self):
+        return self.wsock.connected
+    def fileno(self):
+        return self.wsock.fileno()
+
+class GeventWSockConnector(object):
     def __init__(self):
         self.ever_connected = False
         self.wsock = None
     def connect(self):
         try:
-            self.connect_with_url(get_ws_url(conf.hub_host, conf.hub_port, ssl = True))
-            return True
+            self.wsock = self.connect_with_url(get_ws_url(conf.hub_host, conf.hub_port, ssl_enabled = True))
+            ssl_enabled = True
         except ssl.SSLError:
-            self.connect_with_url(get_ws_url(conf.hub_host, conf.hub_port, ssl = False))
-            return False
-    def connect_with_url(self, url):
-        self.wsock = create_connection(url)
+            self.wsock = self.connect_with_url(get_ws_url(conf.hub_host, conf.hub_port, ssl_enabled = False))
+            ssl_enabled = False
         self.ever_connected = True
+        return ssl_enabled
+    def connect_with_url(self, url):
+        return Serializer(GeventWSock(create_connection(url)))
     def write(self, s):
-        wsock = self.wsock
-        try:
-            wait_write(wsock.fileno())
-            return wsock.send(s)
-        except:
-            if wsock.connected:
-                wsock.close()
-            raise
+        return self.wsock.send(s)
     def read(self):
-        wsock = self.wsock
-        try:
-            wait_read(wsock.fileno())
-            msg = wsock.recv()
-            if msg == None:
-                msg = ''
-            return msg
-        except:
-            if wsock.connected:
-                wsock.close()
-            raise
+        return self.wsock.recv()
     def close(self):
         if not self.closed:
             self.wsock.close()
@@ -52,6 +55,10 @@ class FileWSock(object):
     @property
     def connected(self):
         return not self.closed
+    def fileno(self):
+        if self.wsock is None:
+            return None
+        return self.wsock.fileno()
 
 class ProgressMessage:
     def __init__(self):
@@ -100,12 +107,12 @@ class WSProxy:
                     with self.connect_semaphore:
                         if not self.ws.connected and can_reconnect:
                             ever_connected = self.ws.ever_connected
-                            ssl = self.ws.connect()
+                            ssl_enabled = self.ws.connect()
                             if ever_connected:
                                 self.connecting_message.print('... OK, repaired.', end='')
                             else:
                                 self.connecting_message.print('... OK.', end='')
-                            if ssl:
+                            if ssl_enabled:
                                 self.connecting_message.print()     # all is fine
                             else:
                                 self.connecting_message.print(' WARNING: SSL-handshake failed. A clear text connection was set up!')
@@ -136,15 +143,17 @@ class WSProxy:
         return self.ws.closed
     def flush(self):
         self.ws.flush()
+    def fileno(self):
+        return self.ws.fileno()
 
-def get_ws_url(hub_host, hub_port, ssl):
-    if ssl:
+def get_ws_url(hub_host, hub_port, ssl_enabled):
+    if ssl_enabled:
         protocol = 'wss'
     else:
         protocol = 'ws'
     return "%s://%s:%d/websocket" % (protocol, hub_host, hub_port)
 
 def get_api():
-    ws = WSProxy(FileWSock())
+    ws = WSProxy(GeventWSockConnector())
     return APIRoot(ws)
 

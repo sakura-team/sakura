@@ -5,35 +5,20 @@ from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.context import greenlet_env
 from sakura.common.errors import APIRequestError, APIInvalidRequest
-from gevent.local import local
 
-# caution: the object should be sent all at once,
-# otherwise it will be received as several messages
-# on the websocket. Thus we buffer possibly several
-# writes, and send the whole buffer when we get a
-# flush() call.
+# Turn the websocket into a file-like object.
 class FileWSock(object):
     def __init__(self, wsock):
         self.wsock = wsock
-        self.local = local()
-    @property
-    def msg(self):
-        return getattr(self.local, 'msg', '')
-    @msg.setter
-    def msg(self, val):
-        self.local.msg = val
     def write(self, s):
-        self.msg += s
+        self.wsock.send(s)
     def read(self):
         msg = self.wsock.receive()
-        if msg == None:
-            msg = ''
+        if msg is None:
+            raise EOFError
         return msg
     def flush(self):
-        if len(self.msg) > 0:
-            msg = self.msg
-            self.msg = ''
-            self.wsock.send(msg)
+        pass
     @property
     def closed(self):
         return self.wsock.closed
