@@ -251,51 +251,68 @@ function changePasswordSubmitControl(event) {
 
 function fill_profil_button() {
     sakura.apis.hub.users.current.info().then( function (login) {
-        var gul = null;
         if (login) {
-            var butt = $('<button>', {'class': "btn btn-secondary dropdown-toggle btn-xs",
-                                      'type': "button",
-                                      'data-toggle':"dropdown",
-                                      'id': "dropdownProfilButton"});
-            var span = $('<span>', {'class': "glyphicon glyphicon-user",
-                                    'aria-hidden': "true"})
-            butt.append(span);
-            butt.append('&nbsp;&nbsp;'+login.login+'&nbsp;&nbsp;');
-            butt.append('<span class="caret"></span>');
-
-            gul = $('<ul>', { 'class':"dropdown-menu dropdown-menu-right",
-                                    'aria-labelledby': "dropdownProfilButton"});
-            var li1 = $('<li>', {'role': "presentation"});
-            var li2 = $('<li>', {'role': "presentation", 'class': "divider"});
-            var li3 = $('<li>', {'role': "presentation"});
-
-            var a1 = $('<a>', {     'class': "dropdown-item",
-                                    'text': "Profile",
-                                    'onclick': "openUserProfil(event);",
-                                    'style': "cursor: pointer;"});
-            var a2 = $('<a>', {     'class': "dropdown-item",
-                                    'href':"#",
-                                    'html': "Log Out&nbsp;&nbsp;",
-                                    'onclick': "logOut(event);"});
-            var span_off = $('<span>', {'class': "glyphicon glyphicon-off",
-                                        'aria-hidden': "true"});
-            a2.append(span_off);
-            li1.append(a1);
-            li3.append(a2);
-            gul.append(li1, li2, li3);
-
             if (login.privileges == null)
                 login.privileges = {'admin':     'granted',
-                                    'developer': 'not granted'};
+                                    'developer': 'pending'};
+            current_login = login;
+
+            function fill(login, pends) {
+                var gul = null;
+                var butt = $('<button>', {'class': "btn btn-secondary dropdown-toggle btn-xs",
+                                          'type': "button",
+                                          'data-toggle':"dropdown",
+                                          'id': "dropdownProfilButton"});
+                var span = $('<span>', {'class': "glyphicon glyphicon-user",
+                                        'aria-hidden': "true"})
+                butt.append(span);
+                butt.append('&nbsp;&nbsp;'+login.login+'&nbsp;&nbsp;');
+                butt.append('<span class="caret"></span>');
+
+                gul = $('<ul>', { 'class':"dropdown-menu dropdown-menu-right",
+                                        'aria-labelledby': "dropdownProfilButton"});
+                var li1 = $('<li>', {'role': "presentation"});
+                var li2 = $('<li>', {'role': "presentation", 'class': "divider"});
+                var li3 = $('<li>', {'role': "presentation"});
+
+                var ex_span = $('<span>', { 'class': "glyphicon glyphicon-exclamation-sign",
+                                            'aria-hidden': "true",
+                                            'style': 'color: orange; position: absolute; left:3px; top: 0px; display: block;'});
+                var a1 = $('<a>', {     'class': "dropdown-item",
+                                        'html': "Profile",
+                                        'onclick': "openUserProfil(event);",
+                                        'style': "cursor: pointer;"});
+                if (pends)
+                      a1.append(ex_span);
+
+                var a2 = $('<a>', {     'class': "dropdown-item",
+                                        'href':"#",
+                                        'html': "Log Out&nbsp;&nbsp;",
+                                        'onclick': "logOut(event);"});
+                var span_off = $('<span>', {'class': "glyphicon glyphicon-off",
+                                            'aria-hidden': "true"});
+                a2.append(span_off);
+                li1.append(a1);
+                li3.append(a2);
+                gul.append(li1, li2, li3);
+
+                if (pends)
+                    $('#profile_button_exclamation').css('display', 'block');
+
+                $('#idSignInWidget').empty();
+                $('#idSignInWidget').append(butt);
+                if (gul) {
+                    $('#idSignInWidget').append(gul);
+                }
+            }
 
             if (login.privileges.admin == 'granted') {
                 sakura.apis.hub.users.privileges.pendings().then(function(result) {
-                    if (result) {
-                        $('#profile_button_exclamation').css('display', 'block');
-                    }
+                    fill(login, result);
                 });
             }
-            current_login = login;
+            else
+                fill(login, null);
         }
         else {
             var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
@@ -307,12 +324,9 @@ function fill_profil_button() {
             butt.append(span);
             butt.append('&nbsp;&nbsp;Sign In');
             $('#profile_button_exclamation').css('display', 'none');
+            $('#idSignInWidget').empty();
+            $('#idSignInWidget').append(butt);
             current_login = null;
-        }
-        $('#idSignInWidget').empty();
-        $('#idSignInWidget').append(butt);
-        if (gul) {
-            $('#idSignInWidget').append(gul);
         }
     });
 }
@@ -388,39 +402,36 @@ function fill_profil_modal(user_infos) {
     bdy.append(div.append(divh, divb.append(dl)));
 
     if (user_infos.privileges.admin == 'granted') {
-        sakura.apis.hub.users.list().then(function(users) {
+        sakura.apis.hub.users.privileges.list().then( function(users) {
             console.log(users);
             sakura.apis.hub.users.privileges.pendings().then(function(pendings) {
+                console.log(pendings);
+                //TABLE HEAD
                 var pdiv = $('<div>', {  'class': "panel panel-default",
                                         'style': "margin-bottom: 0px;"});
                 var pdivh = $('<div>', { 'class': "panel-heading",
                                         'html': "<h4 style=\"margin-bottom: 0px; \
                                                 margin-top: 0px\">User Privileges</h4>"})
-                var pdivb = $('<div>', { 'class': "panel-body"})
+                var pdivb = $('<div>', {  'class': "panel-body"})
 
-                /*var pdl = $('<dl>', {'class': "dl-horizontal col-md-6",
-                                    'style': "margin-bottom: 0px; width: 100%;"})
-                */
                 var ptable = $('<table>', { 'width': '100%',
-                                            'class': "table table-striped table-condensed table-list"});
-                var pthead = $('<thead>');
+                                            'class': "table table-striped table-condensed header-fixed",
+                                            'style': "margin-bottom: 0px"});
+                var pthead = $('<thead>', {'style': "background: lightgray;"});
                 var ptbody = $('<tbody>');
-                var th1 = $('<td>', { 'html': '<b></b>',
-                                      'align': "center",
-                                      'style': "width: 33%;"});
-                var th2 = $('<td>', { 'html': '<b>admin</b>',
-                                      'align': "center",
-                                      'style': "background: lightgray; width: 33%;"});
-                var th3 = $('<td>', { 'html': '<b>developer</b>',
-                                      'align': "center",
-                                      'style': "background: lightgray; width: 33%;"});
+                var th1 = $('<th>', { 'html': '<b>&nbsp;</b>',
+                                      'style': "text-align: center;"});
+                var th2 = $('<th>', { 'html': '<b>admin</b>',
+                                      'style': "text-align: center;"});
+                var th3 = $('<th>', { 'html': '<b>developer</b>',
+                                      'style': "text-align: center;"});
                 var tr = $('<tr>');
                 pthead.append(tr.append(th1, th2, th3));
 
-
+                var switches = [];
                 //first the pendings
-                Object.keys(pendings).forEach( function(user) {
-                    var index_in_list = users.indexOf(user);
+                /*Object.keys(pendings).forEach( function(user) {
+                    var index_in_list = Object.keys(users).indexOf(user);
                     var tr = $('<tr>');
                     var td1 = $('<td>', { 'html': user,
                                           'align': "center"});
@@ -433,31 +444,76 @@ function fill_profil_modal(user_infos) {
                     if (pendings[user] == 'developer')
                         td3.attr('style', 'background: orange;');
                     var check1 = $('<input>', {'type': "checkbox",
-                                            'class':"custom-control-input",
                                             'id':"defaultUnchecked"});
                     var check2 = $('<input>', {'type': "checkbox",
-                                            'class':"custom-control-input",
                                             'id':"defaultUnchecked"});
 
                     ptbody.append(tr.append(td1, td2.append(check1), td3.append(check2)));
-                });
+                });*/
+
+                function new_tog(){
+                    return $('<input>', { 'type': "checkbox",
+                                          'class':"custom-control-input",
+                                          'data-toggle': "toggle",
+                                          'data-size': "mini",
+                                          'data-on-text':"&nbsp;&nbsp;&nbsp;&nbsp;",
+                                          'data-off-text':"&nbsp;&nbsp;&nbsp;&nbsp;"
+                                          });
+                }
+
+                function y_button() {
+                    return $('<span>', {'class':"glyphicon glyphicon-ok",
+                                        'style':"color:green; cursor: pointer;",
+                                        'title': "accept privilege request"});
+                }
+                function n_button() {
+                    return $('<span>', {'class':"glyphicon glyphicon-remove",
+                                        'style':"color:red; cursor: pointer;",
+                                        'title': "refuse privilege request"});
+                }
 
                 //then the others
-                users.forEach( function(user){
-                    if (Object.keys(pendings).indexOf(user) == -1){
-                        var tr = $('<tr>');
-                        var td1 = $('<td>', { 'html': user,
-                                              'align': "center"});
-                        var td2 = $('<td>', {'align': "center"});
-                        var td3 = $('<td>', {'align': "center"});
-                        var check1 = $('<input>', { 'type': "checkbox",
-                                                    'class':"custom-control-input",
-                                                    'id':"defaultUnchecked"});
-                        var check2 = $('<input>', {'type': "checkbox",
-                                                'class':"custom-control-input",
-                                                'id':"defaultUnchecked"});
+                Object.keys(users).forEach( function(user){
+                    var tr = $('<tr>');
+                    var td1 = $('<td>', { 'html': user,
+                                          'align': "center",
+                                          'style': "padding: 0px"
+                                          });
+                    var td2 = $('<td>', { 'align': "center",
+                                          'style': "padding: 0px"
+                                          });
+                    var td3 = $('<td>', { 'align': "center",
+                                          'style': "padding: 0px"
+                                          });
+                    var tog1 = new_tog();
+                    if (users[user].indexOf('admin') != -1)
+                        tog1.prop('checked', true);
 
-                        ptbody.append(tr.append(td1, td2.append(check1), td3.append(check2)));
+                    var tog2 = new_tog();
+                    if (users[user].indexOf('developer') != -1)
+                        tog2.prop('checked', true);
+
+                    if (Object.keys(pendings).indexOf(user) == -1) {
+                        ptbody.append(tr.append(td1, td2.append(tog1), td3.append(tog2)));
+                        switches.push(tog1, tog2);
+                    }
+                    else {
+                        var nb_r = [0, 0];
+                        if (pendings[user].indexOf('admin') != -1) {
+                            td2.attr('style', 'background: orange; padding: 0px;');
+                            tog1 = $('<div>');
+                            tog1.append(y_button(), "&nbsp;&nbsp;", n_button());
+                            nb_r[0] = 1;
+                        }
+                        if (pendings[user].indexOf('developer') != -1) {
+                            td3.attr('style', 'background: orange; padding: 0px;');
+                            tog2 = $('<div>');
+                            tog2.append(y_button(), "&nbsp;&nbsp;", n_button());
+                            nb_r[1] = 1;
+                        }
+                        if (!nb_r[0]) switches.push(tog1);
+                        if (!nb_r[1]) switches.push(tog2);
+                        ptbody.prepend(tr.append(td1, td2.append(tog1), td3.append(tog2)));
                     }
                 });
                 ptable.append(pthead,ptbody);
@@ -478,6 +534,9 @@ function fill_profil_modal(user_infos) {
                 });*/
 
                 bdy.append(pdiv.append(pdivh, pdivb.append(ptable)));
+                switches.forEach( function(s) {
+                    s.bootstrapSwitch();
+                });
                 $('#profil_modal').modal('show');
             });
         });
