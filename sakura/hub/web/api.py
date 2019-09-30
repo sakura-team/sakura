@@ -3,6 +3,9 @@ from sakura.hub.code import list_code_revisions, list_operator_subdirs
 
 api = api_init()
 
+mike_temp_privileges = {}
+mike_temp_pendings = {'mike': ['developer'], 'mike2': ['admin']}
+
 @api
 class GuiToHubAPI:
     def __init__(self, context):
@@ -358,12 +361,18 @@ class GuiToHubAPI:
         ## Add privilege field in users info
         print('USERS PRIVILEGE attribute is not implemented yet')
         ##########
-        return self.context.users[login].get_full_info()
+        u = self.context.users[login].get_full_info()
+        u['privileges'] = { 'admin': 'granted', 'developer': 'granted'}
+        return u
 
     @api.users.__getitem__.privileges.request
     def request_user_privilege(self, privilege):
-        print(self.context.user, 'asking for privilege', privilege)
+        print(self.context.user.login, 'asking for privilege', privilege)
         print("NOT implemented yet")
+        if not self.context.user.login in mike_temp_pendings.keys():
+            mike_temp_pendings[self.context.user.login] = [privilege]
+        else:
+            mike_temp_pendings[self.context.user.login].append(privilege)
         return None
 
     @api.users.__getitem__.update
@@ -375,10 +384,40 @@ class GuiToHubAPI:
         return None
 
     @api.users.__getitem__.privileges.update
-    def update_user_grant(self, login, privilege):
+    def update_user_grant(self, login, privilege, value):
         ########## TODO
         print("NOT implemented yet")
         ##########
+        if login in list(mike_temp_pendings.keys()) and privilege in mike_temp_pendings[login]:
+            if value:
+                i = mike_temp_pendings[login].index(privilege)
+                mike_temp_pendings[login].pop(i)
+                if len(mike_temp_pendings[login]) == 0:
+                    del mike_temp_pendings[login]
+                mike_temp_privileges[login].append(privilege)
+                print('privilege accepted')
+            else:
+                i = mike_temp_pendings[login].index(privilege)
+                mike_temp_pendings[login].pop(i)
+                if len(mike_temp_pendings[login]) == 0:
+                    del mike_temp_pendings[login]
+
+                try:
+                    i = mike_temp_privileges[login].index(privilege)
+                    mike_temp_privileges[login].pop(i)
+                except:
+                    pass
+                print('privilege refused')
+        else:
+            if value:
+                mike_temp_privileges[login].append(privilege)
+            else:
+                try:
+                    i = mike_temp_privileges[login].index(privilege)
+                    mike_temp_privileges[login].pop(i)
+                except:
+                    pass
+        print('pendings', mike_temp_pendings)
         return None
 
     @api.users.privileges.pendings
@@ -386,7 +425,9 @@ class GuiToHubAPI:
         ########## TODO
         print("NOT implemented yet")
         ##########
-        return {'mike': 'developer', 'mike2': 'admin'}
+        if len(mike_temp_pendings):
+            return mike_temp_pendings
+        return None
 
     @api.users.list
     def list_all_users(self):
@@ -394,21 +435,23 @@ class GuiToHubAPI:
 
     @api.users.privileges.list
     def list_all_privileges(self):
-        import random as ra
-        users = tuple(u.login for u in self.context.users.select())
-        users = users + ('loki','hulk', 'ironman', 'captain')
-        privileges = {}
-        for u in users:
-            r = ra.randint(0,3)
-            if r == 0:
-                privileges[u] = []
-            elif r == 1:
-                privileges[u] = ["admin"]
-            elif r == 2:
-                privileges[u] = ["developer"]
-            else:
-                privileges[u] = ["admin", "developer"]
-        return privileges
+        global mike_temp_privileges
+        if len(mike_temp_privileges) == 0:
+            import random as ra
+            users = tuple(u.login for u in self.context.users.select())
+            users = users + ('loki','hulk', 'ironman', 'captain')
+            mike_temp_privileges = {}
+            for u in users:
+                r = ra.randint(0,3)
+                if r == 0:
+                    mike_temp_privileges[u] = []
+                elif r == 1:
+                    mike_temp_privileges[u] = ["admin"]
+                elif r == 2:
+                    mike_temp_privileges[u] = ["developer"]
+                else:
+                    mike_temp_privileges[u] = ["admin", "developer"]
+        return mike_temp_privileges
 
     # Transfers management
     ######################
