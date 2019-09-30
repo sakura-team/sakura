@@ -126,6 +126,6 @@ div.bootstrap-switch-container {
 
 .header-fixed > tbody > tr > td,
 .header-fixed > thead > tr > th {
-    width: 33%;
+    width: 33.33333%;
     float: left;
 }
