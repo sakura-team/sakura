@@ -406,6 +406,24 @@ class GuiToHubAPI:
     def list_all_users(self):
         return tuple(u.pack() for u in self.context.users.select())
 
+    @api.users.privileges.list
+    def list_all_privileges(self):
+        import random as ra
+        users = tuple(u.login for u in self.context.users.select())
+        users = users + ('loki','hulk', 'ironman', 'captain')
+        privileges = {}
+        for u in users:
+            r = ra.randint(0,3)
+            if r == 0:
+                privileges[u] = []
+            elif r == 1:
+                privileges[u] = ["admin"]
+            elif r == 2:
+                privileges[u] = ["developer"]
+            else:
+                privileges[u] = ["admin", "developer"]
+        return privileges
+
     # Transfers management
     ######################
     @api.transfers.start
