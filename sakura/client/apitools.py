@@ -151,7 +151,7 @@ def get_ws_url(hub_host, hub_port, ssl_enabled):
         protocol = 'wss'
     else:
         protocol = 'ws'
-    return "%s://%s:%d/websocket" % (protocol, hub_host, hub_port)
+    return "%s://%s:%d/standalone-websocket" % (protocol, hub_host, hub_port)
 
 def get_api():
     ws = WSProxy(GeventWSockConnector())

@@ -42,7 +42,8 @@ class HubContext(object):
     def session(self):
         session_id = getattr(greenlet_env, 'session_id', None)
         if session_id is None:
-            # we are processing a request coming from a daemon
+            #print("SESSION ID IS NONE")
+            # we are probably processing a request coming from a daemon
             return None
         session = self.sessions.get(id=session_id)
         if session is None:
@@ -64,17 +65,19 @@ class HubContext(object):
             return self.users.get(login = owner)
     def user_is_logged_in(self):
         return self.user is not None
-    def save_session_id(self, session_id):
+    def attach_session(self, session_id):
         if session_id is not None and \
                 self.sessions.get(id = session_id) is not None:
             greenlet_env.session_id = session_id
             self.session.renew()
+            return True
         else:
-            # session_id not given or obsolete
-            # create a new session
-            session = self.sessions.new_session(self)
-            greenlet_env.session_id = session.id
-            print('new session created ' + str(session.id))
+            return False
+    def new_session(self):
+        # create a new session
+        session = self.sessions.new_session(self)
+        greenlet_env.session_id = session.id
+        print('new session created ' + str(session.id))
     def get_daemon_from_name(self, daemon_name):
         return self.daemons.get_or_create(daemon_name)
     def create_link(self, src_op_id, src_out_id, dst_op_id, dst_in_id):

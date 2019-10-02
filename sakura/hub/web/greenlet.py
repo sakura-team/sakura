@@ -19,6 +19,8 @@ def to_namedtuple(clsname, d):
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
 
+    allowed_startup_urls = ('/', '/index.html')
+
     @monitored
     def ws_handle():
         wsock = bottle_get_wsock()
@@ -26,6 +28,7 @@ def web_greenlet(context, webapp_path):
             rpc_manager(context, wsock)
 
     @app.route('/websocket')
+    @app.route('/standalone-websocket')
     def ws_create():
         ws_handle()
 
@@ -91,7 +94,7 @@ def web_greenlet(context, webapp_path):
         print('serving ' + filepath, end="")
         resp = bottle.static_file(filepath, root = webapp_path)
         print(' ->', resp.status_line)
-        session_id_set(resp, filepath)
+        session_id_management_post(resp)
         return resp
 
     # session-id cookie management
@@ -105,26 +108,37 @@ def web_greenlet(context, webapp_path):
         except ValueError:
             bottle.abort(401, 'Wrong session id.')
 
-    # save session-id cookie transmitted from browser
+    # session-id management
     @app.hook('before_request')
-    def session_id_save():
-        session_id = get_session_id_cookie()
+    def session_id_management_pre():
+        requested_session_id = get_session_id_cookie()
+        #print(bottle.request.path, 'requested session id:', requested_session_id)
         with db_session_wrapper():
-            context.save_session_id(session_id)
+            if not context.attach_session(requested_session_id):
+                # session-id cookie is not present or no longer valid
+                if bottle.request.path in (allowed_startup_urls + ('/standalone-websocket',)):
+                    # create a new session
+                    context.new_session()
+                    print(bottle.request.path, 'created a new session', context.session.id)
+                if bottle.request.path == '/websocket':
+                    bottle.abort(503, 'missing or invalid session cookie')
 
-    # if session-id cookie is not present or has changed,
-    # let the browser update it
-    def session_id_set(resp, filepath):
+    @app.hook('after_request')
+    def session_id_management_post(resp=bottle.response):
+        requested_session_id = get_session_id_cookie()
         with db_session_wrapper():
-            if get_session_id_cookie() != context.session.id:
-                resp.set_cookie("session-id", str(context.session.id))
+            if context.session is not None:
+                if requested_session_id != context.session.id and \
+                        bottle.request.path in allowed_startup_urls:
+                    print(bottle.request.path, 'let the browser update session id cookie', context.session.id)
+                    resp.set_cookie("session-id", str(context.session.id))
         # Ensure the browser will always request the root document
         # (instead of using its cache), so that we can update the
         # session-id cookie in the response if needed.
         # The browser will then associate this possibly new session-id
         # to subsequent page requests.
-        if filepath == 'index.html':
-            resp.set_header("Cache-Control", "must-revalidate")
+        if bottle.request.path in allowed_startup_urls:
+            resp.set_header("Cache-Control", "no-cache, must-revalidate")
 
     server = WSGIServer(('', conf.web_port), app,
                         handler_class=WebSocketHandler)
