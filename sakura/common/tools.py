@@ -3,6 +3,7 @@ from pathlib import Path
 from gevent.queue import Queue
 import ctypes
 from gevent.subprocess import run, PIPE, STDOUT
+import numpy as np
 
 class StdoutProxy(object):
     def __init__(self, stdout):
@@ -213,7 +214,12 @@ class JsonProtocol:
     def fallback_handler(self, obj):
         if isinstance(obj, bytes):
             return '__bytes_' + obj.hex()
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.integer):
+            return int(obj)
         else:
+            import traceback; traceback.print_stack()
             raise TypeError(
                 "Unserializable object {} of type {}".format(obj, type(obj))
             )
@@ -229,6 +235,7 @@ class JsonProtocol:
             f.write(res_json)
         except BaseException as e:
             print('FAILED to serialize an object, re-raise exception.')
+            print('object is', obj)
             raise
 
 JSON_PROTOCOL = JsonProtocol()
