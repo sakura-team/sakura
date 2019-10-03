@@ -1,4 +1,4 @@
-import pickle
+from sakura.common.tools import FAST_PICKLE as pickle
 from gevent import Greenlet
 from sakura.common.io import APIEndpoint
 from sakura.daemon.tools import connect_to_hub

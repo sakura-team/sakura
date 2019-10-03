@@ -1,4 +1,4 @@
-import pickle
+from sakura.common.tools import FAST_PICKLE as pickle
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.daemons.api import DaemonToHubAPI
 from sakura.hub.exceptions import DaemonDataError

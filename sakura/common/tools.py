@@ -1,4 +1,4 @@
-import os, sys, gevent, json
+import os, sys, gevent, json, pickle
 from pathlib import Path
 from gevent.queue import Queue
 import ctypes
@@ -233,3 +233,13 @@ class JsonProtocol:
 
 JSON_PROTOCOL = JsonProtocol()
 
+class FastPickle:
+    def load(self, f):
+        return pickle.load(f)
+    def dump(self, obj, f):
+        # Default pickle protocol is version 3 (since python 3).
+        # Protocol version 4 mainly brings framing, which obviously improves performance
+        # when reading a stream. It is available since python 3.4.
+        return pickle.dump(obj, f, protocol = 4)
+
+FAST_PICKLE = FastPickle()
