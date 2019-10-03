@@ -23,9 +23,22 @@ class APILevel:
         self._type = 'level'
         self._item = None    # only for tables
         self._sublevel = None
+        self._properties = set()
     def __getitem__(self, item):
         self._item = item
         return self._sublevel
+    def _define_attr(self, attr, value):
+        self._properties.add(attr)
+        setattr(self, attr, value)
+    def _attr_is_defined(self, attr):
+        return attr in self._properties
+    def __getattr__(self, attr):
+        # in javascript, obj['attr'] and obj.attr are the same,
+        # so if GUI code wants to access obj['attr'], we may actually get
+        # a path like ('obj', 'attr') instead of ('obj', ['attr']).
+        # calling __getitem__ here when attribute is not found should
+        # fix this.
+        return self.__getitem__(attr)
 
 class APIStructureBuilder:
     def __init__(self, parent = None, attr_name = None, obj = None):
@@ -43,10 +56,10 @@ class APIStructureBuilder:
                 self._obj._sublevel = APILevel()
             return APIStructureBuilder(self, attr, self._obj._sublevel)
         else:
-            if not hasattr(self._obj, attr):
+            if not self._obj._attr_is_defined(attr):
                 # let's consider it is an APILevel for now
                 obj = APILevel()
-                setattr(self._obj, attr, obj)
+                self._obj._define_attr(attr, obj)
             return APIStructureBuilder(self, attr, getattr(self._obj, attr))
     def __call__(self, f_or_cls):
         if self._parent is None:
