@@ -12,10 +12,12 @@ var main_chart = null
 
 function update_plot(result) {
 
+  let chunk_data = result.dp.map(t => ({'x': t[0], 'y': t[1]}));
+
   if (!plot_data.length)
-      plot_data = result.dp;
+      plot_data = chunk_data;
   else {
-      Array.prototype.push.apply(plot_data, result.dp);
+      Array.prototype.push.apply(plot_data, chunk_data);
   }
 
   main_chart = new CanvasJS.Chart("plot_div", {

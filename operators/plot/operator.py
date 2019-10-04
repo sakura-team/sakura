@@ -2,6 +2,7 @@
 from sakura.daemon.processing.operator import Operator
 from sakura.daemon.processing.parameter import NumericColumnSelection
 from sakura.daemon.processing.source import ComputedSource
+from numpy.lib import recfunctions
 
 from time import time
 import numpy as np
@@ -39,10 +40,13 @@ class PlotOperator(Operator):
             source          = source.select_columns(column_x, column_y)
             self.iterator   = source.chunks()
 
-        dp = []
+        big_chunk = None
         for chunk in self.iterator:
-            for x, y in chunk:
-                dp.append({'x': x, 'y': y})
-                if time() > deadline:
-                    return {'dp': dp, 'done': False}
-        return {'dp': dp, 'done': True}
+            if big_chunk is None:
+                big_chunk = chunk
+            else:
+                # concatenate
+                big_chunk = recfunctions.stack_arrays((big_chunk, chunk))
+            if time() > deadline:
+                return {'dp': big_chunk, 'done': False}
+        return {'dp': big_chunk, 'done': True}
