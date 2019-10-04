@@ -20,20 +20,34 @@ Note: For security reasons, the recovery token expires after %(delay)d minutes.
 
 '''
 
+# Fake user when not logged in
+class Anonymous:
+    def get_full_info(self):
+        return None
+
 class UserMixin:
+    ANONYMOUS = Anonymous()
+
+    @classmethod
+    def anonymous(cls):
+        return UserMixin.ANONYMOUS
 
     def pack(self):
         return dict(
             login = self.login,
-            email = self.email,
             first_name = self.first_name,
-            last_name = self.last_name,
+            last_name = self.last_name)
+
+    def get_full_info(self):
+        return dict(
+            email = self.email,
             creation_date = self.creation_date,
             gender = self.gender,
             country = self.country,
             institution = self.institution,
             occupation = self.occupation,
-            work_domain = self.work_domain)
+            work_domain = self.work_domain,
+            **self.pack())
 
     @classmethod
     def from_logins(cls, logins):
@@ -49,6 +63,8 @@ class UserMixin:
     @classmethod
     def new_user(cls, login, email, password, **user_info):
         # print (type(cls))
+        if login == 'current':
+            raise APIRequestError('Login name "current" is not allowed!' % login)
         if cls.get(login = login) is not None:
             raise APIRequestError('Login name "%s" already exists!' % login)
         if cls.get(email = email) is not None:

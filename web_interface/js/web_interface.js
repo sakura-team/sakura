@@ -621,8 +621,8 @@ function fill_collaborators_table_body(info) {
                 for (let user in info.grants)
                     result.splice(result.indexOf(user), 1);
 
-                result.forEach( function(user) {
-                    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: user}));
+                result.forEach( function(user_info) {
+                    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: user_info.login}));
                 });
                 $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
             });

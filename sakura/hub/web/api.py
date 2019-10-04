@@ -349,21 +349,24 @@ class GuiToHubAPI:
         self.context.users.change_password(
                 login_or_email, current_password_or_rec_token, new_password)
 
-    @api.users.current.info
-    def get_current_login_info(self):
+    # Note: you can use 'api.users.current' as a shortcut to 'api.users[<current_login>]'
+    #       in the following API calls.
+
+    @api.users.__getitem__.info
+    def get_user_info(self, login):
         ########## TODO
         ## Add privilege field in users info
-        print('USERS PRIVILEGE attribut is not implemented yet')
+        print('USERS PRIVILEGE attribute is not implemented yet')
         ##########
-        return None if self.context.user is None else self.context.user.pack()
+        return self.context.users[login].get_full_info()
 
-    @api.users.current.privileges.request
+    @api.users.__getitem__.privileges.request
     def request_user_privilege(self, privilege):
         print(self.context.user, 'asking for privilege', privilege)
         print("NOT implemented yet")
         return None
 
-    @api.users.current.update
+    @api.users.__getitem__.update
     def update_user_info(self, **kwargs):
         ########## TODO
         ## Update an element of the user info
@@ -371,7 +374,7 @@ class GuiToHubAPI:
         ##########
         return None
 
-    @api.users.privileges.update
+    @api.users.__getitem__.privileges.update
     def update_user_grant(self, login, privilege):
         ########## TODO
         print("NOT implemented yet")
@@ -380,7 +383,7 @@ class GuiToHubAPI:
 
     @api.users.list
     def list_all_users(self):
-        return tuple(u.login for u in self.context.users.select())
+        return tuple(u.pack() for u in self.context.users.select())
 
     # Transfers management
     ######################

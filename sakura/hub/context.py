@@ -12,6 +12,18 @@ greenlet_env = local()
 def get_context():
     return HubContext._instance
 
+# handle keyword 'current' keyword as a user login name
+class UsersWrapper:
+    def __init__(self, users):
+        self.users = users
+    def __getitem__(self, login):
+        if login == 'current':
+            return get_context().user
+        else:
+            return self.users[login]
+    def __getattr__(self, attr):
+        return getattr(self.users, attr)
+
 class HubContext(object):
     _instance = None
     PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
@@ -22,7 +34,7 @@ class HubContext(object):
         self.planner = planner
         self.daemons = self.db.Daemon
         self.dataflows = self.db.Dataflow
-        self.users = self.db.User
+        self.users = UsersWrapper(self.db.User)
         self.sessions = self.db.Session
         self.op_classes = self.db.OpClass
         self.op_instances = self.db.OpInstance
@@ -58,11 +70,16 @@ class HubContext(object):
         return self.op_instances[op_id]
     @property
     def user(self):
+        user = None
         if self.session is not None:
-            return self.session.user
-        if self.operator is not None:
+            user = self.session.user
+        elif self.operator is not None:
             owner = self.operator.dataflow.owner
-            return self.users.get(login = owner)
+            user = self.users[owner]
+        if user is None:
+            return self.users.anonymous()
+        else:
+            return user
     def user_is_logged_in(self):
         return self.user is not None
     def attach_session(self, session_id):
