@@ -38,7 +38,7 @@ class floor:
             self.updatable_height = True
         else:
             self.updatable_height = False
-            
+
     def generate_buffers_and_attributes(self):
         self.vbo_vertices       = glGenBuffers(1)
         self.vbo_text_coords    = glGenBuffers(1)
@@ -88,23 +88,33 @@ class floor:
 
         # tile file
         fdir    = "./tiles_cache/" + self.layer + "/" + str(z) + "/"
-        fname   = fdir + str(x) + "_" + str(y) + ".pytile"
+        fname   = fdir + str(x) + "_" + str(y)
 
         img = None
-        if not os.path.exists(fname):
-            url = tn.tileURL(x, y, z, self.layer)
-            img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
-            if not os.path.isdir(fdir):
-                os.makedirs(fdir)
-
-            o = open(fname, 'wb')
-            pickle.dump(img, o)
-            o.close()
+        if not os.path.exists(fname+ ".pytile"):
+            if not os.path.exists(fname+ ".png"):
+                url = tn.tileURL(x, y, z, self.layer)
+                r = requests.get(url, stream=True).content
+                try:
+                    img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
+                    if not os.path.isdir(fdir):
+                        os.makedirs(fdir)
+                    o = open(fname+ ".pytile", 'wb')
+                    pickle.dump(img, o)
+                    o.close()
+                except:
+                    print('\n Error getting floor image from ', url)
+            else:
+                img = Image.open(fname+".png").convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
+                o = open(fname+ ".pytile", 'wb')
+                pickle.dump(img, o)
+                o.close()
         else:
-            o = open(fname, 'rb')
+            o = open(fname+ ".pytile", 'rb')
             img = pickle.load(o)
             o.close()
-        self.img.paste(img, box= (img_x*256, img_y*256))
+        if img:
+            self.img.paste(img, box= (img_x*256, img_y*256))
 
     def get_layers(self):
         return tn.layers_names()

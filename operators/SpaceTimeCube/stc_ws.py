@@ -26,6 +26,7 @@ class wsock:
         print()
         print("  h, help\t: print this help")
         print("  data\t\t: csv file path (mandatory)")
+        print("  date_format\t: example -> '%Y-%m-%d %H:%M:%S' (with quotes)")
         print("  server\t: server mode activation")
         print("  color\t\t: color file path (random colors if option not defined)")
         print("  shape\t\t: shape file path (no shapes if option not defined)")
@@ -41,11 +42,11 @@ class wsock:
             self.print_help()
             sys.exit()
 
-        self.stc = SpaceTimeCube()
-        self.stc.debug = True
-        self.stc.app = self
-        self.server_mode = False
-        self.density = False
+        self.stc            = SpaceTimeCube()
+        self.stc.debug      = True
+        self.stc.app        = self
+        self.server_mode    = False
+        self.density        = False
 
         if '-data' in sys.argv:
             ind = sys.argv.index('-data')
@@ -79,6 +80,9 @@ class wsock:
         if '-density' in sys.argv:
             self.density = True
 
+        if '-date_format' in sys.argv:
+            ind = sys.argv.index('-date_format')
+            self.stc.date_format = sys.argv[ind+1]
 
     def init(self):
         glutInit(sys.argv)

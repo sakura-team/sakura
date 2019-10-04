@@ -80,7 +80,10 @@ class data:
                 self.trajects_ids.append(id)
 
             ind = self.trajects_names.index(c[0])
-            m = mrc.mercator(c['longitude'], c['latitude'], c['elevation'])
+            ele = 0
+            if 'elevation' in c:
+                ele = c['elevation']
+            m = mrc.mercator(c['longitude'], c['latitude'], ele)
             self.trajects[ind].points.append([c[1], *m])
 
             density = [1, 1]
@@ -140,7 +143,7 @@ class data:
                 self.sem_colors.append([*gm.random_color(), 1])
         else:
             for s in self.semantics:
-                self.sem_colors.append([*gm.random_color(), 1])
+                self.sem_colors.append([1,1,1,1])
 
             fcolors = open(self.colors_file, 'r').readlines()
             colors = []

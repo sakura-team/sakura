@@ -57,6 +57,7 @@ class SpaceTimeCube:
         #Trajectory data
         self.data       = tr.data()
         self.geo_shapes = gs.geo_shapes()
+        self.date_format= '%Y-%m-%d %H:%M:%S'
 
         #Global display data
         self.cube       = obj_cube.cube(np.array([-.5,0,-.5]), np.array([.5,1,.5]))
@@ -362,7 +363,12 @@ class SpaceTimeCube:
                     d = big_chunk[i][1]
                     if d.find('24:00') != -1:
                         d = d.replace('24:00', '23:59')
-                    d = datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S')
+                    try:
+                        d = datetime.datetime.strptime(d, self.date_format)
+                    except:
+                        print('\n\nWRONG DATE FORMAT ', self.date_format, '\n\n')
+                        sys.exit()
+
                     big_chunk[i][1] = int(d.strftime("%s"))
                 if self.verbose:
                     print('\r\t\t\33[1;32mTimestamps to dates...\33[m 100%')
@@ -394,10 +400,11 @@ class SpaceTimeCube:
 
             self.data.add(big_chunk[ (nb_pieces-1)*piece: ], meta = False)
             print('\r\t\t\33[1;32mLines to data structure...\33[m 100%')
-            self.data.make_meta()
 
-            if self.debug and not self.verbose:
-                print('\tOk')
+            print('\r\t\33[1;32mMaking Meta...\33[m', end='')
+            self.data.make_meta()
+            print('\tOk')
+
         sys.stdout.flush()
 
         self.trajs.geometry(self.data)
