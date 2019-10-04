@@ -94,16 +94,19 @@ class floor:
         if not os.path.exists(fname+ ".pytile"):
             if not os.path.exists(fname+ ".png"):
                 url = tn.tileURL(x, y, z, self.layer)
-                r = requests.get(url, stream=True).content
+                r = requests.get(url, headers = {'User-agent': 'Grenoble Informatics Laboratory request'}, stream = True)
+
                 try:
-                    img = Image.open(requests.get(url, stream=True).raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
+                    img = Image.open(r.raw).convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
                     if not os.path.isdir(fdir):
                         os.makedirs(fdir)
+
                     o = open(fname+ ".pytile", 'wb')
                     pickle.dump(img, o)
                     o.close()
                 except:
                     print('\n Error getting floor image from ', url)
+                    print(r.content)
             else:
                 img = Image.open(fname+".png").convert('RGB').transpose(Image.FLIP_TOP_BOTTOM)
                 o = open(fname+ ".pytile", 'wb')
