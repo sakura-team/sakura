@@ -214,6 +214,8 @@ class JsonProtocol:
     def fallback_handler(self, obj):
         if isinstance(obj, bytes):
             return '__bytes_' + obj.hex()
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
         elif isinstance(obj, np.floating):
             return float(obj)
         elif isinstance(obj, np.integer):
