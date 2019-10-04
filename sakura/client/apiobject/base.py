@@ -61,7 +61,7 @@ def get_subitems_desc(obj):
     if len(items) == 0:
         return ''
     return '\n  sub-items:\n' + '\n'.join(
-        '  - self[' + str(k) + ']: ' + short_repr(v) for k, v in sorted(items)) + '\n'
+        '  - self[' + repr(k) + ']: ' + short_repr(v) for k, v in sorted(items)) + '\n'
 
 class APIObjectBase:
     def __repr__(self, level=0):
