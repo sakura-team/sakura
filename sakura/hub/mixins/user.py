@@ -63,8 +63,8 @@ class UserMixin:
     @classmethod
     def new_user(cls, login, email, password, **user_info):
         # print (type(cls))
-        if login == 'current':
-            raise APIRequestError('Login name "current" is not allowed!' % login)
+        if login in ('current', 'create', 'list', 'privileges'):  # avoid hub api conflicts
+            raise APIRequestError('Login name "%s" is not allowed!' % login)
         if cls.get(login = login) is not None:
             raise APIRequestError('Login name "%s" already exists!' % login)
         if cls.get(email = email) is not None:
