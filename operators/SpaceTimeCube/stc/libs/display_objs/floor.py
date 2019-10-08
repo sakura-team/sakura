@@ -149,7 +149,7 @@ class floor:
         lon_max, lat_max = mc.lonlat_from_mercator( maxs[1],maxs[2])
 
         # computing the higher depth that gives a tile smaller than the cube size
-        z = tn.depth_from_size(lon_max - lon_min)+1
+        z = tn.depth_from_size(lon_max - lon_min)+2
 
         # coordinates of the tiles
         lon_t_min, lat_t_min = tn.tileXY(lat_min, lon_min, z)

@@ -53,7 +53,11 @@ class trajectories:
 
         self.display_color = tempd
         '''
-        if dcolor == 'trajectories':
+        c = self.display_color
+        if dcolor != 'none':
+            c = dcolor
+
+        if c == 'trajectories':
             sh.bind(self.vbo_colors, self.colors, self.attr_colors, 4, GL_FLOAT)
         else:
             sh.bind(self.vbo_colors, self.sem_colors, self.attr_colors, 4, GL_FLOAT)
