@@ -1,9 +1,27 @@
 var trajectories = []
 var gps2d_map = null;
 
-function update_trajectories(data) {
-    console.log('toto');
-    gps2d_map.setView([51.505, -0.09], 13);
+var trajectories = null;
+var center = null;
+
+function update_trajectories(chunk) {
+
+  if (center === null)
+      center = chunk.mean;
+  else if (chunk.mean){
+      center = [(center[0] + chunk.mean[0]) /2,
+                (center[1] + chunk.mean[1]) /2]
+  }
+  gps2d_map.panTo(center);
+
+  if (chunk.end == false) {
+      sakura.apis.operator.fire_event('get_data_continue').then(
+          update_trajectories
+      );
+  }
+  else {
+      console.log('Ended');
+  }
 }
 
 function init_gps2d() {
@@ -19,5 +37,5 @@ function init_gps2d() {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>',
         maxZoom: 18
         }).addTo(gps2d_map);
-    gps2d_map.setView([51.505, -0.09], 13);
+    gps2d_map.setView([51.505, -0.09], 7);
 }
