@@ -59,10 +59,11 @@ function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     $('#stub_asking_modal').modal();
 }
 
-function yes_no_asking(header_str, body_str, func_yes) {
+function yes_no_asking(header_str, body_str, func_yes, func_no) {
     var h = $('#web_interface_yes_no_modal_header');
     var b = $('#web_interface_yes_no_modal_body');
-    var b_yes = $('#web_interface_yes_no_modal_button');
+    var b_yes = $('#web_interface_yes_no_modal_yes_button');
+    var b_no = $('#web_interface_yes_no_modal_no_button');
 
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
@@ -71,6 +72,12 @@ function yes_no_asking(header_str, body_str, func_yes) {
     b_yes.unbind("click");
     b_yes.click(function() {
         func_yes();
+        $('#web_interface_yes_no_modal').modal('hide');
+    });
+
+    b_no.unbind("click");
+    b_no.click(function() {
+        func_no();
         $('#web_interface_yes_no_modal').modal('hide');
     });
 }
@@ -734,7 +741,7 @@ function web_interface_asking_change_access_scope() {
 
     b.html("Are you sure you want to change access scope from <b>'"+web_interface_current_object_info.access_scope+"'</b> to <b>'"+$('#web_interface_access_scope_select').val()+"'</b> ?");
 
-    var butt = $('#web_interface_yes_no_modal_button');
+    var butt = $('#web_interface_yes_no_modal_yes_button');
     butt.unbind("click");
     butt.click(function() { web_interface_change_access_scope(); });
 
