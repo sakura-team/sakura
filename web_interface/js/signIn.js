@@ -143,7 +143,7 @@ function signInSubmitControl(event, login, passw) {
 
                 if (wsResult.privileges == null)
                     wsResult.privileges = { 'admin':     'granted',
-                                            'developer': 'not granted'};
+                                            'developer': 'granted'};
 
                 current_login = wsResult;
                 fill_profil_button();
@@ -428,17 +428,10 @@ function fill_profil_modal(user_infos) {
 
 
                 //TABLE BODY
-                var switches = [];
-                function new_tog(user, privilege){
-                    var i = $('<input>', { 'type': "checkbox",
-                                          'class':"custom-control-input",
-                                          'data-toggle': "toggle",
-                                          'data-size': "mini",
-                                          'data-on-text':"&nbsp;&nbsp;&nbsp;&nbsp;",
-                                          'data-off-text':"&nbsp;&nbsp;&nbsp;&nbsp;"
-                                          });
-                    i.on('switchChange.bootstrapSwitch', function (event, state) {
-                        update_privilege(state, user, privilege);
+                function new_check(user, privilege){
+                    var i = $('<input>', { 'type': "checkbox",});
+                    i.on('change', function (event) {
+                        update_privilege(event, user, privilege, event);
                     });
                     return i;
                 }
@@ -467,17 +460,16 @@ function fill_profil_modal(user_infos) {
                     var td3 = $('<td>', { 'align': "center",
                                           'style': "padding: 0px"
                                           });
-                    var tog1 = new_tog(user, 'admin');
+                    var tog1 = new_check(user, 'admin');
                     if (users[user].indexOf('admin') != -1)
                         tog1.prop('checked', true);
 
-                    var tog2 = new_tog(user, 'developer');
+                    var tog2 = new_check(user, 'developer');
                     if (users[user].indexOf('developer') != -1)
                         tog2.prop('checked', true);
 
                     if (!pendings || Object.keys(pendings).indexOf(user) == -1) {
                         ptbody.append(tr.append(td1, td2.append(tog1), td3.append(tog2)));
-                        switches.push(tog1, tog2);
                     }
                     else {
                         if (!pendings || pendings[user].indexOf('admin') != -1) {
@@ -485,25 +477,18 @@ function fill_profil_modal(user_infos) {
                             tog1 = $('<div>');
                             tog1.append(y_button(user, 'admin'), "&nbsp;&nbsp;", n_button(user, 'admin'));
                         }
-                        else
-                            switches.push(tog1);
 
                         if (!pendings || pendings[user].indexOf('developer') != -1) {
                             td3.attr('style', 'background: orange; padding: 0px;');
                             tog2 = $('<div>');
                             tog2.append(y_button(user, 'developer'), "&nbsp;&nbsp;", n_button(user, 'developer'));
                         }
-                        else
-                            switches.push(tog2);
                         ptbody.prepend(tr.append(td1, td2.append(tog1), td3.append(tog2)));
                     }
                 });
                 ptable.append(pthead,ptbody);
 
                 bdy.append(pdiv.append(pdivh, pdivb.append(ptable)));
-                switches.forEach( function(s) {
-                    s.bootstrapSwitch();
-                });
                 $('#profil_modal').modal('show');
             });
         });
@@ -532,22 +517,29 @@ function validate_pending(value, user, privilege){
     }
 }
 
-function update_privilege(value, user, privilege) {
+function update_privilege(event, user, privilege, checkbox) {
+    var value = event.target.checked;
     var func_yes = function() {
         sakura.apis.hub.users[user].privileges.update(privilege, value).then(function () {
             fill_profil_button();
             fill_profil_modal(current_login);
         });
     }
+    var func_no = function() {
+        event.target.checked = !event.target.checked;
+    }
+
     if (!value) {
         yes_no_asking("Removing Privilege",
                       "Are you sure you want to remove "+user+"'s <b>"+privilege+"</b> privilege ?",
-                      func_yes);
+                      func_yes,
+                      func_no);
     }
     else {
         yes_no_asking("Adding Privilege",
                       "Are you sure you want to add "+user+"'s <b>"+privilege+"</b> privilege ?",
-                      func_yes);
+                      func_yes,
+                      func_no);
     }
 }
 
