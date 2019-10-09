@@ -116,7 +116,7 @@ function operators_update_creation_modal() {
     //Before opening, we should be sure the user can register an operator
     sakura.apis.hub.users.current.info().then( function(infos) {
         if (infos.privileges != null &&
-            infos.privileges.indexOf('developer') != -1) {
+            Object.keys(infos.privileges).indexOf('developer') != -1) {
             $("#operators_submit_button").html('Register');
             var select1 = $('#operators_creation_revision');
             select1.selectpicker('refresh');
