@@ -22,7 +22,7 @@ class gps2d(Operator):
                 StrColumnSelection('Trajectory ids', self.input))
         self.input_column_param_lon = self.register_parameter(
                 NumericColumnSelection('longitude', self.input))
-        self.input_column_param_lon = self.register_parameter(
+        self.input_column_param_lat = self.register_parameter(
                 NumericColumnSelection('latitude', self.input))
 
         # additional tabs
@@ -31,7 +31,6 @@ class gps2d(Operator):
         self.iterator = None
 
     def handle_event(self, ev_type):
-        print(ev_type)
         if not self.input.connected():
             return { 'issue': 'NO DATA: Input is not connected.' }
 
@@ -45,14 +44,12 @@ class gps2d(Operator):
                 source          = source.select_columns(column_id, column_x, column_y)
                 self.iterator   = source.chunks()
 
-            chunk = None
             try:
-                print('here')
-                chunk = self.iterator.next()
-                print('there')
-
-                return {'db': chunk, 'end': False}
-            except:
-                print('issue')
-                return {'db': null, 'end': True}
-        return {}
+                chunk = next(self.iterator)
+                return {'db': chunk,
+                        'mean': [   np.mean([c[1] for c in chunk]),
+                                    np.mean([c[2] for c in chunk])],
+                        'end': False}
+            except StopIteration:
+                return {'db': None, 'mean':None, 'end': True}
+        return {'db': None, 'mean': None, 'end': True}
