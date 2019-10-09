@@ -8,12 +8,13 @@ from time import time
 import numpy as np
 
 class gps2d(Operator):
-    NAME = "GPS 2D"
-    SHORT_DESC = "Displays trajectories on a 2D map"
+    NAME = "GPS_2D"
+    SHORT_DESC = "Displays trajectories on a 2D map."
     TAGS = [ "visualisation"]
+
     def construct(self):
         # inputs
-        self.input = self.register_input('Table with al least 3 columns: trajectory ids, longitude and latitude')
+        self.input = self.register_input('Input gps table')
 
         # parameters
         self.input_column_param_id = self.register_parameter(
@@ -24,10 +25,10 @@ class gps2d(Operator):
                 NumericColumnSelection('latitude', self.input))
 
         # additional tabs
-        #self.register_tab('Plot', 'plot.html')
+        self.register_tab('GPS_2D', 'gps2d.html')
 
         self.iterator = None
 
-    def handle_event(self, ev_type, time_credit):
-        print(ev_type, time_credit)
-        return {}
+    #def handle_event(self, ev_type):
+    #    print(ev_type, time_credit)
+    #    return {}
