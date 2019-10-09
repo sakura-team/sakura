@@ -24,6 +24,10 @@ Note: For security reasons, the recovery token expires after %(delay)d minutes.
 class Anonymous:
     def get_full_info(self):
         return None
+    def is_anonymous(self):
+        return True
+    def name_it(self):
+        return 'An anonymous user'
 
 class UserMixin:
     ANONYMOUS = Anonymous()
@@ -31,6 +35,12 @@ class UserMixin:
     @classmethod
     def anonymous(cls):
         return UserMixin.ANONYMOUS
+
+    def is_anonymous(self):
+        return False
+
+    def name_it(self):
+        return 'User ' + self.login
 
     def pack(self):
         return dict(

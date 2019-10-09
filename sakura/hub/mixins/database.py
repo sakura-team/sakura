@@ -5,7 +5,7 @@ from sakura.common.cache import cache_result
 from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
 from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
-                              find_owner
+                              find_owner, parse_daemon_grants
 from sakura.hub.mixins.bases import BaseMixin
 
 class DatabaseMixin(BaseMixin):
@@ -77,16 +77,14 @@ class DatabaseMixin(BaseMixin):
                 self.name,
                 self.owner)
     @classmethod
-    def create_or_update(cls, datastore, name, **kwargs):
+    def create_or_update(cls, datastore, name, grants={}, **kwargs):
         database = cls.get(datastore = datastore, name = name)
         if database is None:
             # new database detected on a daemon
-            grants = kwargs.pop('grants', {})
             database = cls( datastore = datastore,
                             name = name,
                             grants = grants)
         database.update_attributes(**kwargs)
-        database.cleanup_grants()
         # if owner not specified by daemon, set it to datastore's admin
         if database.owner is None:
             database.owner = datastore.owner
@@ -95,8 +93,9 @@ class DatabaseMixin(BaseMixin):
         daemon_info = self.remote_instance.overview()
         get_context().databases.restore_database(self.datastore, **daemon_info)
     @classmethod
-    def restore_database(cls, datastore, **db):
-        return cls.create_or_update(datastore, **db)
+    def restore_database(cls, datastore, grants, **kwargs):
+        grants = parse_daemon_grants(grants)
+        return cls.create_or_update(datastore, grants = grants, **kwargs)
     @classmethod
     def create_db(cls, datastore, name, creation_date = None, **kwargs):
         datastore.assert_grant_level(GRANT_LEVELS.write,
@@ -106,9 +105,6 @@ class DatabaseMixin(BaseMixin):
             creation_date = time.time()
         # parse access info from gui
         kwargs = parse_gui_access_info(**kwargs)
-        # owner is current user
-        grants = kwargs.pop('grants', {})
-        grants[context.user.login] = GRANT_LEVELS.own
         # register in central db
         new_db = cls.create_or_update(
                         datastore = datastore,
@@ -116,17 +112,19 @@ class DatabaseMixin(BaseMixin):
                         grants = grants,
                         creation_date = creation_date,
                         **kwargs)
+        # owner is current user
+        new_db.owner = context.user.login
         # request daemon to create db on the remote datastore
         new_db.create_on_datastore()
         # return database_id
         context.db.commit()
         return new_db.id
     def update_grant(self, login, grant_name):
-        self.assert_grant_level(GRANT_LEVELS.own,
-                        'Only owner can change database grants.')
+        # update hub db
+        super().update_grant(login, grant_name)
+        # update remotely on datastore
         self.datastore.remote_instance.update_database_grant(
                     self.name, login, GRANT_LEVELS.value(grant_name))
-        self.refresh_metadata_from_daemon()
     def delete_database(self):
         self.assert_grant_level(GRANT_LEVELS.own,
                 'Only owner is allowed to delete this database.')

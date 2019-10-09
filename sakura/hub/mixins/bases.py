@@ -28,17 +28,7 @@ class BaseMixin(StatusMixin, EventSourceMixin):
         return find_owner(self.grants)
     @owner.setter
     def owner(self, login):
-        self.grants[login] = GRANT_LEVELS.own
-    def cleanup_grants(self):
-        users = get_context().users
-        grants = dict(self.grants)
-        cleaned_up_grants = {}
-        for login, grant in grants.items():
-            if users.get(login = login) is None:
-                print('WARNING: user %s is unknown in Sakura. Ignored.' % login)
-            else:
-                cleaned_up_grants[login] = grant
-        self.grants = cleaned_up_grants
+        self.update_grant(login, 'own')
     def parse_and_update_attributes(self, **kwargs):
         self.assert_grant_level(GRANT_LEVELS.own,
                         'Only owner can change attributes.')
@@ -60,16 +50,30 @@ class BaseMixin(StatusMixin, EventSourceMixin):
         if self.get_grant_level() < grant:
             raise APIObjectDeniedError(error_msg)
     def update_grant(self, login, grant_name):
-        self.assert_grant_level(GRANT_LEVELS.own,
+        # note: an object being constructed may not have an
+        # owner set yet.
+        if self.owner is not None:
+            self.assert_grant_level(GRANT_LEVELS.own,
                         'Only owner can change grants.')
-        grants = dict(self.grants)
         grant_level = GRANT_LEVELS.value(grant_name)
         if grant_level == GRANT_LEVELS.hide:
-            if login in grants:
-                del grants[login]
+            # drop the grant
+            del self.grants[login]
+        elif grant_level not in (GRANT_LEVELS.own, GRANT_LEVELS.read, GRANT_LEVELS.write):
+            raise APIRequestError("Only 'read' and 'write' grant levels can be set.")
         else:
-            grants[login] = grant_level
-        self.grants = grants
+            # note: if a grant request was requested by this user,
+            # this update will cause the request to be cleared.
+            self.grants[login] = dict(
+                level = grant_level
+            )
+        self.commit()
+    def record_grant_request(self, login, level):
+        grant = self.grants.get(login, {})
+        grant.update(
+            requested_level = level
+        )
+        self.grants[login] = grant
         self.commit()
     def handle_grant_request(self, grant_name, req_text):
         requested_grant = GRANT_LEVELS.value(grant_name)
@@ -82,6 +86,7 @@ class BaseMixin(StatusMixin, EventSourceMixin):
         if requested_grant not in (GRANT_LEVELS.read, GRANT_LEVELS.write):
             raise APIRequestError("Denied, you can only request 'read' or 'write' grants.")
         requester = context.user
+        self.record_grant_request(requester.login, requested_grant)
         owner = context.users.from_login_or_email(self.owner)
         content = GRANT_REQUEST_MAIL_CONTENT % dict(
                 owner_firstname = owner.first_name,
@@ -96,7 +101,7 @@ class BaseMixin(StatusMixin, EventSourceMixin):
         )
         sendmail(owner.email, GRANT_REQUEST_MAIL_SUBJECT, content)
     def commit(self):
-        self._database_.commit()
+        get_context().db.commit()
     @classmethod
     def filter_for_current_user(cls):
         return FilteredView(cls)

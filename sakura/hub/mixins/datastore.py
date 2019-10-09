@@ -101,12 +101,11 @@ class DatastoreMixin(BaseMixin):
             **self.pack_status_info()
         )
     def restore_grants(self, grants):
-        cleaned_up_grants = {}
-        for login, grant in grants.items():
+        for login, grant_level in grants.items():
             u = get_context().users.get(login = login)
             if u == None:
                 # sakura user reported by daemon does not exist
-                if grant == GRANT_LEVELS.own:
+                if grant_level == GRANT_LEVELS.own:
                     # this is the datastore owner written in daemon's conf!
                     raise DaemonDataError(DATASTORE_ADMIN_ERROR % dict(
                         host = self.host,
@@ -125,8 +124,12 @@ class DatastoreMixin(BaseMixin):
                         should_fail = False    # just warn
                     )
             else:
-                cleaned_up_grants[login] = grant
-        self.grants = cleaned_up_grants
+                # update
+                grant = self.grants.get(login, {})
+                grant.update(
+                    level = grant_level
+                )
+                self.grants[login] = grant
     def restore_databases(self, databases):
         restored_dbs = set()
         for db in databases:

@@ -117,16 +117,14 @@ class OpClassMixin(BaseMixin):
                 raise APIRequestError("Invalid request: Access scope was not specified.")
             if access_scope not in (ACCESS_SCOPES.public, ACCESS_SCOPES.private):
                 raise APIRequestError("Invalid request: Access scope for an operator class should be 'public' or 'private'.")
-        # owner is current user
-        if context.user is None:
+        if not context.user_is_logged_in():
             raise APIRequestError("Invalid request: one has to login before registering an operator class.")
-        grants = kwargs.pop('grants', {})
-        grants[context.user.login] = GRANT_LEVELS.own
         # create
         op_cls = cls(   repo = repo_info,
                         code_subdir = repo_subdir,
-                        grants = grants,
                         **kwargs)
+        # owner is current user
+        op_cls.owner = context.user.login
         try:
             op_cls.update_metadata()
         except:

@@ -81,7 +81,7 @@ class HubContext(object):
         else:
             return user
     def user_is_logged_in(self):
-        return self.user is not None
+        return not self.user.is_anonymous()
     def attach_session(self, session_id):
         if session_id is not None and \
                 self.sessions.get(id = session_id) is not None:

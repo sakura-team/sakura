@@ -39,17 +39,15 @@ class DataflowMixin(BaseMixin):
             creation_date = time.time()
         # parse access info from gui
         kwargs = parse_gui_access_info(**kwargs)
-        # record owner
-        grants = kwargs.pop('grants', {})
-        grants[context.user.login] = GRANT_LEVELS.own
         # instanciate dataflow
         dataflow = cls()
         # update attributes
         dataflow.update_attributes(
             creation_date = creation_date,
-            grants = grants,
             **kwargs
         )
+        # record owner
+        dataflow.owner = context.user.login
         # return dataflow id
         context.db.commit()
         return dataflow.id

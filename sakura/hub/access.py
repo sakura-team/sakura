@@ -9,12 +9,14 @@ GRANT_TO_USER_TYPE = {
 }
 
 def get_user_type(obj, user):
-    if user == None:
+    if user.is_anonymous():
         return USER_TYPES.anonymous
-    if user.login not in obj.grants:
-        return USER_TYPES.other
-    grant = obj.grants[user.login]
-    return GRANT_TO_USER_TYPE[grant]
+    for login, grant in obj.grants.items():
+        if user.login == login:
+            level = grant.get('level', None)
+            if level is not None:
+                return GRANT_TO_USER_TYPE[level]
+    return USER_TYPES.other
 
 class FilteredView:
     def __init__(self, db_set):
@@ -23,8 +25,7 @@ class FilteredView:
     def list_access_checker(o):
         if o.get_grant_level() < GRANT_LEVELS.list:
             user = get_context().user
-            raise APIObjectDeniedError('%s is not allowed to view this item.' % \
-                    ('An anonymous user' if user is None else 'User ' + user.login))
+            raise APIObjectDeniedError('%s is not allowed to view this item.' % user.name_it())
     def pack(self):
         return tuple(o.pack() for o in self)
     def is_accessible(self, o):
@@ -46,22 +47,40 @@ class FilteredView:
     def __getattr__(self, attr):
         return getattr(self.db_set, attr)
 
-def parse_gui_access_info(grants = None, access_scope = None, **kwargs):
-    if grants != None:
-        parsed_grants = {}
-        for login, grant_name in grants.items():
-            parsed_grants[login] = GRANT_LEVELS.value(grant_name)
-        kwargs.update(grants = parsed_grants)
+def parse_gui_access_info(access_scope = None, **kwargs):
     if access_scope != None:
         kwargs.update(access_scope = ACCESS_SCOPES.value(access_scope))
     return kwargs
+
+def parse_daemon_grants(daemon_grants):
+    users = get_context().users
+    grants = {}
+    for login, level in daemon_grants.items():
+        user = users.get(login = login)
+        if user is None:
+            print('WARNING: user %s is unknown in Sakura. Ignored.' % login)
+            continue
+        grants[login] = dict(
+            level = level
+        )
+    return grants
+
+def pack_gui_grant(grant):
+    gui_grant = {}
+    level = grant.get('level', None)
+    if level is not None:
+        gui_grant['level'] = GRANT_LEVELS.name(level)
+    requested_level = grant.get('requested_level', None)
+    if requested_level is not None:
+        gui_grant['requested_level'] = GRANT_LEVELS.name(requested_level)
+    return gui_grant
 
 def pack_gui_access_info(obj):
     gui_grants = {}
     owner = None
     for login, grant in obj.grants.items():
-        gui_grants[login] = GRANT_LEVELS.name(grant)
-        if grant == GRANT_LEVELS.own:
+        gui_grants[login] = pack_gui_grant(grant)
+        if grant.get('level', None) == GRANT_LEVELS.own:
             owner = login
     return dict(
         owner = owner,
@@ -72,5 +91,5 @@ def pack_gui_access_info(obj):
 
 def find_owner(grants):
     for login, grant in grants.items():
-        if grant == GRANT_LEVELS.own:
+        if grant.get('level', None) == GRANT_LEVELS.own:
             return login
