@@ -2,23 +2,25 @@ var trajectories = []
 var gps2d_map = null;
 
 var trajectories = null;
-var center = null;
+var bounds = null;
 
 function update_trajectories(chunk) {
 
   if (chunk.db !== null) {
-      if (center === null)
-          center = chunk.mean;
-      else if (chunk.mean){
-          center = [(center[0] + chunk.mean[0]) /2,
-                    (center[1] + chunk.mean[1]) /2]
+      if (bounds === null)
+          bounds = [chunk.min, chunk.max];
+      else {
+          bounds = [ [Math.min(bounds[0][0], chunk.min[0]),
+                      Math.min(bounds[0][1], chunk.min[1])],
+                     [Math.max(bounds[1][0], chunk.max[0]),
+                      Math.max(bounds[1][1], chunk.max[1])]];
       }
       var coords = chunk.db.map(t => ([t[1], t[2]]));
       var polygon = L.polyline(coords, {color: 'red',
                                         weight: 3,
                                         opacity: 0.5,
                                         smoothFactor: 1}).addTo(gps2d_map);
-      gps2d_map.panTo(center);
+      gps2d_map.fitBounds(bounds);
 
       sakura.apis.operator.fire_event('get_data_continue').then(
         update_trajectories
@@ -32,6 +34,7 @@ function update_trajectories(chunk) {
 function init_gps2d() {
 
     //Get data
+    bounds = null;
     sakura.apis.operator.fire_event('get_data_first').then(
         update_trajectories
     );
