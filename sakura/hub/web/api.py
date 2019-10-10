@@ -194,6 +194,10 @@ class GuiToHubAPI:
     def list_datastores(self):
         return pack(self.datastores)
 
+    @api.datastores.__getitem__.info
+    def get_datastore_info(self, datastore_id):
+        return self.datastores[datastore_id].get_full_info()
+
     @api.datastores.__getitem__.grants.request
     def request_datastore_grant(self, datastore_id, grant_name, text):
         return self.datastores[datastore_id].handle_grant_request(grant_name, text)

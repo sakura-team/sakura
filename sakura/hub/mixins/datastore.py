@@ -100,6 +100,13 @@ class DatastoreMixin(BaseMixin):
             **pack_gui_access_info(self),
             **self.pack_status_info()
         )
+    def get_full_info(self):
+        # start with general metadata
+        result = self.pack()
+        if self.get_grant_level() >= GRANT_LEVELS.read:
+            # add info about databases
+            result['databases'] = tuple(db.pack() for db in self.databases)
+        return result
     def restore_grants(self, grants):
         for login, grant_level in grants.items():
             u = get_context().users.get(login = login)

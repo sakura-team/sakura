@@ -3,6 +3,7 @@ from sakura.client import conf
 from sakura.client.apiobject.opclasses import get_op_classes
 from sakura.client.apiobject.dataflows import get_dataflows
 from sakura.client.apiobject.databases import get_databases
+from sakura.client.apiobject.datastores import get_datastores
 from sakura.client.apiobject.users import get_users
 from sakura.client.apiobject.misc import get_misc
 from sakura.client.apiobject.base import APIObjectBase
@@ -35,6 +36,9 @@ class APIRoot:
             @property
             def dataflows(self):
                 return get_dataflows(get_proxy())
+            @property
+            def datastores(self):
+                return get_datastores(get_proxy())
             @property
             def databases(self):
                 return get_databases(get_proxy())
