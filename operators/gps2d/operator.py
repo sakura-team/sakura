@@ -47,9 +47,9 @@ class gps2d(Operator):
             try:
                 chunk = next(self.iterator)
                 return {'db': chunk,
-                        'mean': [   np.mean([c[1] for c in chunk]),
-                                    np.mean([c[2] for c in chunk])],
+                        'max': np.max([(c[1], c[2]) for c in chunk], axis=0),
+                        'min': np.min([(c[1], c[2]) for c in chunk], axis=0),
                         'end': False}
             except StopIteration:
-                return {'db': None, 'mean':None, 'end': True}
-        return {'db': None, 'mean': None, 'end': True}
+                return {'db': None, 'max':None, 'min':None, 'end': True}
+        return {'db': None, 'max':None, 'min':None, 'end': True}
