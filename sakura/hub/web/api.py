@@ -14,11 +14,6 @@ class GuiToHubAPI:
     def list_daemons(self):
         return pack(self.context.daemons)
 
-    ########################################
-    # Datastores
-    @api.datastores.__getitem__.grants.request
-    def request_datastore_grant(self, datastore_id, grant_name, text):
-        return self.datastores[datastore_id].handle_grant_request(grant_name, text)
 
     ########################################
     # Operator classes
@@ -189,20 +184,19 @@ class GuiToHubAPI:
         return self.context.links[link_id].gui_data
 
     ########################################
-    # Databases
+    # Datastores
     @property
     def datastores(self):
         self.context.datastores.refresh_offline_datastores()
         return self.context.datastores.filter_for_current_user()
 
-    @property
-    def databases(self):
-        self.context.datastores.refresh_offline_datastores()
-        return self.context.databases.filter_for_current_user()
-
     @api.datastores.list
     def list_datastores(self):
         return pack(self.datastores)
+
+    @api.datastores.__getitem__.grants.request
+    def request_datastore_grant(self, datastore_id, grant_name, text):
+        return self.datastores[datastore_id].handle_grant_request(grant_name, text)
 
     @api.datastores.__getitem__.update
     def update_datastore_info(self, datastore_id, **kwargs):
@@ -211,6 +205,17 @@ class GuiToHubAPI:
     @api.datastores.__getitem__.grants.update
     def update_datastore_grant(self, datastore_id, login, grant_name):
         return self.datastores[datastore_id].update_grant(login, grant_name)
+
+    @api.datastores.__getitem__.list_expected_columns_tags
+    def list_expected_columns_tags(self, datastore_id):
+        return self.datastores[datastore_id].list_expected_columns_tags()
+
+    ########################################
+    # Databases
+    @property
+    def databases(self):
+        self.context.datastores.refresh_offline_datastores()
+        return self.context.databases.filter_for_current_user()
 
     @api.databases.list
     def list_databases(self):
@@ -244,10 +249,8 @@ class GuiToHubAPI:
     def delete_database(self, database_id):
         return self.context.databases[database_id].delete_database()
 
-    @api.datastores.__getitem__.list_expected_columns_tags
-    def list_expected_columns_tags(self, datastore_id):
-        return self.datastores[datastore_id].list_expected_columns_tags()
-
+    ########################################
+    # Tables
     @api.tables.__getitem__.info
     def get_table_info(self, table_id):
         return pack(self.context.tables[table_id])
