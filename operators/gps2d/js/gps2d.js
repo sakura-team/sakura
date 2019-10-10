@@ -2,6 +2,13 @@ var trajectories  = {};
 var gps2d_map = null;
 var bounds = null;
 
+var waiting_icon = '<span class="fa fa-cog fa-spin" style="font-size:30px; color:grey;"></span>';
+var finished_icon = '<span class="fa fa-check" style="font-size:30px; color:green;"></span>';
+
+var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+       maxZoom: 18,
+       attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+});
 
 function update_trajectories(chunk) {
 
@@ -22,41 +29,45 @@ function update_trajectories(chunk) {
               var r = String(Math.floor(Math.random()*255));
               var v = String(Math.floor(Math.random()*255));
               var b = String(Math.floor(Math.random()*255));
-              trajectories[elt[0]] = L.polyline([[elt[1], elt[2]]],
+              trajectories[elt[0]] = L.polyline([[elt[2], elt[1]]],
                                                   { color: 'rgb('+r+','+v+','+b+')',
-                                                    weight: 3,
+                                                    weight: 2,
                                                     opacity: 0.5,
                                                     smoothFactor: 1});
               trajectories[elt[0]].addTo(gps2d_map);
           }
           else
-              trajectories[elt[0]].addLatLng([elt[1], elt[2]]);
+              trajectories[elt[0]].addLatLng([elt[2], elt[1]]);
       });
       gps2d_map.fitBounds(bounds);
 
       sakura.apis.operator.fire_event('get_data_continue').then(
-        update_trajectories
+          update_trajectories
       );
   }
   else {
       console.log('Ended');
-
+      setTimeout(function(){
+        $('#working_icon').css('display', 'none');
+    }, 3000);
+    $('#working_icon').html(finished_icon);
   }
 }
 
 function init_gps2d() {
+    $('#working_icon').html(waiting_icon);
+    $('#working_icon').css('display', 'block');
 
     //Get data
     bounds = null;
+    trajectories = {}
     sakura.apis.operator.fire_event('get_data_first').then(
         update_trajectories
     );
 
     //map creation
     gps2d_map = L.map('gps2d_map_div');
-    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>',
-        maxZoom: 18
-        }).addTo(gps2d_map);
+    OpenTopoMap.addTo(gps2d_map);
+
     gps2d_map.setView([51.505, -0.09], 7);
 }

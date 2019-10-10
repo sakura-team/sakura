@@ -47,8 +47,8 @@ class gps2d(Operator):
             try:
                 chunk = next(self.iterator)
                 return {'db': chunk,
-                        'max': np.max([(c[1], c[2]) for c in chunk], axis=0),
-                        'min': np.min([(c[1], c[2]) for c in chunk], axis=0),
+                        'max': np.max([(c[2], c[1]) for c in chunk], axis=0),
+                        'min': np.min([(c[2], c[1]) for c in chunk], axis=0),
                         'end': False}
             except StopIteration:
                 return {'db': None, 'max':None, 'min':None, 'end': True}

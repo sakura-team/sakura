@@ -18,9 +18,15 @@
         <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
         <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/leaflet/1.0.3/leaflet.css">
+        <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     </head>
     <body style="height:100%;" onload="init_gps2d()">
+        <a  class="btn btn-lg btn-secondary"
+            style="position: absolute; z-index: 2000; right: 20px; top: 1px; padding: 0px; display: block;"
+            id="working_icon">
+              <span class="fa fa-cog fa-spin" style="font-size:20px; color:grey;"></span>
+        </a>
         <div id="gps2d_map_div" style="height:100%;"></div>
     </body>
 </html>
