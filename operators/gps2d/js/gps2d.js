@@ -1,8 +1,9 @@
-var trajectories = []
+var trajectories  = {};
+var colors        = {};
 var gps2d_map = null;
-
-var trajectories = null;
 var bounds = null;
+var polylines = [];
+
 
 function update_trajectories(chunk) {
 
@@ -15,11 +16,31 @@ function update_trajectories(chunk) {
                      [Math.max(bounds[1][0], chunk.max[0]),
                       Math.max(bounds[1][1], chunk.max[1])]];
       }
-      var coords = chunk.db.map(t => ([t[1], t[2]]));
-      var polygon = L.polyline(coords, {color: 'red',
-                                        weight: 3,
-                                        opacity: 0.5,
-                                        smoothFactor: 1}).addTo(gps2d_map);
+      chunk.db.forEach(function(elt) {
+          if (!trajectories[elt[0]]) {
+              trajectories[elt[0]] = [[elt[1], elt[2]]];
+              var r = String(Math.floor(Math.random()*255));
+              var v = String(Math.floor(Math.random()*255));
+              var b = String(Math.floor(Math.random()*255));
+              colors[elt[0]] = 'rgb('+r+','+v+','+b+')';
+          }
+          else
+              trajectories[elt[0]].push([elt[1], elt[2]]);
+      });
+
+      polylines.forEach( function(pl) {
+          gps2d_map.removeLayer(pl);
+      });
+
+      polylines = [];
+      Object.keys(trajectories).forEach( function(key) {
+        polylines.push(L.polyline(trajectories[key], {color: colors[key],
+                                                      weight: 3,
+                                                      opacity: 0.5,
+                                                      smoothFactor: 1}));
+        polylines[polylines.length-1].addTo(gps2d_map);
+
+      });
       gps2d_map.fitBounds(bounds);
 
       sakura.apis.operator.fire_event('get_data_continue').then(
@@ -28,6 +49,7 @@ function update_trajectories(chunk) {
   }
   else {
       console.log('Ended');
+
   }
 }
 
