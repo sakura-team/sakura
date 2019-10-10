@@ -2,6 +2,7 @@ import numpy as np
 from sakura.common.tools import ObservableEvent, StatusMixin
 from sakura.common.cache import cache_result
 from sakura.common.errors import ParameterException, InputUncompatible
+from sakura.common.types import is_numeric_type, is_floating_type
 
 # Parameter implementation.
 class Parameter(StatusMixin):
@@ -223,25 +224,29 @@ class ColumnSelectionParameter(ComboParameter):
         for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             if col_info_str == self.value:
                 return col_idx
+    @staticmethod
+    def adapt_with_condition(cond):
+        class AdaptedColumnSelection(ColumnSelectionParameter):
+            def __init__(self, label, plug):
+                super().__init__(label, plug, cond)
+        return AdaptedColumnSelection
 
+# Cannot use adapt_with_condition() for this one, since the __init__() function
+# has one more argument.
 class TagBasedColumnSelection(ColumnSelectionParameter):
     def __init__(self, label, plug, tag):
-        def condition(col_label, col_type, col_tags):
-            return tag in col_tags
-        ColumnSelectionParameter.__init__(self, label, plug, condition)
+        ColumnSelectionParameter.__init__(self, label, plug,
+            lambda col_label, col_type, col_tags: tag in col_tags
+        )
 
-class TypeBasedColumnSelection(ColumnSelectionParameter):
-    def __init__(self, label, plug, cls):
-        def condition(col_label, col_type, col_tags):
-            return np.issubdtype(col_type, cls)
-        ColumnSelectionParameter.__init__(self, label, plug, condition)
-    @staticmethod
-    def adapt_to_cls(cls):
-        class AdaptedTypeBasedColumnSelection(TypeBasedColumnSelection):
-            def __init__(self, label, plug):
-                super().__init__(label, plug, cls)
-        return AdaptedTypeBasedColumnSelection
+NumericColumnSelection = ColumnSelectionParameter.adapt_with_condition(
+    lambda col_label, col_type, col_tags: is_numeric_type(col_type)
+)
 
-NumericColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.number)
-StrColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.str)
-FloatColumnSelection = TypeBasedColumnSelection.adapt_to_cls(np.float)
+FloatColumnSelection = ColumnSelectionParameter.adapt_with_condition(
+    lambda col_label, col_type, col_tags: is_floating_type(col_type)
+)
+
+StrColumnSelection = ColumnSelectionParameter.adapt_with_condition(
+    lambda col_label, col_type, col_tags: col_type == 'string'
+)

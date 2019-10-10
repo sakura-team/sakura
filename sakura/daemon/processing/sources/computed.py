@@ -16,7 +16,7 @@ class ItemsComputedSource(SourceBase):
         self.compute_cb = compute_cb
         if columns is not None:
             for col in columns:
-                self.add_column(col._label, col._type, col._tags)
+                self.add_column(col._label, col._type, col._tags, **col._type_params)
     def __iter__(self):
         yield from self.compute_cb()
     def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE, offset=0):
@@ -51,7 +51,7 @@ class ChunksComputedSource(SourceBase):
         self.compute_cb = compute_cb
         if columns is not None:
             for col in columns:
-                self.add_column(col._label, col._type, col._tags)
+                self.add_column(col._label, col._type, col._tags, **col._type_params)
     def __iter__(self):
         for chunk in self.chunks():
             yield from chunk

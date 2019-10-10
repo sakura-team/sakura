@@ -20,7 +20,7 @@ class SourceBase(Registry):
         self.length = None
         self.range_iter_cache = Cache(10)
         self.origin_id = ORIGIN_ID
-    def add_column(self, col_label, col_type, col_tags=()):
+    def add_column(self, col_label, col_type, col_tags=(), **col_type_params):
         existing_col_names = set(col._label for col in self.columns)
         # avoid having twice the same column name
         if col_label in existing_col_names:
@@ -31,7 +31,7 @@ class SourceBase(Registry):
                     break
         return self.register(self.columns, Column,
                     col_label, col_type, tuple(col_tags),
-                    self, len(self.columns))
+                    self, len(self.columns), **col_type_params)
     def pack(self):
         return pack(dict(label = self.label,
                     columns = self.columns,
@@ -43,7 +43,7 @@ class SourceBase(Registry):
     def get_length(self):
         return self.length
     def get_columns_info(self):
-        return tuple((col._label, np.dtype(col._type), col._tags) for col in self.columns)
+        return tuple((col._label, col._type, col._tags) for col in self.columns)
     def get_range(self, row_start, row_end, columns=None, filters=()):
         startup_time = time()
         chunk_len = row_end-row_start

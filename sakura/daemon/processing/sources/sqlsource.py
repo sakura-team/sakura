@@ -42,7 +42,7 @@ class SQLSource(SourceBase):
         self.db = db
         self.query = query
         for col in query.selected_cols:
-            self.add_column(col.col_name, col.np_dtype, col.tags)
+            self.add_column(col.col_name, col.col_type, col.tags, **col.col_type_params)
     def __iter__(self):
         for chunk in self.chunks():
             yield from chunk

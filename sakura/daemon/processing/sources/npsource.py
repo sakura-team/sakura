@@ -1,6 +1,7 @@
 import numpy as np
 from sakura.daemon.processing.sources.base import SourceBase
 from sakura.common.chunk import NumpyChunk
+from sakura.common.types import np_dtype_to_sakura_type
 
 DEFAULT_CHUNK_SIZE = 100000
 
@@ -9,8 +10,9 @@ class NumpyArraySource(SourceBase):
         SourceBase.__init__(self, label)
         self.array = array
         for col_label in array.dtype.names:
-            col_type = array.dtype[col_label]
-            self.add_column(col_label, col_type)
+            col_dt = array.dtype[col_label]
+            col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
+            self.add_column(col_label, col_type, **col_type_params)
         self.rows_cond = rows_cond
     def __iter__(self):
         for chunk in self.chunks():

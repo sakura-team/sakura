@@ -1,5 +1,4 @@
 import numpy as np
-from sakura.common.types import sakura_type_to_np_dtype
 
 class DBColumn:
     def __init__(self,  table,
@@ -9,11 +8,11 @@ class DBColumn:
                         where_clause_sql,
                         value_wrapper,
                         tags,
-                        **params):
+                        **col_type_params):
         self.table = table
         self.col_name = col_name
         self.col_type = col_type
-        self.np_dtype = sakura_type_to_np_dtype(col_type, **params)
+        self.col_type_params = col_type_params
         self.select_clause_sql = select_clause_sql
         self.where_clause_sql = where_clause_sql
         self.value_wrapper = value_wrapper
