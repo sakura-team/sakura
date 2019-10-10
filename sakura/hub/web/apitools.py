@@ -33,12 +33,15 @@ class APILevel:
     def _attr_is_defined(self, attr):
         return attr in self._properties
     def __getattr__(self, attr):
-        # in javascript, obj['attr'] and obj.attr are the same,
-        # so if GUI code wants to access obj['attr'], we may actually get
-        # a path like ('obj', 'attr') instead of ('obj', ['attr']).
-        # calling __getitem__ here when attribute is not found should
-        # fix this.
-        return self.__getitem__(attr)
+        if self._type == 'table':
+            # in javascript, obj['attr'] and obj.attr are the same,
+            # so if GUI code wants to access obj['attr'], we may actually get
+            # a path like ('obj', 'attr') instead of ('obj', ['attr']).
+            # calling __getitem__ here when attribute is not found should
+            # fix this.
+            return self.__getitem__(attr)
+        else:
+            raise AttributeError('No such attribute "%s"' % attr)
 
 class APIStructureBuilder:
     def __init__(self, parent = None, attr_name = None, obj = None):
