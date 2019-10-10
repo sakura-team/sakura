@@ -1,5 +1,7 @@
+from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.client.apiobject.tables import APITable
+from sakura.client.apiobject.grants import APIGrants
 
 class APIDatabaseTablesDict:
     def __new__(cls, remote_api, database_id, d):
@@ -17,16 +19,20 @@ class APIDatabase:
             @property
             def tables(self):
                 d = { table_info['table_id']: APITable(remote_api, table_info['table_id']) \
-                      for table_info in remote_obj.info()['tables'] }
+                      for table_info in self.__getattr__('tables') }
                 return APIDatabaseTablesDict(remote_api, self.database_id, d)
+            @property
+            def grants(self):
+                return APIGrants(remote_obj)
             def __doc_attrs__(self):
                 return get_info().items()
             def __getattr__(self, attr):
                 info = get_info()
                 if attr in info:
                     return info[attr]
-                else:
-                    raise AttributeError('No such attribute "%s"' % attr)
+                if attr == 'tables':
+                    raise APIObjectDeniedError('access denied')
+                raise AttributeError('No such attribute "%s"' % attr)
         return APIDatabaseImpl()
 
 class APIDatabaseDict:

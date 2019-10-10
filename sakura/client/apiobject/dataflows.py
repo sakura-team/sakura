@@ -1,5 +1,7 @@
+from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.operators import APIOperator
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
+from sakura.client.apiobject.grants import APIGrants
 
 class APIDataflowOperatorsDict:
     def __new__(cls, remote_api, dataflow_id, d):
@@ -21,16 +23,20 @@ class APIDataflow:
             @property
             def operators(self):
                 d = { op_info['op_id']: APIOperator(remote_api, op_info['op_id']) \
-                      for op_info in remote_obj.info()['op_instances'] }
+                      for op_info in self.__getattr__('op_instances') }
                 return APIDataflowOperatorsDict(remote_api, self.dataflow_id, d)
+            @property
+            def grants(self):
+                return APIGrants(remote_obj)
             def __doc_attrs__(self):
                 return info.items()
             def __getattr__(self, attr):
                 info = remote_obj.info()
                 if attr in info:
                     return info[attr]
-                else:
-                    raise AttributeError('No such attribute "%s"' % attr)
+                if attr == 'op_instances':
+                    raise APIObjectDeniedError('access denied')
+                raise AttributeError('No such attribute "%s"' % attr)
         return APIDataflowImpl()
 
 class APIDataflowDict:
