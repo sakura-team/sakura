@@ -1,8 +1,6 @@
 var trajectories  = {};
-var colors        = {};
 var gps2d_map = null;
 var bounds = null;
-var polylines = [];
 
 
 function update_trajectories(chunk) {
@@ -16,30 +14,23 @@ function update_trajectories(chunk) {
                      [Math.max(bounds[1][0], chunk.max[0]),
                       Math.max(bounds[1][1], chunk.max[1])]];
       }
+      newIds = []
       chunk.db.forEach(function(elt) {
+          if (newIds.indexOf(elt[0]) == -1)
+              newIds.push(elt[0])
           if (!trajectories[elt[0]]) {
-              trajectories[elt[0]] = [[elt[1], elt[2]]];
               var r = String(Math.floor(Math.random()*255));
               var v = String(Math.floor(Math.random()*255));
               var b = String(Math.floor(Math.random()*255));
-              colors[elt[0]] = 'rgb('+r+','+v+','+b+')';
+              trajectories[elt[0]] = L.polyline([[elt[1], elt[2]]],
+                                                  { color: 'rgb('+r+','+v+','+b+')',
+                                                    weight: 3,
+                                                    opacity: 0.5,
+                                                    smoothFactor: 1});
+              trajectories[elt[0]].addTo(gps2d_map);
           }
           else
-              trajectories[elt[0]].push([elt[1], elt[2]]);
-      });
-
-      polylines.forEach( function(pl) {
-          gps2d_map.removeLayer(pl);
-      });
-
-      polylines = [];
-      Object.keys(trajectories).forEach( function(key) {
-        polylines.push(L.polyline(trajectories[key], {color: colors[key],
-                                                      weight: 3,
-                                                      opacity: 0.5,
-                                                      smoothFactor: 1}));
-        polylines[polylines.length-1].addTo(gps2d_map);
-
+              trajectories[elt[0]].addLatLng([elt[1], elt[2]]);
       });
       gps2d_map.fitBounds(bounds);
 
