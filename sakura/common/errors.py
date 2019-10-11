@@ -17,6 +17,9 @@ class APIOperatorError(APIReturningError):
 class APIObjectDeniedError(APIRequestError):
     pass
 
+class APIFeatureDeniedError(APIRequestError):
+    pass
+
 class APIRequestErrorOfflineDaemon(APIRequestError):
     pass
 

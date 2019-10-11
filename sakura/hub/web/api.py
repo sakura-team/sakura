@@ -373,17 +373,7 @@ class GuiToHubAPI:
 
     @api.users.__getitem__.info
     def get_user_info(self, login):
-        ########## TODO
-        ## Add privilege field in users info
-        print('USERS PRIVILEGE attribute is not implemented yet')
-        ##########
         return self.context.users[login].get_full_info()
-
-    @api.users.__getitem__.privileges.request
-    def request_user_privilege(self, privilege):
-        print(self.context.user, 'asking for privilege', privilege)
-        print("NOT implemented yet")
-        return None
 
     @api.users.__getitem__.update
     def update_user_info(self, **kwargs):
@@ -393,12 +383,21 @@ class GuiToHubAPI:
         ##########
         return None
 
-    @api.users.__getitem__.privileges.update
-    def update_user_grant(self, login, privilege):
-        ########## TODO
-        print("NOT implemented yet")
-        ##########
-        return None
+    @api.users.__getitem__.privileges.request
+    def request_user_privilege(self, login, privilege):
+        return self.context.users[login].request_privilege(privilege)
+
+    @api.users.__getitem__.privileges.add
+    def add_user_privilege(self, login, privilege):
+        return self.context.users[login].add_privilege(privilege)
+
+    @api.users.__getitem__.privileges.remove
+    def remove_user_privilege(self, login, privilege):
+        return self.context.users[login].remove_privilege(privilege)
+
+    @api.users.__getitem__.privileges.deny
+    def deny_user_privilege(self, login, privilege):
+        return self.context.users[login].deny_privilege(privilege)
 
     @api.users.list
     def list_all_users(self):

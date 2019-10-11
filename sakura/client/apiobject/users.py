@@ -1,6 +1,32 @@
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.client import conf
 
+class APIUserPrivileges:
+    def __new__(cls, remote_obj):
+        class APIUserPrivilegesImpl(APIObjectBase):
+            __doc__ = 'User privileges'
+            @property
+            def assigned(self):
+                """assigned privileges"""
+                return remote_obj.info()['privileges']
+            @property
+            def requested(self):
+                """requested privileges"""
+                return remote_obj.info()['requested_privileges']
+            def request(self, privilege):
+                """request a new privilege"""
+                return remote_obj.privileges.request(privilege)
+            def add(self, privilege):
+                """add a privilege to this user"""
+                return remote_obj.privileges.add(privilege)
+            def remove(self, privilege):
+                """remove a privilege from this user"""
+                return remote_obj.privileges.remove(privilege)
+            def deny(self, privilege):
+                """deny a privilege request from this user"""
+                return remote_obj.privileges.deny(privilege)
+        return APIUserPrivilegesImpl()
+
 class APIUser:
     _deleted = set()
     def __new__(cls, remote_api, info):
@@ -16,13 +42,19 @@ class APIUser:
         class APIUserImpl(APIObjectBase):
             __doc__ = 'Sakura user "' + info['login'] + '"'
             def __doc_attrs__(self):
-                return get_info().items()
+                info = get_info()
+                info.pop('privileges')
+                info.pop('requested_privileges')
+                return info.items()
             def __getattr__(self, attr):
                 info = get_info()
                 if attr in info:
                     return info[attr]
                 else:
                     raise AttributeError('No such attribute "%s"' % attr)
+            @property
+            def privileges(self):
+                return APIUserPrivileges(remote_obj)
         return APIUserImpl()
 
 class APIUserDict:

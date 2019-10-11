@@ -34,6 +34,20 @@ def run():
         print('Did not find sakura operator source code in this directory. Giving up.', file=sys.stderr)
         sys.exit(1)
     conf.hub_host   # force loading conf now (if ever we need user interaction)
+    if 'developer' not in api.users.current().privileges.assigned:
+        print("You need a 'developer' privilege to be able to use this tool.")
+        if 'developer' in api.users.current().privileges.requested:
+            print("Your request was not accepted yet. Please be patient.")
+            return
+        else:
+            answer = ""
+            while answer not in ('yes', 'no'):
+                answer = input("Do you want to send a request to sakura admins for this privilege? [yes|no] ").strip()
+            if answer == 'no':
+                return
+            api.users.current().privileges.request('developer')
+            print('A request was sent. Please be patient.')
+            return
     enable_standard_streams_redirection()
     for op_dir in op_dirs:
         op_subdir = str(op_dir.relative_to(sandbox_dir))

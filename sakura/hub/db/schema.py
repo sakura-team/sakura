@@ -31,6 +31,8 @@ def define_schema(db):
         institution = Optional(str)
         occupation = Optional(str)          # work profile related
         work_domain = Optional(str)         # research topic
+        privileges = Required(Json, default = [])
+        requested_privileges = Required(Json, default = [])
         sessions = Set('Session')
 
     class Session(db.Entity, SessionMixin):

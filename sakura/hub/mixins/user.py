@@ -4,6 +4,8 @@ import os, hashlib, binascii, re, base64, smtplib, random, bottle
 from sakura.hub.myemail import sendmail
 from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestError
+from sakura.hub.privileges import check_privilege, assert_privilege, \
+        send_privilege_request_mail, send_privilege_request_answer_mail
 
 RECOVERY_MAIL_SUBJECT = "Password recovery"
 RECOVERY_MAIL_CONTENT = '''
@@ -46,18 +48,67 @@ class UserMixin:
         return dict(
             login = self.login,
             first_name = self.first_name,
-            last_name = self.last_name)
+            last_name = self.last_name,
+            privileges = self.privileges,
+            requested_privileges = self.requested_privileges)
+
+    def is_current_user(self):
+        return get_context().user is self
 
     def get_full_info(self):
-        return dict(
-            email = self.email,
-            creation_date = self.creation_date,
-            gender = self.gender,
-            country = self.country,
-            institution = self.institution,
-            occupation = self.occupation,
-            work_domain = self.work_domain,
-            **self.pack())
+        result = self.pack()
+        # if user is requesting its own information,
+        # or user is admin, return all details.
+        if self.is_current_user() or check_privilege('admin'):
+            result.update(
+                email = self.email,
+                creation_date = self.creation_date,
+                gender = self.gender,
+                country = self.country,
+                institution = self.institution,
+                occupation = self.occupation,
+                work_domain = self.work_domain)
+        return result
+
+    def request_privilege(self, privilege):
+        if not self.is_current_user():
+            raise APIRequestError("Requesting privileges for someone else is not allowed.")
+        if privilege not in ['admin', 'developer']:
+            raise APIRequestError("No such privilege '%s'.", str(privilege))
+        if privilege in self.privileges:
+            raise APIRequestError('You already own this privilege!')
+        if privilege in self.requested_privileges:
+            raise APIRequestError('You already requested this privilege!')
+        self.requested_privileges.append(privilege)
+        send_privilege_request_mail(self, privilege)
+
+    def add_privilege(self, privilege):
+        assert_privilege('admin', "Only users with 'admin' privilege can add or remove privileges.")
+        if privilege in self.privileges:
+            raise APIRequestError("This user already has '%s' privilege." % privilege)
+        self.privileges.append(privilege)
+        if privilege in self.requested_privileges:
+            self.requested_privileges.remove(privilege)
+            send_privilege_request_answer_mail(self, get_context().user, privilege, True)
+
+    def remove_privilege(self, privilege):
+        assert_privilege('admin', "Only users with 'admin' privilege can add or remove privileges.")
+        if privilege not in self.privileges:
+            raise APIRequestError("This user has no such privilege.")
+        self.privileges.remove(privilege)
+
+    def deny_privilege(self, privilege):
+        assert_privilege('admin', "Only users with 'admin' privilege can deny privileges.")
+        if privilege not in self.requested_privileges:
+            raise APIRequestError("This user has not requested such privilege.")
+        self.requested_privileges.remove(privilege)
+        send_privilege_request_answer_mail(self, get_context().user, privilege, False)
+
+    @classmethod
+    def get_admins(cls):
+        for user in cls.select():
+            if 'admin' in user.privileges:
+                yield user
 
     @classmethod
     def from_logins(cls, logins):
@@ -79,6 +130,12 @@ class UserMixin:
             raise APIRequestError('Login name "%s" already exists!' % login)
         if cls.get(email = email) is not None:
             raise APIRequestError('Email "%s" already exists!' % email)
+        # check that someone is not trying to hack us
+        user_info.pop('privileges', None)
+        user_info.pop('requested_privileges', None)
+        # if this is the first user to register to this platform, give him the 'admin' privilege
+        if len(cls.select()) == 0:
+            user_info['privileges'] = ['admin']
         # all checks for existing user completed here, proceeding to new user registration
         salt, hashed_password = cls.hash_password(password)
         cls(login = login, email = email, password_salt = salt, password_hash = hashed_password, **user_info)
