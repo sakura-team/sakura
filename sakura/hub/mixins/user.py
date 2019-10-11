@@ -55,6 +55,17 @@ class UserMixin:
     def is_current_user(self):
         return get_context().user is self
 
+    def update_attributes(self, email = None, **kwargs):
+        if not self.is_current_user():
+            raise APIRequestError("Updating attributes of someone else is not allowed.")
+        if email is not None:
+            if self.email != email: # verify mail is being changed
+                kwargs.update(email = email)
+        UserMixin.verify_user_info(self.login, **kwargs)
+        # ok, verified, let's do it
+        for attr, value in kwargs.items():
+            setattr(self, attr, value)
+
     def get_full_info(self):
         result = self.pack()
         # if user is requesting its own information,
@@ -122,17 +133,24 @@ class UserMixin:
         return salt, binascii.hexlify(dk)
 
     @classmethod
+    def verify_user_info(cls, login, email = None, first_name = None, last_name = None, creation_date = None,
+                            gender = None, country = None, institution = None, occupation = None,
+                            work_domain = None, **wrong_kwargs):
+        if email is not None:
+            if cls.get(email = email) is not None:
+                raise APIRequestError('Email "%s" already exists!' % email)
+        if len(wrong_kwargs) > 0:
+            first_wrong_arg = list(wrong_kwargs.keys())[0]
+            raise APIRequestError('Invalid user attribute "%s".' % first_wrong_arg)
+
+    @classmethod
     def new_user(cls, login, email, password, **user_info):
         # print (type(cls))
         if login in ('current', 'create', 'list', 'privileges'):  # avoid hub api conflicts
             raise APIRequestError('Login name "%s" is not allowed!' % login)
         if cls.get(login = login) is not None:
             raise APIRequestError('Login name "%s" already exists!' % login)
-        if cls.get(email = email) is not None:
-            raise APIRequestError('Email "%s" already exists!' % email)
-        # check that someone is not trying to hack us
-        user_info.pop('privileges', None)
-        user_info.pop('requested_privileges', None)
+        cls.verify_user_info(login, email = email, **user_info)
         # if this is the first user to register to this platform, give him the 'admin' privilege
         if len(cls.select()) == 0:
             user_info['privileges'] = ['admin']

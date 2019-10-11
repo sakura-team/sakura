@@ -376,12 +376,8 @@ class GuiToHubAPI:
         return self.context.users[login].get_full_info()
 
     @api.users.__getitem__.update
-    def update_user_info(self, **kwargs):
-        ########## TODO
-        ## Update an element of the user info
-        print("NOT implemented yet")
-        ##########
-        return None
+    def update_user_info(self, login, **kwargs):
+        return self.context.users[login].update_attributes(**kwargs)
 
     @api.users.__getitem__.privileges.request
     def request_user_privilege(self, login, privilege):
