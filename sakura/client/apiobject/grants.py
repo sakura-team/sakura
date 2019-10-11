@@ -20,9 +20,12 @@ class APIGrants:
         class APIGrantsImpl(APIObjectRegistry(d)):
             """Grants registry"""
             def update(self, login, grant_name):
-                """update or add a user grant"""
+                """update, add a user grant, accept a grant request"""
                 remote_obj.grants.update(login, grant_name)
             def request(self, grant_name, argumentative_text):
                 """request a grant on this object"""
                 remote_obj.grants.request(grant_name, argumentative_text)
+            def deny(self, login):
+                """deny a grant request on this object"""
+                remote_obj.grants.deny(login)
         return APIGrantsImpl()

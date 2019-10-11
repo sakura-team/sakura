@@ -8,17 +8,39 @@ from sakura.hub.myemail import sendmail
 
 GRANT_REQUEST_MAIL_SUBJECT = "Sakura user grant request."
 GRANT_REQUEST_MAIL_CONTENT = '''
-Dear %(owner_firstname)s %(owner_lastname)s,
+Dear {owner.first_name} {owner.last_name},
 
-Sakura user %(req_login)s (%(req_firstname)s %(req_lastname)s, %(req_email)s) is requesting \
-*%(grant_name)s* grant to *%(obj_desc)s*.
+Sakura user {requester.login} ({requester.first_name} {requester.last_name}, {requester.email}) is requesting \
+*{grant_name}* grant to *{obj_desc}*.
 
 He or she provided the following explanatory text:
 ---------------------
-%(req_text)s
+{req_text}
 ---------------------
 
 Thanks.
+Sakura platform team.
+'''
+
+GRANT_ACCEPTED_MAIL_SUBJECT = "Your sakura grant request was accepted."
+GRANT_ACCEPTED_MAIL_CONTENT = '''
+Dear {requester.first_name} {requester.last_name},
+
+Sakura user {owner.login} ({owner.first_name} {owner.last_name}, {owner.email}) just accepted your
+your request for a *{grant_name}* grant to *{obj_desc}*.
+
+Thanks.
+Sakura platform team.
+'''
+
+GRANT_DENIED_MAIL_SUBJECT = "Your sakura grant request was DENIED."
+GRANT_DENIED_MAIL_CONTENT = '''
+Dear {requester.first_name} {requester.last_name},
+
+Sakura user {owner.login} ({owner.first_name} {owner.last_name}, {owner.email}) denied your
+your request for a *{grant_name}* grant to *{obj_desc}*.
+
+Sorry.
 Sakura platform team.
 '''
 
@@ -57,13 +79,25 @@ class BaseMixin(StatusMixin, EventSourceMixin):
                         'Only owner can change grants.')
         grant_level = GRANT_LEVELS.value(grant_name)
         if grant_level == GRANT_LEVELS.hide:
-            # drop the grant
-            del self.grants[login]
+            if login in self.grants:
+                # drop the grant
+                del self.grants[login]
         elif grant_level not in (GRANT_LEVELS.own, GRANT_LEVELS.read, GRANT_LEVELS.write):
             raise APIRequestError("Only 'read' and 'write' grant levels can be set.")
         else:
-            # note: if a grant request was requested by this user,
-            # this update will cause the request to be cleared.
+            # check if a grant request was requested by this user
+            if login in self.grants and 'requested_level' in self.grants[login] and \
+                    self.grants[login]['requested_level'] == grant_level:
+                requester = get_context().users[login]
+                owner = get_context().user  # current user
+                content = GRANT_ACCEPTED_MAIL_CONTENT.format(
+                        owner = owner,
+                        requester = requester,
+                        obj_desc = self.describe(),
+                        grant_name = grant_name
+                )
+                sendmail(requester.email, GRANT_ACCEPTED_MAIL_SUBJECT, content)
+            # update
             self.grants[login] = dict(
                 level = grant_level
             )
@@ -88,18 +122,33 @@ class BaseMixin(StatusMixin, EventSourceMixin):
         requester = context.user
         self.record_grant_request(requester.login, requested_grant)
         owner = context.users.from_login_or_email(self.owner)
-        content = GRANT_REQUEST_MAIL_CONTENT % dict(
-                owner_firstname = owner.first_name,
-                owner_lastname = owner.last_name,
-                req_login = requester.login,
-                req_firstname = requester.first_name,
-                req_lastname = requester.last_name,
-                req_email = requester.email,
+        content = GRANT_REQUEST_MAIL_CONTENT.format(
+                owner = owner,
+                requester = requester,
                 obj_desc = self.describe(),
                 grant_name = grant_name,
                 req_text = req_text
         )
         sendmail(owner.email, GRANT_REQUEST_MAIL_SUBJECT, content)
+    def deny_grant_request(self, login):
+        self.assert_grant_level(GRANT_LEVELS.own,
+                        'Only owner can deny grant requests.')
+        if login not in self.grants or 'requested_level' not in self.grants[login]:
+            raise APIRequestError('No such grant request.')
+        requested_level = self.grants[login]['requested_level']
+        del self.grants[login]['requested_level']
+        requester = get_context().users[login]
+        owner = get_context().user  # current user
+        content = GRANT_DENIED_MAIL_CONTENT.format(
+                owner = owner,
+                requester = requester,
+                obj_desc = self.describe(),
+                grant_name = GRANT_LEVELS.name(requested_level)
+        )
+        sendmail(requester.email, GRANT_DENIED_MAIL_SUBJECT, content)
+        if len(self.grants[login]) == 0:
+            del self.grants[login]
+        self.commit()
     def commit(self):
         get_context().db.commit()
     @classmethod

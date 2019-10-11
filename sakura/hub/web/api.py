@@ -202,6 +202,10 @@ class GuiToHubAPI:
     def request_datastore_grant(self, datastore_id, grant_name, text):
         return self.datastores[datastore_id].handle_grant_request(grant_name, text)
 
+    @api.datastores.__getitem__.grants.deny
+    def deny_datastore_grant(self, datastore_id, login):
+        return self.datastores[datastore_id].deny_grant_request(login)
+
     @api.datastores.__getitem__.update
     def update_datastore_info(self, datastore_id, **kwargs):
         self.datastores[datastore_id].parse_and_update_attributes(**kwargs)
@@ -248,6 +252,10 @@ class GuiToHubAPI:
     @api.databases.__getitem__.grants.request
     def request_database_grant(self, database_id, grant_name, text):
         return self.databases[database_id].handle_grant_request(grant_name, text)
+
+    @api.databases.__getitem__.grants.deny
+    def deny_database_grant(self, database_id, login):
+        return self.databases[database_id].deny_grant_request(login)
 
     @api.databases.__getitem__.delete
     def delete_database(self, database_id):
@@ -313,6 +321,10 @@ class GuiToHubAPI:
     @api.dataflows.__getitem__.grants.request
     def request_dataflow_grant(self, dataflow_id, grant_name, text):
         return self.dataflows[dataflow_id].handle_grant_request(grant_name, text)
+
+    @api.dataflows.__getitem__.grants.deny
+    def deny_dataflow_grant(self, dataflow_id, login):
+        return self.dataflows[dataflow_id].deny_grant_request(login)
 
     @api.dataflows.__getitem__.set_gui_data
     def set_dataflow_gui_data(self, dataflow_id, gui_data):
