@@ -652,7 +652,7 @@ function fill_collaborators_table_body(info) {
     else if (info.grant_level == 'list') {
         var tr = $('<tr>');
         var td = $('<td>');
-        if (current_login != null) {
+        if (current_user != null) {
             var hobj_type = matching_hub_name(web_interface_current_object_type);
             var a1 = $('<button>', { html: "Ask for <b>read</b> access"});
 

@@ -4,7 +4,8 @@
 //
 //BEGIN: Refreshing the modal in case any parsley class attributes remain while user logins
 
-var current_login = null;
+var current_user = null;
+var users_list = null;
 
 
 function initiateSignInModal(event) {
@@ -83,7 +84,6 @@ function registerUser(event = '') {
             let hashed_sha256 = CryptoJS.SHA256(password);
             let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
             userAccountValues['password'] = client_hashed;
-            // console.log(userAccountValues); //after password hashing
 
             //begin request calls for websocket
             sakura.apis.hub.users.create(userAccountValues).then(
@@ -145,7 +145,7 @@ function signInSubmitControl(event, login, passw) {
                     wsResult.privileges = { 'admin':     'granted',
                                             'developer': 'granted'};
 
-                current_login = wsResult;
+                current_user = wsResult;
                 fill_profil_button();
 
                 //Back to the current div
@@ -168,13 +168,13 @@ function signInSubmitControl(event, login, passw) {
 }
 
 function openUserProfil(event) {
-        fill_profil_modal(current_login);
+        fill_profil_modal(current_user);
 }
 
 function logOut(event) {
     yes_no_asking('Sign Out', 'Are you sure you want to sign out ?', function() {
         sakura.apis.hub.logout().then(function (result) {
-            current_login = null;
+            current_user = null;
             fill_profil_button();
         });
     });
@@ -250,13 +250,10 @@ function changePasswordSubmitControl(event) {
     }
 }
 
-function fill_profil_button() {
-    sakura.apis.hub.users.current.info().then( function (login) {
-        if (login) {
-            if (login.privileges == null)
-                login.privileges = {'admin':     'granted',
-                                    'developer': 'not granted'};
-            current_login = login;
+function fill_profil_button(fill_modal) {
+    sakura.apis.hub.users.current.info().then( function (result) {
+        if (result) {
+            current_user = result;
 
             function fill(login, pends) {
                 var gul = null;
@@ -309,13 +306,24 @@ function fill_profil_button() {
                 }
             }
 
-            if (login.privileges.admin == 'granted') {
-                sakura.apis.hub.users.privileges.pendings().then(function(result) {
-                    fill(login, result);
+            if (current_user.privileges.indexOf('admin') != -1) {
+                sakura.apis.hub.users.list().then(function (result){
+                    users_list = result;
+                    console.log(users_list);
+                    var pendings = users_list.some( function(user){
+                              return user.requested_privileges.length !== 0;
+                            });
+                    fill(current_user, pendings);
+                    if (fill_modal)
+                        fill_profil_modal(current_user);
                 });
             }
-            else
-                fill(login, null);
+            else {
+                fill(current_user, null);
+                if (fill_modal)
+                    fill_profil_modal(current_user);
+            }
+
         }
         else {
             var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
@@ -329,7 +337,7 @@ function fill_profil_button() {
             $('#profile_button_exclamation').css('display', 'none');
             $('#idSignInWidget').empty();
             $('#idSignInWidget').append(butt);
-            current_login = null;
+            current_user = null;
         }
     });
 }
@@ -348,7 +356,7 @@ function fill_profil_modal(user_infos) {
                               'style': "margin-bottom: 0px; width: 100%;"})
 
     Object.keys(user_infos).forEach( function(key) {
-        if (key != 'privileges') {
+        if (key != 'privileges' && key != 'requested_privileges') {
             var txt = user_infos[key];
             if (user_infos[key] === '' || user_infos[key] == null) {
                 txt = '<i><font color="lightgrey">not specified</font></i>';
@@ -380,150 +388,160 @@ function fill_profil_modal(user_infos) {
                       'not granted':  'btn btn-secondary btn-xs',
                       'pending':      'btn btn-warning btn-xs'};
 
-    Object.keys(user_infos.privileges).forEach(function (key) {
+    var possible_privileges = ['admin', 'developer'];
+    var found_privileges = [];
+
+    possible_privileges.forEach( function(privilege) {
         var dd = $('<dd>');
-        if (user_infos.privileges[key] == 'not granted') {
+        if (user_infos.privileges.indexOf(privilege) != -1){
             var a = $('<button>', { 'type': "button",
-                                    'style': "cursor: pointer;",
-                                    'class': "btn btn-primary btn-xs btn-block",
+                                    'class': 'btn btn-success btn-xs',
                                     'style': "width: 150px;",
-                                    'text': "ask for"});
-            a.attr('onclick', "ask_for_privilege_open_modal(\""+key+"\");");
-            dd.append(a);
-        }
-        else {
-            var a = $('<button>', { 'type': "button",
-                                    'class': priv_dict[user_infos.privileges[key]],
-                                    'style': "width: 150px;",
-                                    'text': user_infos.privileges[key]});
+                                    'text': 'granted'});
             a.prop('disabled', true);
             dd.append(a);
         }
-        dl.append($('<dt>', {'text': key}), dd);
+        else if (user_infos.requested_privileges.indexOf(privilege) != -1) {
+            var a = $('<button>', { 'type': "button",
+                                    'class': 'btn btn-warning btn-xs',
+                                    'style': "width: 150px;",
+                                    'text': 'pending'});
+            a.prop('disabled', true);
+            dd.append(a);
+        }
+        else {
+          var a = $('<button>', { 'type': "button",
+                                  'style': "cursor: pointer;",
+                                  'class': "btn btn-primary btn-xs btn-block",
+                                  'style': "width: 150px;",
+                                  'text': "ask for"});
+          a.attr('onclick', "ask_for_privilege_open_modal(\""+privilege+"\");");
+          dd.append(a);
+        }
+        dl.append($('<dt>', {'text': privilege}), dd);
     });
 
     bdy.append(div.append(divh, divb.append(dl)));
 
-    if (user_infos.privileges.admin == 'granted') {
-        sakura.apis.hub.users.privileges.list().then( function(users) {
-            sakura.apis.hub.users.privileges.pendings().then(function(pendings) {
-                //TABLE HEAD
-                var pdiv = $('<div>', {  'class': "panel panel-default",
-                                        'style': "margin-bottom: 0px;"});
-                var pdivh = $('<div>', { 'class': "panel-heading",
-                                        'html': "<h4 style=\"margin-bottom: 0px; \
-                                                margin-top: 0px\">User Privileges</h4>"})
-                var pdivb = $('<div>', {  'class': "panel-body"})
+    if (user_infos.privileges.indexOf('admin') != -1) {
+        //TABLE HEAD
+        var pdiv = $('<div>', {  'class': "panel panel-default",
+                                'style': "margin-bottom: 0px;"});
+        var pdivh = $('<div>', { 'class': "panel-heading",
+                                'html': "<h4 style=\"margin-bottom: 0px; \
+                                        margin-top: 0px\">User Privileges</h4>"})
+        var pdivb = $('<div>', {  'class': "panel-body"})
 
-                var ptable = $('<table>', { 'width': '100%',
-                                            'class': "table table-striped table-condensed header-fixed",
-                                            'style': "margin-bottom: 0px"});
-                var pthead = $('<thead>', {'style': "background: lightgray;"});
-                var ptbody = $('<tbody>');
-                var th1 = $('<th>', { 'html': '<b>&nbsp;</b>',    'style': "text-align: center;"});
-                var th2 = $('<th>', { 'html': '<b>admin</b>',     'style': "text-align: center;"});
-                var th3 = $('<th>', { 'html': '<b>developer</b>', 'style': "text-align: center;"});
-                var tr = $('<tr>');
-                pthead.append(tr.append(th1, th2, th3));
+        var ptable = $('<table>', { 'width': '100%',
+                                    'class': "table table-striped table-condensed header-fixed",
+                                    'style': "margin-bottom: 0px"});
+        var pthead = $('<thead>', {'style': "background: lightgray;"});
+        var ptbody = $('<tbody>');
+        var th1 = $('<th>', { 'html': '<b>&nbsp;</b>',    'style': "text-align: center;"});
+        var th2 = $('<th>', { 'html': '<b>admin</b>',     'style': "text-align: center;"});
+        var th3 = $('<th>', { 'html': '<b>developer</b>', 'style': "text-align: center;"});
+        var tr = $('<tr>');
+        pthead.append(tr.append(th1, th2, th3));
 
-
-                //TABLE BODY
-                function new_check(user, privilege){
-                    var i = $('<input>', { 'type': "checkbox",});
-                    i.on('change', function (event) {
-                        update_privilege(event, user, privilege, event);
-                    });
-                    return i;
-                }
-                function y_button(user, privilege) {
-                    return $('<span>', {'class':"glyphicon glyphicon-ok",
-                                        'style':"color:green; cursor: pointer;",
-                                        'title': "accept privilege request",
-                                        'onclick': 'validate_pending(true, "'+user+'","'+privilege+'");'});
-                }
-                function n_button(user, privilege) {
-                    return $('<span>', {'class':"glyphicon glyphicon-remove",
-                                        'style':"color:red; cursor: pointer;",
-                                        'title': "refuse privilege request",
-                                        'onclick': 'validate_pending(false, "'+user+'","'+privilege+'");'});
-                }
-
-                Object.keys(users).forEach( function(user){
-                    var tr = $('<tr>');
-                    var td1 = $('<td>', { 'html': user,
-                                          'align': "center",
-                                          'style': "padding: 0px"
-                                          });
-                    var td2 = $('<td>', { 'align': "center",
-                                          'style': "padding: 0px"
-                                          });
-                    var td3 = $('<td>', { 'align': "center",
-                                          'style': "padding: 0px"
-                                          });
-                    var tog1 = new_check(user, 'admin');
-                    if (users[user].indexOf('admin') != -1)
-                        tog1.prop('checked', true);
-
-                    var tog2 = new_check(user, 'developer');
-                    if (users[user].indexOf('developer') != -1)
-                        tog2.prop('checked', true);
-
-                    if (!pendings || Object.keys(pendings).indexOf(user) == -1) {
-                        ptbody.append(tr.append(td1, td2.append(tog1), td3.append(tog2)));
-                    }
-                    else {
-                        if (!pendings || pendings[user].indexOf('admin') != -1) {
-                            td2.attr('style', 'background: orange; padding: 0px;');
-                            tog1 = $('<div>');
-                            tog1.append(y_button(user, 'admin'), "&nbsp;&nbsp;", n_button(user, 'admin'));
-                        }
-
-                        if (!pendings || pendings[user].indexOf('developer') != -1) {
-                            td3.attr('style', 'background: orange; padding: 0px;');
-                            tog2 = $('<div>');
-                            tog2.append(y_button(user, 'developer'), "&nbsp;&nbsp;", n_button(user, 'developer'));
-                        }
-                        ptbody.prepend(tr.append(td1, td2.append(tog1), td3.append(tog2)));
-                    }
-                });
-                ptable.append(pthead,ptbody);
-
-                bdy.append(pdiv.append(pdivh, pdivb.append(ptable)));
-                $('#profil_modal').modal('show');
+        function new_check(user, privilege){
+            var i = $('<input>', { 'type': "checkbox",});
+            i.on('change', function (event) {
+                update_privilege(event, user.login, privilege, event);
             });
+            return i;
+        }
+        function y_button(user, privilege) {
+            return $('<span>', {'class':"glyphicon glyphicon-ok",
+                                'style':"color:green; cursor: pointer;",
+                                'title': "accept privilege request",
+                                'onclick': 'validate_pending(true, "'+user+'","'+privilege+'");'});
+        }
+        function n_button(user, privilege) {
+            return $('<span>', {'class':"glyphicon glyphicon-remove",
+                                'style':"color:red; cursor: pointer;",
+                                'title': "refuse privilege request",
+                                'onclick': 'validate_pending(false, "'+user+'","'+privilege+'");'});
+        }
+
+        users_list.forEach( function(user){
+            var tr = $('<tr>');
+            var td1 = $('<td>', { 'html': user.login,
+                                  'align': "center",
+                                  'style': "padding: 0px"
+                                  });
+            var td2 = $('<td>', { 'align': "center",
+                                  'style': "padding: 0px"
+                                  });
+            var td3 = $('<td>', { 'align': "center",
+                                  'style': "padding: 0px"
+                                  });
+            var tog1 = new_check(user, 'admin');
+            if (user.privileges.indexOf('admin') != -1) {
+                tog1.prop('checked', true);
+            }
+            else if (user.requested_privileges.indexOf('admin') != -1) {
+                td2.attr('style', 'background: orange; padding: 0px;');
+                tog1 = $('<div>');
+                tog1.append(y_button(user.login, 'admin'), "&nbsp;&nbsp;", n_button(user.login, 'admin'));
+            }
+
+            var tog2 = new_check(user, 'developer');
+            if (user.privileges.indexOf('developer') != -1) {
+                tog2.prop('checked', true);
+            }
+            else if (user.requested_privileges.indexOf('developer') != -1) {
+                td3.attr('style', 'background: orange; padding: 0px;');
+                tog2 = $('<div>');
+                tog2.append(y_button(user.login, 'developer'), "&nbsp;&nbsp;", n_button(user.login, 'developer'));
+            }
+            ptbody.append(tr.append(td1, td2.append(tog1), td3.append(tog2)));
         });
+        ptable.append(pthead,ptbody);
+        bdy.append(pdiv.append(pdivh, pdivb.append(ptable)));
     }
-    else {
-        $('#profil_modal').modal('show');
-    }
+    $('#profil_modal').modal('show');
 }
 
-function validate_pending(value, user, privilege){
+function validate_pending(value, login, privilege){
     var func_yes = function() {
-        sakura.apis.hub.users[user].privileges.update(privilege, value).then(function () {
-            fill_profil_button();
-            fill_profil_modal(current_login);
-        });
+        if (value == true) {
+            sakura.apis.hub.users[login].privileges.add(privilege).then(function () {
+                fill_profil_button(true);
+            });
+        }
+        else {
+            sakura.apis.hub.users[login].privileges.deny(privilege).then(function () {
+                fill_profil_button(true);
+            });
+        }
     }
     if (!value) {
         yes_no_asking("Refusing Pending Privilege",
-                      "Are you sure you want to refuse "+user+"'s <b>"+privilege+"</b> privilege ?",
+                      "Are you sure you want to refuse "+login+"'s <b>"+privilege+"</b> privilege ?",
                       func_yes);
     }
     else {
         yes_no_asking("Validating Pending Privilege",
-                      "Are you sure you want to validate "+user+"'s <b>"+privilege+"</b> privilege ?",
+                      "Are you sure you want to validate "+login+"'s <b>"+privilege+"</b> privilege ?",
                       func_yes);
     }
 }
 
-function update_privilege(event, user, privilege, checkbox) {
+function update_privilege(event, login, privilege, checkbox) {
     var value = event.target.checked;
     var func_yes = function() {
-        sakura.apis.hub.users[user].privileges.update(privilege, value).then(function () {
-            fill_profil_button();
-            fill_profil_modal(current_login);
-        });
+        if (value) {
+            sakura.apis.hub.users[login].privileges.add(privilege).then(function (result) {
+                console.log(result);
+                fill_profil_button(true);
+            });
+        }
+        else {
+            sakura.apis.hub.users[login].privileges.remove(privilege).then(function (result) {
+                console.log(result);
+                fill_profil_button(true);
+            });
+        }
     }
     var func_no = function() {
         event.target.checked = !event.target.checked;
@@ -531,13 +549,13 @@ function update_privilege(event, user, privilege, checkbox) {
 
     if (!value) {
         yes_no_asking("Removing Privilege",
-                      "Are you sure you want to remove "+user+"'s <b>"+privilege+"</b> privilege ?",
+                      "Are you sure you want to remove "+login+"'s <b>"+privilege+"</b> privilege ?",
                       func_yes,
                       func_no);
     }
     else {
         yes_no_asking("Adding Privilege",
-                      "Are you sure you want to add "+user+"'s <b>"+privilege+"</b> privilege ?",
+                      "Are you sure you want to add "+login+"'s <b>"+privilege+"</b> privilege ?",
                       func_yes,
                       func_no);
     }
@@ -585,7 +603,7 @@ function ask_for_privilege(privilege, callback) {
             var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
             fill_profil_button()
-            fill_profil_modal(current_login)
+            fill_profil_modal(current_user)
         }
         else {
             alert('something went wrong !');
