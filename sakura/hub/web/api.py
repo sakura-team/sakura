@@ -3,9 +3,6 @@ from sakura.hub.code import list_code_revisions, list_operator_subdirs
 
 api = api_init()
 
-mike_temp_privileges = {}
-mike_temp_pendings = {'mike': ['developer'], 'mike2': ['admin']}
-
 @api
 class GuiToHubAPI:
     def __init__(self, context):
@@ -398,38 +395,9 @@ class GuiToHubAPI:
     def deny_user_privilege(self, login, privilege):
         return self.context.users[login].deny_privilege(privilege)
 
-    @api.users.privileges.pendings
-    def list_privileges_pendings(self):
-        ########## TODO
-        print("NOT implemented yet")
-        ##########
-        if len(mike_temp_pendings):
-            return mike_temp_pendings
-        return None
-
     @api.users.list
     def list_all_users(self):
         return tuple(u.pack() for u in self.context.users.select())
-
-    @api.users.privileges.list
-    def list_all_privileges(self):
-        global mike_temp_privileges
-        if len(mike_temp_privileges) == 0:
-            import random as ra
-            users = tuple(u.login for u in self.context.users.select())
-            users = users + ('loki','hulk', 'ironman', 'captain')
-            mike_temp_privileges = {}
-            for u in users:
-                r = ra.randint(0,3)
-                if r == 0:
-                    mike_temp_privileges[u] = []
-                elif r == 1:
-                    mike_temp_privileges[u] = ["admin"]
-                elif r == 2:
-                    mike_temp_privileges[u] = ["developer"]
-                else:
-                    mike_temp_privileges[u] = ["admin", "developer"]
-        return mike_temp_privileges
 
     # Transfers management
     ######################

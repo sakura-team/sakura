@@ -265,7 +265,7 @@ function listRequestStub(idDiv, n, elt, bd) {
             dataflows.forEach( function(df) {
 
                 ///////////////TEMP
-                if (df.owner == current_login.login) {
+                if (df.owner == current_user.login) {
                 ///////////////TEMP
                     result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
                                   'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
