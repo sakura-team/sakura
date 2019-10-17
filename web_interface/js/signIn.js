@@ -506,11 +506,13 @@ function validate_pending(value, login, privilege){
     var func_yes = function() {
         if (value == true) {
             sakura.apis.hub.users[login].privileges.add(privilege).then(function () {
+                console.log('add');
                 fill_profil_button(true);
             });
         }
         else {
             sakura.apis.hub.users[login].privileges.deny(privilege).then(function () {
+                console.log('deny');
                 fill_profil_button(true);
             });
         }
@@ -532,13 +534,13 @@ function update_privilege(event, login, privilege, checkbox) {
     var func_yes = function() {
         if (value) {
             sakura.apis.hub.users[login].privileges.add(privilege).then(function (result) {
-                console.log(result);
+                console.log('add');
                 fill_profil_button(true);
             });
         }
         else {
             sakura.apis.hub.users[login].privileges.remove(privilege).then(function (result) {
-                console.log(result);
+                console.log('remove');
                 fill_profil_button(true);
             });
         }
@@ -602,8 +604,7 @@ function ask_for_privilege(privilege, callback) {
             var header = 'Asking For New Status';
             var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
-            fill_profil_button()
-            fill_profil_modal(current_user)
+            fill_profil_button(true)
         }
         else {
             alert('something went wrong !');
