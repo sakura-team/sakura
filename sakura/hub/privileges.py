@@ -21,7 +21,7 @@ PRIVILEGE_REQUEST_ANSWER_MAIL_SUBJECT = "Your sakura user privilege request was 
 PRIVILEGE_REQUEST_ANSWER_MAIL_CONTENT = '''
 Dear {requester.first_name} {requester.last_name},
 
-Sakura admin user {admin.login} ({admin.first_name} {admin.last_name}, {admin.email}) {action} your
+Sakura admin user {admin.login} ({admin.first_name} {admin.last_name}, {admin.email}) {action}
 your request for a *{privilege_name}* privilege.
 
 {polite_word}.

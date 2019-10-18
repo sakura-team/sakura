@@ -26,7 +26,7 @@ GRANT_ACCEPTED_MAIL_SUBJECT = "Your sakura grant request was accepted."
 GRANT_ACCEPTED_MAIL_CONTENT = '''
 Dear {requester.first_name} {requester.last_name},
 
-Sakura user {owner.login} ({owner.first_name} {owner.last_name}, {owner.email}) just accepted your
+Sakura user {owner.login} ({owner.first_name} {owner.last_name}, {owner.email}) just accepted
 your request for a *{grant_name}* grant to *{obj_desc}*.
 
 Thanks.
@@ -37,7 +37,7 @@ GRANT_DENIED_MAIL_SUBJECT = "Your sakura grant request was DENIED."
 GRANT_DENIED_MAIL_CONTENT = '''
 Dear {requester.first_name} {requester.last_name},
 
-Sakura user {owner.login} ({owner.first_name} {owner.last_name}, {owner.email}) denied your
+Sakura user {owner.login} ({owner.first_name} {owner.last_name}, {owner.email}) denied
 your request for a *{grant_name}* grant to *{obj_desc}*.
 
 Sorry.
