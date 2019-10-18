@@ -17,8 +17,8 @@ def enable_completion(env):
     readline.parse_and_bind('tab:complete')
 
 def run():
-    conf.hub_host   # force loading conf now (if ever we need user interaction)
     api.set_auto_reconnect()
+    api.check()   # force loading conf now (if ever we need user interaction)
     env = dict(api = api, sys = sys)
     handle_cmd_history()
     enable_completion(env)

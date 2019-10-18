@@ -19,12 +19,18 @@ class APIRoot:
             APIRoot.proxy = endpoint.proxy
             APIRoot.endpoint_greenlet = Greenlet.spawn(endpoint.loop)
         def login():
-            APIRoot.proxy.login(conf.username, conf.password_hash)
+            conf.login(APIRoot.proxy)
         ws.on_connect.subscribe(login)
         def get_proxy():
             if APIRoot.proxy is None:
                 init_proxy()
             return APIRoot.proxy
+        def get_terms_url():
+            if ws.ssl_enabled:
+                protocol = 'https'
+            else:
+                protocol = 'http'
+            return "%s://%s:%d/divs/documentation/cgu.html" % (protocol, conf.hub_host, conf.hub_port)
         class APIRootImpl(APIObjectBase):
             "Sakura API root"
             @property
@@ -58,4 +64,7 @@ class APIRoot:
             def is_connected(self):
                 """Indicate whether this api object is connected to hub."""
                 return not ws.closed
+            def check(self):
+                """Ensure this api object is properly configured."""
+                conf.check(get_proxy, ws.set_connect_timeout, get_terms_url)
         return APIRootImpl()

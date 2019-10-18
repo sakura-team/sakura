@@ -33,7 +33,7 @@ def run():
     if len(op_dirs) == 0:
         print('Did not find sakura operator source code in this directory. Giving up.', file=sys.stderr)
         sys.exit(1)
-    conf.hub_host   # force loading conf now (if ever we need user interaction)
+    api.check()   # force loading conf now (if ever we need user interaction)
     if 'developer' not in api.users.current().privileges.assigned:
         print("You need a 'developer' privilege to be able to use this tool.")
         if 'developer' in api.users.current().privileges.requested:

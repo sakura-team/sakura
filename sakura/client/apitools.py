@@ -86,8 +86,13 @@ class WSProxy:
         self.connect_semaphore = BoundedSemaphore()
         self.connecting = False
         self.connecting_message = ProgressMessage()
+        self.connect_timeout = None
+        self.connect_attempt = 0
+        self.ssl_enabled = None
     def set_auto_reconnect(self, value):
         self.auto_reconnect = value
+    def set_connect_timeout(self, value):
+        self.connect_timeout = value
     def write(self, s):
         if len(s) == 0:
             return 0
@@ -98,6 +103,7 @@ class WSProxy:
         if not self.ws.ever_connected:
             self.connecting_message.init('Connecting...', end='')
             self.connecting = True
+            self.connect_attempt = 1
         while True:
             try:
                 if self.ws.connected:
@@ -107,12 +113,12 @@ class WSProxy:
                     with self.connect_semaphore:
                         if not self.ws.connected and can_reconnect:
                             ever_connected = self.ws.ever_connected
-                            ssl_enabled = self.ws.connect()
+                            self.ssl_enabled = self.ws.connect()
                             if ever_connected:
                                 self.connecting_message.print('... OK, repaired.', end='')
                             else:
                                 self.connecting_message.print('... OK.', end='')
-                            if ssl_enabled:
+                            if self.ssl_enabled:
                                 self.connecting_message.print()     # all is fine
                             else:
                                 self.connecting_message.print(' WARNING: SSL-handshake failed. A clear text connection was set up!')
@@ -124,9 +130,14 @@ class WSProxy:
                 pass    # handle below
             # handle exception
             if self.connecting:
-                self.connecting_message.print('.', end='')
-                time.sleep(1)
-                continue
+                if self.connect_timeout is None or self.connect_attempt < self.connect_timeout:
+                    self.connecting_message.print('.', end='')
+                    self.connect_attempt += 1
+                    time.sleep(1)
+                    continue
+                else:
+                    self.connecting_message.print('... FAILED.')
+                    raise TimeoutError
             with self.connect_semaphore:
                 if not self.ws.connected and can_reconnect:
                     if self.ws.ever_connected:
@@ -134,6 +145,7 @@ class WSProxy:
                         if self.auto_reconnect:
                             self.connecting_message.init('Disconnected. Trying to reconnect...', end='')
                             self.connecting = True
+                            self.connect_attempt = 1
                         else:
                             raise ConnectionResetError('Connection to hub was lost!')
     def close(self):
@@ -156,4 +168,3 @@ def get_ws_url(hub_host, hub_port, ssl_enabled):
 def get_api():
     ws = WSProxy(GeventWSockConnector())
     return APIRoot(ws)
-
