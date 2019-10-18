@@ -28,6 +28,7 @@ class APIEndpoint:
         self.reqs = {}
         self.req_ids = itertools.count()
         self.on_remote_exception = ObservableEvent()
+        self.remote_deleted_ids = []
         # redirect exceptions of all sub-greenlets to the same queue
         self.do_loop = monitored(self.do_loop)
         self.handle_message = monitored(
@@ -100,6 +101,7 @@ class APIEndpoint:
             except BaseException as e:
                 print('could not send response:', e)
             self.held_objects.flush()
+            self.flush_remote_deleted_ids()
     def handle_response(self, req_id, *resp_info):
         async_res = self.reqs[req_id]
         async_res.set(resp_info)
@@ -126,12 +128,19 @@ class APIEndpoint:
                 return obj(*args, **kwargs)
         except AttributeError as e:
             raise APIInvalidRequest(str(e))
-    def delete_held(self, held_id):
-        del self.held_objects[held_id]
+    def delete_held(self, *held_ids):
+        for held_id in held_ids:
+            del self.held_objects[held_id]
     def delete_remotely_held(self, remote_held_id):
+        self.remote_deleted_ids.append(remote_held_id)
+    def flush_remote_deleted_ids(self):
+        remote_deleted_ids = self.remote_deleted_ids
+        if len(remote_deleted_ids) == 0:
+            return
+        self.remote_deleted_ids = []
         # if remote end is down, there is no remote object to delete...
         if not self.f.closed:
-            self.remote_call_raw(IO_REQ_FUNC_CALL, ('delete_held',), (remote_held_id,), {})
+            self.remote_call_raw(IO_REQ_FUNC_CALL, ('delete_held',), tuple(remote_deleted_ids), {})
     def func_call(self, path, args=(), kwargs={}):
         return self.remote_call(IO_REQ_FUNC_CALL, path, args, kwargs)
     def attr_call(self, path):
