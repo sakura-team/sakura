@@ -309,7 +309,6 @@ function fill_profil_button(fill_modal) {
             if (current_user.privileges.indexOf('admin') != -1) {
                 sakura.apis.hub.users.list().then(function (result){
                     users_list = result;
-                    console.log(users_list);
                     var pendings = users_list.some( function(user){
                               return user.requested_privileges.length !== 0;
                             });
