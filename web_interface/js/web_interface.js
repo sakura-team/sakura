@@ -265,8 +265,11 @@ function fill_metadata() {
             dl2.append(dt, dd);
         });
 
-        $('#web_interface_'+web_interface_current_object_type+'_metadata2').append(dl2);
+        if (info.grant_level && info.grant_level == 'own') {
+            update_access_exclamation(info);
+        }
 
+        $('#web_interface_'+web_interface_current_object_type+'_metadata2').append(dl2);
 
         //Large Description
         var l_desc = '<span style="color:grey">*No description !';
@@ -543,7 +546,7 @@ function showDiv(event, dir, div_id) {
 
 //Access Managment
 function web_interface_asking_access_open_modal(o_name, o_type, grant, callback) {
-
+    console.log(o_name, o_type, grant, callback);
     var txt1 = "An email will be sent to the owner of <b>"+o_name+"</b> for asking for a <b>"+grant+"</b> access on this "+o_type;
     txt1 += "Please describe your needs.";
 
@@ -575,6 +578,10 @@ function web_interface_asking_access(grant, callback) {
             var header = 'Asking for Access';
             var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
+            current_remote_api_object().info().then(function(info) {
+                console.log('HERE');
+                fill_collaborators_table_body(info);
+            });
         }
         else {
             console.log("SHIT");
@@ -588,35 +595,64 @@ function fill_collaborators_table_body(info) {
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
+    function access_button(access) {
+        var hobj_type = matching_hub_name(web_interface_current_object_type);
+        var a = $('<button>', { html: "Ask for <b>"+access+"</b> access"});
+        a.click(function () {
+            web_interface_asking_access_open_modal(info.name, hobj_type, access, null);
+        });
+        a.prop('class', "btn btn-primary btn-xs");
+        return a;
+    }
+
     $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div').hide();
     if (info.access_scope == 'open' || info.access_scope == 'public' || info.grant_level == 'own' || info.grant_level == 'write') {
         for (let user in info.grants) {
             grant = info.grants[user];
-            if (grant == 'own')
+            if (grant.level == 'own')
                 continue;
             var td2 = $('<td>')
             if (info.grant_level == 'own') {
-                var sel = $('<select>', { class: "selectpicker"});
-                sel.change( function() {
-                    change_collaborator_access(web_interface_current_id, user, $(this));
-                });
-                if (info.access_scope != 'public')
-                    sel.append($('<option>', { text: "Read"}));
+                if (grant.requested_level) {
+                    td2.attr('bgcolor', '#f0ad4e');
+                    var b1 = $('<button>', { html: "Accept"});
+                    var b2 = $('<button>', { html: "Refuse"});
+                    b1.attr('onclick','access_requested('+true+',"'+user+'","'+grant.requested_level+'");');
+                    b2.attr('onclick','access_requested('+false+',"'+user+'","'+grant.requested_level+'");');
+                    var p = $('<p>', {html: '<font color=white><b>'+grant.requested_level+'</b> level requested'+'</font>',
+                                      style: 'margin-bottom: 0px;'});
+                    td2.append(p.append(b1, b2));
+                }
+                else {
+                    var sel = $('<select>', { class: "selectpicker"});
+                    sel.change( function() {
+                        change_collaborator_access(web_interface_current_id, user, $(this));
+                    });
+                    if (info.access_scope != 'public')
+                        sel.append($('<option>', { text: "Read"}));
 
-                var op2 = $('<option>', { text: "Write"});
-                if (grant == 'write')
-                    op2.attr("selected","selected");
-                sel.append(op2);
-                td2.append(sel);
-                sel.selectpicker('refresh');
+                    var op2 = $('<option>', { text: "Write"});
+                    if (grant.level == 'write')
+                        op2.attr("selected","selected");
+                    sel.append(op2);
+                    td2.append(sel);
+                    sel.selectpicker('refresh');
+                }
             }
 
             var td3 = $('<td>');
             if (info.grant_level == 'own')
                 td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator('+web_interface_current_id+', \''+user+'\');"></span>'});
 
+            var td1 = $('<td>', {html: user});
+            if (grant.requested_level)
+            {
+                td1.attr('bgcolor', '#f0ad4e');
+                td3.attr('bgcolor', '#f0ad4e');
+            }
             var tr = $('<tr>');
-            tr.append($('<td>', {html: user}), td2, td3);
+            tr.append(td1, td2, td3);
+
             tbody.append(tr);
         }
 
@@ -625,27 +661,35 @@ function fill_collaborators_table_body(info) {
             $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option').remove();
 
             sakura.apis.hub.users.list().then(function(result) {
-                for (let user in info.grants)
-                    result.splice(result.indexOf(user), 1);
+                var granted_users = Object.keys(info.grants)
+                var potential_collaborators = [];
+                result.forEach (function (user){
+                    if (granted_users.indexOf(user.login) == -1)
+                        potential_collaborators.push(user.login);
+                });
 
-                result.forEach( function(user_info) {
-                    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: user_info.login}));
+                potential_collaborators.forEach( function(login) {
+                    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: login}));
                 });
                 $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
             });
         }
     }
     else if (info.grant_level == 'read') {
-        var hobj_type = matching_hub_name(web_interface_current_object_type);
         var tr = $('<tr>');
         var td = $('<td>');
-        var a = $('<button>', { html: "Ask for <b>write</b> access"});
 
-        a.click(function () {
-            web_interface_asking_access_open_modal(info.name, hobj_type, 'write', null);
-        });
-
-        td.append(a);
+        if (info.grants[current_user.login] && info.grants[current_user.login].requested_level) {
+          var access = info.grants[current_user.login].requested_level;
+          var a = $('<button>');
+          a.html('Pending <b>'+access+'</b> access');
+          a.prop('disabled', true);
+          a.prop('class', 'btn btn-warning btn-xs');
+          td.append(a);
+        }
+        else {
+            td.append(access_button('write'));
+        }
         tr.append(td);
         tbody.append(tr);
     }
@@ -653,25 +697,58 @@ function fill_collaborators_table_body(info) {
         var tr = $('<tr>');
         var td = $('<td>');
         if (current_user != null) {
-            var hobj_type = matching_hub_name(web_interface_current_object_type);
-            var a1 = $('<button>', { html: "Ask for <b>read</b> access"});
+            var granted_users = Object.keys(info.grants);
+            var uindex = granted_users.indexOf(current_user.login);
 
-            a1.click(function () {
-                web_interface_asking_access_open_modal(info.name, hobj_type, 'read', null);
-            });
-            var a2 = $('<button>', { html: "Ask for <b>write</b> access"});
+            if (info.grants[current_user.login] && info.grants[current_user.login].requested_level) {
+              var access = info.grants[current_user.login].requested_level;
+              var a = $('<button>');
+              a.html('Pending <b>'+access+'</b> access');
+              a.prop('disabled', true);
+              a.prop('class', 'btn btn-warning btn-xs');
+              td.append(a);
+            }
 
-            a2.click(function () {
-                web_interface_asking_access_open_modal(info.name, hobj_type, 'write', null);
-            });
-            td.append(a1);
-            td.append(a2);
+            else {
+                td.append(access_button('read'), '&nbsp;');
+                td.append(access_button('write'));
+            }
         }
         else {
             td.append("You have to be logged for asking read or write access");
         }
         tr.append(td);
         tbody.append(tr);
+    }
+}
+
+function update_access_exclamation(info) {
+    var header = $('#web_interface_datas_access_header_exclamation');
+    header.css('display', 'none');
+
+    for (let user in info.grants) {
+        if (info.grants[user].requested_level) {
+            header.css('display', 'block');
+            break;
+        }
+    }
+}
+function access_requested(value, login, level){
+    if (value) {
+        current_remote_api_object().grants.update(login, level).then( function(result) {
+            current_remote_api_object().info().then(function(info) {
+                update_access_exclamation(info);
+                fill_collaborators_table_body(info);
+            });
+        });
+    }
+    else {
+        current_remote_api_object().grants.deny(login).then( function(result) {
+            current_remote_api_object().info().then(function(info) {
+                update_access_exclamation(info);
+                fill_collaborators_table_body(info);
+            });
+        });
     }
 }
 
