@@ -7,6 +7,7 @@ var finished_icon = '<span class="fa fa-check" style="font-size:30px; color:gree
 
 var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
        maxZoom: 18,
+       opacity: .5,
        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
 });
 
@@ -32,9 +33,10 @@ function update_trajectories(chunk) {
               trajectories[elt[0]] = L.polyline([[elt[2], elt[1]]],
                                                   { color: 'rgb('+r+','+v+','+b+')',
                                                     weight: 2,
-                                                    opacity: 0.5,
+                                                    opacity: 1,
                                                     smoothFactor: 1});
               trajectories[elt[0]].addTo(gps2d_map);
+              trajectories[elt[0]].bindPopup("<b>ID:</b> "+elt[0]);
           }
           else
               trajectories[elt[0]].addLatLng([elt[2], elt[1]]);
