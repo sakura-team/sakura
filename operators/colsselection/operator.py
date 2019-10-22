@@ -9,6 +9,7 @@ import numpy as np
 class colsselection(Operator):
     NAME = "Columns Selection"
     SHORT_DESC = "Select columns from a table."
+    TAGS = ["filter"]
 
     def construct(self):
         # inputs
