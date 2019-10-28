@@ -42,8 +42,11 @@ setup(
     packages = find_packages(),
     package_dir = {'sakura-py': 'sakura'},
     data_files = list(iter_data_files('web_interface')) + list(iter_data_files('operators')),
-    install_requires = ['cffi', 'gevent', 'gevent-websocket', 'bottle', 'numpy', 'psycopg2-binary', 'pony==0.7.6', 'websocket-client',
-                        'pillow-simd', 'cython', 'pyopengl', 'pyopengl-accelerate', 'requests', 'geojson'],
+    install_requires = [ 'gevent', 'bottle', 'numpy', 'websocket-client', 'geojson' ],
+    extras_require = {
+        'hub': [ 'pony==0.7.6', 'gevent-websocket' ],
+        'daemon': [ 'cffi', 'psycopg2-binary', 'pillow-simd', 'cython', 'pyopengl', 'pyopengl-accelerate', 'requests' ]
+    },
     author = 'Etienne Duble',
     author_email = 'etienne.duble@imag.fr',
     keywords = 'sakura data-processing research capitalization',
@@ -51,8 +54,8 @@ setup(
     url = 'https://github.com/sakura-team/sakura',
     description = 'Sakura platform installation files.',
     entry_points = dict(
-        console_scripts = [ 'sakura-hub = sakura.hub.hub:run',
-                            'sakura-daemon = sakura.daemon.daemon:run',
+        console_scripts = [ 'sakura-hub = sakura.hub.hub:run [hub]',
+                            'sakura-daemon = sakura.daemon.daemon:run [daemon]',
                             'sakura-encode-password = sakura.common.password:password_encoder_tool',
                             'sakura-shell = sakura.client.shell:run',
                             'sakura-op-skeleton = sakura.client.opskeleton:run',
