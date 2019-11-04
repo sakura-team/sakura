@@ -12,7 +12,7 @@ class OpInstanceMixin(BaseMixin):
     def remote_instance(self):
         # note: the following shortcut will become valid only after
         # the operator has been instanciated with function
-        # instanciate_on_daemon() below.
+        # reload_on_daemon() below.
         return self.daemon_api.op_instances[self.id]
     @property
     def enabled(self):
@@ -20,11 +20,13 @@ class OpInstanceMixin(BaseMixin):
     @enabled.setter
     def enabled(self, boolean):
         if boolean:
-            self.push_event('enabled')
-            OpInstanceMixin.INSTANCIATED.add(self.id)
+            if not self.enabled:
+                self.push_event('enabled')
+                OpInstanceMixin.INSTANCIATED.add(self.id)
         else:
-            self.push_event('disabled')
-            OpInstanceMixin.INSTANCIATED.discard(self.id)
+            if self.enabled:
+                self.push_event('disabled')
+                OpInstanceMixin.INSTANCIATED.discard(self.id)
     @property
     def moving(self):
         return self.id in OpInstanceMixin.MOVING
@@ -100,21 +102,13 @@ class OpInstanceMixin(BaseMixin):
             old_revision = op.revision
             op.revision = dict(code_ref = code_ref, commit_hash = commit_hash)
             try:
-                op.reload_on_daemon()
+                op.reload()
             except:
                 # failed, restore
                 op.revision = old_revision
-                op.reload_on_daemon()
+                op.reload()
                 raise
 
-    def instanciate_on_daemon(self):
-        self.daemon_api.create_operator_instance(
-            self.id,
-            **self.pack_repo_info(include_sandbox_attrs=True)
-        )
-        self.resync_params()
-        # we have it instanciated
-        self.enabled = True
     def resync_params(self):
         # resync number of parameters with what the daemon reports (possible source code change)
         local_ids = set(param.param_id for param in self.params)
@@ -138,12 +132,40 @@ class OpInstanceMixin(BaseMixin):
         for link in self.downlinks:
             link.disable()
             link.dst_op.disable_downlinks()
-    def reload_on_daemon(self):
-        self.daemon_api.reload_operator_instance(
-            self.id,
-            **self.pack_repo_info(include_sandbox_attrs=True)
-        )
+    def reload(self):
+        if self.enabled:
+            for link in self.uplinks:
+                link.disable()
+            self.disable_downlinks()
+        self.reload_on_daemon()
+        # a source code change may cause invalid links
+        # we cannot simply disable them, we have to delete them
+        remote_info = self.remote_instance.pack()
+        for link in tuple(self.uplinks):
+            if link.dst_in_id >= len(remote_info['inputs']):
+                print('dropped input link, no longer valid')
+                link.delete_link()
+        for link in tuple(self.downlinks):
+            if link.src_out_id >= len(remote_info['outputs']):
+                print('dropped output link, no longer valid')
+                link.delete_link()
         self.resync_params()
+        self.restore_links()
+    def reload_on_daemon(self):
+        if not self.enabled:
+            # not running yet, create it on daemon
+            self.daemon_api.create_operator_instance(
+                self.id,
+                **self.pack_repo_info(include_sandbox_attrs=True)
+            )
+        else:
+            # already running on daemon, reload it
+            self.enabled = False
+            self.daemon_api.reload_operator_instance(
+                self.id,
+                **self.pack_repo_info(include_sandbox_attrs=True)
+            )
+        self.enabled = True
     def on_daemon_disconnect(self):
         # daemon stopped
         for link in self.uplinks:
@@ -272,5 +294,6 @@ class OpInstanceMixin(BaseMixin):
                 for link in self.downlinks:
                     link.dst_op.restore_links()
     def restore(self):
-        self.instanciate_on_daemon()
+        self.reload_on_daemon()
+        self.resync_params()
         self.restore_links()

@@ -34,12 +34,14 @@ class LinkMixin(BaseMixin):
             **self.pack_status_info()
         )
     def enable(self):
-        self.dst_daemon.api.connect_operators(*self.link_args)
-        self.enabled = True
+        if not self.enabled:
+            self.dst_daemon.api.connect_operators(*self.link_args)
+            self.enabled = True
     def disable(self):
-        if self.dst_daemon.enabled:
-            self.dst_daemon.api.disconnect_operators(*self.link_args)
-        self.enabled = False
+        if self.enabled:
+            if self.dst_daemon.enabled:
+                self.dst_daemon.api.disconnect_operators(*self.link_args)
+            self.enabled = False
     @classmethod
     def create_link(cls, src_op, src_out_id, dst_op, dst_in_id):
         # create in local db
