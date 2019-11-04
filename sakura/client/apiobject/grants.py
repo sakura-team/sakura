@@ -1,4 +1,4 @@
-from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
+from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 
 class APIUserGrant:
     def __new__(cls, remote_obj, login, grant_info):
@@ -17,7 +17,7 @@ class APIGrants:
     def __new__(cls, remote_obj):
         d = { login: APIUserGrant(remote_obj, login, grant_info) \
               for login, grant_info in remote_obj.info()['grants'].items() }
-        class APIGrantsImpl(APIObjectRegistry(d)):
+        class APIGrantsImpl(APIObjectRegistryClass(d)):
             """Grants registry"""
             def update(self, login, grant_name):
                 """update, add a user grant, accept a grant request"""

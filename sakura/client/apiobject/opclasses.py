@@ -1,5 +1,5 @@
 from sakura.client.apiobject.operators import APIOperator
-from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
+from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 
 class APIOpClass:
     _deleted = set()
@@ -36,7 +36,7 @@ class APIOpClass:
 
 class APIOpClassDict:
     def __new__(cls, remote_api, d):
-        class APIOpClassDictImpl(APIObjectRegistry(d)):
+        class APIOpClassDictImpl(APIObjectRegistryClass(d)):
             """Sakura operator classes registry"""
             def register_from_git_repo(self, repo_url, default_code_ref, default_commit_hash, repo_subdir='/', access_scope='public'):
                 """Registration of a new operator class from a git repository"""

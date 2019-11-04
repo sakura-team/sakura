@@ -1,4 +1,4 @@
-from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
+from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client import conf
 
 class APIUserPrivileges:
@@ -59,7 +59,7 @@ class APIUser:
 
 class APIUserDict:
     def __new__(cls, remote_api, d):
-        class APIUserDictImpl(APIObjectRegistry(d)):
+        class APIUserDictImpl(APIObjectRegistryClass(d)):
             """Sakura users registry"""
             def current(self):
                 """return user currently logged in"""

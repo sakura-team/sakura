@@ -3,12 +3,6 @@ from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.client.apiobject.databases import APIDatabase
 from sakura.client.apiobject.grants import APIGrants
 
-class APIDatastoreDatabasesDict:
-    def __new__(cls, remote_api, datastore_id, d):
-        class APIDatastoreDatabasesDictImpl(APIObjectRegistry(d)):
-            """Sakura databases registry for this datastore"""
-        return APIDatastoreDatabasesDictImpl()
-
 class APIDatastore:
     def __new__(cls, remote_api, info):
         ds_id = info['datastore_id']
@@ -19,7 +13,7 @@ class APIDatastore:
             def databases(self):
                 d = { database_info['database_id']: APIDatabase(remote_api, database_info['database_id']) \
                       for database_info in self.__getattr__('databases') }
-                return APIDatastoreDatabasesDict(remote_api, self.datastore_id, d)
+                return APIObjectRegistry(d, "Sakura databases registry for this datastore")
             @property
             def grants(self):
                 return APIGrants(remote_obj)
@@ -34,13 +28,7 @@ class APIDatastore:
                 raise AttributeError('No such attribute "%s"' % attr)
         return APIDatastoreImpl()
 
-class APIDatastoreDict:
-    def __new__(cls, remote_api, d):
-        class APIDatastoreDictImpl(APIObjectRegistry(d)):
-            """Sakura datastores registry"""
-        return APIDatastoreDictImpl()
-
 def get_datastores(remote_api):
     d = { remote_ds_info['datastore_id']: APIDatastore(remote_api, remote_ds_info) \
                 for remote_ds_info in remote_api.datastores.list() }
-    return APIDatastoreDict(remote_api, d)
+    return APIObjectRegistry(d, 'Sakura datastores registry')

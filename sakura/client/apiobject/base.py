@@ -66,6 +66,8 @@ def get_subitems_desc(obj):
 class APIObjectBase:
     def __repr__(self, level=0):
         short_desc = self.__class__.__doc__
+        if hasattr(self.__class__, '__len__'):
+            short_desc += ' (%d items)' % len(self)
         if level == 1:
             return '<' + short_desc + '>'
         elif level == 0:
@@ -77,8 +79,9 @@ class APIObjectBase:
             res += '>'
         return res
 
-def APIObjectRegistry(d):
+def APIObjectRegistryClass(d, doc=None):
     class APIObjectRegistryImpl(APIObjectBase):
+        __doc__ = doc
         def __getitem__(self, k):
             try:
                 return d[k]
@@ -98,4 +101,11 @@ def APIObjectRegistry(d):
         def values(self):
             "Iterate over values this registry contains"
             return d.values()
+        def __len__(self):
+            "Indicate how many items this registry contains"
+            return len(d)
     return APIObjectRegistryImpl
+
+def APIObjectRegistry(*args):
+    cls = APIObjectRegistryClass(*args)
+    return cls()    # instanciate

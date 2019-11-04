@@ -1,6 +1,6 @@
 from sakura.client.apiobject.plugs import APIOperatorInput, APIOperatorOutput
 from sakura.client.apiobject.parameters import APIOperatorParameter
-from sakura.client.apiobject.base import APIObjectBase
+from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.common.errors import APIRequestError
 
 class APIOperator:
@@ -21,21 +21,24 @@ class APIOperator:
             @property
             def inputs(self):
                 check_online()
-                return [ APIOperatorInput(remote_api, op_id, in_id) \
-                         for in_id in range(len(get_remote_obj().info()['inputs']))
-                ]
+                return APIObjectRegistry({
+                        in_id: APIOperatorInput(remote_api, op_id, in_id) \
+                        for in_id in range(len(get_remote_obj().info()['inputs']))
+                }, "operator inputs")
             @property
             def outputs(self):
                 check_online()
-                return [ APIOperatorOutput(remote_api, op_id, out_id) \
+                return APIObjectRegistry({
+                        out_id: APIOperatorOutput(remote_api, op_id, out_id) \
                         for out_id in range(len(get_remote_obj().info()['outputs']))
-                ]
+                }, "operator outputs")
             @property
             def parameters(self):
                 check_online()
-                return [ APIOperatorParameter(remote_api, op_id, param_id) \
+                return APIObjectRegistry({
+                        param_id: APIOperatorParameter(remote_api, op_id, param_id) \
                         for param_id in range(len(get_remote_obj().info()['parameters']))
-                ]
+                }, "operator parameters")
             def delete(self):
                 """Delete this operator"""
                 check_online()

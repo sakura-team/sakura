@@ -1,11 +1,11 @@
 from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.operators import APIOperator
-from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
+from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client.apiobject.grants import APIGrants
 
 class APIDataflowOperatorsDict:
     def __new__(cls, remote_api, dataflow_id, d):
-        class APIDataflowOperatorsDictImpl(APIObjectRegistry(d)):
+        class APIDataflowOperatorsDictImpl(APIObjectRegistryClass(d)):
             """Sakura operators registry for this dataflow"""
             def create(self, op_class):
                 """Create a new operator of specified class"""
@@ -41,7 +41,7 @@ class APIDataflow:
 
 class APIDataflowDict:
     def __new__(cls, remote_api, d):
-        class APIDataflowDictImpl(APIObjectRegistry(d)):
+        class APIDataflowDictImpl(APIObjectRegistryClass(d)):
             """Sakura dataflows registry"""
             def create(self, name):
                 """Create a new dataflow"""
