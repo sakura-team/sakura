@@ -41,6 +41,9 @@ class APIOperator:
                 check_online()
                 get_remote_obj().delete()
                 APIOperator._deleted.add(remote_obj)
+            def reload(self):
+                """Reload this operator"""
+                get_remote_obj().reload()
             def update_revision(self, code_ref, commit_hash, all_ops_of_cls=False):
                 """Update code revision of the operator"""
                 check_online()

@@ -66,6 +66,10 @@ class GuiToHubAPI:
         return self.context.op_instances[op_id].next_events(
                         self.context.session.id, timeout)
 
+    @api.operators.__getitem__.reload
+    def update_op_revision(self, op_id):
+        return self.context.op_instances[op_id].reload_on_daemon()
+
     @api.operators.__getitem__.update_revision
     def update_op_revision(self, op_id, code_ref, commit_hash, all_ops_of_cls=False):
         return self.context.op_instances[op_id].update_revision(code_ref, commit_hash, all_ops_of_cls)
