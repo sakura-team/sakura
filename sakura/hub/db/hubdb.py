@@ -1,5 +1,5 @@
 import re, sys, types
-import sakura.hub.conf as conf
+from sakura.hub import conf
 from sakura.hub.db.schema import define_schema
 from pony.orm import Database as PonyDatabase,      \
                      commit as pony_commit,         \

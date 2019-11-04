@@ -11,7 +11,7 @@ from sakura.common.tools import monitored
 from pathlib import Path
 from bottle import template
 from collections import namedtuple
-import sakura.hub.conf as conf
+from sakura.hub import conf
 
 def to_namedtuple(clsname, d):
     return namedtuple(clsname, d.keys())(**d)

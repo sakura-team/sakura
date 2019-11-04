@@ -38,6 +38,7 @@ def merge_args_and_conf(parser, defaults=None):
     # priority is: args_conf > file_conf > defaults
     conf = ConfContainer()
     merge_conf(conf, args_conf)
+    conf.conf_file_name = conf.conf_file.name
     del conf.conf_file
     merge_conf(conf, file_conf)
     if defaults != None:

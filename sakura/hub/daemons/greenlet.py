@@ -2,7 +2,7 @@ import pickle
 from gevent.server import StreamServer
 from sakura.hub.daemons.manager import rpc_manager
 from sakura.common.tools import monitored
-import sakura.hub.conf as conf
+from sakura.hub import conf
 from sakura.common.io.serializer import Serializer
 
 def daemons_greenlet(context):

@@ -55,6 +55,7 @@ setup(
     description = 'Sakura platform installation files.',
     entry_points = dict(
         console_scripts = [ 'sakura-hub = sakura.hub.hub:run [hub]',
+                            'sakura-hub-sendmail = sakura.hub.sendmail:run [hub]',
                             'sakura-daemon = sakura.daemon.daemon:run [daemon]',
                             'sakura-encode-password = sakura.common.password:password_encoder_tool',
                             'sakura-shell = sakura.client.shell:run',

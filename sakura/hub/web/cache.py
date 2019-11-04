@@ -1,5 +1,5 @@
 import bottle, urllib.request, urllib.error
-import sakura.hub.conf as conf
+from sakura.hub import conf
 from pathlib import Path
 import socket
 import gevent.socket

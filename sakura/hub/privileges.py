@@ -1,5 +1,5 @@
 from sakura.hub.context import get_context
-from sakura.hub.myemail import sendmail
+from sakura.hub.sendmail import sendmail
 from sakura.common.errors import APIFeatureDeniedError
 
 PRIVILEGE_REQUEST_MAIL_SUBJECT = "Sakura user privilege request."

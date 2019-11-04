@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """User registration or login related"""
 import os, hashlib, binascii, re, base64, smtplib, random, bottle
-from sakura.hub.myemail import sendmail
+from sakura.hub.sendmail import sendmail
 from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestError
 from sakura.hub.privileges import check_privilege, assert_privilege, \

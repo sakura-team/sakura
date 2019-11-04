@@ -4,7 +4,7 @@ from sakura.common.tools import StatusMixin
 from sakura.common.events import EventSourceMixin
 from sakura.hub.access import parse_gui_access_info, find_owner, FilteredView, get_user_type
 from sakura.hub.context import get_context
-from sakura.hub.myemail import sendmail
+from sakura.hub.sendmail import sendmail
 
 GRANT_REQUEST_MAIL_SUBJECT = "Sakura user grant request."
 GRANT_REQUEST_MAIL_CONTENT = '''

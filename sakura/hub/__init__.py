@@ -1,5 +1,11 @@
-import os
-if not os.getenv('UNIT_TEST'):
-    # in normal mode, load configuration
-    from sakura.hub.conf import load_conf
-    conf = load_conf()
+real_conf = None
+
+def set_conf(in_conf):
+    global real_conf
+    real_conf = in_conf
+
+class ConfProxy:
+    def __getattr__(self, attr):
+        return getattr(real_conf, attr)
+
+conf = ConfProxy()

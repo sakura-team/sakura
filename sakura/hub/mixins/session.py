@@ -1,5 +1,5 @@
 import time, random
-import sakura.hub.conf as conf
+from sakura.hub import conf
 
 INTMAX_LIMIT = 2147483648
 
