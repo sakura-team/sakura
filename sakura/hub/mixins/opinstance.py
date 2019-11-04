@@ -5,6 +5,7 @@ from sakura.common.errors import APIOperatorError
 class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
     MOVING = set()
+    RELOAD_NOT_COMPLETED = set()
     @property
     def daemon_api(self):
         return self.daemon.api
@@ -39,7 +40,10 @@ class OpInstanceMixin(BaseMixin):
     @property
     def disabled_message(self):
         if self.op_class.enabled:
-            return 'Daemon running this operator was just stopped.'
+            if self.id in OpInstanceMixin.RELOAD_NOT_COMPLETED:
+                return 'Latest code changes prevented this operator to load properly.'
+            else:
+                return 'Daemon running this operator was just stopped.'
         else:
             return self.op_class.disabled_message
     def __getattr__(self, attr):
@@ -134,10 +138,12 @@ class OpInstanceMixin(BaseMixin):
             link.dst_op.disable_downlinks()
     def reload(self):
         if self.enabled:
+            OpInstanceMixin.RELOAD_NOT_COMPLETED.add(self.id)
             for link in self.uplinks:
                 link.disable()
             self.disable_downlinks()
         self.reload_on_daemon()
+        OpInstanceMixin.RELOAD_NOT_COMPLETED.discard(self.id)
         # a source code change may cause invalid links
         # we cannot simply disable them, we have to delete them
         remote_info = self.remote_instance.pack()
