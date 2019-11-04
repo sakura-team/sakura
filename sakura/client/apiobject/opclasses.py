@@ -1,5 +1,6 @@
 from sakura.client.apiobject.operators import APIOperator
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
+from sakura.client.apiobject.grants import APIGrants
 
 class APIOpClass:
     _deleted = set()
@@ -20,6 +21,9 @@ class APIOpClass:
                     return info[attr]
                 else:
                     raise AttributeError('No such attribute "%s"' % attr)
+            @property
+            def grants(self):
+                return APIGrants(get_remote_obj())
             def update_default_revision(self, code_ref, commit_hash):
                 """Update default code revision of this operator class"""
                 return get_remote_obj().update_default_revision(code_ref, commit_hash)
