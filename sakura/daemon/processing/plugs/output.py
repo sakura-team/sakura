@@ -1,24 +1,13 @@
-from sakura.daemon.processing.source import ComputedSource
-from sakura.common.tools import ObservableEvent, StatusMixin
+from sakura.daemon.processing.plugs.base import PlugBase
 
-class OutputPlug(StatusMixin):
+class OutputPlug(PlugBase):
     def __init__(self, label=None, source=None, condition=None):
+        super().__init__()
         self._label = label
         self._source = source
         self._condition = condition
-        self.on_change = ObservableEvent()
     @property
     def source(self):
-        if self._source is None:
-            # not_ready, return a fake source.
-            # the GUI should be updated to read the "enabled" flag.
-            print('note: fake output source returned (not ready)')
-            output_source = ComputedSource('Fake output',
-                lambda: (yield ('output is not ready!',))
-            )
-            output_source.add_column('ERROR', str)
-            output_source.length = 1
-            return output_source
         return self._source
     @source.setter
     def source(self, val):
@@ -42,13 +31,8 @@ class OutputPlug(StatusMixin):
         info = dict(
                 label = 'Output',
                 **self.pack_status_info())
-        info.update(**self.source.pack())
+        if self.enabled:
+            info.update(**self.source.pack())
         if self._label is not None:
             info.update(label = self._label)
         return info
-    def get_range(self, *args, **kwargs):
-        return self.source.get_range(*args, **kwargs)
-    def __iter__(self):
-        return self.source.__iter__()
-    def get_columns_info(self):
-        return self.source.get_columns_info()

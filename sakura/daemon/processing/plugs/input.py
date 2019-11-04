@@ -1,11 +1,11 @@
-from sakura.common.errors import APIRequestError, APIRequestErrorOfflineDaemon
-from sakura.common.tools import ObservableEvent, StatusMixin
+from sakura.common.errors import APIRequestErrorOfflineDaemon
+from sakura.daemon.processing.plugs.base import PlugBase
 
-class InputPlug(StatusMixin):
+class InputPlug(PlugBase):
     def __init__(self, label):
-        self.source_plug = None
+        super().__init__()
         self.label = label
-        self.on_change = ObservableEvent()
+        self.source_plug = None
     def connect(self, output_plug):
         self.source_plug = output_plug
         # if the source plug changes, propagate the change here
@@ -25,8 +25,7 @@ class InputPlug(StatusMixin):
         return self.source_plug != None
     @property
     def source(self):
-        if not self.connected():
-            raise APIRequestError("No source: input plug is not connected or link is disabled!")
+        self.verify_enabled()
         return self.source_plug.source
     @property
     def enabled(self):
@@ -47,19 +46,3 @@ class InputPlug(StatusMixin):
             )
         info.update(label = self.label)
         return info
-    def get_range(self, *args, **kwargs):
-        # redirect call to the connected output stream
-        if self.connected():
-            return self.source_plug.get_range(*args, **kwargs)
-        else:
-            return None
-    def get_columns_info(self):
-        if self.connected():
-            return self.source_plug.get_columns_info()
-        else:
-            return None
-    def __iter__(self):
-        if self.connected():
-            return self.source_plug.__iter__()
-        else:
-            return None
