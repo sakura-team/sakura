@@ -12,11 +12,6 @@ try:
 except:
     missing.append("setuptools")
 
-try:
-    import wheel
-except:
-    missing.append("wheel")
-
 if len(missing) > 0:
     sys.exit("Sorry, your python environment is not ready: install %s with pip first." % \
              " and ".join(missing))
@@ -42,7 +37,8 @@ setup(
     packages = find_packages(),
     package_dir = {'sakura-py': 'sakura'},
     data_files = list(iter_data_files('web_interface')) + list(iter_data_files('operators')),
-    install_requires = [ 'gevent', 'bottle', 'numpy', 'websocket-client', 'geojson' ],
+    setup_requires = [ 'wheel' ],
+    install_requires = [ 'wheel', 'gevent', 'bottle', 'numpy', 'websocket-client', 'geojson' ],
     extras_require = {
         'hub': [ 'pony==0.7.6', 'gevent-websocket' ],
         'daemon': [ 'cffi', 'psycopg2-binary', 'pillow-simd', 'cython', 'pyopengl', 'pyopengl-accelerate', 'requests' ]
