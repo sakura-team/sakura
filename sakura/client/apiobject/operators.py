@@ -51,6 +51,14 @@ class APIOperator:
                 """Update code revision of the operator"""
                 check_online()
                 remote_obj.update_revision(code_ref, commit_hash, all_ops_of_cls)
+            def stream_events(self):
+                """Stream events occurring on this operator"""
+                try:
+                    while True:
+                        for evt_info in get_remote_obj().next_events(2.0):
+                            print(*evt_info)
+                except KeyboardInterrupt:
+                    pass
             def __doc_attrs__(self):
                 return get_remote_obj().info().items()
             def __getattr__(self, attr):
