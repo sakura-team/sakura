@@ -38,9 +38,6 @@ class Operator:
     def output_plugs(self):
         return getattr(self, '_output_plugs', ())
     @property
-    def internal_plugs(self):
-        return getattr(self, '_internal_plugs', ())
-    @property
     def parameters(self):
         return getattr(self, '_parameters', ())
     @property
@@ -53,8 +50,6 @@ class Operator:
         if condition is None:
             condition = self.is_ready
         return self.register('_output_plugs', OutputPlug(*args, condition = condition, **kwargs))
-    def register_internal_plug(self, *args, **kwargs):
-        return self.register('_internal_plugs', OutputPlug(*args, **kwargs))
     def register_parameter(self, param):
         return self.register('_parameters', param)
     def register_tab(self, tab_label, html_path):
@@ -93,7 +88,6 @@ class Operator:
             parameters = self.parameters,
             inputs = self.input_plugs,
             outputs = self.output_plugs,
-            internal_plugs = self.internal_plugs,
             tabs = self.tabs,
             opengl_apps = tuple(app.label for app in self.opengl_apps)
         ))

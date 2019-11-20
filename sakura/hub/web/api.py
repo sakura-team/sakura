@@ -98,10 +98,6 @@ class GuiToHubAPI:
     def get_operator_outputplug_link_id(self, op_id, out_id):
         return self.context.op_instances[op_id].get_ouputplug_link_id(out_id)
 
-    @api.operators.__getitem__.internals.__getitem__.get_range
-    def get_operator_internal_range(self, op_id, intern_id, row_start, row_end):
-        return pack(self.context.op_instances[op_id].internal_plugs[intern_id].get_range(row_start, row_end))
-
     @api.operators.__getitem__.fire_event
     def fire_operator_event(self, op_id, *args, **kwargs):
         return self.context.op_instances[op_id].sync_handle_event(*args, **kwargs)
