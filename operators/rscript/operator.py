@@ -3,8 +3,7 @@
 
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import NumericColumnSelection
- 
+
 import os
 
 class Rscript(Operator):

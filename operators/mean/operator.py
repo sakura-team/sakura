@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import NumericColumnSelection
 from sakura.daemon.processing.source import ComputedSource
 
 class MeanOperator(Operator):
@@ -21,7 +20,7 @@ class MeanOperator(Operator):
 
         # parameters
         self.input_column_param = self.register_parameter(
-                NumericColumnSelection('Input column', self.input))
+                'NUMERIC_COLUMN_SELECTION', 'Input column', self.input)
 
     def compute(self):
         column_idx = self.input_column_param.col_index

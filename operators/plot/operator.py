@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import NumericColumnSelection
 from sakura.daemon.processing.source import ComputedSource
 from numpy.lib import recfunctions
 
@@ -17,9 +16,9 @@ class PlotOperator(Operator):
 
         # parameters
         self.input_column_param_x = self.register_parameter(
-                NumericColumnSelection('X (abscissa)', self.input))
+                'NUMERIC_COLUMN_SELECTION', 'X (abscissa)', self.input)
         self.input_column_param_y = self.register_parameter(
-                NumericColumnSelection('Y (ordinate)', self.input))
+                'NUMERIC_COLUMN_SELECTION', 'Y (ordinate)', self.input)
 
         # additional tabs
         self.register_tab('Plot', 'plot.html')

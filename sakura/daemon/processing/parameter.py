@@ -6,7 +6,8 @@ from sakura.common.types import is_numeric_type, is_floating_type
 
 # Parameter implementation.
 class Parameter(StatusMixin):
-    def __init__(self, gui_type, label):
+    def __init__(self, op, gui_type, label):
+        self.op = op
         self.gui_type = gui_type
         self.label = label
         self.on_change = ObservableEvent()
@@ -121,8 +122,10 @@ class Parameter(StatusMixin):
         self.requested_value = self.decode_gui_value(gui_value)
 
 class ComboParameter(Parameter):
-    def __init__(self, label):
-        super().__init__('COMBO', label)
+    def __init__(self, op, label, get_possible_items=None):
+        super().__init__(op, 'COMBO', label)
+        if get_possible_items is not None:
+            self.get_possible_items = get_possible_items
     def pack(self):
         info = self.pack_base()
         try:
@@ -186,8 +189,8 @@ class ComboParameter(Parameter):
                 return val
 
 class ColumnSelectionParameter(ComboParameter):
-    def __init__(self, label, plug, condition):
-        super().__init__(label)
+    def __init__(self, op, label, plug, condition):
+        super().__init__(op, label)
         self.plug = plug
         self.condition = condition
         self.plug.on_change.subscribe(self.notify_input_plug_change)
@@ -227,15 +230,15 @@ class ColumnSelectionParameter(ComboParameter):
     @staticmethod
     def adapt_with_condition(cond):
         class AdaptedColumnSelection(ColumnSelectionParameter):
-            def __init__(self, label, plug):
-                super().__init__(label, plug, cond)
+            def __init__(self, op, label, plug):
+                super().__init__(op, label, plug, cond)
         return AdaptedColumnSelection
 
 # Cannot use adapt_with_condition() for this one, since the __init__() function
 # has one more argument.
 class TagBasedColumnSelection(ColumnSelectionParameter):
-    def __init__(self, label, plug, tag):
-        ColumnSelectionParameter.__init__(self, label, plug,
+    def __init__(self, op, label, plug, tag):
+        ColumnSelectionParameter.__init__(self, op, label, plug,
             lambda col_label, col_type, col_tags: tag in col_tags
         )
 
@@ -250,3 +253,17 @@ FloatColumnSelection = ColumnSelectionParameter.adapt_with_condition(
 StrColumnSelection = ColumnSelectionParameter.adapt_with_condition(
     lambda col_label, col_type, col_tags: col_type == 'string'
 )
+
+PARAMETER_CLASSES = {
+    'COMBO': ComboParameter,
+    'TAG_BASED_COLUMN_SELECTION': TagBasedColumnSelection,
+    'NUMERIC_COLUMN_SELECTION': NumericColumnSelection,
+    'FLOAT_COLUMN_SELECTION': FloatColumnSelection,
+    'STRING_COLUMN_SELECTION': StrColumnSelection
+}
+
+def instanciate_parameter(op, param_type, label, *args, **kwargs):
+    param_cls = PARAMETER_CLASSES.get(param_type)
+    if param_cls is None:
+        raise Exception('Allowed parameter types: ' + ', '.join(PARAMETER_CLASSES.keys()))
+    return param_cls(op, label, *args, **kwargs)

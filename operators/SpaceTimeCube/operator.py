@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
 from sakura.common.gpu.openglapp import OpenglApp
-from sakura.daemon.processing.parameter import TagBasedColumnSelection
 from .stc.spacetimecube import SpaceTimeCube
 from sakura.common.gpu.openglapp import MouseMoveReporting
 
@@ -16,15 +15,15 @@ class spacetimecubeOperator(Operator):
         self.input_plug = self.register_input('GPS data')
         # parameters
         self.id_column_param = self.register_parameter(
-                TagBasedColumnSelection('Trajectory id', self.input_plug, 'id'))
+                'TAG_BASED_COLUMN_SELECTION', 'Trajectory id', self.input_plug, 'id')
         self.dat_column_param = self.register_parameter(
-                TagBasedColumnSelection('Dates', self.input_plug, 'date'))
+                'TAG_BASED_COLUMN_SELECTION', 'Dates', self.input_plug, 'date')
         self.lng_column_param = self.register_parameter(
-                TagBasedColumnSelection('Longitude', self.input_plug, 'longitude'))
+                'TAG_BASED_COLUMN_SELECTION', 'Longitude', self.input_plug, 'longitude')
         self.lat_column_param = self.register_parameter(
-                TagBasedColumnSelection('Latitude', self.input_plug, 'latitude'))
+                'TAG_BASED_COLUMN_SELECTION', 'Latitude', self.input_plug, 'latitude')
         self.ele_column_param = self.register_parameter(
-                TagBasedColumnSelection('Elevation', self.input_plug, 'elevation'))
+                'TAG_BASED_COLUMN_SELECTION', 'Elevation', self.input_plug, 'elevation')
         # additional tab
         self.register_tab('STC', 'spacetimecube.html')
         # opengl app

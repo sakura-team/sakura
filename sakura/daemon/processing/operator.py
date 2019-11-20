@@ -3,6 +3,7 @@ from sakura.common.tools import ObservableEvent
 from sakura.daemon.processing.plugs.input import InputPlug
 from sakura.daemon.processing.plugs.output import OutputPlug
 from sakura.daemon.processing.tab import Tab
+from sakura.daemon.processing.parameter import instanciate_parameter
 from gevent.lock import Semaphore
 
 class Operator:
@@ -50,7 +51,8 @@ class Operator:
         if condition is None:
             condition = self.is_ready
         return self.register('_output_plugs', OutputPlug(*args, condition = condition, **kwargs))
-    def register_parameter(self, param):
+    def register_parameter(self, param_type, label, *args, **kwargs):
+        param = instanciate_parameter(self, param_type, label, *args, **kwargs)
         return self.register('_parameters', param)
     def register_tab(self, tab_label, html_path):
         return self.register('_tabs', Tab(tab_label, html_path))
