@@ -55,10 +55,8 @@ class EventSourceMixin:
         return events   # no aggregation, override in subclass if needed
     def _esm_cleanup(self):
         # cleanup obsolete listeners info
-        if len(self._esm_listener_timeouts) == 0:
-            return  # no-one is listening
         curr_time = time()
-        while self._esm_listener_timeouts[0][0] < curr_time:
+        while len(self._esm_listener_timeouts) > 0 and self._esm_listener_timeouts[0][0] < curr_time:
             listener_timeout, listener_id = heappop(self._esm_listener_timeouts)
             del self._esm_listener_info[listener_id]
     def push_event(self, evt, *args, **kwargs):
