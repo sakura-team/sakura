@@ -33,11 +33,11 @@ class DaemonEngine(object):
         return dict(name=self.name,
                     datastores=tuple(ds.pack() for ds in self.datastores.values()),
                     origin_id = self.origin_id)
-    def create_operator_instance(self, op_id, **repo_info):
+    def create_operator_instance(self, op_id, event_recorder, **repo_info):
         with self.redirected_streams(**repo_info):
             try:
                 op_cls, op_dir = self.load_op_class(**repo_info)
-                op = op_cls(op_id, op_dir)
+                op = op_cls(op_id, event_recorder, op_dir)
                 op.api = self.hub.operator_apis[op_id]
                 op.construct()
             except BaseException as e:
@@ -50,9 +50,9 @@ class DaemonEngine(object):
         if op_id in self.op_instances:
             print("deleting operator %s op_id=%d" % (self.op_instances[op_id].NAME, op_id))
             del self.op_instances[op_id]
-    def reload_operator_instance(self, op_id, **repo_info):
+    def reload_operator_instance(self, op_id, event_recorder, **repo_info):
         self.delete_operator_instance(op_id)
-        self.create_operator_instance(op_id, **repo_info)
+        self.create_operator_instance(op_id, event_recorder, **repo_info)
     def is_foreign_operator(self, op_id):
         return op_id not in self.op_instances
     def connect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id,

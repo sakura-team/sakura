@@ -1,5 +1,5 @@
 from sakura.common.io import pack, ORIGIN_ID
-from sakura.common.tools import ObservableEvent
+from sakura.common.tools import ObservableEvent, MonitoredList
 from sakura.daemon.processing.plugs.input import InputPlug
 from sakura.daemon.processing.plugs.output import OutputPlug
 from sakura.daemon.processing.tab import Tab
@@ -8,13 +8,31 @@ from gevent.lock import Semaphore
 
 class Operator:
     IGNORED_FILENAMES = ("__pycache__", ".DS_Store")
-    def __init__(self, op_id, op_dir):
+    def __init__(self, op_id, event_recorder, op_dir):
         self.op_id = op_id
         self.root_dir = op_dir
         self.event_lock = Semaphore()
-        self.opengl_apps = []
         self._last_sources_origins = (None, None)
         self.pending_move_check = False
+        self.event_recorder = event_recorder
+        self.input_plugs = MonitoredList()
+        self.input_plugs.on_change.subscribe(lambda: event_recorder('altered_set_of_inputs'))
+        self.output_plugs = MonitoredList()
+        self.output_plugs.on_change.subscribe(lambda: event_recorder('altered_set_of_outputs'))
+        self.parameters = MonitoredList()
+        self.parameters.on_change.subscribe(lambda: event_recorder('altered_set_of_parameters'))
+        self.tabs = MonitoredList()
+        self.tabs.on_change.subscribe(lambda: event_recorder('altered_set_of_tabs'))
+        self.opengl_apps = MonitoredList()
+        self.opengl_apps.on_change.subscribe(lambda: event_recorder('altered_set_of_opengl_apps'))
+    def notify_input_plug_change(self, in_plug):
+        self.push_event('altered_input', self.input_plugs.index(in_plug))
+    def notify_output_plug_change(self, out_plug):
+        self.push_event('altered_output', self.output_plugs.index(out_plug))
+    def notify_parameter_change(self, param):
+        self.push_event('altered_parameter', self.parameters.index(param))
+    def push_event(self, evt, *args, **kwargs):
+        self.event_recorder(evt, *args, **kwargs)
     @property
     def _sources_origins(self):
         inputs_origins, outputs_origins = (), ()
@@ -31,42 +49,27 @@ class Operator:
         return inputs_origins, outputs_origins
     def _trigger_env_affinity_update(self):
         return self._sources_origins != self._last_sources_origins
-    # overridable dynamic properties
-    @property
-    def input_plugs(self):
-        return getattr(self, '_input_plugs', ())
-    @property
-    def output_plugs(self):
-        return getattr(self, '_output_plugs', ())
-    @property
-    def parameters(self):
-        return getattr(self, '_parameters', ())
-    @property
-    def tabs(self):
-        return getattr(self, '_tabs', ())
     # static properties
     def register_input(self, input_plug_label):
-        return self.register('_input_plugs', InputPlug(input_plug_label))
+        return self.register(self.input_plugs, InputPlug(self, input_plug_label))
     def register_output(self, *args, condition = None, **kwargs):
         if condition is None:
             condition = self.is_ready
-        return self.register('_output_plugs', OutputPlug(*args, condition = condition, **kwargs))
+        return self.register(self.output_plugs, OutputPlug(self, *args, condition = condition, **kwargs))
     def register_parameter(self, param_type, label, *args, **kwargs):
         param = instanciate_parameter(self, param_type, label, *args, **kwargs)
-        return self.register('_parameters', param)
+        return self.register(self.parameters, param)
     def register_tab(self, tab_label, html_path):
-        return self.register('_tabs', Tab(tab_label, html_path))
+        return self.register(self.tabs, Tab(tab_label, html_path))
     def register_opengl_app(self, ogl_app):
         ogl_id = len(self.opengl_apps)
         url_pattern = '/streams/%d/opengl/%d/video-${width}x${height}.mp4' % (self.op_id, ogl_id)
         ogl_app.url_pattern = url_pattern
         ogl_app.init()
-        self.opengl_apps.append(ogl_app)
+        return self.register(self.opengl_apps, ogl_app)
     # other functions
-    def register(self, container_name, obj):
-        container = getattr(self, container_name, [])
+    def register(self, container, obj):
         container.append(obj)
-        setattr(self, container_name, container)
         return obj
     def is_ready(self):
         for plug in self.input_plugs:

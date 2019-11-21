@@ -1,11 +1,12 @@
 from sakura.daemon.processing.plugs.base import PlugBase
 
 class OutputPlug(PlugBase):
-    def __init__(self, label=None, source=None, condition=None):
+    def __init__(self, operator, label=None, source=None, condition=None):
         super().__init__()
         self._label = label
         self._source = source
         self._condition = condition
+        self.on_change.subscribe(lambda: operator.notify_output_plug_change(self))
     @property
     def source(self):
         return self._source

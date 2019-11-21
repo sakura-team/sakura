@@ -2,10 +2,11 @@ from sakura.common.errors import APIRequestErrorOfflineDaemon
 from sakura.daemon.processing.plugs.base import PlugBase
 
 class InputPlug(PlugBase):
-    def __init__(self, label):
+    def __init__(self, operator, label):
         super().__init__()
         self.label = label
         self.source_plug = None
+        self.on_change.subscribe(lambda: operator.notify_input_plug_change(self))
     def connect(self, output_plug):
         self.source_plug = output_plug
         # if the source plug changes, propagate the change here

@@ -16,6 +16,7 @@ class Parameter(StatusMixin):
         self.value = None
         self.check_mode = False
         self.is_setup = False
+        self.on_change.subscribe(lambda: self.op.notify_parameter_change(self))
 
     def setup(self, requested_value, auto_fill_cb):
         print(self.__class__.__name__ + ' setup -- requested value ' + str(requested_value) + ' + auto-fill cb')

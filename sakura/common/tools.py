@@ -252,3 +252,28 @@ class FastPickle:
         return pickle.dump(obj, f, protocol = 4)
 
 FAST_PICKLE = FastPickle()
+
+class MonitoredList:
+    """Wrapper around the 'list' class that can notify about changes."""
+    def __init__(self, *args):
+        MonitoredList._class_init()
+        self.backend = list(*args)
+        self.on_change = ObservableEvent()
+    @classmethod
+    def _class_init(cls):
+        if not hasattr(cls, 'append'):  # if not done yet
+            for method_name in ('append clear extend insert pop remove reverse sort ' +
+                                '__setitem__ __delitem__').split():
+                cls._attach_method(method_name, True)
+            for method_name in ('index ' +
+                                '__contains__ __getitem__ __iter__ __len__ __repr__ __reversed__').split():
+                cls._attach_method(method_name, False)
+    @classmethod
+    def _attach_method(cls, method_name, alter):
+        def mlist_method(self, *args, **kwargs):
+            backend_method = getattr(self.backend, method_name)
+            res = backend_method(*args, **kwargs)
+            if alter:
+                self.on_change.notify()
+            return res
+        setattr(cls, method_name, mlist_method)

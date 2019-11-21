@@ -46,6 +46,44 @@ class OpInstanceMixin(BaseMixin):
                 return 'Daemon running this operator was just stopped.'
         else:
             return self.op_class.disabled_message
+    def aggregate_events(self, events):
+        final_status_event = None
+        for event in events:
+            assert event is not None, "Got 'None' event!"
+            if (final_status_event, event) == (None, 'enabled'):
+                final_status_event = 'enabled'
+            elif (final_status_event, event) == (None, 'disabled'):
+                final_status_event = 'disabled'
+            elif (final_status_event, event) == ('enabled', 'disabled'):
+                final_status_event = None
+            elif (final_status_event, event) == ('disabled', 'enabled'):
+                final_status_event = None
+            else:
+                assert final_status_event != event, "Got repeated operator event: " + event
+        if final_status_event is None:
+            # remove 'enabled' and 'disabled' from list
+            events = list(event for event in events if event not in ('enabled', 'disabled'))
+        else:
+            # only keep the last status event
+            rev_events = []
+            found = False
+            for event in reversed(events):
+                if event in ('enabled', 'disabled'):
+                    if found:
+                        continue    # discard
+                    if event != final_status_event:
+                        continue    # discard
+                    # found last status event
+                    found = True
+                rev_events.append(event)
+            events = list(reversed(rev_events))
+        # remove duplicated events (keep last occurence)
+        rev_events = []
+        for event in reversed(events):
+            if event not in rev_events:
+                rev_events.append(event)
+        events = list(reversed(rev_events))
+        return events
     def __getattr__(self, attr):
         # find other attributes at the real operator
         # instance on the daemon side.
@@ -162,6 +200,7 @@ class OpInstanceMixin(BaseMixin):
             # not running yet, create it on daemon
             self.daemon_api.create_operator_instance(
                 self.id,
+                event_recorder = self.push_event,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         else:
@@ -169,6 +208,7 @@ class OpInstanceMixin(BaseMixin):
             self.enabled = False
             self.daemon_api.reload_operator_instance(
                 self.id,
+                event_recorder = self.push_event,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         self.enabled = True
