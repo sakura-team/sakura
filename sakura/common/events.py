@@ -42,13 +42,17 @@ class EventSourceMixin:
         events = []
         while not queue.empty() and (max_events is None or len(events) < max_events):
             events.append(queue.get())
-        if len(events) > 0:
+        if len(events) == 1:
             return events
+        elif len(events) > 1:
+            return self.aggregate_events(events)
         # no events were already queued, we have to wait
         try:
             return [ queue.get(timeout=timeout) ]   # single event
         except Empty:
             return []                               # no event
+    def aggregate_events(self, events):
+        return events   # no aggregation, override in subclass if needed
     def _esm_cleanup(self):
         # cleanup obsolete listeners info
         if len(self._esm_listener_timeouts) == 0:
