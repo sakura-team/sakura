@@ -165,6 +165,12 @@ function check_operator(op) {
     }
 }
 
+function reload_operator_instance(id) {
+    tab = id.split("_");
+    hub_id = parseInt(tab[2]);
+    sakura.apis.hub.operators[hub_id].reload();
+}
+
 function remove_operator_instance(id, on_hub) {
 
     tab = id.split("_");

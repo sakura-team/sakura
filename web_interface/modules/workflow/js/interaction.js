@@ -141,6 +141,10 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
         $('#sakura_operator_contextMenu').hide();
         window.open(url+'/tree/'+rev+'/'+dir);
     }
+    else if (val == 'Reload') {
+        reload_operator_instance(op_focus_id);
+        $('#sakura_operator_contextMenu').hide();
+    }
 });
 
 $('#sakura_link_contextMenu').on("click", "a", function() {
