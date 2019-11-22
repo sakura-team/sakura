@@ -354,21 +354,21 @@ function fill_profil_modal(user_infos) {
     var dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
                               'style': "margin-bottom: 0px; width: 100%;"})
 
-    Object.keys(user_infos).forEach( function(key) {
-        if (key != 'privileges' && key != 'requested_privileges') {
-            var txt = user_infos[key];
-            if (user_infos[key] === '' || user_infos[key] == null) {
+    Object.keys(user_infos).forEach( function(item) {
+        if (item != 'privileges' && item != 'requested_privileges') {
+            var txt = user_infos[item];
+            if (user_infos[item] === '' || user_infos[item] == null) {
                 txt = '<i><font color="lightgrey">not specified</font></i>';
             }
-            if (key == 'login') {
+            if (item == 'login') {
                 txt = '<b>'+txt+'</b>';
             }
             else {
                 var txt = $('<a name="short_desc" href="#" data-type="text" data-title="txt">'+txt+'</a>');
                 txt.editable({emptytext: txt,
-                            url: function(params) {update_profile(key, txt, params);}});
+                            url: function(params) {update_profile(item, txt, params);}});
             }
-            dl.append($('<dt>', {'text': key}),
+            dl.append($('<dt>', {'text': item}),
                       $('<dd>', {'html': txt}));
         }
     });
@@ -563,8 +563,10 @@ function update_privilege(event, login, privilege, checkbox) {
 }
 
 
-function update_profile(key, a, params) {
-    sakura.apis.hub.users.current.update({ key: params.value }).then( function(result) {
+function update_profile(item, a, params) {
+    let kwargs = {};
+    kwargs[item] = params.value;
+    sakura.apis.hub.users.current.update(kwargs).then( function(result) {
         if (result) {
             alert('something went wrong');
         }
