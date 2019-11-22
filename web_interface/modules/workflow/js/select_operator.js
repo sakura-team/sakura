@@ -42,7 +42,6 @@ function select_op_new_modal() {
             var option = document.createElement("option");
             option.text = op['name'];
             option.value = op['id'];
-            option.setAttribute("data-subtext", op['daemon']);
             sosnl.add(option);
         });
 
@@ -88,7 +87,6 @@ function select_op_reopen_modal(id) {
             var option = document.createElement("option");
             option.text = op['name'];
             option.value = op['id'];
-            option.setAttribute("data-subtext", op['daemon']);
             sosnl.add(option);
         });
 
