@@ -240,18 +240,49 @@ class JsonProtocol:
             print('object is', obj)
             raise
 
+class ChunkedIO:
+    CHUNK_SIZE = 4096
+    def __init__(self, f):
+        self.f = f
+    def write(self, data):
+        while len(data) > 0:
+            self.f.write(data[:self.CHUNK_SIZE])
+            data = data[self.CHUNK_SIZE:]
+    def flush(self):
+        self.f.flush()
+    def read(self, n = None):
+        if n is None:
+            return self.f.read()
+        chunks = []
+        while n > 0:
+            chunk_len = min(n, self.CHUNK_SIZE)
+            chunk = self.f.read(chunk_len)
+            if len(chunk) == 0:
+                break
+            n -= len(chunk)
+            chunks.append(chunk)
+        return b''.join(chunks)
+    def readline(self):
+        return self.f.readline()
+
 JSON_PROTOCOL = JsonProtocol()
 
-class FastPickle:
+class FastChunkedPickle:
+    def _get_chunked_io(self, f):
+        chunked_io = getattr(f, '_chunked_io', None)
+        if chunked_io is None:
+            chunked_io = ChunkedIO(f)
+            setattr(f, '_chunked_io', chunked_io)
+        return chunked_io
     def load(self, f):
-        return pickle.load(f)
+        return pickle.load(self._get_chunked_io(f))
     def dump(self, obj, f):
         # Default pickle protocol is version 3 (since python 3).
         # Protocol version 4 mainly brings framing, which obviously improves performance
         # when reading a stream. It is available since python 3.4.
-        return pickle.dump(obj, f, protocol = 4)
+        return pickle.dump(obj, self._get_chunked_io(f), protocol = 4)
 
-FAST_PICKLE = FastPickle()
+FAST_PICKLE = FastChunkedPickle()
 
 class MonitoredList:
     """Wrapper around the 'list' class that can notify about changes."""
