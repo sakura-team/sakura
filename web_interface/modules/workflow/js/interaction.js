@@ -5,7 +5,6 @@ document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
     currently_dragged = e.target;
-    console.log(e.target);
     drag_delta = [e.clientX - e.target.left, e.clientY - e.target.top];
 
     if (currently_dragged.id.includes("svg_modal_link")) {
