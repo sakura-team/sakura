@@ -281,9 +281,6 @@ function listRequestStub(idDiv, n, elt, bd) {
         sakura.apis.hub.op_classes.list().then(function (operators) {
             var result = new Array();
             operators.forEach( function(op) {
-                ///////////////SANDBOX - START
-                op.owner = 'mike';
-                ///////////////SANDBOX - END
 
                 var result_info = { 'shortDesc': op.short_desc,
                                     'modif': op.modification_date};
