@@ -135,6 +135,7 @@ function buildListStub(idDiv,result,elt) {
                 var td1 = $('<td>');
                 td1.append(row.default_code_ref);
                 tr.append(td1);
+                /* to be fixed (updating default revision)
                 if (curr_login !== null) {
                     if (row.owner == curr_login.login) {
                         var td2 = $('<td align="right">');
@@ -144,7 +145,7 @@ function buildListStub(idDiv,result,elt) {
                         td2.append(span);
                         tr.append(td2);
                     }
-                }
+                }*/
                 table.append(tr);
                 new_td.append(table);
                 new_row.append(new_td);
@@ -188,24 +189,25 @@ function stub_delete(db_id, idDiv, elt) {
     var type = null;
     var asking_msg = null;
     var stub = null;
+    var method = null;
 
     if (idDiv.indexOf('dataflows') != -1) {
         type = 'Dataflow';
         asking_msg = 'Are you sure you want to definitely delete this dataflow ??'
         stub = sakura.apis.hub.dataflows;
+        method = 'delete';
     }
     else if (idDiv.indexOf('datas') != -1) {
         type = 'Database';
         asking_msg = 'Are you sure you want to definitely delete this database, with all its datasets ??'
         stub = sakura.apis.hub.databases;
+        method = 'delete';
     }
     else if (idDiv.indexOf('operators') != -1) {
-        /*type = 'Operator';
-        asking_msg = 'Are you sure you want to definitely delete this operator ??'
-        stub = sakura.apis.hub.operators;
-        */
-        alert('Not Yet Implemented');
-        return;
+        type = 'Operator';
+        asking_msg = 'Are you sure you want to definitely unregister this operator ??'
+        stub = sakura.apis.hub.op_classes;
+        method = 'unregister';
     }
 
     //Alert first
@@ -213,8 +215,9 @@ function stub_delete(db_id, idDiv, elt) {
                   asking_msg,
                   'rgba(217,83,79)',
                   function() {
+                      let func = stub[parseInt(db_id)][method];
                       //then delete
-                      stub[parseInt(db_id)].delete().then( function(result) {
+                      func().then( function(result) {
                           //then refresh
                           listRequestStub(idDiv, 10, elt, false);
                       }).catch( function (error_msg) {
