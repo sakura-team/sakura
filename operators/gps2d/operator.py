@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 from sakura.daemon.processing.operator import Operator
-from sakura.daemon.processing.parameter import NumericColumnSelection
-from sakura.daemon.processing.parameter import StrColumnSelection
 from sakura.daemon.processing.source import ComputedSource
 from numpy.lib import recfunctions
 
@@ -19,11 +17,11 @@ class gps2d(Operator):
 
         # parameters
         self.input_column_param_id = self.register_parameter(
-                StrColumnSelection('Trajectory ids', self.input))
+                'STRING_COLUMN_SELECTION', 'Trajectory ids', self.input)
         self.input_column_param_lon = self.register_parameter(
-                NumericColumnSelection('longitude', self.input))
+                'NUMERIC_COLUMN_SELECTION', 'longitude', self.input)
         self.input_column_param_lat = self.register_parameter(
-                NumericColumnSelection('latitude', self.input))
+                'NUMERIC_COLUMN_SELECTION', 'latitude', self.input)
 
         # additional tabs
         self.register_tab('GPS_2D', 'gps2d.html')
