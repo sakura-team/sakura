@@ -679,16 +679,18 @@ function fill_collaborators_table_body(info) {
         var tr = $('<tr>');
         var td = $('<td>');
 
-        if (info.grants[current_user.login] && info.grants[current_user.login].requested_level) {
-          var access = info.grants[current_user.login].requested_level;
-          var a = $('<button>');
-          a.html('Pending <b>'+access+'</b> access');
-          a.prop('disabled', true);
-          a.prop('class', 'btn btn-warning btn-xs');
-          td.append(a);
-        }
-        else {
-            td.append(access_button('write'));
+        if (current_user != null) {
+            if (info.grants[current_user.login] && info.grants[current_user.login].requested_level) {
+              var access = info.grants[current_user.login].requested_level;
+              var a = $('<button>');
+              a.html('Pending <b>'+access+'</b> access');
+              a.prop('disabled', true);
+              a.prop('class', 'btn btn-warning btn-xs');
+              td.append(a);
+            }
+            else {
+                td.append(access_button('write'));
+            }
         }
         tr.append(td);
         tbody.append(tr);

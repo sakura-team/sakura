@@ -268,12 +268,14 @@ function listRequestStub(idDiv, n, elt, bd) {
             dataflows.forEach( function(df) {
 
                 ///////////////TEMP
-                if (df.owner == current_user.login) {
+                if (current_user) {
+                    if (df.owner == current_user.login) {
                 ///////////////TEMP
-                    result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
-                                  'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
-                                  'tags': df.tags, 'owner': df.owner, 'grant_level': df.grant_level, 'access_scope': df.access_scope };
-                    result.push(result_info);
+                        result_info = { 'type': 'dataflow', 'name': df.name,'id':df.dataflow_id, 'isGreyedOut': 0,
+                                      'shortDesc': df.short_desc, 'date': moment.unix(df.creation_date)._d,
+                                      'tags': df.tags, 'owner': df.owner, 'grant_level': df.grant_level, 'access_scope': df.access_scope };
+                        result.push(result_info);
+                    }
                 }
             });
             buildListStub(idDiv,result,elt);
