@@ -36,6 +36,12 @@ class geo_shapes:
         self.LOW_COLOR = [1,1,1,.7]
         self.HIGH_COLOR = [1,0,0,.7]
 
+    def reset(self):
+        self.shapes         = []
+        self.displayed      = True
+        self.LOW_COLOR = [1,1,1,.7]
+        self.HIGH_COLOR = [1,0,0,.7]
+
     def get_shapes_info(self):
         infos = []
         for s in self.shapes:
@@ -53,7 +59,14 @@ class geo_shapes:
 
     def read_shapes(self, fname):
         if fname:
-            geoj = gj.load(open(fname, 'r'))
+            try:
+                geoj = gj.load(open(fname, 'r'))
+            except FileNotFoundError:
+                print("\n\tFile",fname,"does not exist")
+                return False
+            except:
+                print("\n\tError on loading", fname)
+                return False
 
             for f in geoj['features']:
                 n = f['properties']['name']
@@ -80,3 +93,5 @@ class geo_shapes:
                 fs = geo_shape(n, id, out)
                 self.shapes.append(fs)
                 fs.triangulate()
+            return True
+        return False

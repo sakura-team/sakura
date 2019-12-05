@@ -409,15 +409,9 @@ class SpaceTimeCube:
 
         self.trajs.geometry(self.data)
         self.trajs.update_arrays()
-        if self.geo_shapes.displayed and self.floor_shapes_file:
-            self.fcontours.geometry(self.data, self.geo_shapes)
-            self.fcontours.update_arrays()
-            self.fareas.geometry(self.data, self.geo_shapes)
-            self.fareas.update_arrays()
-            self.data.maxs[1:3] = np.max(self.fcontours.vertices, axis=0)[1:3]
-            self.data.mins[1:3] = np.min(self.fcontours.vertices, axis=0)[1:3]
         self.update_cube_and_lines()
         self.send_new_dates()
+        self.update_geo_shapes()
 
     def get_trajectories(self):
         return self.data.trajects_names
@@ -442,6 +436,17 @@ class SpaceTimeCube:
                                                             size,
                                                             self.projo,
                                                             [self.width, self.height])
+
+    def update_geo_shapes(self):
+        if self.geo_shapes.displayed and self.floor_shapes_file:
+            self.fcontours.geometry(self.data, self.geo_shapes)
+            self.fcontours.update_arrays()
+            self.fareas.geometry(self.data, self.geo_shapes)
+            self.fareas.update_arrays()
+            nmax = np.max(self.fcontours.vertices, axis=0)[1:3]
+            nmin = np.min(self.fcontours.vertices, axis=0)[1:3]
+            self.data.maxs[1:3] = [max(nmax[0], self.data.maxs[1]), max(nmax[1], self.data.maxs[2])]
+            self.data.mins[1:3] = [min(nmin[0], self.data.mins[1]), min(nmin[1], self.data.mins[2])]
 
     def update_cube_and_lines(self):
         self.cube.update_arrays()
@@ -796,13 +801,17 @@ class SpaceTimeCube:
     def set_colors_file(self, fname):
         self.colors_file = fname
 
-    def set_floor_shape_file(self, fname):
+    def set_floor_shape_file(self, fname, init):
         if self.debug:
             print('\t\33[1;32mReading floor shape...\33[m', end='')
+        self.geo_shapes.reset()
         self.floor_shapes_file = fname
-        self.geo_shapes.read_shapes(fname)
+        r = self.geo_shapes.read_shapes(fname)
         if self.debug:
-            print('\tOk')
+            if r: print('\tOk')
+        if not init:
+            self.update_geo_shapes()
+            self.update_floor()
 
     def set_updatable_floor(self, updatable=None):
         print('updatable', updatable)
@@ -883,19 +892,6 @@ class SpaceTimeCube:
     def toggle_shadows(self, b):
         self.display_shadows = b
 
-    # def hide_trajectories(self, l):
-    #     print('hide', l)
-    #     if len(l):
-    #         for id in l:
-    #             if id >= 0 and id < len(self.data.trajects):
-    #                 if id in self.data.displayed:
-    #                     index = self.data.displayed.index(id)
-    #                     self.data.displayed.pop(index)
-    #         self.trajs.geometry(self.data)
-    #         self.data.make_meta()
-    #         self.trajs.update_arrays()
-    #         self.update_cube_and_lines()
-
     def hide_trajectories(self, names):
         res = []
         if len(names):
@@ -915,18 +911,6 @@ class SpaceTimeCube:
             self.update_cube_and_lines()
 
         return res
-
-    # def show_trajectories(self, l):
-    #     if len(l):
-    #         for id in l:
-    #             if id >= 0 and id < len(self.data.trajects):
-    #                 if id not in self.data.displayed:
-    #                     self.data.displayed.append(id)
-    #         self.data.displayed.sort()
-    #         self.trajs.geometry(self.data)
-    #         self.data.make_meta()
-    #         self.trajs.update_arrays()
-    #         self.update_cube_and_lines()
 
     def show_trajectories(self, names):
         res = []

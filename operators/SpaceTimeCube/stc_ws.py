@@ -61,7 +61,7 @@ class wsock:
 
         if '-shape' in sys.argv:
             ind = sys.argv.index('-shape')
-            self.stc.set_floor_shape_file(sys.argv[ind+1])
+            self.stc.set_floor_shape_file(sys.argv[ind+1], True)
 
         if '-shadows' in sys.argv:
             ind = sys.argv.index('-shadows')
@@ -122,6 +122,9 @@ class wsock:
         self.stc.load_data(file = self.data_file)
         self.stc.update_floor()
         self.display()
+
+    def set_floor_shape_file(self, fname):
+        self.stc.set_floor_shape_file(fname, False)
 
     def push_event(self, evt, *args, **kwargs):
         pass
@@ -232,7 +235,8 @@ class wsock:
                     'toggle_selection':     self.stc.toggle_selection,
                     'toggle_density':       self.stc.toggle_density,
                     'set_trajects_width':   self.stc.set_trajects_width,
-                    'reload_data':          self.reload
+                    'reload_data':          self.reload,
+                    'reload_shape':         self.set_floor_shape_file
                     })
 
     def loop(self):

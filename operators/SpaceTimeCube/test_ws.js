@@ -66,6 +66,7 @@ function init_server() {
             else if ( j.key == 'toggle_density' ||
                       j.key == 'set_trajects_width' ||
                       j.key == 'reload_data'  ||
+                      j.key == 'reload_shape'  ||
                       j.key == 'select_semantic' ||
                       j.key == 'darkness' ||
                       j.key == 'set_updatable_floor' ||
@@ -314,7 +315,11 @@ function trajects_width() {
 }
 
 function load_data() {
-    send('reload_data', ['data/stc_cv_t90_mike.csv']);
+    send('reload_data', ['../../data/stc_sample.csv']);
+}
+
+function load_shape() {
+    send('reload_shape', ['../../data/OD_test.geojson']);
 }
 
 canvas.addEventListener('mousemove', function(evt) {
