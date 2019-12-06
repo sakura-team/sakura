@@ -47,7 +47,6 @@ class InteractiveConsole(code.InteractiveConsole):
         print("Script was saved as file '%s'." % str(script_file))
 
 def run():
-    api.set_auto_reconnect()
     api.check()   # force loading conf now (if ever we need user interaction)
     env = dict(api = api, sys = sys)
     handle_cmd_history()

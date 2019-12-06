@@ -352,8 +352,7 @@ class GuiToHubAPI:
 
     @api.login
     def login(self, login_or_email, password):
-        self.context.session.user = self.context.users.from_credentials(login_or_email, password)
-        return self.context.session.user.login
+        return self.context.login(login_or_email, password)
 
     @api.logout
     def logout(self):

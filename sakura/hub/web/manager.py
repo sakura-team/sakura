@@ -1,3 +1,4 @@
+import bottle
 from contextlib import contextmanager
 from sakura.common.tools import JSON_PROTOCOL
 from sakura.common.io import APIEndpoint
@@ -40,8 +41,28 @@ def get_web_session_wrapper(session_id):
             yield
     return web_session_wrapper
 
+def handle_login_info(context, wsock):
+    auth_kind = wsock.receive()
+    if auth_kind == 'Anonymous':
+        wsock.send('OK')
+        return True
+    elif auth_kind == 'Login':
+        login_name = wsock.receive()
+        password_hash = wsock.receive()
+        context.login(login_name, password_hash)
+        wsock.send('OK')
+        return True
+    else:
+        print('Missing login information on /api-websocket.')
+        wsock.close()
+        return False
+
 def rpc_manager(context, wsock):
     print('New GUI RPC connection.')
+    if bottle.request.path == '/api-websocket':
+        login_ok = handle_login_info(context, wsock)
+        if not login_ok:
+            return
     # make wsock a file-like object
     f = FileWSock(wsock)
     # manage api requests

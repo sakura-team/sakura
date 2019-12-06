@@ -41,3 +41,9 @@ class ParameterException(APIReturningError):
 
 class InputUncompatible(ParameterException):
     pass
+
+class IOReadException(Exception):
+    pass
+
+class IOWriteException(Exception):
+    pass

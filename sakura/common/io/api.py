@@ -5,7 +5,8 @@ from gevent.queue import Queue
 from gevent.event import AsyncResult
 from sakura.common.tools import monitored, ObservableEvent
 from sakura.common.errors import APIReturningError, APIRemoteError, \
-                                 IOHoldException, APIInvalidRequest
+                                 IOHoldException, APIInvalidRequest, \
+                                 IOReadException, IOWriteException
 from sakura.common import errors
 from sakura.common.io.debug import print_debug
 from sakura.common.io.held import HeldObjectsStore
@@ -17,7 +18,8 @@ from sakura.common.io.proxy import Proxy
 
 class APIEndpoint:
     def __init__(self, f, protocol, local_api,
-                 session_wrapper = void_context_manager):
+                 session_wrapper = void_context_manager,
+                 silent_disconnect = False):
         self.f = f
         self.protocol = protocol
         self.local_api = local_api
@@ -33,6 +35,7 @@ class APIEndpoint:
         self.do_loop = monitored(self.do_loop)
         self.handle_message = monitored(
                 self.handle_message, self.do_loop.out_queue)
+        self.silent_disconnect = silent_disconnect
         if hasattr(self.protocol, 'is_transferable'):
             self.is_transferable = self.protocol.is_transferable
         else:
@@ -57,15 +60,17 @@ class APIEndpoint:
         try:
             msg = self.protocol.load(self.f)
         except BaseException as e:
-            if isinstance(e, (EOFError, ConnectionResetError)):
-                print('remote end disconnected!')
+            if isinstance(e, (EOFError, ConnectionResetError, IOReadException)):
+                if self.silent_disconnect is False:
+                    print('remote end disconnected!')
             elif isinstance(e, APIInvalidRequest):
                 print('invalid request.')
             else:
                 print('malformed request? Got exception:')
                 traceback.print_exc()
             self.handle_receive_exception(e)
-            print('closing this api channel.')
+            if self.silent_disconnect is False:
+                print('closing this api channel.')
             if not self.f.closed:
                 self.f.close()
             return False  # we should stop

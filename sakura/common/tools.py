@@ -4,6 +4,7 @@ from gevent.queue import Queue
 import ctypes
 from gevent.subprocess import run, PIPE, STDOUT
 import numpy as np
+from sakura.common.errors import IOReadException, IOWriteException
 
 class StdoutProxy(object):
     def __init__(self, stdout):
@@ -210,7 +211,11 @@ class JsonProtocol:
         else:
             return obj
     def load(self, f):
-        return self.adapt(json.load(f))
+        try:
+            s = json.load(f)
+        except:
+            raise IOReadException("Could not read JSON message.")
+        return self.adapt(s)
     def fallback_handler(self, obj):
         if isinstance(obj, bytes):
             return '__bytes_' + obj.hex()
@@ -226,44 +231,56 @@ class JsonProtocol:
                 "Unserializable object {} of type {}".format(obj, type(obj))
             )
     def dump(self, obj, f):
+        # json.dump() function causes performance issues
+        # because it performs many small writes on f.
+        # So we json-encode in a string (json.dumps)
+        # and then write this whole string at once.
         try:
-            # json.dump() function causes performance issues
-            # because it performs many small writes on f.
-            # So we json-encode in a string (json.dumps)
-            # and then write this whole string at once.
             res_json = json.dumps(obj,
                 separators=(',', ':'),
                 default=self.fallback_handler)
-            f.write(res_json)
         except BaseException as e:
             print('FAILED to serialize an object, re-raise exception.')
             print('object is', obj)
             raise
+        try:
+            f.write(res_json)
+        except:
+            raise IOWriteException("Could not write JSON message.")
 
 class ChunkedIO:
     CHUNK_SIZE = 4096
     def __init__(self, f):
         self.f = f
     def write(self, data):
-        while len(data) > 0:
-            self.f.write(data[:self.CHUNK_SIZE])
-            data = data[self.CHUNK_SIZE:]
+        try:
+            while len(data) > 0:
+                self.f.write(data[:self.CHUNK_SIZE])
+                data = data[self.CHUNK_SIZE:]
+        except:
+            raise IOWriteException("Could not write pickle message.")
     def flush(self):
         self.f.flush()
     def read(self, n = None):
-        if n is None:
-            return self.f.read()
-        chunks = []
-        while n > 0:
-            chunk_len = min(n, self.CHUNK_SIZE)
-            chunk = self.f.read(chunk_len)
-            if len(chunk) == 0:
-                break
-            n -= len(chunk)
-            chunks.append(chunk)
-        return b''.join(chunks)
+        try:
+            if n is None:
+                return self.f.read()
+            chunks = []
+            while n > 0:
+                chunk_len = min(n, self.CHUNK_SIZE)
+                chunk = self.f.read(chunk_len)
+                if len(chunk) == 0:
+                    break
+                n -= len(chunk)
+                chunks.append(chunk)
+            return b''.join(chunks)
+        except:
+            raise IOReadException("Could not read pickle message.")
     def readline(self):
-        return self.f.readline()
+        try:
+            return self.f.readline()
+        except:
+            raise IOReadException("Could not read pickle message.")
 
 JSON_PROTOCOL = JsonProtocol()
 

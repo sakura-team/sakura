@@ -28,7 +28,7 @@ def web_greenlet(context, webapp_path):
             rpc_manager(context, wsock)
 
     @app.route('/websocket')
-    @app.route('/standalone-websocket')
+    @app.route('/api-websocket')
     def ws_create():
         ws_handle()
 
@@ -116,7 +116,7 @@ def web_greenlet(context, webapp_path):
         with db_session_wrapper():
             if not context.attach_session(requested_session_id):
                 # session-id cookie is not present or no longer valid
-                if bottle.request.path in (allowed_startup_urls + ('/standalone-websocket',)):
+                if bottle.request.path in (allowed_startup_urls + ('/api-websocket',)):
                     # create a new session
                     context.new_session()
                     print(bottle.request.path, 'created a new session', context.session.id)

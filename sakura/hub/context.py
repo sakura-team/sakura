@@ -141,3 +141,6 @@ class HubContext(object):
             ds_host, ds_driver_label = exc.data['host'], exc.data['driver_label']
             datastore = self.datastores.get(host = ds_host, driver_label = ds_driver_label)
             datastore.refresh()
+    def login(self, login_or_email, password):
+        self.session.user = self.users.from_credentials(login_or_email, password)
+        return self.session.user.login

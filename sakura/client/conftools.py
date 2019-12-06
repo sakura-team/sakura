@@ -27,14 +27,13 @@ class ClientConf:
     def login(self, api):
         if self.username is not None:
             api.login(self.username, self.password_hash)
-    def check(self, get_proxy, set_connect_timeout, get_terms_url):
-        if self.hub_host is None:
+    def check(self, proxy, set_connect_timeout):
+        if self.hub_url is None:
             set_connect_timeout(5)
             while True:
-                self.loaded_conf['hub_host'] = input('Enter sakura-hub ip or hostname: ')
-                self.loaded_conf['hub_port'] = int(input('Enter sakura-hub websocket port: '))
+                self.loaded_conf['hub_url'] = input('Enter sakura platform URL: ').rstrip('/')
                 try:
-                    get_proxy().users.current.info()    # check an api request can reach hub
+                    proxy.users.current.info()    # check an api request can reach hub
                 except TimeoutError:
                     print('Please re-check.')
                     continue
@@ -50,12 +49,13 @@ class ClientConf:
                         self.loaded_conf['username'] = input('Enter your sakura username: ')
                         self.loaded_conf['password_hash'] = get_password('Enter your sakura password: ')
                         # verify (this might raise APIRequestError if it fails)
-                        self.login(get_proxy())
+                        self.login(proxy)
                     else:
                         print('Starting registration procedure...')
+                        terms_url = self.hub_url + "/divs/documentation/cgu.html"
                         answer = ''
                         while answer not in ('yes', 'no'):
-                            answer = input('Please confirm you accept the usage terms (%s) [yes|no]: ' % get_terms_url())
+                            answer = input('Please confirm you accept the usage terms (%s) [yes|no]: ' % terms_url)
                         if answer == 'no':
                             print('Aborting.')
                             sys.exit()
@@ -100,8 +100,8 @@ class ClientConf:
                                     continue
                                 break
                         # register user and login (this might raise APIRequestError if it fails)
-                        get_proxy().users.create(**user_info)
-                        self.login(get_proxy())
+                        proxy.users.create(**user_info)
+                        self.login(proxy)
                 except APIRequestError as e:
                     print(e)
                     continue

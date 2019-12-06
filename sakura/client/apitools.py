@@ -1,22 +1,33 @@
 import ssl, time, gevent
-from sakura.common.tools import ObservableEvent
+from gevent import Greenlet
+from gevent.socket import wait_read, wait_write
+from gevent.queue import Queue
 from websocket import create_connection
 from sakura.client import conf
 from sakura.client.apiobject.root import APIRoot
-from gevent.socket import wait_read, wait_write
-from gevent.lock import BoundedSemaphore
 from sakura.common.io.serializer import Serializer
+from sakura.common.io import APIEndpoint
+from sakura.common.tools import JSON_PROTOCOL
+from sakura.common.errors import IOReadException, IOWriteException
+
+DEBUG=False
 
 # add wait_read & wait_write to make websocket cooperate in a gevent context
 class GeventWSock(object):
     def __init__(self, wsock):
         self.wsock = wsock
     def send(self, s):
-        wait_write(self.wsock.fileno())
-        return self.wsock.send(s)
+        try:
+            wait_write(self.wsock.fileno())
+            return self.wsock.send(s)
+        except:
+            raise IOWriteException("Could not write websocket message.")
     def recv(self):
-        wait_read(self.wsock.fileno())
-        return self.wsock.recv()
+        try:
+            wait_read(self.wsock.fileno())
+            return self.wsock.recv()
+        except:
+            raise IOReadException("Could not read websocket message.")
     def close(self):
         self.wsock.close()
     @property
@@ -25,21 +36,30 @@ class GeventWSock(object):
     def fileno(self):
         return self.wsock.fileno()
 
+class LoginException(Exception):
+    pass
+
 class GeventWSockConnector(object):
     def __init__(self):
         self.ever_connected = False
         self.wsock = None
     def connect(self):
-        try:
-            self.wsock = self.connect_with_url(get_ws_url(conf.hub_host, conf.hub_port, ssl_enabled = True))
-            ssl_enabled = True
-        except ssl.SSLError:
-            self.wsock = self.connect_with_url(get_ws_url(conf.hub_host, conf.hub_port, ssl_enabled = False))
-            ssl_enabled = False
+        web_protocol, hub_host = conf.hub_url.rstrip('/').split('://')
+        protocol = web_protocol.replace('http', 'ws')
+        url = "%s://%s/api-websocket" % (protocol, hub_host)
+        self.wsock = Serializer(GeventWSock(create_connection(url)))
+        self.login()
         self.ever_connected = True
-        return ssl_enabled
-    def connect_with_url(self, url):
-        return Serializer(GeventWSock(create_connection(url)))
+    def login(self):
+        if conf.username is None:
+            self.wsock.send('Anonymous')
+        else:
+            self.wsock.send('Login')
+            self.wsock.send(conf.username)
+            self.wsock.send(conf.password_hash)
+        resp = self.wsock.recv()
+        if resp != 'OK':
+            raise LoginException('Failed login')
     def write(self, s):
         return self.wsock.send(s)
     def read(self):
@@ -56,7 +76,7 @@ class GeventWSockConnector(object):
     def connected(self):
         return not self.closed
     def fileno(self):
-        if self.wsock is None:
+        if self.closed:
             return None
         return self.wsock.fileno()
 
@@ -77,20 +97,23 @@ class ProgressMessage:
         else:
             self.line_size += len(s)
 
-class WSProxy:
+# On 4th connection attempt, start to inform the user why this is taking time.
+# Otherwise, work silently.
+RECONNECTION_WARNING_TRESHOLD=4
+
+class WSManager:
     def __init__(self, ws):
-        self.auto_reconnect = False
         self.ws = ws
-        self.on_connect = ObservableEvent()
-        self.on_disconnect = ObservableEvent()
-        self.connect_semaphore = BoundedSemaphore()
-        self.connecting = False
         self.connecting_message = ProgressMessage()
         self.connect_timeout = None
         self.connect_attempt = 0
-        self.ssl_enabled = None
-    def set_auto_reconnect(self, value):
-        self.auto_reconnect = value
+        self.endpoint = APIEndpoint(self, JSON_PROTOCOL, None, silent_disconnect=True)
+        self.endpoint_greenlet = None
+        self.proxy = self.endpoint.proxy
+        self.waiting_greenlets = {}
+    @property
+    def connecting(self):
+        return self.connect_attempt > 0
     def set_connect_timeout(self, value):
         self.connect_timeout = value
     def write(self, s):
@@ -99,57 +122,91 @@ class WSProxy:
         return self.loop_io_do(True, self.ws.write, s)
     def read(self):
         return self.loop_io_do(False, self.ws.read)
-    def loop_io_do(self, can_reconnect, func, *args):
-        if not self.ws.ever_connected:
-            self.connecting_message.init('Connecting...', end='')
-            self.connecting = True
+    def check_connect(self, can_reconnect):
+        if self.ws.connected:
+            return # nothing to do
+        if not self.connecting and can_reconnect:
             self.connect_attempt = 1
+            self.do_connect()
+            # unblock waiting greenlets
+            queues = self.waiting_greenlets.values()
+            self.waiting_greenlets = {}
+            for q in queues:
+                q.put(1)
+            self.connect_attempt = 0
+            return
+        # otherwise, wait for notification from reconnection greenlet
+        # when we will be connected.
+        curr_greenlet = gevent.getcurrent()
+        if curr_greenlet not in self.waiting_greenlets:
+            self.waiting_greenlets[curr_greenlet] = Queue()
+        queue = self.waiting_greenlets[curr_greenlet]
+        queue.wait()
+        return
+    def do_connect(self):
         while True:
             try:
-                if self.ws.connected:
-                    res = func(*args)
-                    return res
-                else:
-                    with self.connect_semaphore:
-                        if not self.ws.connected and can_reconnect:
-                            ever_connected = self.ws.ever_connected
-                            self.ssl_enabled = self.ws.connect()
-                            if ever_connected:
-                                self.connecting_message.print('... OK, repaired.', end='')
-                            else:
-                                self.connecting_message.print('... OK.', end='')
-                            if self.ssl_enabled:
-                                self.connecting_message.print()     # all is fine
-                            else:
-                                self.connecting_message.print(' WARNING: SSL-handshake failed. A clear text connection was set up!')
-                            self.on_connect.notify()
-                            self.connecting = False
-                    gevent.idle()
-                    continue
+                ever_connected = self.ws.ever_connected
+                # if connection / reconnection works on one of the first attempts, do not bother the user
+                # with explanations.
+                if self.connect_attempt == RECONNECTION_WARNING_TRESHOLD:
+                    if ever_connected:
+                        self.connecting_message.init('Disconnected. Trying to reconnect...', end='')
+                    else:
+                        self.connecting_message.init('Connecting...', end='')
+                self.ws.connect()
+                self.endpoint_greenlet = Greenlet.spawn(self.endpoint.loop)
+                if DEBUG:
+                    import random
+                    self.endpoint_greenlet.name = 'api-endpoint-loop-' + str(random.randint(0, 1000))
+                    print('spawned greenlet ' + self.endpoint_greenlet.name)
+                if self.connect_attempt >= RECONNECTION_WARNING_TRESHOLD:
+                    if ever_connected:
+                        self.connecting_message.print('... OK, repaired.')
+                    else:
+                        self.connecting_message.print('... OK.')
+                return
+            except LoginException as e:
+                self.connecting_message.print('... FAILED.')
+                raise
             except BaseException as e:
+                if DEBUG:
+                    print(e)
                 pass    # handle below
             # handle exception
-            if self.connecting:
-                if self.connect_timeout is None or self.connect_attempt < self.connect_timeout:
+            if self.connect_timeout is None or self.connect_attempt < self.connect_timeout:
+                if self.connect_attempt >= RECONNECTION_WARNING_TRESHOLD:
                     self.connecting_message.print('.', end='')
-                    self.connect_attempt += 1
-                    time.sleep(1)
-                    continue
-                else:
+                self.connect_attempt += 1
+                time.sleep(1)
+                continue
+            else:
+                if self.connect_attempt >= RECONNECTION_WARNING_TRESHOLD:
                     self.connecting_message.print('... FAILED.')
-                    raise TimeoutError
-            with self.connect_semaphore:
-                if not self.ws.connected and can_reconnect:
-                    if self.ws.ever_connected:
-                        self.on_disconnect.notify()
-                        if self.auto_reconnect:
-                            self.connecting_message.init('Disconnected. Trying to reconnect...', end='')
-                            self.connecting = True
-                            self.connect_attempt = 1
-                        else:
-                            raise ConnectionResetError('Connection to hub was lost!')
+                raise TimeoutError
+
+    def loop_io_do(self, can_reconnect, func, *args):
+        while True:
+            self.check_connect(can_reconnect)
+            try:
+                res = func(*args)
+                return res
+            except BaseException as e:
+                if DEBUG:
+                    print(e)
+                if self.endpoint_greenlet is not None:
+                    if DEBUG:
+                        print(gevent.getcurrent(), '-- killing greenlet ' + self.endpoint_greenlet.name)
+                    g = self.endpoint_greenlet
+                    self.endpoint_greenlet = None
+                    g.kill()
+
     def close(self):
-        self.ws.close()
+        if self.endpoint_greenlet is not None:
+            self.endpoint_greenlet.kill()
+            self.endpoint_greenlet = None
+        if not self.ws.closed:
+            self.ws.close()
     @property
     def closed(self):
         return self.ws.closed
@@ -158,13 +215,7 @@ class WSProxy:
     def fileno(self):
         return self.ws.fileno()
 
-def get_ws_url(hub_host, hub_port, ssl_enabled):
-    if ssl_enabled:
-        protocol = 'wss'
-    else:
-        protocol = 'ws'
-    return "%s://%s:%d/standalone-websocket" % (protocol, hub_host, hub_port)
 
 def get_api():
-    ws = WSProxy(GeventWSockConnector())
+    ws = WSManager(GeventWSockConnector())
     return APIRoot(ws)
