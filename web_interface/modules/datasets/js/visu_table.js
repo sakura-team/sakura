@@ -38,6 +38,7 @@ function datasets_visu_dataset(dataset_id) {
 
         $('#datasets_visu_table_of_rows').data('row_start', row_start);
         $('#datasets_visu_table_of_rows').data('nb_rows', nb_rows);
+        $('#datasets_visu_table_of_rows').data('end',rows.length < nb_rows);
 
         datasets_visu_enable_disable('fb', false);
         datasets_visu_enable_disable('sb', false);
@@ -69,11 +70,21 @@ function datasets_visu_table_fill_rows(body, rows, row_start, dataset) {
 }
 
 
-function datasets_visu_table_next(speed) {
+function datasets_visu_table_next(type, speed) {
+
+    //Testing parent
+    var stop = false;
+    var p_class = $('#datasets_visu_table_top_'+type).attr('class').split(' ');
+    p_class.forEach( function(c) {
+        if (c == 'disabled')
+            stop = true;
+    });
+    if (stop) return;
 
     var row_start   = $('#datasets_visu_table_of_rows').data('row_start');
     var nb_r = $('#datasets_visu_table_of_rows').data('nb_rows');
     var end = $('#datasets_visu_table_of_rows').data('end');
+
 
     if ((row_start == 0 && speed < 0) || (end && speed > 0))
         return;

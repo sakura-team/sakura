@@ -85,7 +85,6 @@ function recover_datasets() {
     }
 
     sakura.apis.hub.databases[parseInt(database_id)].info().then(function (result) {
-        console.log(result);
         if (result.grant_level != 'list') {
 
             if (result.tables == undefined)
