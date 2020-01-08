@@ -41,10 +41,11 @@ def generate_operator_py(op_f, skel_info):
     construct_body_lines.extend(generate_tabs_declaration(skel_info.tabs))
     construct_body = join_blocks(construct_body_lines, '\n', 8)
     # custom code
-    custom_mothods_lines = []
-    custom_mothods_lines.extend(output.custom_method for output in skel_info.outputs)
-    custom_mothods_lines.extend(tab.custom_method for tab in skel_info.tabs)
-    custom_methods = join_blocks(custom_mothods_lines, '\n\n', 4)
+    custom_methods_lines = []
+    custom_methods_lines.extend(param.custom_method for param in skel_info.params)
+    custom_methods_lines.extend(output.custom_method for output in skel_info.outputs)
+    custom_methods_lines.extend(tab.custom_method for tab in skel_info.tabs)
+    custom_methods = join_blocks(custom_methods_lines, '\n\n', 4)
     # format according to general file template
     print(OP_FILE_TEMPLATE % dict(
         op_name = skel_info.op_name,

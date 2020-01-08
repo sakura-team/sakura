@@ -1,85 +1,109 @@
 from collections import defaultdict
 
-CUSTOM_COMBO_CODE = '''\
-# Sample code for a custom combo parameter
-class %(cls_name)s(ComboParameter):
-    VALUES = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
-               'Saturday', 'Sunday' ]
-    def get_possible_items(self):
-        # This method must return a list of tuples.
-        # Each tuple should have the form: (<integer-id>, <string-label>).
-        # The GUI will use <string-label> for displaying the combo items.
-        # When the user selects an item, the 'value' attribute of this
-        # combo parameter (i.e. self.value) will be set to the associated
-        # <integer-id>.
-        return list(enumerate(%(cls_name)s.VALUES))
+PARAM_REGISTERING_TEMPLATE = '''\
+self.%(param_name)s = self.register_parameter(
+%(register_parameter_args)s)\
 '''
 
+PARAM_TYPE_ARG = "'%(type_name)s'"
+PARAM_LABEL_ARG = "label='%(label)s'"
+
 class Param:
-    def __init__(self, param_name, inputs):
+    def __init__(self, type_name, param_name, inputs):
+        self.type_name = type_name
         self.name = param_name
         self.label = param_name.replace('_', ' ').capitalize()
     @property
     def decl_pattern(self):
-        return PARAM_DESCR_TEMPLATE % dict(
+        args = self.generate_register_parameter_args()
+        formatted_args = ',\n'.join((' '*8 + arg) for arg in args)
+        return PARAM_REGISTERING_TEMPLATE % dict(
             param_name = self.name,
-            cls_name = self.cls_name,
-            constructor_args = self.generate_constructor_args_string()
+            register_parameter_args = formatted_args
         )
-    @property
-    def cls_name(self):
-        return self.__class__.__name__
-    def get_cls_imports(self):
-        return self.cls_name
+    def generate_register_parameter_args(self):
+        return [
+            PARAM_TYPE_ARG % dict(type_name = self.type_name),
+            PARAM_LABEL_ARG % dict(label = self.label)
+        ]
+    def get_imports(self):
+        return ()
     def generate_top_level_code(self):
+        return ''
+    @property
+    def custom_method(self):
         return ''
 
 class ColumnSelectionParam(Param):
-    def __init__(self, param_name, inputs):
-        Param.__init__(self, param_name, inputs)
+    def __init__(self, type_name, param_name, inputs):
+        Param.__init__(self, type_name, param_name, inputs)
         self.linked_input = next(inputs)
-    def generate_constructor_args_string(self):
-        return "'%(param_label)s', self.%(input_name)s" % dict(
-                param_label = self.label,
-                input_name = self.linked_input.name
-        )
+    def generate_register_parameter_args(self):
+        return Param.generate_register_parameter_args(self) + [
+            "plug=self.%(input_name)s" % dict(input_name = self.linked_input.name)
+        ]
     @classmethod
     def needs_one_input(cls):
         return True
 
 class TagBasedColumnSelection(ColumnSelectionParam):
     'tag-based input column selection (combobox)'
-    def generate_constructor_args_string(self):
-        return ColumnSelectionParam.generate_constructor_args_string(self) + ", 'my-tag'"
+    def __init__(self, param_name, inputs):
+        ColumnSelectionParam.__init__(self, 'TAG_BASED_COLUMN_SELECTION', param_name, inputs)
+    def generate_register_parameter_args(self):
+        return ColumnSelectionParam.generate_register_parameter_args(self) + [ "tag='my-tag'" ]
 
 class NumericColumnSelection(ColumnSelectionParam):
     'numeric input column selection (combobox)'
+    def __init__(self, param_name, inputs):
+        ColumnSelectionParam.__init__(self, 'NUMERIC_COLUMN_SELECTION', param_name, inputs)
 
 class StrColumnSelection(ColumnSelectionParam):
     'text (string) input column selection (combobox)'
+    def __init__(self, param_name, inputs):
+        ColumnSelectionParam.__init__(self, 'STRING_COLUMN_SELECTION', param_name, inputs)
 
 class FloatColumnSelection(ColumnSelectionParam):
     'float input column selection (combobox)'
+    def __init__(self, param_name, inputs):
+        ColumnSelectionParam.__init__(self, 'FLOAT_COLUMN_SELECTION', param_name, inputs)
+
+CUSTOM_COMBO_TOPLEVEL_CODE = '''\
+DAYS = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+         'Saturday', 'Sunday' ]
+'''
+
+CUSTOM_COMBO_METHOD = '''\
+# Sample code generating values for our combo parameter
+def get_combo_days(self):
+    # This method must return a list of tuples.
+    # Each tuple should have the form: (<integer-id>, <string-label>).
+    # The GUI will use <string-label> for displaying the combo items.
+    # When the user selects an item, the 'value' attribute of this
+    # combo parameter (i.e. self.value) will be set to the associated
+    # <integer-id>.
+    return list(enumerate(DAYS))
+'''
 
 class ComboParameter(Param):
     'other kind of combobox'
     NEXT_COMBO_NUM = 1
     def __init__(self, param_name, inputs):
-        Param.__init__(self, param_name, inputs)
+        Param.__init__(self, 'COMBO', param_name, inputs)
         self.num = ComboParameter.NEXT_COMBO_NUM
         ComboParameter.NEXT_COMBO_NUM += 1
-    def generate_constructor_args_string(self):
-        return "'%s'" % self.label
-    @property
-    def cls_name(self):
-        return 'CustomCombo' + str(self.num)
-    def generate_top_level_code(self):
-        return CUSTOM_COMBO_CODE % dict(cls_name = self.cls_name)
-    def get_cls_imports(self):
-        return 'ComboParameter' # this will be our base class
+    def generate_register_parameter_args(self):
+        return Param.generate_register_parameter_args(self) + [
+            "get_possible_items=self.get_combo_days"
+        ]
     @classmethod
     def needs_one_input(cls):
         return False
+    def generate_top_level_code(self):
+        return CUSTOM_COMBO_TOPLEVEL_CODE
+    @property
+    def custom_method(self):
+        return CUSTOM_COMBO_METHOD
 
 PARAM_CLASSES = [
     TagBasedColumnSelection,
@@ -89,21 +113,8 @@ PARAM_CLASSES = [
     ComboParameter
 ]
 
-PARAM_IMPORT_TEMPLATE = '''\
-from sakura.daemon.processing.parameter import %(cls_names)s\
-'''
-
 def generate_param_import_lines(params):
-    if len(params) == 0:
-        return ()
-    cls_names = set(param.get_cls_imports() for param in params)
-    return (PARAM_IMPORT_TEMPLATE % dict(
-        cls_names = ', '.join(cls_names)),)
-
-PARAM_DESCR_TEMPLATE = '''\
-self.%(param_name)s = self.register_parameter(
-        %(cls_name)s(%(constructor_args)s))\
-'''
+    return sum((param.get_imports() for param in params), ())
 
 def get_param_name_prefix(param_cls):
     if 'ColumnSelection' in param_cls.__name__:

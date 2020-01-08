@@ -46,8 +46,9 @@ def ask_camel_case_name(prompt, maxchars):
         return name
 
 def fix_indent(num, s):
+    indent = num * ' '
     lines = s.split('\n')
-    return ('\n' + num * ' ').join(lines)
+    return ('\n' + indent).join(lines).replace('\n' + indent + '\n', '\n\n')
 
 def get_suffixes(num):
     if num == 1:
@@ -57,7 +58,7 @@ def get_suffixes(num):
 
 def join_blocks(blocks, sep, indent):
     code = sep.join(
-        block for block in blocks if block != ''
+        block.rstrip() for block in blocks if block != ''
     )
     if len(code) > 0 and indent > 0:
         code = fix_indent(indent, code)
