@@ -31,7 +31,15 @@ def np_dtype_to_sakura_type(dt):
     if dt.name == 'object':
         return 'opaque', {}
     if dt.type == np.str_:
-        return 'string', dict(max_length = int(str(dt).strip('<>U')))
+        length_chars = str(dt).strip('<>U')
+        if length_chars == '':
+            max_length = 0
+        else:
+            max_length = int(length_chars)
+        if (max_length == 0):
+            return 'string', {}     # unknown length
+        else:
+            return 'string', { 'max_length': max_length }
     raise NotImplementedError('Do not know how to translate %s to a sakura type.' % repr(dt))
 
 def verify_sakura_type_conversion(old_type, new_type):
