@@ -379,7 +379,6 @@ function l_html(obj, event, dir, div_id) {
 
 function showDiv(event, dir, div_id) {
 
-
     //Loading html and js on demand
     var ldf = null;
     var d   = null;
@@ -387,7 +386,7 @@ function showDiv(event, dir, div_id) {
     else if (dir == 'Operators') { ldf = loaded_operators_files; d = 'operators'}
     else if (dir == 'Dataflows') { ldf = loaded_dataflows_files; d = 'dataflows'}
 
-    if (!(ldf == 'done')) {
+    if (ldf && !(ldf == 'done')) {
         if (ldf == 'no') {
             ldf = 'in_progress';
             l_html(d, event, dir, div_id);
@@ -449,7 +448,6 @@ function showDiv(event, dir, div_id) {
     idDir = idDir.toLowerCase();
     if (dirs.length == 1)
         idDir += "_div";
-    console.log(loaded_datas_files);
     document.getElementById(idDir).style.display='inline';
 
 
