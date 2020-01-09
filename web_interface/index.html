@@ -25,9 +25,9 @@
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <script>
-        var loaded_datas_files      = false;
-        var loaded_operators_files  = false;
-        var loaded_dataflows_files  = false;
+        var loaded_datas_files      = 'no';
+        var loaded_operators_files  = 'no';
+        var loaded_dataflows_files  = 'no';
 
         window.onpopstate = function(event) {
             console.log('here, onpopstate');
@@ -90,14 +90,14 @@
                         <!--<a onclick="showDiv(event,'Projects');" href="http://sakura.imag.fr/Projects" style="cursor: pointer;">Projects</a>-->
                     </li>
                     <li id="idNavBarDatas">
-                        <a onclick="showDiv(event,'Datas');" href="http://sakura.imag.fr/Datas" style="cursor: pointer;">Datas</a>
+                        <a onclick="showDiv(event,'Datas');" style="cursor: pointer;">Datas</a>
                     </li>
                     <li id="idNavBarOperators">
                         <!--<a disabled style="cursor: not-allowed>Operators</a>-->
-                        <a onclick="showDiv(event,'Operators');" href="http://sakura.imag.fr/Operators" style="cursor: pointer;">Operators</a>
+                        <a onclick="showDiv(event,'Operators');" style="cursor: pointer;">Operators</a>
                     </li>
                     <li id="idNavBarDataflows">
-                        <a onclick="showDiv(event,'Dataflows');" href="http://sakura.imag.fr/Dataflows" style="cursor: pointer;">Dataflows</a>
+                        <a onclick="showDiv(event,'Dataflows');" style="cursor: pointer;">Dataflows</a>
                     </li>
                     <li id="idNavBarResults">
                         <a disabled style="cursor: not-allowed;">Results</a>
@@ -131,7 +131,7 @@
                 <div w3-include-html="divs/projects/historic.html"></div>
                 -->
 
-                <div w3-include-html="divs/databases/index.html"></div>
+                <!--<div w3-include-html="divs/databases/index.html"></div>
                 <div w3-include-html="divs/databases/main.html"></div>
                 <div w3-include-html="divs/databases/meta.html"></div>
                 <div w3-include-html="divs/databases/work.html"></div>
@@ -151,6 +151,7 @@
                 <div w3-include-html="divs/dataflows/work.html"></div>
                 <div w3-include-html="divs/dataflows/historic.html"></div>
                 <div w3-include-html="divs/create/dataflows.html"></div>
+                -->
 
                 <!--<div w3-include-html="divs/results/index.html"></div>
                 <div w3-include-html="divs/results/main.html"></div>

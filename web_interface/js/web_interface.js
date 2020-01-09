@@ -360,21 +360,80 @@ function web_interface_save_large_description(id) {
 
 function showDiv(event, dir, div_id) {
 
-    console.log(dir);
-    if (dir == 'Datas' && !loaded_datas_files) {
-        console.log('Should load data html and js');
-        $.getScript("js/databases.js", function(scp, status) {});
-        loaded_datas_files = true;
+    if (dir == 'Datas' && !(loaded_datas_files == 'done')) {
+        if (loaded_datas_files == 'no') {
+            loaded_datas_files = 'in_progress';
+            $.getScript("js/databases.js", function(scp, status) {
+              $('#main_div').append($('<div>').load("divs/databases/index.html", function () {
+               $('#main_div').append($('<div>').load("divs/databases/main.html", function() {
+                $('#main_div').append($('<div>').load("divs/databases/meta.html", function() {
+                 $('#main_div').append($('<div>').load("divs/databases/work.html", function() {
+                  $('#main_div').append($('<div>').load("divs/databases/historic.html", function() {
+                   $('#main_div').append($('<div>').load("divs/create/databases.html", function() {
+                    loaded_datas_files = 'done';
+                    showDiv(event, dir, div_id);
+                   }));
+                  }));
+                 }));
+                }));
+               }));
+              }));
+            });
+            return;
+        }
+        else {
+            return;
+        }
     }
-    else if (dir == 'Operators' && !loaded_operators_files) {
-        $.getScript("js/operators.js", function(scp, status) {});
-        loaded_operators_files = true;
+    else if (dir == 'Operators' && !(loaded_operators_files == 'done')) {
+        if (loaded_operators_files == 'no') {
+            loaded_operators_files = 'in_progress';
+            $.getScript("js/operators.js", function(scp, status) {
+              $('#main_div').append($('<div>').load("divs/operators/index.html", function () {
+               $('#main_div').append($('<div>').load("divs/operators/main.html", function() {
+                $('#main_div').append($('<div>').load("divs/operators/meta.html", function() {
+                 $('#main_div').append($('<div>').load("divs/operators/work.html", function() {
+                  $('#main_div').append($('<div>').load("divs/operators/historic.html", function() {
+                   $('#main_div').append($('<div>').load("divs/create/operators.html", function() {
+                    loaded_operators_files = 'done';
+                    showDiv(event, dir, div_id);
+                   }));
+                  }));
+                 }));
+                }));
+               }));
+              }));
+            });
+            return;
+        }
+        else {
+            return;
+        }
     }
-
-    else if (dir == 'Dataflows' && !loaded_dataflows_files) {
-        console.log('Should load dataflows html and js');
-        $.getScript("js/dataflows.js", function(scp, status) {});
-        loaded_dataflows_files = true;
+    else if (dir == 'Dataflows' && !(loaded_dataflows_files == 'done')) {
+        if (loaded_dataflows_files == 'no') {
+            loaded_dataflows_files = 'in_progress';
+            $.getScript("js/dataflows.js", function(scp, status) {
+              $('#main_div').append($('<div>').load("divs/dataflows/index.html", function () {
+               $('#main_div').append($('<div>').load("divs/dataflows/main.html", function() {
+                $('#main_div').append($('<div>').load("divs/dataflows/meta.html", function() {
+                 $('#main_div').append($('<div>').load("divs/dataflows/work.html", function() {
+                  $('#main_div').append($('<div>').load("divs/dataflows/historic.html", function() {
+                   $('#main_div').append($('<div>').load("divs/create/dataflows.html", function() {
+                    loaded_dataflows_files = 'done';
+                    showDiv(event, dir, div_id);
+                   }));
+                  }));
+                 }));
+                }));
+               }));
+              }));
+            });
+            return;
+        }
+        else {
+            return;
+        }
     }
 
     //set url
