@@ -356,84 +356,44 @@ function web_interface_save_large_description(id) {
     current_remote_api_object().update({'large_desc': simplemde.value()});
 }
 
-
+function l_html(obj, event, dir, div_id) {
+    $.getScript("js/"+obj+".js", function(scp, status) {
+      $('#main_div').append($('<div>').load("divs/"+obj+"/index.html", function () {
+       $('#main_div').append($('<div>').load("divs/"+obj+"/main.html", function() {
+        $('#main_div').append($('<div>').load("divs/"+obj+"/meta.html", function() {
+         $('#main_div').append($('<div>').load("divs/"+obj+"/work.html", function() {
+          $('#main_div').append($('<div>').load("divs/"+obj+"/historic.html", function() {
+           $('#main_div').append($('<div>').load("divs/create/"+obj+".html", function() {
+              if (obj == 'databases') loaded_datas_files = 'done';
+              else if (obj == 'operators') loaded_operators_files = 'done';
+              else if (obj == 'dataflows') loaded_dataflows_files = 'done';
+              showDiv(event, dir, div_id);
+           }));
+          }));
+         }));
+        }));
+       }));
+      }));
+    });
+}
 
 function showDiv(event, dir, div_id) {
 
-    if (dir == 'Datas' && !(loaded_datas_files == 'done')) {
-        if (loaded_datas_files == 'no') {
-            loaded_datas_files = 'in_progress';
-            $.getScript("js/databases.js", function(scp, status) {
-              $('#main_div').append($('<div>').load("divs/databases/index.html", function () {
-               $('#main_div').append($('<div>').load("divs/databases/main.html", function() {
-                $('#main_div').append($('<div>').load("divs/databases/meta.html", function() {
-                 $('#main_div').append($('<div>').load("divs/databases/work.html", function() {
-                  $('#main_div').append($('<div>').load("divs/databases/historic.html", function() {
-                   $('#main_div').append($('<div>').load("divs/create/databases.html", function() {
-                    loaded_datas_files = 'done';
-                    showDiv(event, dir, div_id);
-                   }));
-                  }));
-                 }));
-                }));
-               }));
-              }));
-            });
+
+    //Loading html and js on demand
+    var ldf = null;
+    var d   = null;
+    if (dir == 'Datas')          { ldf = loaded_datas_files;    d = 'databases'}
+    else if (dir == 'Operators') { ldf = loaded_operators_files; d = 'operators'}
+    else if (dir == 'Dataflows') { ldf = loaded_dataflows_files; d = 'dataflows'}
+
+    if (!(ldf == 'done')) {
+        if (ldf == 'no') {
+            ldf = 'in_progress';
+            l_html(d, event, dir, div_id);
             return;
         }
-        else {
-            return;
-        }
-    }
-    else if (dir == 'Operators' && !(loaded_operators_files == 'done')) {
-        if (loaded_operators_files == 'no') {
-            loaded_operators_files = 'in_progress';
-            $.getScript("js/operators.js", function(scp, status) {
-              $('#main_div').append($('<div>').load("divs/operators/index.html", function () {
-               $('#main_div').append($('<div>').load("divs/operators/main.html", function() {
-                $('#main_div').append($('<div>').load("divs/operators/meta.html", function() {
-                 $('#main_div').append($('<div>').load("divs/operators/work.html", function() {
-                  $('#main_div').append($('<div>').load("divs/operators/historic.html", function() {
-                   $('#main_div').append($('<div>').load("divs/create/operators.html", function() {
-                    loaded_operators_files = 'done';
-                    showDiv(event, dir, div_id);
-                   }));
-                  }));
-                 }));
-                }));
-               }));
-              }));
-            });
-            return;
-        }
-        else {
-            return;
-        }
-    }
-    else if (dir == 'Dataflows' && !(loaded_dataflows_files == 'done')) {
-        if (loaded_dataflows_files == 'no') {
-            loaded_dataflows_files = 'in_progress';
-            $.getScript("js/dataflows.js", function(scp, status) {
-              $('#main_div').append($('<div>').load("divs/dataflows/index.html", function () {
-               $('#main_div').append($('<div>').load("divs/dataflows/main.html", function() {
-                $('#main_div').append($('<div>').load("divs/dataflows/meta.html", function() {
-                 $('#main_div').append($('<div>').load("divs/dataflows/work.html", function() {
-                  $('#main_div').append($('<div>').load("divs/dataflows/historic.html", function() {
-                   $('#main_div').append($('<div>').load("divs/create/dataflows.html", function() {
-                    loaded_dataflows_files = 'done';
-                    showDiv(event, dir, div_id);
-                   }));
-                  }));
-                 }));
-                }));
-               }));
-              }));
-            });
-            return;
-        }
-        else {
-            return;
-        }
+        return;
     }
 
     //set url
@@ -489,6 +449,7 @@ function showDiv(event, dir, div_id) {
     idDir = idDir.toLowerCase();
     if (dirs.length == 1)
         idDir += "_div";
+    console.log(loaded_datas_files);
     document.getElementById(idDir).style.display='inline';
 
 
