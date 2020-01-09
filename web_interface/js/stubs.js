@@ -323,25 +323,6 @@ function listRequestStub(idDiv, n, elt, bd) {
     return ;
 }
 
-
-function buildHistoryStub(idDiv,result,elt) {
-    s="";
-    for(i=0;i<result.length;i++) {
-        s = s + "<li>On "+result[i].dateVersion+" (<a onclick='javascript:not_yet();'>view</a> / <a onclick='javascript:not_yet();'>revert</a>)<p> Revision message from "+result[i].userName+" : "+result[i].msgVersion+"</li>";
-    }
-    document.getElementById(idDiv).innerHTML = s;
-}
-
-
-function historyRequestStub(idDiv,n,elt,bd) {
-    if (!bd) {  // version local
-        result=historyStubAlea(n);
-        buildHistoryStub(idDiv,result,elt);}
-    else {     // version réseau à faire
-        sakura.apis.hub.list_nObjets(10,'etude_').then(function (idDiv,result) {buildHistoryStub(idDiv,result,elt);});}
-    return ;}
-
-
 function buildEltStub(idDiv,result,elt) {
     var s = "";
     if (elt=="Project") {

@@ -13,7 +13,6 @@
     <script src="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
     <script src="/webcache/cdnjs/simplemde/1.11.2/simplemde.min.js"></script>
     <script src="/webcache/cdnjs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
-    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>-->
 
     <link rel="icon" type="image/png" href="media/favicon.png">
     <link rel="stylesheet" href="css/web_interface.css">
@@ -24,15 +23,8 @@
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/simplemde/1.11.2/simplemde.min.css">
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"/>
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <!--<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">-->
 
     <script>
-        /*window.onpopstate = function(event) {
-            if (event.state)
-                showDiv(event,event.state.where);
-            else
-                alert('bad event');
-        };*/
         window.onpopstate = function(event) {
             console.log('here, onpopstate');
             var evt = document.createEvent('Event');
@@ -122,12 +114,12 @@
 
             <div class="container-fluid" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
-                <div w3-include-html="divs/home/helloYou.html"></div>
 
-                <div w3-include-html="divs/projects/index.html"></div>
+                <!--<div w3-include-html="divs/projects/index.html"></div>
                 <div w3-include-html="divs/projects/main.html"></div>
                 <div w3-include-html="divs/projects/work.html"></div>
                 <div w3-include-html="divs/projects/historic.html"></div>
+                -->
 
                 <div w3-include-html="divs/databases/index.html"></div>
                 <div w3-include-html="divs/databases/main.html"></div>
@@ -147,10 +139,11 @@
                 <div w3-include-html="divs/dataflows/work.html"></div>
                 <div w3-include-html="divs/dataflows/historic.html"></div>
 
-                <div w3-include-html="divs/results/index.html"></div>
+                <!--<div w3-include-html="divs/results/index.html"></div>
                 <div w3-include-html="divs/results/main.html"></div>
                 <div w3-include-html="divs/results/work.html"></div>
                 <div w3-include-html="divs/results/historic.html"></div>
+                -->
 
                 <div w3-include-html="divs/documentation/index.html"></div>
                 <!-- rms-dev:"signIn/index.html must precede "documentation/cgu.html" for correct stacked modal behavior for CGU-->
@@ -289,11 +282,12 @@
             var DEBUG = true;
             sakura.tools.set_debug(true);
         </script>
-        <script src="js/alea.js"></script>
+
         <script src="js/stubs.js"></script>
         <script src="/webcache/cdnjs/parsley.js/2.8.0/parsley.min.js"></script>
         <script src="/webcache/cdnjs/crypto-js/3.1.2/rollups/hmac-sha256.js"></script>
         <script src="/webcache/cdnjs/crypto-js/3.1.2/components/enc-base64-min.js"></script>
+
         <script src="js/signIn.js"></script>
         <script src="js/web_interface.js"></script>
         <script src="js/databases.js"></script>
