@@ -25,6 +25,10 @@
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <script>
+        var loaded_datas_files      = false;
+        var loaded_operators_files  = false;
+        var loaded_dataflows_files  = false;
+
         window.onpopstate = function(event) {
             console.log('here, onpopstate');
             var evt = document.createEvent('Event');
@@ -114,6 +118,12 @@
 
             <div class="container-fluid" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>
+                <div w3-include-html="divs/documentation/index.html"></div>
+                <!-- rms-dev:"signIn/index.html must precede "documentation/cgu.html" for correct stacked modal behavior for CGU-->
+                <div w3-include-html="divs/signIn/index.html"></div>
+                <div w3-include-html="divs/documentation/cgu.html"></div>
+                <div w3-include-html="divs/create/index.html"></div>
+                <div w3-include-html="divs/colSelect/index.html"></div>
 
                 <!--<div w3-include-html="divs/projects/index.html"></div>
                 <div w3-include-html="divs/projects/main.html"></div>
@@ -126,18 +136,21 @@
                 <div w3-include-html="divs/databases/meta.html"></div>
                 <div w3-include-html="divs/databases/work.html"></div>
                 <div w3-include-html="divs/databases/historic.html"></div>
+                <div w3-include-html="divs/create/databases.html"></div>
 
                 <div w3-include-html="divs/operators/index.html"></div>
                 <div w3-include-html="divs/operators/main.html"></div>
                 <div w3-include-html="divs/operators/meta.html"></div>
                 <div w3-include-html="divs/operators/work.html"></div>
                 <div w3-include-html="divs/operators/historic.html"></div>
+                <div w3-include-html="divs/create/operators.html"></div>
 
                 <div w3-include-html="divs/dataflows/index.html"></div>
                 <div w3-include-html="divs/dataflows/main.html"></div>
                 <div w3-include-html="divs/dataflows/meta.html"></div>
                 <div w3-include-html="divs/dataflows/work.html"></div>
                 <div w3-include-html="divs/dataflows/historic.html"></div>
+                <div w3-include-html="divs/create/dataflows.html"></div>
 
                 <!--<div w3-include-html="divs/results/index.html"></div>
                 <div w3-include-html="divs/results/main.html"></div>
@@ -145,15 +158,8 @@
                 <div w3-include-html="divs/results/historic.html"></div>
                 -->
 
-                <div w3-include-html="divs/documentation/index.html"></div>
-                <!-- rms-dev:"signIn/index.html must precede "documentation/cgu.html" for correct stacked modal behavior for CGU-->
-                <div w3-include-html="divs/signIn/index.html"></div>
-                <div w3-include-html="divs/documentation/cgu.html"></div>
-                <div w3-include-html="divs/create/index.html"></div>
-                <div w3-include-html="divs/create/databases.html"></div>
-                <div w3-include-html="divs/create/operators.html"></div>
-                <div w3-include-html="divs/create/dataflows.html"></div>
-                <div w3-include-html="divs/colSelect/index.html"></div>
+
+
             </div>
 
             <!--<div class="container" id="divfooter" style="margin-top:50px">
@@ -290,8 +296,5 @@
 
         <script src="js/signIn.js"></script>
         <script src="js/web_interface.js"></script>
-        <script src="js/databases.js"></script>
-        <script src="js/operators.js"></script>
-        <script src="js/dataflows.js"></script>
     </body>
 </html>

@@ -360,6 +360,23 @@ function web_interface_save_large_description(id) {
 
 function showDiv(event, dir, div_id) {
 
+    console.log(dir);
+    if (dir == 'Datas' && !loaded_datas_files) {
+        console.log('Should load data html and js');
+        $.getScript("js/databases.js", function(scp, status) {});
+        loaded_datas_files = true;
+    }
+    else if (dir == 'Operators' && !loaded_operators_files) {
+        $.getScript("js/operators.js", function(scp, status) {});
+        loaded_operators_files = true;
+    }
+
+    else if (dir == 'Dataflows' && !loaded_dataflows_files) {
+        console.log('Should load dataflows html and js');
+        $.getScript("js/dataflows.js", function(scp, status) {});
+        loaded_dataflows_files = true;
+    }
+
     //set url
     if (event instanceof PopStateEvent) {
         // rien dans l'history
