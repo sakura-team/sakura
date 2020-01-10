@@ -8,7 +8,15 @@ from sakura.daemon.code.git import get_worktree, list_code_revisions, list_opera
 from sakura.daemon.code.loading import load_op_class
 from sakura.common.errors import APIOperatorError
 from sakura.common.io import ORIGIN_ID
-from sakura.common.streams import get_stream_redirector, StreamRedirectorProxy
+from contextlib import contextmanager
+
+@contextmanager
+def RedirectedStreams(streams):
+    globals()['__streams__'] = streams
+    try:
+        yield
+    finally:
+        del globals()['__streams__']
 
 class DaemonEngine(object):
     def __init__(self):
@@ -44,7 +52,7 @@ class DaemonEngine(object):
                 print('Operator ERROR detected!')
                 traceback.print_exc()
                 raise APIOperatorError(str(e))
-            self.op_instances[op_id] = self.stream_redirector_proxy(op, **repo_info)
+            self.op_instances[op_id] = op
             print("created operator %s op_id=%d" % (op_cls.NAME, op_id))
     def delete_operator_instance(self, op_id):
         if op_id in self.op_instances:
@@ -106,17 +114,16 @@ class DaemonEngine(object):
                     links.append((src_out_id, dst_in_id))
         dst_op.set_check_mode(False)
         return links
-    def redirected_streams(self, sandbox_streams = None, **kwargs):
-        if sandbox_streams is None:
-            return NullContext()
+    def redirected_streams(self, local_streams = None, sandbox_streams = None, **kwargs):
+        if local_streams is None:
+            if sandbox_streams is None:
+                return NullContext()
+            else:
+                return RedirectedStreams(sandbox_streams)
         else:
-            return get_stream_redirector(sandbox_streams)
-    def stream_redirector_proxy(self, obj, sandbox_streams = None, **kwargs):
-        if sandbox_streams is None:
-            return obj
-        else:
-            return StreamRedirectorProxy(obj, sandbox_streams)
-    def load_op_class(self, code_subdir, repo_type, **other_repo_info):
+            return RedirectedStreams(local_streams)
+    def load_op_class(self, code_subdir, repo_type, local_streams = None, sandbox_streams = None,  **other_repo_info):
+        module_attributes = {}
         if repo_type == 'git':
             worktree_dir = get_worktree(
                         self.code_workdir,
@@ -125,7 +132,11 @@ class DaemonEngine(object):
                         other_repo_info['commit_hash'])
         elif repo_type == 'sandbox':
             worktree_dir = other_repo_info['sandbox_dir']
-        return load_op_class(worktree_dir, code_subdir, repo_type)
+        if local_streams is not None:
+            module_attributes.update(__streams__ = local_streams)
+        elif sandbox_streams is not None:
+            module_attributes.update(__streams__ = sandbox_streams)
+        return load_op_class(worktree_dir, code_subdir, repo_type, **module_attributes)
     def get_op_class_metadata(self, code_subdir, **repo_info):
         with self.redirected_streams(**repo_info):
             op_cls, op_dir = self.load_op_class(code_subdir, **repo_info)

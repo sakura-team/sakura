@@ -4,7 +4,7 @@ from sakura.daemon.processing.operator import Operator
 from sakura.daemon.code.git import get_commit_metadata
 from sakura.daemon.code.importer import pathlib_import
 
-def load_op_class(worktree_dir, code_subdir, repo_type):
+def load_op_class(worktree_dir, code_subdir, repo_type, **module_attributes):
     op_dir = worktree_dir / code_subdir
     if not op_dir.exists():
         raise APIRequestError('Operator sub-directory specified was not found in this repository.')
@@ -17,7 +17,7 @@ def load_op_class(worktree_dir, code_subdir, repo_type):
         raise APIRequestError('No icon.svg was found.')
     # load the module defined by operator.py
     operator_module_path = '.'.join(tuple(op_dir.relative_to(worktree_dir).parts) + ('operator',))
-    mod = pathlib_import(worktree_dir, operator_module_path, make_unique=True)
+    mod = pathlib_import(worktree_dir, operator_module_path, make_unique=True, module_attributes=module_attributes)
     # look for the Operator subclass defined in this module
     def match(obj):
         return  inspect.isclass(obj) and \

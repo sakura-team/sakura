@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys, pathlib, uuid, gevent, signal, atexit
 from sakura.common.tools import yield_operator_subdirs
-from sakura.common.streams import enable_standard_streams_redirection
+from sakura.common.streams import enable_standard_streams_redirection, LOCAL_STREAMS
 from sakura.client import api, conf
 
 def usage_and_exit():
@@ -28,7 +28,7 @@ def run():
     signal.signal(signal.SIGINT, signal_handler)
     sandbox_uuid = str(uuid.uuid4())
     sandbox_dir = sandbox_dir.resolve()
-    sandbox_streams = sys
+    sandbox_streams = LOCAL_STREAMS
     op_dirs = list(yield_operator_subdirs(sandbox_dir))
     if len(op_dirs) == 0:
         print('Did not find sakura operator source code in this directory. Giving up.', file=sys.stderr)

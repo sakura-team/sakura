@@ -78,7 +78,7 @@ class Loader(SourceLoader):
         module.__finder__ = self.finder
         super().exec_module(module)
 
-def pathlib_import(env_root, mod_path, make_unique = False):
+def pathlib_import(env_root, mod_path, make_unique, module_attributes):
     unique_prefix = None
     if make_unique:
         load_id = str(uuid.uuid4()).replace('-', '')
@@ -86,4 +86,6 @@ def pathlib_import(env_root, mod_path, make_unique = False):
         mod_path = unique_prefix + '.' + mod_path
     with Finder(env_root, unique_prefix):
         mod = importlib.import_module(mod_path)
+        for k, v in module_attributes.items():
+            setattr(mod, k, v)
         return mod

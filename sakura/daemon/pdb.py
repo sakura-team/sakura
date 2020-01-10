@@ -1,4 +1,5 @@
 import sys
+from sakura.common.streams import on_end_of_redirection
 
 CURRENT_PDB_SESSION = None
 
@@ -15,11 +16,17 @@ def hook_pdb():
                 print('-----------------------------')
                 return None
             CURRENT_PDB_SESSION = self
+            on_end_of_redirection(self.end_of_redirection)
             super().set_trace(frame)
+        def end_of_redirection(self):
+            sys.__stdout__.write("pdb: end of stdin/out/err redirection -- forcing 'continue' command!\n")
+            self.cmdqueue.append('cont')
+            on_end_of_redirection(None)
         def _release_session(self):
             global CURRENT_PDB_SESSION
             if CURRENT_PDB_SESSION is self:
                 CURRENT_PDB_SESSION = None
+                on_end_of_redirection(None)
         def set_continue(self):
             self._release_session()
             return super().set_continue()
@@ -27,4 +34,5 @@ def hook_pdb():
             self._release_session()
             if hasattr(super(), '__del__'):
                 super().__del__()
+
     pdb.Pdb = HookedPdb

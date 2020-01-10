@@ -147,11 +147,10 @@ class OpClassMixin(BaseMixin):
         self.delete()
         get_context().db.commit()
 
-    def create_instance(self, dataflow):
+    def create_instance(self, dataflow, **kwargs):
         self.assert_grant_level(GRANT_LEVELS.read,
                 'You are not allowed to use this operator class.')
         context = get_context()
-        revision_kwargs = {}
         if self.repo['type'] == 'git':
             # select a revision (commit hash) appropriate for this user:
             # - if he has already instanciated operators of this class, and all of them
@@ -166,12 +165,12 @@ class OpClassMixin(BaseMixin):
             else:
                 revision = self.default_revision
             code_ref, commit_hash = revision
-            revision_kwargs = { 'revision': {
+            kwargs.update(revision = {
                     'code_ref': code_ref,
                     'commit_hash': commit_hash
-            }}
+            })
         return context.op_instances.create_instance(
-                dataflow = dataflow, op_cls_id = self.id, **revision_kwargs)
+                dataflow = dataflow, op_cls_id = self.id, **kwargs)
 
     @classmethod
     def prefetch_code(cls, api):

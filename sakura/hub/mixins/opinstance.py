@@ -6,6 +6,7 @@ class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
     MOVING = set()
     RELOAD_NOT_COMPLETED = set()
+    LOCAL_STREAMS = {}
     @property
     def daemon_api(self):
         return self.daemon.api
@@ -46,6 +47,12 @@ class OpInstanceMixin(BaseMixin):
                 return 'Daemon running this operator was just stopped.'
         else:
             return self.op_class.disabled_message
+    @property
+    def local_streams(self):
+        return OpInstanceMixin.LOCAL_STREAMS.get(self.id)
+    @local_streams.setter
+    def local_streams(self, streams):
+        OpInstanceMixin.LOCAL_STREAMS[self.id] = streams
     def aggregate_events(self, events):
         final_status_event = None
         for event in events:
@@ -201,6 +208,7 @@ class OpInstanceMixin(BaseMixin):
             self.daemon_api.create_operator_instance(
                 self.id,
                 event_recorder = self.push_event,
+                local_streams = self.local_streams,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         else:
@@ -209,6 +217,7 @@ class OpInstanceMixin(BaseMixin):
             self.daemon_api.reload_operator_instance(
                 self.id,
                 event_recorder = self.push_event,
+                local_streams = self.local_streams,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         self.enabled = True
@@ -229,12 +238,13 @@ class OpInstanceMixin(BaseMixin):
                 return False
         return True
     @classmethod
-    def create_instance(cls, dataflow, op_cls_id, **revision_kwargs):
+    def create_instance(cls, dataflow, op_cls_id, local_streams = None, **revision_kwargs):
         context = get_context()
         # create in local db
         op = cls(daemon = None, dataflow = dataflow, op_class = op_cls_id, **revision_kwargs)
         # refresh op id
         context.db.commit()
+        op.local_streams = local_streams
         # run on most appropriate daemon
         try:
             op.move()
