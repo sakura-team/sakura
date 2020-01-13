@@ -40,7 +40,7 @@ function set_tab_urls(id, url_formatter) {
             });
             resolve();
         }).catch( function (error){
-            console.log('Error 2:', error)
+            alert('Tab display -- Failed to retrieve operator information:\n' + error);
         });
     });
 }
@@ -188,14 +188,14 @@ function fill_params(id) {
                     tbl.appendChild(tr);
                 }
                 else {
-                    console.log("Ouch !!!");
+                     alert("Only combo parameters are handled!!!");
                 }
             });
             d.appendChild(document.createElement('br'));
             d.appendChild(tbl);
         }
     }).catch( function (error){
-        console.log('Error 5:', error)
+        alert('Parameters init -- Failed to retrieve operator information:\n' + error);
     });
 }
 
@@ -226,23 +226,19 @@ function params_onChange(op_id, param_index, select) {
         let param_value = index;
         hub_remote_op.parameters[param_index].set_value(param_value).then(function (result) {
             current_instance_info = instance_info;
-            if (result)
-                console.log(result);
-            else {
-                fill_in_out('output', op_id);
-                var index = 0;
-                current_instance_info.tabs.forEach( function(tab) {
-                    var iframe = document.getElementById('modal_'+op_id+'_tab_tab_'+index);
-                    iframe.src = iframe.src;
-                    index += 1;
-                });
+            fill_in_out('output', op_id);
+            var index = 0;
+            current_instance_info.tabs.forEach( function(tab) {
+                var iframe = document.getElementById('modal_'+op_id+'_tab_tab_'+index);
+                iframe.src = iframe.src;
+                index += 1;
+            });
 
-                // value change on one param may change possible values of another one.
-                fill_params(op_id);
-            }
+            // value change on one param may change possible values of another one.
+            fill_params(op_id);
         });
     }).catch( function (error){
-        console.log('Error 3:', error)
+        alert('Parameter update -- Failed to retrieve operator information:\n' + error);
     });
 }
 
@@ -293,7 +289,7 @@ function fill_in_out(in_out, id) {
         fill_one_in_out(in_out, id, 0, 0, current_nb_rows, );
 
     }).catch( function (error){
-        console.log('Error 4:', error)
+        alert('Failed to retrieve operator information:\n' + error);
     });
 }
 
@@ -431,10 +427,10 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
             d.innerHTML = s;
 
         }).catch (function(error) {
-            console.log('Error 8:', error);
+            alert('Failed to get ' + in_out + ' stream values:\n' + error);
         });
     }).catch (function(error) {
-        console.log('Error 1:', error);
+        alert(in_out + ' retrieval -- Failed to retrieve operator information:\n' + error);
     });
 }
 
