@@ -133,19 +133,24 @@ class OpClassMixin(BaseMixin):
             op_cls.delete()
             raise
         context.db.commit()     # get object ID from DB
+        # notify event listeners
+        context.push_event('registered_opclass', op_cls.id)
         return op_cls.pack()
 
     def unregister(self, maintenance_task=False):
         if not maintenance_task:
             self.assert_grant_level(GRANT_LEVELS.own,
                     'Only owner is allowed to unregister this operator class.')
+        context = get_context()
         # delete operator instances first
         op_instances = set(self.op_instances)
         for op in op_instances:
             op.delete_instance()
+        # notify event listeners
+        context.push_event('unregistered_opclass', self.id)
         # delete this operator class in local db
         self.delete()
-        get_context().db.commit()
+        context.db.commit()
 
     def create_instance(self, dataflow, **kwargs):
         self.assert_grant_level(GRANT_LEVELS.read,

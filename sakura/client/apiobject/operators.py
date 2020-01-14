@@ -1,6 +1,7 @@
 from sakura.client.apiobject.plugs import APIOperatorInput, APIOperatorOutput
 from sakura.client.apiobject.parameters import APIOperatorParameter
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
+from sakura.client.apiobject.events import stream_events
 from sakura.common.errors import APIRequestError
 
 class APIOperator:
@@ -53,12 +54,7 @@ class APIOperator:
                 remote_obj.update_revision(code_ref, commit_hash, all_ops_of_cls)
             def stream_events(self):
                 """Stream events occurring on this operator"""
-                try:
-                    while True:
-                        for evt_info in get_remote_obj().next_events(2.0):
-                            print(*evt_info)
-                except KeyboardInterrupt:
-                    pass
+                yield from stream_events(get_remote_obj)
             def __doc_attrs__(self):
                 return get_remote_obj().info().items()
             def __getattr__(self, attr):

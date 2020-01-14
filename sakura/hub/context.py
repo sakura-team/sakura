@@ -3,6 +3,7 @@ from gevent.local import local
 from sakura.common.bottle import PicklableFileRequest
 from sakura.common.errors import APIRequestErrorOfflineDatastore
 from sakura.common.tools import ObservableEvent
+from sakura.common.events import EventSourceMixin
 from sakura.hub.secrets import TemporarySecretsRegistry
 from sakura.hub.web.transfers import Transfer
 
@@ -24,7 +25,7 @@ class UsersWrapper:
     def __getattr__(self, attr):
         return getattr(self.users, attr)
 
-class HubContext(object):
+class HubContext(EventSourceMixin):
     _instance = None
     PW_RECOVERY_SECRETS_LIFETIME = 10 * 60
     class global_events:

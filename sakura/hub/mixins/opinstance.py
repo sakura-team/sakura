@@ -245,6 +245,8 @@ class OpInstanceMixin(BaseMixin):
         # refresh op id
         context.db.commit()
         op.local_streams = local_streams
+        # notify event listeners
+        dataflow.push_event('created_instance', op.id)
         # run on most appropriate daemon
         try:
             op.move()
@@ -266,6 +268,8 @@ class OpInstanceMixin(BaseMixin):
         # delete instance remotely
         if self.enabled:
             self.delete_on_daemon()
+        # notify event listeners
+        self.dataflow.push_event('deleted_instance', self.id)
         # delete instance in local db
         self.delete()
         get_context().db.commit()

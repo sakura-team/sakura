@@ -310,6 +310,12 @@ class GuiToHubAPI:
     def new_dataflow(self, name, **kwargs):
         return self.dataflows.create_dataflow(name = name, **kwargs)
 
+    @api.dataflows.__getitem__.next_events
+    def dataflow_next_events(self, dataflow_id, timeout):
+        # use the web session ID to uniquely identify this event listener
+        return self.dataflows[dataflow_id].next_events(
+                        self.context.session.id, timeout)
+
     @api.dataflows.__getitem__.update
     def update_dataflow_info(self, dataflow_id, **kwargs):
         self.dataflows[dataflow_id].parse_and_update_attributes(**kwargs)
@@ -421,3 +427,11 @@ class GuiToHubAPI:
     @api.misc.list_operator_subdirs
     def list_operator_subdirs(self, repo_url, code_ref):
         return list_operator_subdirs(repo_url, code_ref)
+
+    # Global features
+    #################
+    @api.next_events
+    def global_next_events(self, timeout):
+        # use the web session ID to uniquely identify this event listener
+        return self.context.next_events(
+                        self.context.session.id, timeout)

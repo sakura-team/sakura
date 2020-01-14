@@ -2,6 +2,7 @@ from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.operators import APIOperator
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client.apiobject.grants import APIGrants
+from sakura.client.apiobject.events import stream_events
 from sakura.common.streams import LOCAL_STREAMS
 
 class APIDataflowOperatorsDict:
@@ -29,6 +30,9 @@ class APIDataflow:
             @property
             def grants(self):
                 return APIGrants(remote_obj)
+            def stream_events(self):
+                """Stream events occurring on this dataflow"""
+                yield from stream_events(lambda: remote_obj)
             def __doc_attrs__(self):
                 return info.items()
             def __getattr__(self, attr):

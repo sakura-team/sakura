@@ -6,6 +6,7 @@ from sakura.client.apiobject.datastores import get_datastores
 from sakura.client.apiobject.users import get_users
 from sakura.client.apiobject.misc import get_misc
 from sakura.client.apiobject.base import APIObjectBase
+from sakura.client.apiobject.events import stream_events
 
 class APIRoot:
     def __new__(cls, ws):
@@ -32,6 +33,9 @@ class APIRoot:
             @property
             def misc(self):
                 return get_misc(ws.proxy)
+            def stream_events(self):
+                """Stream top-level events"""
+                yield from stream_events(lambda: ws.proxy)
             def _close(self):
                 ws.close()
             def is_connected(self):
