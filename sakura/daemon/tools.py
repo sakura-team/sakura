@@ -1,4 +1,4 @@
-from gevent.socket import create_connection
+from gevent.socket import create_connection, IPPROTO_TCP, TCP_NODELAY
 from pathlib import Path
 from sakura.daemon.code.importer import pathlib_import
 import sys, importlib, sakura.daemon.conf as conf
@@ -13,6 +13,7 @@ class NullContext:
 
 def connect_to_hub():
     sock = create_connection((conf.hub_host, conf.hub_port))
+    sock.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
     sock_file = sock.makefile(mode='rwb', buffering=0)
     return Serializer(sock_file)
 

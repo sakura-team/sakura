@@ -1,4 +1,5 @@
 import bottle, json, time
+from gevent.socket import IPPROTO_TCP, TCP_NODELAY
 from gevent.pywsgi import WSGIServer
 from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
@@ -15,6 +16,11 @@ from sakura.hub import conf
 
 def to_namedtuple(clsname, d):
     return namedtuple(clsname, d.keys())(**d)
+
+class NoDelayWSHandler(WebSocketHandler):
+    def __init__(self, sock, *args, **kwargs):
+        sock.setsockopt(IPPROTO_TCP, TCP_NODELAY, 1)
+        super().__init__(sock, *args, **kwargs)
 
 def web_greenlet(context, webapp_path):
     app = bottle.Bottle()
@@ -141,6 +147,6 @@ def web_greenlet(context, webapp_path):
             resp.set_header("Cache-Control", "no-cache, must-revalidate")
 
     server = WSGIServer(('', conf.web_port), app,
-                        handler_class=WebSocketHandler)
+                        handler_class=NoDelayWSHandler)
     server.start()
     ws_handle.catch_issues()
