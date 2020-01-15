@@ -81,63 +81,62 @@ function current_dataflow() {
             df_info.op_instances.forEach( function(opi) {
                 check_operator(opi);
             });
-        });
-    });
 
-    //Finally, the panels and the comments
-    sakura.apis.hub.dataflows[current_dataflow_id].get_gui_data().then(function (result) {
+            //Finally, the panels and the comments
+            sakura.apis.hub.dataflows[current_dataflow_id].get_gui_data().then(function (result) {
 
-        if (!result)
-            return
-        var res = eval("(" + result + ")");
-        global_op_panels = eval(res.panels);
-        if (! global_op_panels) {
-            global_op_panels = []
-            return;
-        }
-
-        //Emptying current accordion
-        var acc_div = document.getElementById('op_left_accordion');
-        var butt = document.getElementById('select_op_add_button').cloneNode(true);
-        while(acc_div.firstChild){
-            acc_div.removeChild(acc_div.firstChild);
-        }
-        acc_div.appendChild(butt);
-
-        //Filling accordion with panels
-        var index = 0;
-        let filtered_global_op_panels = [];
-        global_op_panels.forEach( function (panel) {
-
-            var divs = []
-            let filtered_selected_ops = [];
-            panel['selected_ops'].forEach( function(item) {
-                let cl = class_from_id(item);
-                if (cl == null) {
+                if (!result)
+                    return
+                var res = eval("(" + result + ")");
+                global_op_panels = eval(res.panels);
+                if (! global_op_panels) {
+                    global_op_panels = []
                     return;
                 }
-                filtered_selected_ops.push(item);
-                divs.push(select_op_new_operator(item, false));
+
+                //Emptying current accordion
+                var acc_div = document.getElementById('op_left_accordion');
+                var butt = document.getElementById('select_op_add_button').cloneNode(true);
+                while(acc_div.firstChild){
+                    acc_div.removeChild(acc_div.firstChild);
+                }
+                acc_div.appendChild(butt);
+
+                //Filling accordion with panels
+                var index = 0;
+                let filtered_global_op_panels = [];
+                global_op_panels.forEach( function (panel) {
+
+                    var divs = []
+                    let filtered_selected_ops = [];
+                    panel['selected_ops'].forEach( function(item) {
+                        let cl = class_from_id(item);
+                        if (cl == null) {
+                            return;
+                        }
+                        filtered_selected_ops.push(item);
+                        divs.push(select_op_new_operator(item, false));
+                    });
+
+                    panel['selected_ops'] = filtered_selected_ops;
+
+                    var tmp_el = document.createElement("div");
+                    tmp_el.appendChild(select_op_make_table(4, divs));
+
+                    panel.id = "accordion_"+index
+                    index++;
+
+                    select_op_create_accordion(panel, tmp_el.innerHTML);
+                    filtered_global_op_panels.push(panel);
+                });
+
+                global_op_panels = filtered_global_op_panels;
+
+                res.comments.forEach( function(com) {
+                    var ncom = comment_from(com);
+                });
             });
-
-            panel['selected_ops'] = filtered_selected_ops;
-
-            var tmp_el = document.createElement("div");
-            tmp_el.appendChild(select_op_make_table(4, divs));
-
-            panel.id = "accordion_"+index
-            index++;
-
-            select_op_create_accordion(panel, tmp_el.innerHTML);
-            filtered_global_op_panels.push(panel);
         });
-
-        global_op_panels = filtered_global_op_panels;
-
-        res.comments.forEach( function(com) {
-            var ncom = comment_from(com);
-        });
-
     });
 }
 

@@ -81,20 +81,25 @@ function select_op_reopen_modal(id) {
                         tags_list.push(tag);
                         var option = document.createElement("option");
                         option.text = tag;
+                        panel.selected_ops.forEach( function (id) {
+                            if (op['id'] == id)
+                                option.selected = true
+                        });
                         sostl.add(option);
                 }
             });
-            var option = document.createElement("option");
-            option.text = op['name'];
-            option.value = op['id'];
+            var option      = document.createElement("option");
+            option.text     = op['name'];
+            option.value    = op['id'];
+            option.selected = false;
+            panel.selected_ops.forEach( function (id) {
+                if (op['id'] == id)
+                    option.selected = true
+            });
             sosnl.add(option);
         });
 
         document.getElementById('select_op_panel_title').value = panel.title;
-        for (var i=0; i< panel.names.length; i++)
-            document.getElementById("select_op_names_select").options[i].selected = panel.names[i];
-        for (var i=0; i< panel.tags.length; i++)
-            document.getElementById("select_op_tags_select").options[i].selected = panel.tags[i];
 
         select_op_on_change();
 
