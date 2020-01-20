@@ -51,6 +51,13 @@
             }
             w3IncludeHTML(cb);
             fill_profil_button();
+
+            sakura.apis.hub.subscribe_event('registered_opclass', function(evt, args) {
+                location.reload();
+            });
+            sakura.apis.hub.subscribe_event('unregistered_opclass', function(evt) {
+                location.reload();
+            });
         }
     </script>
     </head>
