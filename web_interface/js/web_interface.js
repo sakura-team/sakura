@@ -382,9 +382,10 @@ function showDiv(event, dir, div_id) {
     //Loading html and js on demand
     var ldf = null;
     var d   = null;
-    if (dir == 'Datas')          { ldf = loaded_datas_files;    d = 'databases'}
-    else if (dir == 'Operators') { ldf = loaded_operators_files; d = 'operators'}
-    else if (dir == 'Dataflows') { ldf = loaded_dataflows_files; d = 'dataflows'}
+    if (dir.startsWith('Datas'))          { ldf = loaded_datas_files;    d = 'databases'}
+    else if (dir.startsWith('Operators')) { ldf = loaded_operators_files; d = 'operators'}
+    else if (dir.startsWith('Dataflows')) { ldf = loaded_dataflows_files; d = 'dataflows'}
+    else console.log('Unexpected showDiv() on', dir);
 
     if (ldf && !(ldf == 'done')) {
         if (ldf == 'no') {
