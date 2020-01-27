@@ -418,12 +418,20 @@ function l_html(obj, event, dir, div_id) {
 
 function showDiv(event, dir, div_id) {
 
+    //<script src="/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js"></script>
+
+
     //Loading html and js on demand
     var ldf = null;
     var d   = null;
-    if (dir.startsWith('Datas'))          { ldf = loaded_datas_files;    d = 'databases'}
-    else if (dir.startsWith('Operators')) { ldf = loaded_operators_files; d = 'operators'}
-    else if (dir.startsWith('Dataflows')) { ldf = loaded_dataflows_files; d = 'dataflows'}
+    if (dir.startsWith('Datas'))          { ldf = loaded_datas_files;    d = 'databases';}
+    else if (dir.startsWith('Operators')) { ldf = loaded_operators_files; d = 'operators';}
+    else if (dir.startsWith('Dataflows')) {
+        ldf = loaded_dataflows_files; d = 'dataflows';
+        if (dir.endsWith('Work')) {
+            $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js");
+        }
+    }
     else if (dir.startsWith('Projects'))  { ldf = loaded_projects_files; d = 'projects'}
     else if (dir.length)
         console.log('Unexpected showDiv() on', dir);
