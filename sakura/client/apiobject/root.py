@@ -33,9 +33,17 @@ class APIRoot:
             @property
             def misc(self):
                 return get_misc(ws.proxy)
+            def monitor(self):
+                """Include api top-level events in api.stream_events()"""
+                obj_id = 'api'
+                ws.proxy.monitor(obj_id)
+            def unmonitor(self):
+                """Stop including api top-level events in api.stream_events()"""
+                obj_id = 'api'
+                ws.proxy.events.unmonitor(obj_id)
             def stream_events(self):
-                """Stream top-level events"""
-                yield from stream_events(lambda: ws.proxy)
+                """Stream events requested by <obj>.monitor() calls"""
+                yield from stream_events(ws.proxy)
             def _close(self):
                 ws.close()
             def is_connected(self):

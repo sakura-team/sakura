@@ -291,14 +291,19 @@ sakura.internal.hub_api_send = function(path, args) {
     });
 };
 
-sakura.internal.monitor_remote_events = function (remote_obj) {
+sakura.internal.event_management_enabled = false;
+sakura.internal.event_managers = {};
+
+sakura.internal.monitor_remote_events = function () {
     var timeout = 2.0;
     // wait for next event(s) and process it(them)
-    remote_obj.next_events(timeout).then(function (evts) {
+    sakura.apis.hub.events.next_events(timeout).then(function (evts) {
         for (evt of evts) {
-            let event_name = evt[0];
-            let event_args = evt[1];
-            let event_kwargs = evt[2];
+            let obj_id = evt[0][0];
+            let event_name = evt[0][1];
+            let evt_id = [ obj_id, event_name ];
+            let event_args = evt[0].slice(2);
+            let event_kwargs = evt[1];
             let all_args = [event_name];
             if (event_args != null) {
                 all_args = all_args.concat(event_args);
@@ -306,7 +311,7 @@ sakura.internal.monitor_remote_events = function (remote_obj) {
             if (event_kwargs != null) {
                 all_args.push(event_kwargs);
             }
-            let cb_list = remote_obj._event_managers[event_name];
+            let cb_list = sakura.internal.event_managers[evt_id];
             if (cb_list != null) {
                 cb_list.forEach(function(cb) {
                     cb(...all_args);
@@ -314,7 +319,7 @@ sakura.internal.monitor_remote_events = function (remote_obj) {
             }
         }
         // re-call for next event(s)
-        sakura.internal.monitor_remote_events(remote_obj);
+        sakura.internal.monitor_remote_events();
     });
 };
 
@@ -339,27 +344,31 @@ sakura.internal.proxy_get = function(proxy, prop) {
     return sakura.internal.get_hub_api(new_path);
 };
 
-sakura.internal.proxy_subscribe_event = function(proxy, evt, cb) {
-    if (!proxy._event_management_enabled) {
-        proxy._event_managers = {};
-        sakura.internal.monitor_remote_events(proxy);
-        proxy._event_management_enabled = true;
+sakura.internal.proxy_subscribe_event = function(proxy, obj_id, evt_name, cb) {
+    if (!sakura.internal.event_management_enabled) {
+        sakura.internal.monitor_remote_events();
+        sakura.internal.event_management_enabled = true;
     }
-    let cb_list = proxy._event_managers[evt];
+    if (!proxy._monitored) {
+        proxy.monitor(obj_id);
+        proxy._monitored = true;
+    }
+    let evt_id = [ obj_id, evt_name ];
+    let cb_list = sakura.internal.event_managers[evt_id];
     if (cb_list == null) {
         cb_list = [];
     }
     cb_list.push(cb);
-    proxy._event_managers[evt] = cb_list;
+    sakura.internal.event_managers[evt_id] = cb_list;
 };
 
 sakura.internal.get_hub_api = function(path) {
     return new Proxy(sakura.internal.hub_api_send, {
         path: path,
         _internal_attrs: {
-            _event_management_enabled: false,
-            subscribe_event: function(evt, cb) {
-                sakura.internal.proxy_subscribe_event(this, evt, cb);
+            _monitored: false,
+            subscribe_event: function(evt_name, cb) {
+                sakura.internal.proxy_subscribe_event(this, path, evt_name, cb);
             }
         },
         set: function(target, prop, value, receiver) {

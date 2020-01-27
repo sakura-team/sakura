@@ -1,5 +1,6 @@
 from sakura.hub.web.apitools import api_init, pack
 from sakura.hub.code import list_code_revisions, list_operator_subdirs
+from sakura.common.events import EventsAggregator
 
 api = api_init()
 
@@ -7,6 +8,25 @@ api = api_init()
 class GuiToHubAPI:
     def __init__(self, context):
         self.context = context
+        self.events = EventsAggregator()
+
+    # Events
+    ########################################
+    @property
+    def event_listener_id(self):
+        # use the web session ID to uniquely identify this event listener
+        return self.context.session.id
+
+    def events_monitor(self, obj, obj_id):
+        self.events.monitor(self.event_listener_id, obj.all_events, obj_id)
+
+    @api.events.unmonitor
+    def events_unmonitor(self, obj_id):
+        self.events.unmonitor(self.event_listener_id, obj_id)
+
+    @api.events.next_events
+    def events_next_events(self, timeout):
+        return self.events.next_events(self.event_listener_id, timeout)
 
     ########################################
     # Daemons
@@ -60,11 +80,9 @@ class GuiToHubAPI:
     def get_operator_instance_info(self, op_id):
         return pack(self.context.op_instances[op_id])
 
-    @api.operators.__getitem__.next_events
-    def operator_instance_next_events(self, op_id, timeout):
-        # use the web session ID to uniquely identify this event listener
-        return self.context.op_instances[op_id].next_events(
-                        self.context.session.id, timeout)
+    @api.operators.__getitem__.monitor
+    def operator_instance_monitor(self, op_id, obj_id):
+        self.events_monitor(self.context.op_instances[op_id], obj_id)
 
     @api.operators.__getitem__.reload
     def update_op_revision(self, op_id):
@@ -110,11 +128,9 @@ class GuiToHubAPI:
     def fire_opengl_app_event(self, op_id, ogl_id, *args, **kwargs):
         return self.context.op_instances[op_id].opengl_apps[ogl_id].fire_event(*args, **kwargs)
 
-    @api.operators.__getitem__.opengl_apps.__getitem__.next_events
-    def opengl_app_next_events(self, op_id, ogl_id, timeout):
-        # use the web session ID to uniquely identify this event listener
-        return self.context.op_instances[op_id].opengl_apps[ogl_id].next_events(
-                        self.context.session.id, timeout)
+    @api.operators.__getitem__.opengl_apps.__getitem__.monitor
+    def opengl_app_monitor(self, op_id, ogl_id, obj_id):
+        self.events_monitor(self.context.op_instances[op_id].opengl_apps[ogl_id], obj_id)
 
     ########################################
     # Operator files
@@ -310,11 +326,9 @@ class GuiToHubAPI:
     def new_dataflow(self, name, **kwargs):
         return self.dataflows.create_dataflow(name = name, **kwargs)
 
-    @api.dataflows.__getitem__.next_events
-    def dataflow_next_events(self, dataflow_id, timeout):
-        # use the web session ID to uniquely identify this event listener
-        return self.dataflows[dataflow_id].next_events(
-                        self.context.session.id, timeout)
+    @api.dataflows.__getitem__.monitor
+    def dataflow_monitor(self, dataflow_id, obj_id):
+        self.events_monitor(self.context.dataflows[dataflow_id], obj_id)
 
     @api.dataflows.__getitem__.update
     def update_dataflow_info(self, dataflow_id, **kwargs):
@@ -430,8 +444,6 @@ class GuiToHubAPI:
 
     # Global features
     #################
-    @api.next_events
-    def global_next_events(self, timeout):
-        # use the web session ID to uniquely identify this event listener
-        return self.context.next_events(
-                        self.context.session.id, timeout)
+    @api.monitor
+    def global_monitor(self, obj_id):
+        self.events_monitor(self.context, obj_id)

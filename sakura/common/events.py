@@ -1,6 +1,7 @@
 from gevent.queue import Queue, Empty
 from heapq import heappush, heappop
 from time import time
+from sakura.common.tools import ObservableEvent
 
 # if no requests after this number of seconds, forget this listener.
 LISTENER_GRACE_TIME = 120
@@ -18,6 +19,16 @@ class EventSourceMixin:
         if not hasattr(self, '_esm_internal_listener_timeouts'):
             self._esm_internal_listener_timeouts = []
         return self._esm_internal_listener_timeouts
+    @property
+    def all_events(self):
+        if not hasattr(self, '_esm_internal_all_events'):
+            self._esm_internal_all_events = ObservableEvent()
+        return self._esm_internal_all_events
+    @property
+    def on_listener_cleanup(self):
+        if not hasattr(self, '_esm_internal_on_listener_cleanup'):
+            self._esm_internal_on_listener_cleanup = ObservableEvent()
+        return self._esm_internal_on_listener_cleanup
     def next_event(self, listener_id, timeout):
         events = self.next_events(listener_id, timeout, max_events=1)
         if len(events) == 0:
@@ -58,11 +69,58 @@ class EventSourceMixin:
         curr_time = time()
         while len(self._esm_listener_timeouts) > 0 and self._esm_listener_timeouts[0][0] < curr_time:
             listener_timeout, listener_id = heappop(self._esm_listener_timeouts)
+            self.on_listener_cleanup.notify(listener_id)
             del self._esm_listener_info[listener_id]
-    def push_event(self, evt, *args, **kwargs):
+    def push_event(self, *args, **kwargs):
+        # publish to subscribers of self.all_events
+        self.all_events.notify(*args, **kwargs)
         # cleanup
         self._esm_cleanup()
         # publish to remaining listener queues
         for queue, listener_timeout in self._esm_listener_info.values():
-            queue.put((evt, args, kwargs))
+            queue.put((args, kwargs))
 
+class EventsAggregator:
+    def __init__(self):
+        self.esm = EventSourceMixin()
+        self.monitored = {}
+        self.esm.on_listener_cleanup.subscribe(self.on_listener_cleanup)
+    def on_listener_cleanup(self, listener_id):
+        for obj_id, info in tuple(self.monitored.items()):
+            info['listeners'].discard(listener_id)
+            if len(info['listeners']) == 0:
+                info['obj_events'].unsubscribe(info['callback'])
+            del self.monitored[obj_id]
+    def monitor(self, listener_id, obj_events, obj_id):
+        if obj_id not in self.monitored:
+            def cb(evt_name, *args, **kwargs):
+                self.on_event(obj_id, evt_name, *args, **kwargs)
+            obj_events.subscribe(cb)
+            self.monitored[obj_id] = {
+                'listeners': set([listener_id]),
+                'obj_events': obj_events,
+                'callback': cb
+            }
+        else:
+            self.monitored[obj_id]['listeners'].add(listener_id)
+    def unmonitor(self, listener_id, obj_id):
+        info = self.monitored[obj_id]
+        info['listeners'].remove(listener_id)
+        if len(info['listeners']) == 0:
+            info['obj_events'].unsubscribe(info['callback'])
+        del self.monitored[obj_id]
+    def on_event(self, obj_id, evt_name, *args, **kwargs):
+        self.esm.push_event(obj_id, evt_name, *args, **kwargs)
+    def is_monitored(self, listener_id, event):
+        obj_id = event[0][0]
+        return listener_id in self.monitored[obj_id]['listeners']
+    def next_events(self, listener_id, timeout, max_events=None):
+        deadline = time() + timeout
+        while True:
+            timeout = deadline - time()
+            if (timeout < 0):
+                return []
+            events = self.esm.next_events(listener_id, timeout, max_events=max_events)
+            events = [ event for event in events if self.is_monitored(listener_id, event) ]
+            if len(events) > 0:
+                return events
