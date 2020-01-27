@@ -124,6 +124,8 @@ function operators_update_creation_modal() {
             var select2 = $('#operators_creation_sub_dir');
             select2.selectpicker('refresh');
             var select3 = $('#operators_creation_access_scope');
+            select3.append('<option>Private</option>');
+            select3.append('<option>Public</option>');
             select3.selectpicker('refresh');
             creation_operator_check_URL();
             $('#declare_operators_modal').modal('show');
@@ -175,6 +177,7 @@ function operators_creation_new() {
     var url       = byID('operators_creation_url_input').value;
     var sub_dir   = byID('operators_creation_sub_dir').value;
     var access    = byID('operators_creation_access_scope').value.toLowerCase();
+    access = 'private';
     var revision  = opt.branch
 
 
