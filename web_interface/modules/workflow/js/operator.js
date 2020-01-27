@@ -1,6 +1,27 @@
 //Code started by Michael Ortega for the LIG
 //March 20th, 2017
 
+var op_events = [ 'disabled',
+                  'altered_input',
+                  'altered_output',
+                  'altered_set_of_inputs',
+                  'altered_set_of_outputs',
+                  'altered_set_of_parameters',
+                  'altered_set_of_parameters',
+                  'altered_set_of_tabs',
+                  'enabled',
+                  'altered_parameter' ]
+
+function operators_deal_with_events(evt_name, args, proxy, cl_id, hub_inst_id) {
+    switch (evt_name) {
+        case 'altered_output':
+            fill_in_out('output', 'op_'+cl_id+'_'+hub_inst_id);
+            break;
+        // default:
+        //     console.log(evt_name);
+    }
+}
+
 function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
     //We first send the creation command to the sakura hub
@@ -56,6 +77,18 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
                                 ep          : {in: e_in, out: e_out},
                                 gui         : {x: drop_x, y: drop_y}
                                 });
+
+        let proxy = sakura.apis.hub.operators[hub_id];
+        if (proxy) {
+            op_events.forEach( function(e) {
+              proxy.subscribe_event(e, function(evt_name, args) {
+                    operators_deal_with_events(evt_name, args, proxy, id, hub_id);
+              });
+          });
+        }
+        else {
+            console.log('Cannot subscribe_event on op', info.op_id);
+        }
 
         //Now we add the current coordinates of the operator to the hub
         save_dataflow();
@@ -117,6 +150,18 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                             ep          : {in: e_in, out: e_out},
                             gui         : {x: drop_x, y: drop_y}
                             });
+
+    let proxy = sakura.apis.hub.operators[info.op_id];
+    if (proxy) {
+        op_events.forEach( function(e) {
+          proxy.subscribe_event(e, function(evt_name, args) {
+                operators_deal_with_events(evt_name, args, proxy, id, info.op_id);
+          });
+      });
+    }
+    else {
+        console.log('Cannot subscribe_event on op', info.op_id);
+    }
 }
 
 function check_operator(op) {
@@ -161,7 +206,6 @@ function check_operator(op) {
                 w_div.style.visibility  = "hidden";
             }
         }
-
     }
 }
 
