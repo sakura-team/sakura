@@ -1,5 +1,6 @@
 /// LIG Sept 2017
 
+var current_op_classes_list = null;
 
 function buildListStub(idDiv,result,elt) {
 
@@ -285,6 +286,7 @@ function listRequestStub(idDiv, n, elt, bd) {
     else if (elt == 'Operators/tmpOperator') {
         sakura.apis.hub.op_classes.list().then(function (operators) {
             var result = new Array();
+            current_op_classes_list = operators;
             operators.forEach( function(op) {
 
                 var result_info = { 'shortDesc': op.short_desc,

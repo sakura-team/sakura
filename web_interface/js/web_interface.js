@@ -40,6 +40,36 @@ function main_success_alert(header_str, body_str, callback, time=0) {
     }, time*1000, callback);
 }
 
+
+function web_interface_deal_with_events(evt_name, args) {
+    switch (evt_name) {
+        case 'registered_opclass':
+            if (  location.href.indexOf('Operators') != -1 ||
+                  (location.href.indexOf('Dataflows') != -1 &&
+                  location.href.indexOf('Work') != -1)  ) {
+                sakura.apis.hub.op_classes[args].info().then( function (result) {
+                    if (result.access_scope == 'public' ||
+                        result.grant_level == 'own')
+                        location.reload();
+                });
+            }
+            break;
+        case 'unregistered_opclass':
+            if (  location.href.indexOf('Operators') != -1 ||
+                  (location.href.indexOf('Dataflows') != -1 &&
+                  location.href.indexOf('Work') != -1)  ) {
+                current_op_classes_list.forEach( function (oc){
+                    if (oc.id == args)
+                        location.reload();
+                });
+            }
+            break;
+        default:
+            if (DEBUG)
+                console.log('Unmanaged event', evt_name);
+    }
+}
+
 function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
     var h = $('#stub_asking_header');
     var b = $('#stub_asking_body');
