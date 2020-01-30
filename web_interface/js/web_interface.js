@@ -364,9 +364,10 @@ function l_html(obj, event, dir, div_id) {
          $('#main_div').append($('<div>').load("divs/"+obj+"/work.html", function() {
           $('#main_div').append($('<div>').load("divs/"+obj+"/historic.html", function() {
            $('#main_div').append($('<div>').load("divs/create/"+obj+".html", function() {
-              if (obj == 'databases') loaded_datas_files = 'done';
-              else if (obj == 'operators') loaded_operators_files = 'done';
-              else if (obj == 'dataflows') loaded_dataflows_files = 'done';
+              if (obj == 'databases')       loaded_datas_files      = 'done';
+              else if (obj == 'operators')  loaded_operators_files  = 'done';
+              else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
+              else if (obj == 'projects')   loaded_projects_files   = 'done';
               showDiv(event, dir, div_id);
            }));
           }));
@@ -385,7 +386,9 @@ function showDiv(event, dir, div_id) {
     if (dir.startsWith('Datas'))          { ldf = loaded_datas_files;    d = 'databases'}
     else if (dir.startsWith('Operators')) { ldf = loaded_operators_files; d = 'operators'}
     else if (dir.startsWith('Dataflows')) { ldf = loaded_dataflows_files; d = 'dataflows'}
-    else console.log('Unexpected showDiv() on', dir);
+    else if (dir.startsWith('Projects'))  { ldf = loaded_projects_files; d = 'projects'}
+    else if (dir.length)
+        console.log('Unexpected showDiv() on', dir);
 
     if (ldf && !(ldf == 'done')) {
         if (ldf == 'no') {
@@ -397,12 +400,10 @@ function showDiv(event, dir, div_id) {
     }
 
     //set url
-    if (event instanceof PopStateEvent) {
-        // rien dans l'history
-    }
+    if (event instanceof PopStateEvent) {}
     else {
         var stateObj = { where: dir };
-        try {  //try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
+        try {//try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
             history.pushState(stateObj, "page", "#"+dir);
         }
         catch (e) {
@@ -413,14 +414,13 @@ function showDiv(event, dir, div_id) {
     //normalize dir
     if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1))
         document.pageElt = +dir.split("?")[1].match(/page=(-?\d+)/)[1];
-    else
+    else {
         document.pageElt = 1;
-
+    }
     dir = dir.split("?")[0];
 
-    if (dir == "") {
+    if (dir == "")
         dir = "Home";
-    }
     else if (dir.match("tmp") || isUrlWithId(dir)) {
         if (!(dir.match("Work") || dir.match("Historic") || dir.match("Meta")))  {
             if (dir[dir.length -1] == '/')
@@ -439,14 +439,13 @@ function showDiv(event, dir, div_id) {
 
     var idDir = "web_interface";
     dirs.forEach(function (dir) {
-        if (isUrlWithId(dir)) {  //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
+        if (isUrlWithId(dir)) //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
             idDir += '_tmp';//dir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");
-        }
-        else {
+        else
             idDir += "_"+dir;
-        }
     });
     idDir = idDir.toLowerCase();
+
     if (dirs.length == 1)
         idDir += "_div";
     document.getElementById(idDir).style.display='inline';
@@ -497,15 +496,10 @@ function showDiv(event, dir, div_id) {
 
     ////////////////////////////////////////////////////////////////////////////////
     if (dir != 'Home') {
-        var obj_type = '';
-
-        if (dir.indexOf("Datas") != -1)
-            web_interface_current_object_type = 'datas';
-        else if (dir.indexOf("Dataflows") != -1)
-            web_interface_current_object_type = 'dataflows';
-        else if (dir.indexOf("Operators") != -1)
-            web_interface_current_object_type = 'operators';
-
+        ["Datas", "Dataflows", "Operators", "Projects"].forEach (function (n){
+            if (dir.indexOf(n) != -1)
+                web_interface_current_object_type = n.toLowerCase();
+        });
         var obj = web_interface_current_object_type;
 
         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
@@ -515,6 +509,7 @@ function showDiv(event, dir, div_id) {
         document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
         if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
+            console.log('HERE');
             if (dir.indexOf('Meta') != -1) {
                 change_class([li_main, li_work, li_history], [true, false, false], "active");
                 fill_metadata();
@@ -537,6 +532,11 @@ function showDiv(event, dir, div_id) {
                 n1 = 'Operators';
                 n2 = 'Operator';
             }
+            else if (web_interface_current_object_type == 'projects') {
+                n1 = 'Projects';
+                n2 = 'Project';
+            }
+
             $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
             $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
             //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");

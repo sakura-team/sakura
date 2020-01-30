@@ -1,55 +1,40 @@
 <!--Code started by Michael Ortega for the LIG, January 30th, 2017-->
-<!--Maintained by Denis Bouhineau for the LIG, February 1st, 2017 ...--> 
 
-<div style="display:none;" id="idDivProjects" class="classMainDiv">
-    <div style="float:right;">
-        <img  width="80px" height="80px" src="media/Simpleicons_Business_notebook.svg.png" alt="CC-BY-3.0 Wikipedia Notebook"></img>
-        <br />
-        <br />
-        <button type="button" onclick="showDiv(event,'Projects/tmpProject/Work');" class="btn btn-primary">Try it</button>
-    </div>
-        
+<div style="display:none; width: 100%;" id="web_interface_projects_div" class="classMainDiv">
+
     <h2>Projects</h2>
     Prepare and organize your projects.<br /><br />
+
     <div class="row">
-        <div class="col-md-10">
+        <div>
             <div class="panel panel-default panel-table">
                 <div class="panel-heading">
                     <div class="row">
                         <form class="form-search form-inline col-md-offset-6">
-                            <input id="idInputSearchProjects" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Projects');" />
+                            <input id="web_interface_projects_inputSearch" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'projects');" />
                         </form>
                     </div>
                 </div>
                 <div class="panel-body">
-                    <table id="idTableProjectsToFullfill" class="table table-striped table-bordered table-list">
+                    <table id="web_interface_projects_table_toFullfill" class="table table-striped table-bordered table-list" style="margin-bottom: 2px;">
                         <thead>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>
-                                    <a href="javascript:listRequestStub('idTableProjectsToFullfill',10,'Projects/tmpProject',false)" class="executeOnShow">liste à remplir</a>
+                                    <a href="javascript:listRequestStub('web_interface_projects_table_toFullfill',10,'projects/tmpOperator',false)" class="executeOnShow">
+                                        Looking for projects ...
+                                        <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+                                    </a>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
-                </div>
-                <div class="panel-footer">
-                    <div class="row">
-                        <div class="col col-xs-offset-3 col-xs-6">
-                            <nav aria-label="Page navigation" class="text-center">
-                                <ul class="pagination" id="idDivPaginationProjects">
-                                </ul>
-                            </nav>
-                        </div>
-                        <div class="col col-xs-3">
-                            <div class="pull-right">
-                                <a class="btn btn-primary" data-toggle="modal" data-target="#createModal">
-                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                    New Project
-                                </a>
-                            </div>
-                        </div>
+                    <div class="pull-left" id="web_interface_projects_creation_button">
+                        &nbsp;
+                        <a class="btn btn-primary btn-xs" title='Registration of a new operator' data-toggle="modal" onclick="projects_update_creation_modal();">
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        </a>
                     </div>
                 </div>
             </div>

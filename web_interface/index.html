@@ -28,6 +28,7 @@
         var loaded_datas_files      = 'no';
         var loaded_operators_files  = 'no';
         var loaded_dataflows_files  = 'no';
+        var loaded_projects_files  = 'no';
 
         window.onpopstate = function(event) {
             console.log('here, onpopstate');
@@ -93,8 +94,8 @@
                         <a onclick="showDiv(event,'');" style="cursor: pointer;"><span class="glyphicon glyphicon-home" title="home" aria-hidden="true"></span></a>
                     </li>
                     <li id="idNavBarProjects">
-                        <a disabled style="cursor: not-allowed;">Projects</a>
-                        <!--<a onclick="showDiv(event,'Projects');" href="http://sakura.imag.fr/Projects" style="cursor: pointer;">Projects</a>-->
+                        <!--<a disabled style="cursor: not-allowed;">Projects</a>-->
+                        <a onclick="showDiv(event,'Projects');" style="cursor: pointer;">Projects</a>
                     </li>
                     <li id="idNavBarDatas">
                         <a onclick="showDiv(event,'Datas');" style="cursor: pointer;">Datas</a>
@@ -106,10 +107,10 @@
                     <li id="idNavBarDataflows">
                         <a onclick="showDiv(event,'Dataflows');" style="cursor: pointer;">Dataflows</a>
                     </li>
-                    <li id="idNavBarResults">
+                    <!--<li id="idNavBarResults">
                         <a disabled style="cursor: not-allowed;">Results</a>
-                        <!--<a onclick="showDiv(event,'Results');" href="http://sakura.imag.fr/Results" style="cursor: pointer;">Results</a>-->
-                    </li>
+                        <a onclick="showDiv(event,'Results');" href="http://sakura.imag.fr/Results" style="cursor: pointer;">Results</a>
+                    </li>-->
                 </ul>
                 <!--<ul class="nav navbar-nav navbar-right">
                     <li id="idNavBarDocumentation"><a onclick="showDiv(event,'Documentation');" href="http://sakura.imag.fr/Documentation" style="cursor: pointer;">Help</a></li>

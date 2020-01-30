@@ -320,6 +320,11 @@ function listRequestStub(idDiv, n, elt, bd) {
             buildListStub(idDiv,result,elt);
         });
     }
+    else {
+        sakura.apis.hub.projects.list().then(function (projects) {
+            console.log(projects);
+        });
+    }
     return ;
 }
 
