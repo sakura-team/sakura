@@ -1,6 +1,8 @@
 from pony.orm import Required, Optional, Set, Json, \
                      composite_key as UNIQUE, PrimaryKey
 from sakura.hub.mixins.dataflow import DataflowMixin
+from sakura.hub.mixins.project import ProjectMixin
+from sakura.hub.mixins.page import ProjectPageMixin
 from sakura.hub.mixins.daemon import DaemonMixin
 from sakura.hub.mixins.datastore import DatastoreMixin
 from sakura.hub.mixins.database import DatabaseMixin
@@ -119,3 +121,14 @@ def define_schema(db):
         user_tags = Required(Json, default = [])
         PrimaryKey(table, col_id)
         UNIQUE(table, col_name)
+
+    class Project(db.Entity, ProjectMixin):
+        access_scope = Required(int, default = ACCESS_SCOPES.private)
+        grants = Required(Json, default = {})
+        metadata = Optional(Json, default = {})
+        pages = Set('ProjectPage')
+
+    class ProjectPage(db.Entity, ProjectPageMixin):
+        project = Required(Project)
+        name = Required(str)
+        content = Optional(str)

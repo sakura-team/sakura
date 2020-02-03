@@ -1,6 +1,7 @@
 from sakura.client import conf
 from sakura.client.apiobject.opclasses import get_op_classes
 from sakura.client.apiobject.dataflows import get_dataflows
+from sakura.client.apiobject.projects import get_projects
 from sakura.client.apiobject.databases import get_databases
 from sakura.client.apiobject.datastores import get_datastores
 from sakura.client.apiobject.users import get_users
@@ -15,6 +16,9 @@ class APIRoot:
             @property
             def __ap__(self):
                 return ws.proxy
+            @property
+            def projects(self):
+                return get_projects(ws.proxy)
             @property
             def op_classes(self):
                 return get_op_classes(ws.proxy)

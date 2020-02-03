@@ -358,6 +358,66 @@ class GuiToHubAPI:
     def delete_dataflow(self, dataflow_id):
         return self.dataflows[dataflow_id].delete_dataflow()
 
+    ########################################
+    # Project
+    @property
+    def projects(self):
+        return self.context.projects.filter_for_current_user()
+
+    @api.projects.__getitem__.info
+    def get_project_info(self, project_id):
+        return self.projects[project_id].get_full_info()
+
+    @api.projects.list
+    def list_projects(self):
+        return self.projects.pack()
+
+    @api.projects.create
+    def new_project(self, name, **kwargs):
+        return self.projects.create_project(name = name, **kwargs)
+
+    @api.projects.__getitem__.update
+    def update_project_info(self, project_id, **kwargs):
+        self.projects[project_id].parse_and_update_attributes(**kwargs)
+
+    @api.projects.__getitem__.grants.update
+    def update_project_grant(self, project_id, login, grant_name):
+        return self.projects[project_id].update_grant(login, grant_name)
+
+    @api.projects.__getitem__.grants.request
+    def request_project_grant(self, project_id, grant_name, text):
+        return self.projects[project_id].handle_grant_request(grant_name, text)
+
+    @api.projects.__getitem__.grants.deny
+    def deny_project_grant(self, project_id, login):
+        return self.projects[project_id].deny_grant_request(login)
+
+    @api.projects.__getitem__.delete
+    def delete_project(self, project_id):
+        return self.projects[project_id].delete_project()
+
+    ########################################
+    # Project pages
+    @property
+    def pages(self):
+        return self.context.pages.filter_for_current_user()
+
+    @api.pages.create
+    def create_project_page(self, project_id, page_name):
+        return self.projects[project_id].create_page(page_name)
+
+    @api.pages.__getitem__.info
+    def get_project_page_info(self, page_id):
+        return self.pages[page_id].pack()
+
+    @api.pages.__getitem__.update
+    def update_project_page(self, page_id, **page_info):
+        return self.pages[page_id].update_page(**page_info)
+
+    @api.pages.__getitem__.delete
+    def delete_project_page(self, page_id):
+        return self.pages[page_id].delete_page()
+
     # Session management
     ####################
     @api.renew_session

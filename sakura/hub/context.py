@@ -35,6 +35,8 @@ class HubContext(EventSourceMixin):
         self.planner = planner
         self.daemons = self.db.Daemon
         self.dataflows = self.db.Dataflow
+        self.projects = self.db.Project
+        self.pages = self.db.ProjectPage
         self.users = UsersWrapper(self.db.User)
         self.sessions = self.db.Session
         self.op_classes = self.db.OpClass
