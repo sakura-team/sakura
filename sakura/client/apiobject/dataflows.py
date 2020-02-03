@@ -16,9 +16,15 @@ class APIDataflowOperatorsDict:
         return APIDataflowOperatorsDictImpl()
 
 class APIDataflow:
+    _deleted = set()
     def __new__(cls, remote_api, info):
         dataflow_id = info['dataflow_id']
         remote_obj = remote_api.dataflows[dataflow_id]
+        def get_remote_obj():
+            if remote_obj in APIDataflow._deleted:
+                raise ReferenceError('This dataflow is no longer valid! (was deleted)')
+            else:
+                return remote_obj
         class APIDataflowImpl(APIObjectBase):
             __doc__ = "Sakura dataflow: " + info['name']
             @property
@@ -28,7 +34,7 @@ class APIDataflow:
                 return APIDataflowOperatorsDict(remote_api, self.dataflow_id, d)
             @property
             def grants(self):
-                return APIGrants(remote_obj)
+                return APIGrants(get_remote_obj())
             def monitor(self):
                 """Include events about this object in api.stream_events()"""
                 obj_id = 'dataflows[%d]' % dataflow_id
@@ -37,10 +43,14 @@ class APIDataflow:
                 """Stop including events about this object in api.stream_events()"""
                 obj_id = 'dataflows[%d]' % dataflow_id
                 remote_api.events.unmonitor(obj_id)
+            def delete(self):
+                """Delete this dataflow"""
+                get_remote_obj().delete()
+                APIDataflow._deleted.add(remote_obj)
             def __doc_attrs__(self):
                 return info.items()
             def __getattr__(self, attr):
-                info = remote_obj.info()
+                info = get_remote_obj().info()
                 if attr in info:
                     return info[attr]
                 if attr == 'op_instances':
