@@ -1,3 +1,63 @@
 
 <div class="modal fade" id="create_projects_modal" tabindex="-1" role="dialog" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog modal-lg" id="fullwidthdsmodalCreate">
+    <div class="modal-content">
+      <div class="modal-header">
+        <table width=100%>
+            <tr>
+                <td>
+                    <h3>Data Creation</h3>
+                <td align="right">
+                    <table>
+                        <tr>
+                            <td>
+                                <label><font color=red>*</font><label>
+                            <td>
+                                &nbsp;Mandatory fields
+                    </table>
+        </table>
+      </div>
+      <br>
+      <div class="modal-body">
+        <div class="panel panel-default" style="margin-bottom: 0px; margin-top: 5px;">
+          <div class="panel-heading" style="padding-top: 1px; padding-bottom: 1px;">
+            <h4 style="margin-top: 5px; margin-bottom: 5px;">Step 1<font color=red>*</font></h4>
+          </div>
+          <div id="projects_creation_div_step1" class="panel-body" style="padding-top:5px; padding-bottom: 5px;">
+            <div id="projects_div_name_input" class="form-group control-group has-error">
+              <label>Name <font color=red>*</font></label>
+              <input class="form-control" id="projects_name_input" name="projects_name_input" placeholder="Enter a name" onkeyup="projects_creation_check_name();"/>
+            </div>
+            <div id="projects_div_shortdescription_input" class="form-group control-group has-error">
+              <label>Short Description <font color=red>*</font></label>
+              <input class="form-control" id="projects_shortdescription_input" name="projects_shortdescription_input" placeholder="Enter short description" onkeyup="projects_creation_check_shortdescription();"/>
+            </div>
+            <div>
+              <table>
+                <tr>
+                  <td>
+                    <div class="radio">
+                      <label><input type="radio" id="projects_creation_access_scope_radio_public" name="projects_creation_access_scope_radio"> Public</label>
+                    </div>
+                  <td>
+                    <div class="radio">
+                      &nbsp;&nbsp;
+                      <label><input type="radio" checked id="projects_creation_access_scope_radio_restricted" name="projects_creation_access_scope_radio"> Restricted</label>
+                    </div>
+                  <td>
+                    <div class="radio">
+                      &nbsp;&nbsp;<label>
+                      <input type="radio" id="projects_creation_access_scope_radio_private" name="projects_creation_access_scope_radio"> Private</label>
+                    </div>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" disabled id="projects_submit_button" onclick="new_project();">Create</button>
+            <button type="button" class="btn" id="projects_close_button" onclick="projects_close_modal();">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

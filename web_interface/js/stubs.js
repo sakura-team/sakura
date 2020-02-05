@@ -295,20 +295,6 @@ function listRequestStub(idDiv, n, elt, bd) {
                     }
                 });
 
-                /*result_info = { 'shortDesc': op.short_desc,
-                                'modif': op.modification_date,
-
-
-                                'name': op.name,
-                                'tags': op.tags,
-                                'id': op.id,
-                                'svg': op.svg,
-                                'date': op.date,
-                                'owner': op.owner,
-                                'repo_url': op.repo_url,
-                                'code_subdir': op.code_subdir,
-                              };*/
-
                 //Display of undefined fields
                 Object.keys(result_info).forEach( function(key) {
                     if (!result_info[key]) {
@@ -322,32 +308,27 @@ function listRequestStub(idDiv, n, elt, bd) {
     }
     else {
         sakura.apis.hub.projects.list().then(function (projects) {
-            console.log(projects);
+            var result = new Array();
+            projects.forEach( function (proj) {
+                var result_info = { 'id':proj.project_id,
+                                    'shortDesc': proj.short_desc,
+                                    'modif': proj.modification_date};
+                Object.keys(proj).forEach( function(key){
+                    if (key != 'shortDesc' && key != 'modif') {
+                        result_info[key] = proj[key];
+                    }
+                });
+
+                //Display of undefined fields
+                Object.keys(result_info).forEach( function(key) {
+                    if (!result_info[key]) {
+                        result_info[key] = "__";
+                    }
+                });
+                result.push(result_info);
+            });
+            buildListStub(idDiv, result, elt);
         });
     }
     return ;
-}
-
-function buildEltStub(idDiv,result,elt) {
-    var s = "";
-    if (elt=="Project") {
-        imageElt = "Simpleicons_Business_notebook.svg.png";
-        imageEltInverse = "Simpleicons_Business_notebook_inverse.svg.png";
-    }
-    else if (elt=="Data") {
-        imageElt = "Linecons_database.svg.png";
-        imageEltInverse = "Linecons_database_inverse.svg.png";
-    }
-    else if (elt=="Operator") {
-        imageElt = "Octicons-gear.svg.png";
-        imageEltInverse = "Octicons-gear_inverse.svg.png";
-    }
-    else if (elt=="Dataflow") {
-        imageElt = "Share_icon_BLACK-01.svg.png";
-        imageEltInverse = "Share_icon_BLACK-01_inverse.svg.png";
-    }
-    else {
-        imageElt = "Article_icon_cropped.svg.png";
-        imageEltInverse = "Article_icon_cropped_inverse.svg.png";
-    }
 }

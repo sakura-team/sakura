@@ -110,6 +110,8 @@ function current_remote_api_object() {
         api_objects = sakura.apis.hub.dataflows;
     else if (web_interface_current_object_type == 'operators')
         api_objects = sakura.apis.hub.op_classes;
+    else if (web_interface_current_object_type == 'projects')
+        api_objects = sakura.apis.hub.projects;
     return api_objects[web_interface_current_id]
 }
 
@@ -474,7 +476,9 @@ function showDiv(event, dir, div_id) {
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
 
-    if (window.location.toString().indexOf('tmpData') == -1 && window.location.toString().indexOf('tmpDataflow') == -1) {
+    if (window.location.toString().indexOf('tmpData') == -1 &&
+        window.location.toString().indexOf('tmpDataflow') == -1 &&
+        window.location.toString().indexOf('tmpProjects') == -1) {
         var tab = window.location.toString().split("/");
          if (tab.length == 5) {
             tab = tab[tab.length-1].split("-");
@@ -509,7 +513,6 @@ function showDiv(event, dir, div_id) {
         document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
         if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
-            console.log('HERE');
             if (dir.indexOf('Meta') != -1) {
                 change_class([li_main, li_work, li_history], [true, false, false], "active");
                 fill_metadata();
@@ -569,6 +572,8 @@ function showDiv(event, dir, div_id) {
             else if (aos.id == 'iframe_workflow')
                 url = "/modules/workflow/index.html?dataflow_id=";
             else if (aos.id == 'iframe_operators')
+                url = "TODO!!!!";
+            else if (aos.id == 'iframe_projects')
                 url = "TODO!!!!";
             url += web_interface_current_id;
             aos.src = url;
