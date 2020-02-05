@@ -125,6 +125,14 @@ function fill_work() {
             $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
         else
             $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
+
+        if (web_interface_current_object_type == 'projects') {
+            web_interface_create_large_description_area(web_interface_current_object_type,
+                                                        'web_interface_'+web_interface_current_object_type+'_markdownarea',
+                                                        info.l_desc,
+                                                        info.grant_level == 'own' || info.grant_level == 'write');
+
+        }
     });
 }
 
@@ -286,8 +294,6 @@ function fill_metadata() {
         }
         fill_collaborators_table_body(info);
 
-
-        //Large description can only been modified by writers
         web_interface_create_large_description_area(web_interface_current_object_type,
                                                     'web_interface_'+web_interface_current_object_type+'_markdownarea',
                                                     l_desc,
