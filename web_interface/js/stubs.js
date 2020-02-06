@@ -50,6 +50,7 @@ function buildListStub(idDiv,result,elt) {
 
         //Body of the list
         result.forEach( function (row, index) {
+            console.log(row);
             var new_row = $(tbody[0].insertRow());
             var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
 
@@ -308,13 +309,20 @@ function listRequestStub(idDiv, n, elt, bd) {
             buildListStub(idDiv,result,elt);
         });
     }
-    else {
+    else if (elt == 'Projects/tmpProject') {
         sakura.apis.hub.projects.list().then(function (projects) {
             var result = new Array();
             projects.forEach( function (proj) {
-                var result_info = { 'id':proj.project_id,
+                var result_info = { 'type': 'project', 
+                                    'name': proj.name,
+                                    'id':proj.project_id,
                                     'shortDesc': proj.short_desc,
-                                    'modif': proj.modification_date};
+                                    'date': moment.unix(proj.creation_date)._d,
+                                    'tags': proj.tags,
+                                    'owner': proj.owner,
+                                    'grant_level': proj.grant_level,
+                                    'access_scope': proj.access_scope
+                                    };
                 Object.keys(proj).forEach( function(key){
                     if (key != 'shortDesc' && key != 'modif') {
                         result_info[key] = proj[key];
@@ -331,6 +339,9 @@ function listRequestStub(idDiv, n, elt, bd) {
             });
             buildListStub(idDiv, result, elt);
         });
+    }
+    else {
+        console.log('Unknown element', elt);
     }
     return ;
 }

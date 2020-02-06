@@ -265,6 +265,12 @@ function fill_metadata() {
             add_fields(list);
         }
 
+        else if (web_interface_current_object_type == 'projects') {
+            var list = [  {name: '', label: "Creation Date", value: date, editable: false},
+                          {name: 'topic', label: "Topic", value: info.topic, editable: true} ];
+            add_fields(list);
+        }
+
         //Access
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').empty();
         var dl2 = $('<dl>', { class:  "dl-horizontal col-md-6",
