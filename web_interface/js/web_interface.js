@@ -2,8 +2,6 @@ main_alert/// LIG March 2017
 
 ////////////GLOBALS
 var web_interface_current_id = -1;  //database or dataflow id
-var web_interface_current_object_info = null;
-var web_interface_current_object_type = '';
 var simplemde  = null;           //large description textarea
 var empty_text = "__";
 
@@ -168,7 +166,6 @@ function fill_work() {
                                                         'web_interface_'+web_interface_current_object_type+'_markdownarea',
                                                         info.l_desc,
                                                         info.grant_level == 'own' || info.grant_level == 'write');
-
         }
     });
 }
@@ -565,21 +562,26 @@ function showDiv(event, dir, div_id) {
 
         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
         var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
-        var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
+        // var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
 
         document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
         if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
             if (dir.indexOf('Meta') != -1) {
-                change_class([li_main, li_work, li_history], [true, false, false], "active");
+                //change_class([li_main, li_work, li_history], [true, false, false], "active");
+                change_class([li_main, li_work], [true, false], "active");
                 fill_metadata();
             }
             else if (dir.indexOf('Work') != -1) {
-                change_class([li_main, li_work, li_history], [false, true, false], "active");
+                //change_class([li_main, li_work, li_history], [false, true, false], "active");
+                change_class([li_main, li_work], [false, true], "active");
             }
-            else if (dir.indexOf('Historic') != -1) {
-                change_class([li_main, li_work, li_history], [false, false, true], "active");
+            else {
+                console.log(dir);
             }
+            // else if (dir.indexOf('Historic') != -1) {
+            //     change_class([li_main, li_work, li_history], [false, false, true], "active");
+            // }
         }
         else {
             var n1 = 'Datas';
@@ -602,17 +604,19 @@ function showDiv(event, dir, div_id) {
             //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");
 
             if (dir.indexOf("Meta") != -1) {
-                change_class([li_main, li_work, li_history], [true, false, false], "active");
+                //change_class([li_main, li_work, li_history], [true, false, false], "active");
+                change_class([li_main, li_work], [true, false], "active");
                 fill_metadata();
             }
             else if (dir.indexOf("Work") != -1) {
-                change_class([li_main, li_work, li_history], [false, true, false], "active");
+                //change_class([li_main, li_work, li_history], [false, true, false], "active");
+                change_class([li_main, li_work], [false, true], "active");
                 fill_work();
             }
-            else if (dir.indexOf('Historic') != -1) {
-                change_class([li_main, li_work, li_history], [false, false, true], "active");
-                fill_history();
-            }
+            // else if (dir.indexOf('Historic') != -1) {
+            //     change_class([li_main, li_work, li_history], [false, false, true], "active");
+            //     fill_history();
+            // }
             else {
                 document.getElementById('web_interface_'+obj+'_tmp_main').style.display='none';
             }
@@ -644,7 +648,6 @@ function showDiv(event, dir, div_id) {
 
 //Access Managment
 function web_interface_asking_access_open_modal(o_name, o_type, grant, callback) {
-    console.log(o_name, o_type, grant, callback);
     var txt1 = "An email will be sent to the owner of <b>"+o_name+"</b> for asking for a <b>"+grant+"</b> access on this "+o_type;
     txt1 += "Please describe your needs.";
 
@@ -677,7 +680,6 @@ function web_interface_asking_access(grant, callback) {
             var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
             current_remote_api_object().info().then(function(info) {
-                console.log('HERE');
                 fill_collaborators_table_body(info);
             });
         }

@@ -1,7 +1,5 @@
 /// LIG Sept 2017
 
-var current_op_classes_list = null;
-
 function buildListStub(idDiv,result,elt) {
 
     //ask for the current login
@@ -50,7 +48,6 @@ function buildListStub(idDiv,result,elt) {
 
         //Body of the list
         result.forEach( function (row, index) {
-            console.log(row);
             var new_row = $(tbody[0].insertRow());
             var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
 
@@ -313,7 +310,7 @@ function listRequestStub(idDiv, n, elt, bd) {
         sakura.apis.hub.projects.list().then(function (projects) {
             var result = new Array();
             projects.forEach( function (proj) {
-                var result_info = { 'type': 'project', 
+                var result_info = { 'type': 'project',
                                     'name': proj.name,
                                     'id':proj.project_id,
                                     'shortDesc': proj.short_desc,
