@@ -48,9 +48,9 @@ function web_interface_deal_with_events(evt_name, args) {
                   (location.href.indexOf('Dataflows') != -1 &&
                   location.href.indexOf('Work') != -1)  ) {
                 sakura.apis.hub.op_classes[args].info().then( function (result) {
-                    if (result.access_scope == 'public' ||
-                        result.grant_level == 'own')
-                        location.reload();
+                    location.reload();
+                }).catch(function (result) {
+                    // access to this object is not allowed, nothing to do
                 });
             }
             break;
@@ -58,10 +58,17 @@ function web_interface_deal_with_events(evt_name, args) {
             if (  location.href.indexOf('Operators') != -1 ||
                   (location.href.indexOf('Dataflows') != -1 &&
                   location.href.indexOf('Work') != -1)  ) {
-                current_op_classes_list.forEach( function (oc){
-                    if (oc.id == args)
-                        location.reload();
-                });
+                if (current_op_classes_list == null) {
+                    // TODO mike -- rework this (current_op_classes_list is not available in this iframe)
+                    // current workaround: always refresh
+                    location.reload();
+                }
+                else {
+                    current_op_classes_list.forEach( function (oc){
+                        if (oc.id == args)
+                            location.reload();
+                    });
+                }
             }
             break;
         default:
