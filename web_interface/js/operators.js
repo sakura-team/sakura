@@ -124,6 +124,7 @@ function operators_update_creation_modal() {
             var select2 = $('#operators_creation_sub_dir');
             select2.selectpicker('refresh');
             var select3 = $('#operators_creation_access_scope');
+            select3.empty();
             select3.append('<option>Private</option>');
             select3.append('<option>Public</option>');
             select3.selectpicker('refresh');
