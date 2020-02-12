@@ -1,4 +1,5 @@
 import socket, inspect
+from contextlib import contextmanager
 
 def short_repr(obj):
     if isinstance(obj, APIObjectBase):
@@ -14,11 +15,8 @@ def short_repr(obj):
         return res
 
 def get_attrs_desc(obj):
-    attrs = {}
     # regular attributes
-    if hasattr(obj, '__doc_attrs__'):
-        for k, v in obj.__doc_attrs__():
-            attrs[k] = v
+    attrs = { k: v for k, v in obj.__doc_attrs__() }
     # properties
     for attr_name, attr_val in inspect.getmembers(obj.__class__, inspect.isdatadescriptor):
         if attr_name.startswith('_'):
@@ -55,31 +53,81 @@ def get_methods_desc(obj, excluded_attrs):
     return res
 
 def get_subitems_desc(obj):
-    items = []
-    if hasattr(obj, '__doc_subitems__'):
-        items += list(obj.__doc_subitems__())
+    items = list(obj.__doc_subitems__())
     if len(items) == 0:
         return ''
     return '\n  sub-items:\n' + '\n'.join(
         '  - self[' + repr(k) + ']: ' + short_repr(v) for k, v in sorted(items)) + '\n'
 
 class APIObjectBase:
+    def __init__(self):
+        self.__context__ = None
+    def __get_remote_info__(self):  # overwrite in subclass
+        return {}
+    def __doc_subitems__(self):     # overwrite in subclass if needed
+        return ()
+    @property
+    def __dynamic_doc__(self):      # overwrite in subclass if needed
+        return self.__class__.__doc__ # return the docstring of the class by default
+    def __doc_attrs__(self):        # overwrite in subclass if needed
+        return self.__buffered_get_info__().items()
+    def __repr_context__(self):
+        @contextmanager
+        def cm():
+            try:
+                self.__context__ = {}
+                yield
+            finally:
+                self.__context__ = None
+        return cm()
     def __repr__(self, level=0):
-        short_desc = self.__class__.__doc__
-        if hasattr(self.__class__, '__len__'):
-            short_desc += ' (%d items)' % len(self)
-        if level == 1:
-            return '<' + short_desc + '>'
-        elif level == 0:
-            attr_names, attr_desc = get_attrs_desc(self)
-            res = '< -- ' + short_desc + ' --\n'
-            res += attr_desc
-            res += get_methods_desc(self, excluded_attrs = attr_names)
-            res += get_subitems_desc(self)
-            res += '>'
-        return res
+        with self.__repr_context__():
+            short_desc = self.__dynamic_doc__
+            if level == 1:
+                return '<' + short_desc + '>'
+            elif level == 0:
+                attr_names, attr_desc = get_attrs_desc(self)
+                res = '< -- ' + short_desc + ' --\n'
+                res += attr_desc
+                res += get_methods_desc(self, excluded_attrs = attr_names)
+                res += get_subitems_desc(self)
+                res += '>'
+            return res
+    def __buffered_get_info__(self):
+        # it's expensive to request several times info() on remote object,
+        # so if we have a running context, save it there
+        if self.__context__ is not None:
+            if 'info' in self.__context__:
+                return self.__context__['info']
+        info = self.__get_remote_info__()
+        if self.__context__ is not None:
+            self.__context__['info'] = info
+        return info
+    def __getattr__(self, attr):
+        info = self.__buffered_get_info__()
+        if attr in info:
+            return info[attr]
+        else:
+            raise AttributeError('No such attribute "%s"' % attr)
 
-def APIObjectRegistryClass(d, doc=None):
+class LazyObject:
+    def __init__(self, compute):
+        self.obj = None
+        self.computed = False
+        self.compute = compute
+    def __getattr__(self, attr):
+        if self.computed is False:
+            self.obj = self.compute()
+            self.computed = True
+        obj_attr = getattr(self.obj, attr)
+        setattr(self, attr, obj_attr)   # shortcut for next call
+        return obj_attr
+    def __len__(self):
+        return self.__getattr__('__len__')()
+    def __getitem__(self, i):
+        return self.__getattr__('__getitem__')(i)
+
+def APIObjectRegistryClass(d, doc=None, show_size=True):
     class APIObjectRegistryImpl(APIObjectBase):
         __doc__ = doc
         def __getitem__(self, k):
@@ -104,6 +152,12 @@ def APIObjectRegistryClass(d, doc=None):
         def __len__(self):
             "Indicate how many items this registry contains"
             return len(d)
+        @property
+        def __dynamic_doc__(self):
+            doc =  self.__class__.__doc__
+            if show_size:
+                doc += ' (%d items)' % len(self)
+            return doc
     return APIObjectRegistryImpl
 
 def APIObjectRegistry(*args):

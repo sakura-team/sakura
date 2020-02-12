@@ -19,12 +19,6 @@ class APIProjectPage:
             def update(self, page_name=None, page_content=None):
                 """Update page name or content"""
                 get_remote_obj().update(page_name=page_name, page_content=page_content)
-            def __doc_attrs__(self):
-                return get_remote_obj().info().items()
-            def __getattr__(self, attr):
-                info = get_remote_obj().info()
-                if attr in info:
-                    return info[attr]
-                else:
-                    raise AttributeError('No such attribute "%s"' % attr)
+            def __get_remote_info__(self):
+                return get_remote_obj().info()
         return APIProjectPageImpl()

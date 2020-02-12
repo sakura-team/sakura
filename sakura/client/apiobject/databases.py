@@ -4,32 +4,27 @@ from sakura.client.apiobject.tables import APITable
 from sakura.client.apiobject.grants import APIGrants
 
 class APIDatabase:
-    def __new__(cls, remote_api, db_id):
+    def __new__(cls, remote_api, db_info):
+        db_id = db_info['database_id']
         remote_obj = remote_api.databases[db_id]
-        def get_info():
-            return remote_obj.info()
         class APIDatabaseImpl(APIObjectBase):
-            __doc__ = 'Sakura Database: ' + get_info()['name']
+            __doc__ = 'Sakura Database: ' + db_info['name']
             @property
             def tables(self):
-                d = { table_info['table_id']: APITable(remote_api, table_info['table_id']) \
-                      for table_info in self.__getattr__('tables') }
+                info = self.__buffered_get_info__()
+                if 'tables' not in info:
+                    raise APIObjectDeniedError('access denied')
+                d = { table_info['table_id']: APITable(remote_api, table_info) \
+                      for table_info in info['tables'] }
                 return APIObjectRegistry(d, 'Sakura tables registry for this database')
             @property
             def grants(self):
                 return APIGrants(remote_obj)
-            def __doc_attrs__(self):
-                return get_info().items()
-            def __getattr__(self, attr):
-                info = get_info()
-                if attr in info:
-                    return info[attr]
-                if attr == 'tables':
-                    raise APIObjectDeniedError('access denied')
-                raise AttributeError('No such attribute "%s"' % attr)
+            def __get_remote_info__(self):
+                return remote_obj.info()
         return APIDatabaseImpl()
 
 def get_databases(remote_api):
-    d = { remote_db_info['database_id']: APIDatabase(remote_api, remote_db_info['database_id']) \
+    d = { remote_db_info['database_id']: APIDatabase(remote_api, remote_db_info) \
                 for remote_db_info in remote_api.databases.list() }
     return APIObjectRegistry(d, 'Sakura databases registry')

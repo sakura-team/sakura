@@ -8,11 +8,11 @@ class APIUserPrivileges:
             @property
             def assigned(self):
                 """assigned privileges"""
-                return remote_obj.info()['privileges']
+                return self.__buffered_get_info__()['privileges']
             @property
             def requested(self):
                 """requested privileges"""
-                return remote_obj.info()['requested_privileges']
+                return self.__buffered_get_info__()['requested_privileges']
             def request(self, privilege):
                 """request a new privilege"""
                 return remote_obj.privileges.request(privilege)
@@ -25,6 +25,12 @@ class APIUserPrivileges:
             def deny(self, privilege):
                 """deny a privilege request from this user"""
                 return remote_obj.privileges.deny(privilege)
+            def __get_remote_info__(self):
+                return remote_obj.info()
+            def __doc_attrs__(self):
+                info = self.__buffered_get_info__()
+                return (('assigned', info['privileges']),
+                        ('requested', info['requested_privileges']))
         return APIUserPrivilegesImpl()
 
 class APIUser:
@@ -37,21 +43,15 @@ class APIUser:
                 raise ReferenceError('This class is no longer valid! (was unregistered)')
             else:
                 return remote_obj
-        def get_info():
-            return get_remote_obj().info()
         class APIUserImpl(APIObjectBase):
             __doc__ = 'Sakura user "' + info['login'] + '"'
+            def __get_remote_info__(self):
+                return get_remote_obj().info()
             def __doc_attrs__(self):
-                info = get_info()
+                info = self.__buffered_get_info__()
                 info.pop('privileges')
                 info.pop('requested_privileges')
                 return info.items()
-            def __getattr__(self, attr):
-                info = get_info()
-                if attr in info:
-                    return info[attr]
-                else:
-                    raise AttributeError('No such attribute "%s"' % attr)
             @property
             def privileges(self):
                 return APIUserPrivileges(remote_obj)

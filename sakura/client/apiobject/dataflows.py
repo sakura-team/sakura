@@ -11,8 +11,7 @@ class APIDataflowOperatorsDict:
             def create(self, op_class):
                 """Create a new operator of specified class"""
                 op_info = remote_api.operators.create(dataflow_id, op_class.id, local_streams=LOCAL_STREAMS)
-                op_id = op_info['op_id']
-                return APIOperator(remote_api, op_id)
+                return APIOperator(remote_api, op_info)
         return APIDataflowOperatorsDictImpl()
 
 class APIDataflow:
@@ -29,8 +28,11 @@ class APIDataflow:
             __doc__ = "Sakura dataflow: " + info['name']
             @property
             def operators(self):
-                d = { op_info['op_id']: APIOperator(remote_api, op_info['op_id']) \
-                      for op_info in self.__getattr__('op_instances') }
+                info = self.__buffered_get_info__()
+                if 'operators' not in info:
+                    raise APIObjectDeniedError('access denied')
+                d = { op_info['op_id']: APIOperator(remote_api, op_info) \
+                      for op_info in info['operators'] }
                 return APIDataflowOperatorsDict(remote_api, self.dataflow_id, d)
             @property
             def grants(self):
@@ -47,15 +49,12 @@ class APIDataflow:
                 """Delete this dataflow"""
                 get_remote_obj().delete()
                 APIDataflow._deleted.add(remote_obj)
-            def __doc_attrs__(self):
-                return info.items()
-            def __getattr__(self, attr):
+            def __get_remote_info__(self):
                 info = get_remote_obj().info()
-                if attr in info:
-                    return info[attr]
-                if attr == 'op_instances':
-                    raise APIObjectDeniedError('access denied')
-                raise AttributeError('No such attribute "%s"' % attr)
+                if 'op_instances' in info:
+                    info['operators'] = info['op_instances']
+                    del info['op_instances']
+                return info
         return APIDataflowImpl()
 
 class APIDataflowDict:

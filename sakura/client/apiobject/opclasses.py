@@ -4,9 +4,9 @@ from sakura.client.apiobject.grants import APIGrants
 
 class APIOpClass:
     _deleted = set()
-    def __new__(cls, remote_api, cls_id):
+    def __new__(cls, remote_api, info):
+        cls_id = info['id']
         remote_obj = remote_api.op_classes[cls_id]
-        info = remote_obj.info()
         def get_remote_obj():
             if remote_obj in APIOpClass._deleted:
                 raise ReferenceError('This class is no longer valid! (was unregistered)')
@@ -14,13 +14,8 @@ class APIOpClass:
                 return remote_obj
         class APIOpClassImpl(APIObjectBase):
             __doc__ = 'Sakura ' + info['name'] + ' Operator Class'
-            def __doc_attrs__(self):
-                return info.items()
-            def __getattr__(self, attr):
-                if attr in info:
-                    return info[attr]
-                else:
-                    raise AttributeError('No such attribute "%s"' % attr)
+            def __get_remote_info__(self):
+                return get_remote_obj().info()
             @property
             def grants(self):
                 return APIGrants(get_remote_obj())
@@ -65,10 +60,10 @@ class APIOpClassDict:
             def register(self, **kwargs):
                 """Registration of a new operator class (generic procedure)"""
                 cls_info = remote_api.op_classes.register(**kwargs)
-                return APIOpClass(remote_api, cls_info['id'])
+                return APIOpClass(remote_api, cls_info)
         return APIOpClassDictImpl()
 
 def get_op_classes(remote_api):
-    d = { remote_op_cls_info['id']: APIOpClass(remote_api, remote_op_cls_info['id']) \
+    d = { remote_op_cls_info['id']: APIOpClass(remote_api, remote_op_cls_info) \
                 for remote_op_cls_info in remote_api.op_classes.list() }
     return APIOpClassDict(remote_api, d)

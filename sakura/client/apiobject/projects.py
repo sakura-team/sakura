@@ -27,8 +27,11 @@ class APIProject:
             __doc__ = "Sakura project: " + info['name']
             @property
             def pages(self):
+                info = self.__buffered_get_info__()
+                if 'pages' not in info:
+                    raise APIObjectDeniedError('access denied')
                 d = { page_info['page_id']: APIProjectPage(remote_api, page_info['page_id']) \
-                      for page_info in self.__getattr__('pages') }
+                      for page_info in info['pages'] }
                 return APIProjectPagesDict(remote_api, project_id, d)
             @property
             def grants(self):
@@ -37,15 +40,8 @@ class APIProject:
                 """Delete this project"""
                 get_remote_obj().delete()
                 APIProject._deleted.add(remote_obj)
-            def __doc_attrs__(self):
-                return info.items()
-            def __getattr__(self, attr):
-                info = get_remote_obj().info()
-                if attr in info:
-                    return info[attr]
-                if attr == 'pages':
-                    raise APIObjectDeniedError('access denied')
-                raise AttributeError('No such attribute "%s"' % attr)
+            def __get_remote_info__(self):
+                return get_remote_obj().info()
         return APIProjectImpl()
 
 class APIProjectDict:

@@ -11,21 +11,17 @@ class APIDatastore:
             __doc__ = 'Sakura %(driver_label)s datastore at %(host)s' % info
             @property
             def databases(self):
-                d = { database_info['database_id']: APIDatabase(remote_api, database_info['database_id']) \
-                      for database_info in self.__getattr__('databases') }
+                info = self.__buffered_get_info__()
+                if 'databases' not in info:
+                    raise APIObjectDeniedError('access denied')
+                d = { database_info['database_id']: APIDatabase(remote_api, database_info) \
+                      for database_info in info['databases'] }
                 return APIObjectRegistry(d, "Sakura databases registry for this datastore")
             @property
             def grants(self):
                 return APIGrants(remote_obj)
-            def __doc_attrs__(self):
-                return info.items()
-            def __getattr__(self, attr):
-                full_info = remote_obj.info()
-                if attr in full_info:
-                    return full_info[attr]
-                if attr == 'databases':
-                    raise APIObjectDeniedError('access denied')
-                raise AttributeError('No such attribute "%s"' % attr)
+            def __get_remote_info__(self):
+                return remote_obj.info()
         return APIDatastoreImpl()
 
 def get_datastores(remote_api):
