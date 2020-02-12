@@ -411,8 +411,8 @@ class GuiToHubAPI:
         return self.pages[page_id].pack()
 
     @api.pages.__getitem__.update
-    def update_project_page(self, page_id, **page_info):
-        return self.pages[page_id].update_page(**page_info)
+    def update_project_page(self, page_id, page_name=None, page_content=None):
+        return self.pages[page_id].update_page(page_name=page_name, page_content=page_content)
 
     @api.pages.__getitem__.delete
     def delete_project_page(self, page_id):

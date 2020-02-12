@@ -8,8 +8,8 @@ class ProjectPageMixin(BaseMixin):
         return dict(
             project_id = self.project.id,
             page_id = self.id,
-            name = self.name,
-            content = self.content
+            page_name = self.name,
+            page_content = self.content
         )
     @property
     def grants(self):
