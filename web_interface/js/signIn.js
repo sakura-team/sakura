@@ -176,6 +176,13 @@ function logOut(event) {
         sakura.apis.hub.logout().then(function (result) {
             current_user = null;
             fill_profil_button();
+
+            //cleaning pages
+            $("[id^='web_interface_projects_li_project_']").each(function(){
+                let pname = 'project_'+web_interface_current_id;
+                if (this.id.indexOf(pname) == -1)
+                    this.remove();
+            });
         });
     });
 }

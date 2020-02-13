@@ -370,7 +370,7 @@ function fill_pages(dir) {
     let icon_pen = '<h5 class="glyphicon glyphicon-pencil" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
     let icon_rem = '<h5 class="glyphicon glyphicon-remove" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
 
-    //cleaning pages from other projects
+    //cleaning pages
     $("[id^='web_interface_projects_li_project_']").each(function(){
         let pname = 'project_'+web_interface_current_id;
         if (this.id.indexOf(pname) == -1)
