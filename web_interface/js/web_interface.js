@@ -416,8 +416,12 @@ function fill_pages(dir) {
                 }
             });
             let rem = document.getElementById('web_interface_projects_delete_page_button');
-            if (info.pages.length == 1)   rem.style.display = 'none';
-            else                          rem.style.display = 'inline';
+            if (info.grant_level != 'write' && info.grant_level != 'own')
+                rem.style.display = 'none';
+            else {
+                if (info.pages.length == 1)   rem.style.display = 'none';
+                else                          rem.style.display = 'inline';
+            }
         }
 
         let li_add = document.getElementById('web_interface_projects_li_add');
