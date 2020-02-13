@@ -122,6 +122,8 @@ function matching_hub_name(obj) {
         return 'database';
     else if (web_interface_current_object_type == 'dataflows')
         return 'dataflow';
+    else if (web_interface_current_object_type == 'projects')
+        return 'project';
     else {
         console.log('We do not deal with '+obj+' for now');
         not_yet('code 1');
@@ -743,12 +745,12 @@ function web_interface_asking_access_open_modal(o_name, o_type, grant, callback)
                                 rows: '6',
                                 text: txt2});
     b.append(ti);
+    $('#web_interface_asking_access_modal_button').unbind();
     $('#web_interface_asking_access_modal_button').click(function () { web_interface_asking_access(grant, callback)});
     $('#web_interface_asking_access_modal').modal('show');
 }
 
 function web_interface_asking_access(grant, callback) {
-
     var txt = $('#web_interface_asking_access_textarea').val();
     current_remote_api_object().grants.request(grant, txt).then(function(result) {
         if (!result) {
