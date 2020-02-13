@@ -395,7 +395,7 @@ function fill_pages(dir) {
                     let url = "Projects/Project-"+web_interface_current_id+"/Page-"+page.page_id;
                     let a = $('<a>',  { 'onclick': "showDiv(event, '"+url+"', 'web_interface_projects_main_toFullfill');",
                                         'style': "color: dimgrey; padding: 2px; padding-right: 10px; padding-left: 10px; cursor: pointer;",
-                                        'html': icon_pap+'<font size=2>'+page.name+'</font>'
+                                        'html': icon_pap+'<font size=2>'+page.page_name+'</font>'
                                       });
                     li.append(a);
                     li.insertAfter($('#web_interface_projects_li_main'));
@@ -406,7 +406,7 @@ function fill_pages(dir) {
                     li.addClass('active');
                     web_interface_create_large_description_area(web_interface_current_object_type,
                                                                 'web_interface_'+web_interface_current_object_type+'_markdownarea',
-                                                                page.content,
+                                                                page.page_content,
                                                                 info.grant_level == 'own' || info.grant_level == 'write');
                   let d_button = $('#web_interface_projects_delete_page_button');
                   d_button.attr('onclick', 'delete_page('+page.page_id+');');
