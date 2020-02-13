@@ -161,12 +161,12 @@ function fill_work() {
         else
             $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
 
-        if (web_interface_current_object_type == 'projects') {
-            web_interface_create_large_description_area(web_interface_current_object_type,
-                                                        'web_interface_'+web_interface_current_object_type+'_markdownarea',
-                                                        info.l_desc,
-                                                        info.grant_level == 'own' || info.grant_level == 'write');
-        }
+        // if (web_interface_current_object_type == 'projects') {
+        //     web_interface_create_large_description_area(web_interface_current_object_type,
+        //                                                 'web_interface_'+web_interface_current_object_type+'_markdownarea',
+        //                                                 info.l_desc,
+        //                                                 info.grant_level == 'own' || info.grant_level == 'write');
+        // }
     });
 }
 
@@ -181,7 +181,7 @@ function fill_metadata() {
         $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
 
         //Description
-        var empty_desc = '<font color="grey"><i>No short description for now</i></font>';
+    let empty_desc = '<font color="grey"><i>No short description for now</i></font>';
         if (info.grant_level == 'own') {
             var elt = $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]);
             elt.empty();
@@ -224,8 +224,7 @@ function fill_metadata() {
                     if (!(elt.value != undefined && elt.value))
                         elt.value = '';
                     var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
-                    a.editable({emptytext: empty_text,
-                                url: function(params) {web_interface_updating_metadata(a, params);}});
+                    a.editable({url: function(params) {web_interface_updating_page_name(a, params);}});
                     dd.append(a);
                 }
                 else {
@@ -334,10 +333,12 @@ function fill_metadata() {
         }
         fill_collaborators_table_body(info);
 
-        web_interface_create_large_description_area(web_interface_current_object_type,
-                                                    'web_interface_'+web_interface_current_object_type+'_markdownarea',
-                                                    l_desc,
-                                                    info.grant_level == 'own' || info.grant_level == 'write');
+
+        if (web_interface_current_object_type != 'projects')
+            web_interface_create_large_description_area(web_interface_current_object_type,
+                                                        'web_interface_'+web_interface_current_object_type+'_markdownarea',
+                                                        l_desc,
+                                                        info.grant_level == 'own' || info.grant_level == 'write');
     });
 }
 
@@ -354,6 +355,74 @@ function web_interface_updating_metadata(a, params) {
             a.html(empty_text);
         }
     );
+}
+
+function web_interface_updating_page_name(a, params) {
+    console.log(a);
+    console.log(params);
+}
+
+function fill_pages(dir) {
+    let ul = $('#web_interface_projects_ul');
+    let icon_pap = '<h5 class="glyphicon glyphicon-paperclip" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
+    let icon_pen = '<h5 class="glyphicon glyphicon-pencil" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
+    let icon_rem = '<h5 class="glyphicon glyphicon-remove" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
+
+    //cleaning pages from other projects
+    $("[id^='web_interface_projects_li_project_']").each(function(){
+        let pname = 'project_'+web_interface_current_id;
+        if (this.id.indexOf(pname) == -1)
+            this.remove();
+    });
+
+    current_remote_api_object().info().then(function(info) {
+        if (info.pages) {
+            info.pages.forEach( function(page) {
+                let active_page = false;
+                if (dir.indexOf('Page-') != -1) {
+                    let id = dir.split('Page-')[1].split('/')[0];
+                    if (id == page.page_id) {
+                        active_page = true;
+                    }
+                }
+                let page_name = "web_interface_projects_li_project_"+page.project_id+"_page_"+page.page_id;
+                let li = $(document.getElementById(page_name));
+
+                if ( ! document.getElementById(page_name)) {
+                    li = $('<li>', {'id': page_name});
+                    let url = "Projects/Project-"+web_interface_current_id+"/Page-"+page.page_id;
+                    let a = $('<a>',  { 'onclick': "showDiv(event, '"+url+"', 'web_interface_projects_main_toFullfill');",
+                                        'style': "color: dimgrey; padding: 2px; padding-right: 10px; padding-left: 10px; cursor: pointer;",
+                                        'html': icon_pap+'<font size=2>'+page.name+'</font>'
+                                      });
+                    li.append(a);
+                    li.insertAfter($('#web_interface_projects_li_main'));
+                }
+
+                if (active_page) {
+                    li.addClass('active');
+                    web_interface_create_large_description_area(web_interface_current_object_type,
+                                                                'web_interface_'+web_interface_current_object_type+'_markdownarea',
+                                                                page.content,
+                                                                info.grant_level == 'own' || info.grant_level == 'write');
+                  let d_button = $('#web_interface_projects_delete_page_button');
+                  d_button.attr('onclick', 'delete_page('+page.page_id+');');
+                }
+                else {
+                    li.removeClass('active');
+                }
+            });
+            let rem = document.getElementById('web_interface_projects_delete_page_button');
+            if (info.pages.length == 1)   rem.style.display = 'none';
+            else                          rem.style.display = 'inline';
+        }
+
+        let li_add = document.getElementById('web_interface_projects_li_add');
+        if (info.grant_level != 'write' && info.grant_level != 'own')
+            li_add.style.display = 'none';
+        else
+            li_add.style.display = 'inline';
+    });
 }
 
 function fill_history() {
@@ -468,12 +537,13 @@ function showDiv(event, dir, div_id) {
     }
 
     //normalize dir
-    if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1))
-        document.pageElt = +dir.split("?")[1].match(/page=(-?\d+)/)[1];
-    else {
-        document.pageElt = 1;
-    }
-    dir = dir.split("?")[0];
+    // if ((dir.split("?").length>1) && (dir.split("?")[1].match(/page=(-?\d+)/).length>1)) {
+    //     document.pageElt = +dir.split("?")[1].match(/page=(-?\d+)/)[1];
+    // }
+    // else {
+    //     document.pageElt = 1;
+    // }
+    // dir = dir.split("?")[0];
 
     if (dir == "")
         dir = "Home";
@@ -492,7 +562,6 @@ function showDiv(event, dir, div_id) {
     for(i=0;i<mainDivs.length;i++) {
         mainDivs[i].style.display='none';
     }
-
     var idDir = "web_interface";
     dirs.forEach(function (dir) {
         if (isUrlWithId(dir)) //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
@@ -504,6 +573,9 @@ function showDiv(event, dir, div_id) {
 
     if (dirs.length == 1)
         idDir += "_div";
+
+    while (idDir.indexOf("tmp_tmp") != -1)
+        idDir = idDir.replace("tmp_tmp", "tmp");
     document.getElementById(idDir).style.display='inline';
 
 
@@ -559,66 +631,62 @@ function showDiv(event, dir, div_id) {
                 web_interface_current_object_type = n.toLowerCase();
         });
         var obj = web_interface_current_object_type;
+        if (web_interface_current_object_type != 'projects') {
+            var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
+            var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
 
-        var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
-        var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
-        // var li_history = $($('#web_interface_'+obj+'_buttons_history')[0].parentElement);
+            if (dir.indexOf('Meta') != -1 || dir.indexOf('Work') != -1)
+                document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
-        document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
-
-        if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
             if (dir.indexOf('Meta') != -1) {
-                //change_class([li_main, li_work, li_history], [true, false, false], "active");
                 change_class([li_main, li_work], [true, false], "active");
                 fill_metadata();
             }
-            else if (dir.indexOf('Work') != -1) {
-                //change_class([li_main, li_work, li_history], [false, true, false], "active");
-                change_class([li_main, li_work], [false, true], "active");
+
+            if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
+                if (dir.indexOf('Work') != -1) {
+                    change_class([li_main, li_work], [false, true], "active");
+                }
             }
             else {
-                console.log(dir);
+                var n1 = 'Datas';
+                var n2 = 'Data';
+                if (web_interface_current_object_type == 'dataflows') {
+                    n1 = 'Dataflows';
+                    n2 = 'Dataflow';
+                }
+                else if (web_interface_current_object_type == 'operators') {
+                    n1 = 'Operators';
+                    n2 = 'Operator';
+                }
+                $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
+                $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
+
+                if (dir.indexOf("Work") != -1) {
+                    change_class([li_main, li_work], [false, true], "active");
+                    fill_work();
+                }
             }
-            // else if (dir.indexOf('Historic') != -1) {
-            //     change_class([li_main, li_work, li_history], [false, false, true], "active");
-            // }
         }
         else {
-            var n1 = 'Datas';
-            var n2 = 'Data';
-            if (web_interface_current_object_type == 'dataflows') {
-                n1 = 'Dataflows';
-                n2 = 'Dataflow';
-            }
-            else if (web_interface_current_object_type == 'operators') {
-                n1 = 'Operators';
-                n2 = 'Operator';
-            }
-            else if (web_interface_current_object_type == 'projects') {
-                n1 = 'Projects';
-                n2 = 'Project';
-            }
+            var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
+            if (dir.indexOf('Meta') != -1 || dir.indexOf('Page') != -1)
+                document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
 
-            $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
-            $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
-            //$('#web_interface_datas_buttons_history').attr('onclick', "showDiv(event, 'Datas/Data-"+web_interface_current_id+"/Historic', 'web_interface_datas_main_toFullfill');");
-
-            if (dir.indexOf("Meta") != -1) {
-                //change_class([li_main, li_work, li_history], [true, false, false], "active");
-                change_class([li_main, li_work], [true, false], "active");
+            if (dir.indexOf('Meta') != -1) {
                 fill_metadata();
+                if (dir.indexOf('Page') == -1)  li_main.addClass('active');
+                else                            li_main.removeClass('active');
             }
-            else if (dir.indexOf("Work") != -1) {
-                //change_class([li_main, li_work, li_history], [false, true, false], "active");
-                change_class([li_main, li_work], [false, true], "active");
-                fill_work();
-            }
-            // else if (dir.indexOf('Historic') != -1) {
-            //     change_class([li_main, li_work, li_history], [false, false, true], "active");
-            //     fill_history();
-            // }
-            else {
-                document.getElementById('web_interface_'+obj+'_tmp_main').style.display='none';
+
+            if (dir.indexOf('Projects/Pro') != -1) {
+                $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, 'Projects/Project-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
+                //now the pages
+                fill_pages(dir);
+                if (dir.indexOf('Page-') != -1) {
+                    document.getElementById('web_interface_projects_tmp_meta').style.display='none';
+                    document.getElementById('web_interface_projects_tmp_work').style.display='inline';
+                }
             }
         }
     }
@@ -633,8 +701,6 @@ function showDiv(event, dir, div_id) {
             else if (aos.id == 'iframe_workflow')
                 url = "/modules/workflow/index.html?dataflow_id=";
             else if (aos.id == 'iframe_operators')
-                url = "TODO!!!!";
-            else if (aos.id == 'iframe_projects')
                 url = "TODO!!!!";
             url += web_interface_current_id;
             aos.src = url;

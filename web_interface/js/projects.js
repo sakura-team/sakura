@@ -57,13 +57,21 @@ function new_project() {
 
     sakura.apis.hub.projects.create(name, { 'short_desc': short_d,
                                             'access_scope': access_scope }
-                                ).then(function(result) {
-        if (result < 0) {
+                                ).then(function(project_id) {
+        if (project_id < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
         else {
-            $('#create_projects_modal').modal('hide');
-            showDiv(null, 'Projects/Project-'+result, null);
+            sakura.apis.hub.projects[project_id].info().then (function (info) {
+                sakura.apis.hub.pages[info.pages[0].page_id].update({ 'page_name': 'Page 1',
+                                                                      'page_content': pages_init_text}
+                        ).then (function(result) {
+                      $('#create_projects_modal').modal('hide');
+                      showDiv(null, 'Projects/Project-'+project_id, null);
+                  })
+            });
+
+
         }
     });
 }
@@ -90,7 +98,6 @@ function pages_creation_check_mandatory() {
 }
 
 function new_page() {
-    console.log(web_interface_current_object_info.pages);
     let name          = $('#pages_name_input').val();
     let access_scope  = 'restricted';
     let id            = web_interface_current_object_info.project_id;
@@ -100,9 +107,32 @@ function new_page() {
             access_scope = tab[tab.length - 1];
         }
     });
-    console.log(name, access_scope, id);
-    //project_id, page_name
-    //sakura.apis.hub.pages.create(web_interface_current_object_info.project_id, name,
+    sakura.apis.hub.pages.create(id, name).then(function (page_id) {
+        console.log('Great !!', page_id);
+        sakura.apis.hub.pages[page_id].update({'page_content': pages_init_text}
+                        ).then (function(result) {
+              pages_close_modal();
+              showDiv(null, 'Projects/Project-'+web_interface_current_object_info.project_id+'/Page-'+page_id, null);
+        })
+    }).catch( function(result) {
+        console.log('Pas Great !!', result);
+    });
+}
+
+function delete_page(page_id){
+    stub_asking( 'Delete a Page',
+                  'Are you sure you want to definitely delete this page from the project ??',
+                  'rgba(217,83,79)',
+                  function() {
+                      sakura.apis.hub.pages[page_id].delete().then( function(result){
+                          let project_id = web_interface_current_object_info.project_id;
+                          let li = document.getElementById("web_interface_projects_li_project_"+project_id+"_page_"+page_id);
+                          li.remove();
+                          showDiv(null, 'Projects/Project-'+project_id, null);
+                      });
+                  },
+                  function() {} );
+
 
 }
 

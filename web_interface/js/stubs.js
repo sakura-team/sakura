@@ -208,6 +208,12 @@ function stub_delete(db_id, idDiv, elt) {
         stub = sakura.apis.hub.op_classes;
         method = 'unregister';
     }
+    else if (idDiv.indexOf('projects') != -1) {
+        type = 'Project';
+        asking_msg = 'Are you sure you want to definitely delete this project, with all its pages ??';
+        stub = sakura.apis.hub.projects;
+        method = 'delete';
+    }
 
     //Alert first
     stub_asking( 'Delete a '+ type,
