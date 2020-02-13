@@ -147,6 +147,8 @@ function current_remote_api_object() {
         api_objects = sakura.apis.hub.op_classes;
     else if (web_interface_current_object_type == 'projects')
         api_objects = sakura.apis.hub.projects;
+    else if (web_interface_current_object_type == 'pages')
+        api_objects = sakura.apis.hub.pages;
     return api_objects[web_interface_current_id]
 }
 
@@ -400,6 +402,7 @@ function fill_pages(dir) {
                 }
 
                 if (active_page) {
+                    current_page = page;
                     li.addClass('active');
                     web_interface_create_large_description_area(web_interface_current_object_type,
                                                                 'web_interface_'+web_interface_current_object_type+'_markdownarea',
@@ -470,7 +473,11 @@ function web_interface_create_large_description_area(datatype, area_id, descript
 }
 
 function web_interface_save_large_description(id) {
-    current_remote_api_object().update({'large_desc': simplemde.value()});
+    if (web_interface_current_object_type != 'projects')
+        current_remote_api_object().update({'large_desc': simplemde.value()});
+    else {
+        sakura.apis.hub.pages[current_page.page_id].update({'page_content': simplemde.value()});
+    }
 }
 
 function l_html(obj, event, dir, div_id) {
