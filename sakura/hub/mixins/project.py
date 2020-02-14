@@ -15,7 +15,11 @@ class ProjectMixin(BaseMixin):
     def get_full_info(self):
         # start with general metadata
         result = self.pack()
-        if self.get_grant_level() >= GRANT_LEVELS.read:
+        # note: we consider that pages are part of project 'metadata' (not 'content').
+        # that is why the required grant level below is 'list' (not 'read').
+        # this allows all users (even if not logged in) to view pages of public
+        # projects.
+        if self.get_grant_level() >= GRANT_LEVELS.list:
             # add pages
             result['pages'] = tuple(page.pack() for page in self.pages)
         return result
