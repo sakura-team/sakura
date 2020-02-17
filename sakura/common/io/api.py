@@ -68,8 +68,8 @@ class APIEndpoint:
             else:
                 print('malformed request? Got exception:')
                 traceback.print_exc()
-            self.handle_receive_exception(e)
             if self.silent_disconnect is False:
+                self.handle_receive_exception(e)
                 print('closing this api channel.')
             if not self.f.closed:
                 self.f.close()

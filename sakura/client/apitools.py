@@ -12,6 +12,10 @@ from sakura.common.errors import IOReadException, IOWriteException
 
 DEBUG=False
 
+def debug_print(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
+
 # add wait_read & wait_write to make websocket cooperate in a gevent context
 class GeventWSock(object):
     def __init__(self, wsock):
@@ -19,14 +23,25 @@ class GeventWSock(object):
     def send(self, s):
         try:
             wait_write(self.wsock.fileno())
-            return self.wsock.send(s)
+            debug_print('writing', s, '... ', end='')
+            num = self.wsock.send(s)
+            debug_print('OK')
+            return num
         except:
+            debug_print('exception!')
             raise IOWriteException("Could not write websocket message.")
     def recv(self):
         try:
             wait_read(self.wsock.fileno())
-            return self.wsock.recv()
+            debug_print('reading... ', end='')
+            msg = self.wsock.recv()
+            if len(msg) > 40:
+                debug_print('OK', msg[:37] + '...')
+            else:
+                debug_print('OK', msg)
+            return msg
         except:
+            debug_print('exception!')
             raise IOReadException("Could not read websocket message.")
     def close(self):
         self.wsock.close()
@@ -143,6 +158,11 @@ class WSManager:
         queue = self.waiting_greenlets[curr_greenlet]
         queue.wait()
         return
+    def silent_endpoint_loop(self):
+        try:
+            self.endpoint.loop()
+        except:
+            pass    # just exit silently
     def do_connect(self):
         while True:
             try:
@@ -155,11 +175,11 @@ class WSManager:
                     else:
                         self.connecting_message.init('Connecting...', end='')
                 self.ws.connect()
-                self.endpoint_greenlet = Greenlet.spawn(self.endpoint.loop)
+                self.endpoint_greenlet = Greenlet.spawn(self.silent_endpoint_loop)
                 if DEBUG:
                     import random
                     self.endpoint_greenlet.name = 'api-endpoint-loop-' + str(random.randint(0, 1000))
-                    print('spawned greenlet ' + self.endpoint_greenlet.name)
+                    debug_print('spawned greenlet ' + self.endpoint_greenlet.name)
                 if self.connect_attempt >= RECONNECTION_WARNING_TRESHOLD:
                     if ever_connected:
                         self.connecting_message.print('... OK, repaired.')
@@ -170,8 +190,7 @@ class WSManager:
                 self.connecting_message.print('... FAILED.')
                 raise
             except BaseException as e:
-                if DEBUG:
-                    print(e)
+                debug_print(e)
                 pass    # handle below
             # handle exception
             if self.connect_timeout is None or self.connect_attempt < self.connect_timeout:
@@ -192,11 +211,9 @@ class WSManager:
                 res = func(*args)
                 return res
             except BaseException as e:
-                if DEBUG:
-                    print(e)
+                debug_print(e)
                 if self.endpoint_greenlet is not None:
-                    if DEBUG:
-                        print(gevent.getcurrent(), '-- killing greenlet ' + self.endpoint_greenlet.name)
+                    debug_print(gevent.getcurrent(), '-- killing greenlet ' + self.endpoint_greenlet.name)
                     g = self.endpoint_greenlet
                     self.endpoint_greenlet = None
                     g.kill()
