@@ -21,7 +21,8 @@ class ProjectMixin(BaseMixin):
         # projects.
         if self.get_grant_level() >= GRANT_LEVELS.list:
             # add pages
-            result['pages'] = tuple(page.pack() for page in self.pages)
+            result['pages'] = sorted((page.pack() for page in self.pages),
+                                     key=lambda p: p['page_id'])
         return result
     def describe(self):
         return "'%(name)s' project" % dict(
