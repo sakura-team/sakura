@@ -69,8 +69,6 @@ function new_project() {
                       showDiv(null, 'Projects/Project-'+project_id, null);
                   })
             });
-
-
         }
     });
 }
