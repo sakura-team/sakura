@@ -285,7 +285,8 @@ function fill_metadata() {
                                         });
 
             select.append('<option value="private">private</option>');
-            select.append('<option value="restricted">restricted</option>');
+            if (web_interface_current_object_type != 'projects')
+                select.append('<option value="restricted">restricted</option>');
             select.append('<option value="public">public</option>');
             select.find('option').each( function () {
                 if ($(this).val() == info.access_scope)
@@ -615,7 +616,9 @@ function showDiv(event, dir, div_id) {
         tmpDir = tmpDir + "/";
     }
 
-    bct = bct + "<li class='active'>"+dirs[i]+"</li>";
+    if (dirs.indexOf('Projects-') == -1)
+        bct = bct + "<li class='active'>"+dirs[i]+"</li>";
+
     var d = document.getElementById("breadcrumbtrail");
     d.innerHTML = bct;
 
@@ -652,8 +655,9 @@ function showDiv(event, dir, div_id) {
             var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
             var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
 
-            if (dir.indexOf('Meta') != -1 || dir.indexOf('Work') != -1)
+            if (dir.indexOf('Meta') != -1 || dir.indexOf('Work') != -1) {
                 document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
+            }
 
             if (dir.indexOf('Meta') != -1) {
                 change_class([li_main, li_work], [true, false], "active");
