@@ -66,7 +66,7 @@ function buildListStub(idDiv,result,elt) {
             if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
                 var name = $('<a>');
                 name.html(row.name+'&nbsp;');
-                name.attr('href', 'http://sakura.imag.fr/'+tmp_elt+'/'+row.id);
+                name.attr('href', '/'+tmp_elt+'/'+row.id);
                 name.attr('title', 'Accessing '+elt_type.slice(0, -1));
                 name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
 

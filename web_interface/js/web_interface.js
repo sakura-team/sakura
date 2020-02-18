@@ -602,12 +602,16 @@ function showDiv(event, dir, div_id) {
         navBarElt.className = "active";
     }
 
+    let c_url = window.location.href.split('//');
+    let url = c_url[0]+'//'+c_url[1].split('/')[0]
+
     //set breadcrumb
-    var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"http://sakura.imag.fr\" title=\"Sakura\">Sakura</a></li>";
+    var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"\" title=\"Sakura\">Sakura</a></li>";
     var tmpDir = "";
+
     for(i=0;i<dirs.length-1;i++) {
         tmpDir = tmpDir + dirs[i] ;
-        bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\"http://sakura.imag.fr/"+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
+        bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\""+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
         tmpDir = tmpDir + "/";
     }
 
