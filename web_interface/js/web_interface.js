@@ -368,7 +368,7 @@ function web_interface_updating_page_name(a, params) {
 
 function fill_pages(dir) {
     let ul = $('#web_interface_projects_ul');
-    let icon_pap = '<h5 class="glyphicon glyphicon-paperclip" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
+    let icon_pap = '<h5 class="glyphicon glyphicon-file" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
     let icon_pen = '<h5 class="glyphicon glyphicon-pencil" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
     let icon_rem = '<h5 class="glyphicon glyphicon-remove" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
 

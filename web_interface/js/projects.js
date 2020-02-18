@@ -63,8 +63,7 @@ function new_project() {
         }
         else {
             sakura.apis.hub.projects[project_id].info().then (function (info) {
-                sakura.apis.hub.pages[info.pages[0].page_id].update({ 'page_name': 'Page 1',
-                                                                      'page_content': pages_init_text}
+                sakura.apis.hub.pages[info.pages[0].page_id].update({ 'page_content': pages_init_text}
                         ).then (function(result) {
                       $('#create_projects_modal').modal('hide');
                       showDiv(null, 'Projects/Project-'+project_id, null);
