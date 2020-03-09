@@ -23,23 +23,25 @@ class MapOperator(Operator):
         # custom attributes
         self.curr_heatmap = None
 
+    @property
+    def lng_column(self):
+        return self.lng_column_param.column
+
+    @property
+    def lat_column(self):
+        return self.lat_column_param.column
+
     def geo_filter(self, source, westlng, eastlng, southlat, northlat, **args):
         """restrict source to visible area"""
-        # get columns selected in combo parameters
-        lng_col_idx, lat_col_idx = \
-            self.lng_column_param.col_index, self.lat_column_param.col_index
-        # apply filters
-        source = source.filter_column(lng_col_idx, operator.__ge__, westlng)
-        source = source.filter_column(lng_col_idx, operator.__le__, eastlng)
-        source = source.filter_column(lat_col_idx, operator.__ge__, southlat)
-        source = source.filter_column(lat_col_idx, operator.__le__, northlat)
+        source = source.where((self.lng_column >= westlng)  &
+                              (self.lng_column <= eastlng)  &
+                              (self.lat_column >= southlat) &
+                              (self.lat_column <= northlat))
         return source
 
     def columns_filter(self, source):
         """restrict source to latitude and longitude columns"""
-        lng_col_idx, lat_col_idx = \
-            self.lng_column_param.col_index, self.lat_column_param.col_index
-        source = source.select_columns(lng_col_idx, lat_col_idx)
+        source = source.select(self.lng_column, self.lat_column)
         return source
 
     def handle_event(self, ev_type, time_credit, **info):

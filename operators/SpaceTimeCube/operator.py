@@ -40,11 +40,11 @@ class spacetimecubeOperator(Operator):
 
         # Sending new data now
         src = self.input_plug.source
-        cols = src.select_columns(  self.id_column_param.col_index,
-                                    self.dat_column_param.col_index,
-                                    self.lng_column_param.col_index,
-                                    self.lat_column_param.col_index,
-                                    self.ele_column_param.col_index)
+        cols = src.select(  self.id_column_param.column,
+                            self.dat_column_param.column,
+                            self.lng_column_param.column,
+                            self.lat_column_param.column,
+                            self.ele_column_param.column)
         self.ogl_app.push_event('loading_data_start')
         for ch in cols.chunks():
             self.ogl_app.handler.load_data(chunk=ch)

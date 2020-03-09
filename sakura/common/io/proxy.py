@@ -53,6 +53,16 @@ class Proxy:
         return self.__internals.call_special('__len__')
     def __truediv__(self, other):   # handle '/' operator for remote pathlib.Path objects
         return self.__internals.call_special('__truediv__', other)
+    def __lt__(self, val):
+        return self.__internals.call_special('__lt__', val)
+    def __le__(self, val):
+        return self.__internals.call_special('__le__', val)
+    def __gt__(self, val):
+        return self.__internals.call_special('__gt__', val)
+    def __ge__(self, val):
+        return self.__internals.call_special('__ge__', val)
+    def __and__(self, other):       # this is the bitwise and ("&"), logical "and" cannot be redefined
+        return self.__internals.call_special('__and__', other)
     def __enter__(self):
         return self.__internals.call_special('__enter__')
     def __exit__(self, *args):

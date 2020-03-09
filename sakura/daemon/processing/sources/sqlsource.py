@@ -37,12 +37,13 @@ class SQLSourceIterator:
         self.release()
 
 class SQLSource(SourceBase):
-    def __init__(self, label, query, db):
-        SourceBase.__init__(self, label)
+    def __init__(self, label, query, db, columns = None):
+        SourceBase.__init__(self, label, columns)
         self.db = db
         self.query = query
-        for col in query.selected_cols:
-            self.add_column(col.col_name, col.col_type, col.tags, **col.col_type_params)
+        if columns is None: # auto populate columns
+            for col in query.selected_cols:
+                self.add_column(col.col_name, col.col_type, col.tags, **col.col_type_params)
     def __iter__(self):
         for chunk in self.chunks():
             yield from chunk
@@ -50,10 +51,11 @@ class SQLSource(SourceBase):
         return SQLSourceIterator(self, chunk_size, offset)
     def __select_columns__(self, *col_indexes):
         new_query = self.query.select_columns(*col_indexes)
-        return SQLSource(self.label, new_query, self.db)
+        columns = tuple(self.columns[i] for i in col_indexes)
+        return SQLSource(self.label, new_query, self.db, columns)
     def __filter__(self, *cond_info):
         new_query = self.query.filter(*cond_info)
-        return SQLSource(self.label, new_query, self.db)
+        return SQLSource(self.label, new_query, self.db, self.columns)
     def open_cursor(self, db_conn, offset=0):
         self.query.set_offset(offset)
         cursor = self.db.dbms.driver.open_server_cursor(db_conn)

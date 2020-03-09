@@ -72,8 +72,7 @@ MEAN_OUTPUT_CUSTOM_CODE = '''\
 # It actually streams a single tuple (<mean-value>,)
 # indicating the result of the calculation.
 def compute_mean(self):
-    column_idx = self.%(param_name)s.col_index
-    column = self.%(input_name)s.columns[column_idx]
+    column = self.%(param_name)s.column
     res = 0
     num = 0
     for chunk in column.chunks():

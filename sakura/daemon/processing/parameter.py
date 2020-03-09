@@ -228,6 +228,12 @@ class ColumnSelectionParameter(ComboParameter):
         for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             if col_info_str == self.value:
                 return col_idx
+    @property
+    def column(self):
+        col_index = self.col_index
+        if col_index is None:
+            return None
+        return self.plug.source.columns[col_index]
     @staticmethod
     def adapt_with_condition(cond):
         class AdaptedColumnSelection(ColumnSelectionParameter):

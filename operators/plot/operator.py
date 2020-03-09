@@ -33,10 +33,10 @@ class PlotOperator(Operator):
             return { 'issue': 'NO DATA: Input is not connected.' }
 
         if ev_type == 'get_data': #first time data is asked
-            column_x        = self.input_column_param_x.col_index
-            column_y        = self.input_column_param_y.col_index
+            column_x        = self.input_column_param_x.column
+            column_y        = self.input_column_param_y.column
             source          = self.input.source
-            source          = source.select_columns(column_x, column_y)
+            source          = source.select(column_x, column_y)
             self.iterator   = source.chunks()
 
         big_chunk = None

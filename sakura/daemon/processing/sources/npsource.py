@@ -6,13 +6,14 @@ from sakura.common.types import np_dtype_to_sakura_type
 DEFAULT_CHUNK_SIZE = 100000
 
 class NumpyArraySource(SourceBase):
-    def __init__(self, label, array, rows_cond = None):
-        SourceBase.__init__(self, label)
+    def __init__(self, label, array, rows_cond = None, columns = None):
+        SourceBase.__init__(self, label, columns)
         self.array = array
-        for col_label in array.dtype.names:
-            col_dt = array.dtype[col_label]
-            col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
-            self.add_column(col_label, col_type, **col_type_params)
+        if columns is None: # auto populate columns
+            for col_label in array.dtype.names:
+                col_dt = array.dtype[col_label]
+                col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
+                self.add_column(col_label, col_type, **col_type_params)
         self.rows_cond = rows_cond
     def __iter__(self):
         for chunk in self.chunks():
@@ -31,7 +32,8 @@ class NumpyArraySource(SourceBase):
                 offset += chunk_size
     def __select_columns__(self, *col_indexes):
         filtered_array = self.array.view(NumpyChunk).__select_columns__(*col_indexes)
-        return NumpyArraySource(self.label, filtered_array)
+        columns = tuple(self.columns[i] for i in col_indexes)
+        return NumpyArraySource(self.label, filtered_array, columns)
     def __filter__(self, col_index, comp_op, other):
         col_label = self.columns[col_index]._label
         # we generate a condition of the form:
@@ -45,4 +47,4 @@ class NumpyArraySource(SourceBase):
         if self.rows_cond is not None:
             rows_cond = np.logical_and(rows_cond, self.rows_cond)
         # return filtered object
-        return NumpyArraySource(self.label, self.array, rows_cond)
+        return NumpyArraySource(self.label, self.array, rows_cond, self.columns)

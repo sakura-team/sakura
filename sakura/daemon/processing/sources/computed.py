@@ -12,11 +12,8 @@ class ComputeMode(Enum):
 
 class ItemsComputedSource(SourceBase):
     def __init__(self, label, compute_cb, columns=None):
-        SourceBase.__init__(self, label)
+        SourceBase.__init__(self, label, columns)
         self.compute_cb = compute_cb
-        if columns is not None:
-            for col in columns:
-                self.add_column(col._label, col._type, col._tags, **col._type_params)
     def __iter__(self):
         yield from self.compute_cb()
     def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE, offset=0):
@@ -47,11 +44,8 @@ class ItemsComputedSource(SourceBase):
 
 class ChunksComputedSource(SourceBase):
     def __init__(self, label, compute_cb, columns=None):
-        SourceBase.__init__(self, label)
+        SourceBase.__init__(self, label, columns)
         self.compute_cb = compute_cb
-        if columns is not None:
-            for col in columns:
-                self.add_column(col._label, col._type, col._tags, **col._type_params)
     def __iter__(self):
         for chunk in self.chunks():
             yield from chunk
@@ -109,8 +103,8 @@ class ChunksComputedSource(SourceBase):
     def create_chunk(self, array):
         return NumpyChunk(array, self.get_dtype())
 
-def ComputedSource(label, compute_cb, compute_mode = ComputeMode.ITEMS, columns=None):
+def ComputedSource(label, compute_cb, compute_mode = ComputeMode.ITEMS):
     if compute_mode == ComputeMode.ITEMS:
-        return ItemsComputedSource(label, compute_cb, columns)
+        return ItemsComputedSource(label, compute_cb)
     else:
-        return ChunksComputedSource(label, compute_cb, columns)
+        return ChunksComputedSource(label, compute_cb)

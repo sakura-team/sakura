@@ -35,11 +35,11 @@ class gps2d(Operator):
         if 'get_data' in ev_type:
             if ev_type == 'get_data_first':
                 #Init iterator
-                column_id       = self.input_column_param_id.col_index
-                column_x        = self.input_column_param_lon.col_index
-                column_y        = self.input_column_param_lat.col_index
+                column_id       = self.input_column_param_id.column
+                column_x        = self.input_column_param_lon.column
+                column_y        = self.input_column_param_lat.column
                 source          = self.input.source
-                source          = source.select_columns(column_id, column_x, column_y)
+                source          = source.select(column_id, column_x, column_y)
                 self.iterator   = source.chunks()
 
             try:
