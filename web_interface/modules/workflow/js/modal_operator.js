@@ -244,41 +244,40 @@ function params_onChange(op_id, param_index, select) {
 
 
 function fill_in_out(in_out, id) {
-    var inst_id     = parseInt(id.split("_")[2]);
-    var d           = document.getElementById('modal_'+id+'_tab_'+in_out+'s');
-
-    //cleaning
-    while (d.firstChild) {
-        d.removeChild(d.firstChild);
-    }
+    let inst_id     = parseInt(id.split("_")[2]);
 
     //infos
     sakura.apis.hub.operators[inst_id].info().then(function (result_info) {
-        var nb_in_out = result_info[in_out+'s'].length;
+        let nb_in_out = result_info[in_out+'s'].length;
+        let d         = document.getElementById('modal_'+id+'_tab_'+in_out+'s');
+        //cleaning
+        while (d.firstChild) {
+            d.removeChild(d.firstChild);
+        }
 
         if (nb_in_out == 0) {
             d.innerHTML = '<br><p align="center"> No '+in_out+'s</p>';
             return;
         }
 
-        var div_tab = document.createElement('div');
+        let div_tab = document.createElement('div');
         div_tab.className = 'modal-body';
         div_tab.id = id+'_'+in_out+'s';
         div_tab.style["paddingBottom"] = '0px';
 
-        var ul          = document.createElement('ul');
-        var tab_content = document.createElement('div');
+        let ul          = document.createElement('ul');
+        let tab_content = document.createElement('div');
         ul.className            = "nav nav-tabs";
         tab_content.className   = "tab-content";
         s = '<li class="active"> \
                 <a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
-        for (var i =1; i < nb_in_out; i++) {
+        for (let i =1; i < nb_in_out; i++) {
             s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
         }
         ul.innerHTML = s;
 
         s = '<div id="'+id+'_'+in_out+'_'+0+'" class="tab-pane fade in active"></div>';
-        for (var i =1; i < nb_in_out; i++)
+        for (let i =1; i < nb_in_out; i++)
             s += '<div id="'+id+'_'+in_out+'_'+i+'" class="tab-pane fade in active"></div>';
         tab_content.innerHTML = s;
 
@@ -295,16 +294,15 @@ function fill_in_out(in_out, id) {
 
 
 function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
-    var d = document.getElementById(id+'_'+in_out+'_'+id_in_out);
-    var inst_id = parseInt(id.split("_")[2]);
-
+    let inst_id = parseInt(id.split("_")[2]);
+    let d = document.getElementById(id+'_'+in_out+'_'+id_in_out);
     //cleaning
     while (d.firstChild) {
         d.removeChild(d.firstChild);
     }
 
-    var sp = $('<span>', {class:"glyphicon glyphicon-refresh glyphicon-refresh-animate"});
-    var p = $('<p>', {align: "center"});
+    let sp = $('<span>', {class:"glyphicon glyphicon-refresh glyphicon-refresh-animate"});
+    let p = $('<p>', {align: "center"});
     p.append(sp);
     p.append(' Working, please wait... ')
     $(d).append(p);
@@ -322,8 +320,9 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
             d.innerHTML = '<br><p align="center">'+result_info[in_out+'s'][id_in_out].disabled_message+'</p>';
             return;
         }
+
         plugs[id_in_out].get_range(min, max).then(function (result_in_out) {
-            var nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
+            let nb_cols = result_info[in_out+'s'][id_in_out]['columns'].length + 1;
             s = '<table class="table table-condensed table-hover table-striped" style="table-layout:fixed; margin-bottom: 1px;">\n';
             s += '<thead><tr>';
             s += '<th style="padding: 1px;  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#</th>';
@@ -334,7 +333,7 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
             s += '</tr></thead>';
 
             s+= '<tbody>';
-            var index = 0;
+            let index = 0;
             result_in_out.forEach( function(row) {
                 s += '<tr>\n';
                 s += '<td style="padding: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">'+parseInt(index+min)+'</td>';
@@ -354,21 +353,21 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
 
             s += '</tbody></table>';
 
-            var ul = '';
+            let ul = '';
             if (result_info[in_out+'s'][id_in_out]['length'] != null) {
 
-                var nb_pages = parseInt(result_info[in_out+'s'][id_in_out]['length']/(max-min));
+                let nb_pages = parseInt(result_info[in_out+'s'][id_in_out]['length']/(max-min));
                 if (nb_pages*(max-min) < result_info[in_out+'s'][id_in_out]['length'])
                     nb_pages++;
                 if (nb_pages > 1 && nb_pages < 10) {
                     ul = '   <ul class="pagination pagination-sm" style="margin-top: 5px; margin-bottom: 1px;">\n';
-                    for (var i=0; i< nb_pages; i++)
+                    for (let i=0; i< nb_pages; i++)
                         ul+= '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+(i*(max-min))+','+((i+1)*(max-min))+');\'>'+(i+1)+'</a></li>\n';
                     ul+= '   </ul>';
                 }
                 else if (nb_pages > 10) {
 
-                    var current_page = Math.floor(min/(max-min));
+                    let current_page = Math.floor(min/(max-min));
                     ul = '   <ul class="pagination pagination-sm">\n';
                     if (current_page > 0) {
                         ul += '<li><a style="cursor: pointer;" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+id_in_out+','+0+','+(max-min)+');\'><span class="glyphicon glyphicon-fast-backward" style="color: grey; cursor: pointer;"></a></li>\n';
@@ -424,6 +423,12 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
             butt.append(span);
             butt.append('&nbsp;Download');
             s+= '<table width="100%"><tr><td>'+ul+'<td align="right">'+butt.get(0).outerHTML+'</table>';
+
+            let d = document.getElementById(id+'_'+in_out+'_'+id_in_out);
+            //cleaning
+            while (d.firstChild) {
+                d.removeChild(d.firstChild);
+            }
             d.innerHTML = s;
 
         }).catch (function(error) {
