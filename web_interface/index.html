@@ -42,7 +42,13 @@
                 cb = function() {
                     // when the page is completely loaded,
                     // look for the div and show it.
-                    showDiv(event,a[1]);
+                    if (a[1].indexOf('/') == -1) {
+                        showDiv(event, a[1]);
+                    }
+                    else {
+                        let tab = a[1].split('/');
+                        showDiv(event, tab[0], tab[1]);
+                    }
                 };
             }
             else {
@@ -87,32 +93,32 @@
                 </span>
             </div>
             </table>
-            <nav class="navbar navbar-default" style="margin-bottom:1px; ">
+            <nav class="navbar navbar-default" style="margin-bottom:1px; height: 30px; line-height: 30px; min-height: 32px;">
                 <ul id="navbar_ul" class="nav navbar-nav">
                     <li id="idNavBarHome" class="active">
-                        <a onclick="showDiv(event,'');" style="cursor: pointer;"><span class="glyphicon glyphicon-home" title="home" aria-hidden="true"></span></a>
+                        <a onclick="showDiv(event,'Home');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;"><span class="glyphicon glyphicon-home" title="home" aria-hidden="true"></span></a>
                     </li>
                     <li id="idNavBarProjects">
                         <!--<a disabled style="cursor: not-allowed;">Projects</a>-->
-                        <a onclick="showDiv(event,'Projects');" style="cursor: pointer;">Projects</a>
+                        <a onclick="showDiv(event,'Projects');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Projects</a>
                     </li>
                     <li id="idNavBarDatas">
-                        <a onclick="showDiv(event,'Datas');" style="cursor: pointer;">Datas</a>
+                        <a onclick="showDiv(event,'Datas');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Datas</a>
                     </li>
                     <li id="idNavBarOperators">
                         <!--<a disabled style="cursor: not-allowed>Operators</a>-->
-                        <a onclick="showDiv(event,'Operators');" style="cursor: pointer;">Operators</a>
+                        <a onclick="showDiv(event,'Operators');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Operators</a>
                     </li>
                     <li id="idNavBarDataflows">
-                        <a onclick="showDiv(event,'Dataflows');" style="cursor: pointer;">Dataflows</a>
+                        <a onclick="showDiv(event,'Dataflows');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Dataflows</a>
                     </li>
                 </ul>
             </nav>
 
-            <ol id="breadcrumbtrail" class="breadcrumb" style="margin-bottom:0px; padding-top: 0px; padding-bottom: 0px; background-color: rgb(250, 250, 250); font-size: 12px;">
+            <!-- <ol id="breadcrumbtrail" class="breadcrumb" style="margin-bottom:0px; padding-top: 0px; padding-bottom: 0px; background-color: rgb(250, 250, 250); font-size: 12px;">
                 <li><a onclick="showDiv(event,'');" href="" title="Sakura">Sakura</a></li>
                 <li class="active">Home</li>
-            </ol>
+            </ol> -->
 
             <div class="container-fluid" id="main_div">
                 <div w3-include-html="divs/home/index.html"></div>

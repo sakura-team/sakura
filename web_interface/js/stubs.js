@@ -1,7 +1,6 @@
 /// LIG Sept 2017
 
-function buildListStub(idDiv,result,elt) {
-
+function buildListStub(idDiv, result, elt) {
     //ask for the current login
     sakura.apis.hub.users.current.info().then( function (curr_login) {
 
@@ -40,10 +39,11 @@ function buildListStub(idDiv,result,elt) {
 
         //Last col for the wrench
         var last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
+
         var cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
         cell.append('<a class="btn" style="padding:6px;" data-toggle="modal" data-target="#colSelectModal">'
             + '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></a>'
-            + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\',false)" class="executeOnShow"> </a>');
+            + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\')" class="executeOnShow"> </a>');
         new_row_head.append(cell);
 
         //Body of the list
@@ -242,9 +242,10 @@ function replace_undefined(val) {
     return val;
 }
 
-function listRequestStub(idDiv, n, elt, bd) {
+function listRequestStub(idDiv, n, elt) {
     //Here we deal with the databases
-    if (elt == 'Datas/tmpData') {
+    //if (elt == 'Datas/tmpData') {
+    if (elt == 'Datas' || elt == 'datas') {
         sakura.apis.hub.databases.list().then(function (databases) {
             var result = new Array();
             databases.sort(databases_sort);
@@ -262,11 +263,12 @@ function listRequestStub(idDiv, n, elt, bd) {
                 }
                 result.push(result_info);
             });
-            buildListStub(idDiv,result,elt);
+            buildListStub(idDiv, result, 'Datas');
         });
     }
     //Here is for Dataflows
-    else if (elt == 'Dataflows/tmpDataflow') {
+    //else if (elt == 'Dataflows/tmpDataflow') {
+    else if (elt == 'Dataflows' || elt == 'dataflows') {
         sakura.apis.hub.dataflows.list().then(function (dataflows) {
             var result = new Array();
             dataflows.sort(dataflows_sort);
@@ -283,11 +285,12 @@ function listRequestStub(idDiv, n, elt, bd) {
                     }
                 }
             });
-            buildListStub(idDiv,result,elt);
+            buildListStub(idDiv, result, 'Dataflows');
         });
     }
     //Operators
-    else if (elt == 'Operators/tmpOperator') {
+    //else if (elt == 'Operators/tmpOperator') {
+    else if (elt == 'Operators' || elt == 'operators') {
         sakura.apis.hub.op_classes.list().then(function (operators) {
             var result = new Array();
             current_op_classes_list = operators;
@@ -309,10 +312,11 @@ function listRequestStub(idDiv, n, elt, bd) {
                 });
                 result.push(result_info);
             });
-            buildListStub(idDiv,result,elt);
+            buildListStub(idDiv, result, 'Operators');
         });
     }
-    else if (elt == 'Projects/tmpProject') {
+    //else if (elt == 'Projects/tmpProject') {
+    else if (elt == 'Projects' || elt == 'projects') {
         sakura.apis.hub.projects.list().then(function (projects) {
             var result = new Array();
             projects.forEach( function (proj) {
@@ -340,10 +344,10 @@ function listRequestStub(idDiv, n, elt, bd) {
                 });
                 result.push(result_info);
             });
-            buildListStub(idDiv, result, elt);
+            buildListStub(idDiv, result, 'Projects');
         });
     }
-    else {
+    else if (elt != 'Home' && elt != 'home') {
         console.log('Unknown element', elt);
     }
     return ;
