@@ -5,6 +5,13 @@ var web_interface_current_id = -1;  //database or dataflow id
 var simplemde  = null;           //large description textarea
 var empty_text = "__";
 
+
+var collab_bloc = '<select data-size="5" id="web_interface_obj_adding_collaborators_select" multiple class="selectpicker form-control" data-live-search="true" title="Please select one or several logins ..."></select> \
+<span class="input-group-addon" style="cursor: pointer;" onclick="cleaning_collaborators();"> \
+    <span class="glyphicon glyphicon-trash"></span> \
+</span> \
+<span class="input-group-addon" style="cursor: pointer;" onclick="adding_collaborators();">Add Collaborators</span>';
+
 ////////////FUNCTIONS
 function not_yet(s) {
     if (!s) {
@@ -197,33 +204,6 @@ function fill_metadata() {
         //General
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
 
-        // //Name
-        // $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
-        //
-        // //Description
-        // let empty_desc = '<font color="grey"><i>No short description for now</i></font>';
-        //
-        // if (info.grant_level == 'own') {
-        //     var elt = $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]);
-        //     elt.empty();
-        //     if (!(info.short_desc != undefined && info.short_desc)) {
-        //           info.short_desc = '';
-        //     }
-        //     else {
-        //           info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
-        //     }
-        //     var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
-        //     a.editable({emptytext: empty_desc,
-        //                 url: function(params) {web_interface_updating_metadata(a, params);}});
-        //     elt.append(a);
-        // }
-        // else {
-        //     if (info.short_desc)
-        //         $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey><i>' + info.short_desc + '</i></font>');
-        //     else
-        //         $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html(empty_desc+ '&nbsp;&nbsp;');
-        // }
-
         //Owner
         var owner = empty_text;
         if (info.owner && info.owner != 'null')
@@ -353,14 +333,23 @@ function fill_metadata() {
                 l_desc += ' Edit one by clicking on the eye';
             l_desc += '*</span>';
         }
-        fill_collaborators_table_body(info);
-
-
         if (web_interface_current_object_type != 'projects')
             web_interface_create_large_description_area(web_interface_current_object_type,
                                                         'web_interface_'+web_interface_current_object_type+'_markdownarea',
                                                         l_desc,
                                                         info.grant_level == 'own' || info.grant_level == 'write');
+
+        function cb() {
+            console.log('CALLBACK');
+            let meta_div = document.getElementById('web_interface_'+web_interface_current_object_type+'_tmp_meta');
+            meta_div.style.display = 'inline';
+
+            $('#web_interface_metadata_modal_body').empty();
+            $('#web_interface_metadata_modal_body').html(meta_div);
+            $('#web_interface_metadata_modal').modal('show');
+        }
+
+        fill_collaborators_table_body(info, cb);
     });
 }
 
@@ -378,6 +367,15 @@ function web_interface_updating_metadata(a, params) {
         }
     );
 }
+
+function open_metadata() {
+    console.log('OPEN METADATA', web_interface_current_object_info.name);
+    $('#web_interface_metadata_modal_obj_name').html(web_interface_current_object_info.name);
+    $('#web_interface_metadata_modal_obj_icon').attr('src', '/media/'+web_interface_current_object_type+'_icon_inverse.svg.png');
+    fill_metadata();
+}
+
+
 
 function web_interface_updating_page_name(a, params) {
     console.log(a);
@@ -882,8 +880,8 @@ function web_interface_asking_access(grant, callback) {
 }
 
 // Collaborators Management
-
-function fill_collaborators_table_body(info) {
+function fill_collaborators_table_body(info, cb) {
+    console.log('ENTERING FILL COLLAB');
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
@@ -949,22 +947,35 @@ function fill_collaborators_table_body(info) {
         }
 
         if (info.grant_level == 'own') {
-            $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div').show();
-            $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option').remove();
-
             sakura.apis.hub.users.list().then(function(result) {
-                var granted_users = Object.keys(info.grants)
-                var potential_collaborators = [];
+                let div = $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div');
+                div.empty();
+                div.html(collab_bloc.replace('obj', web_interface_current_object_type));
+                console.log(div);
+
+                let select = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select');
+                select.empty();
+                console.log(select);
+
+                let granted_users = Object.keys(info.grants)
+                let potential_collaborators = [];
                 result.forEach (function (user){
                     if (granted_users.indexOf(user.login) == -1)
                         potential_collaborators.push(user.login);
                 });
 
                 potential_collaborators.forEach( function(login) {
-                    $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').append($('<option>', {text: login}));
+                    select.append($('<option>', {text: login}));
                 });
-                $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select').selectpicker('refresh');
+
+                $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div').show();
+                select.selectpicker('refresh');
+
+                if (cb) {
+                  cb();
+                }
             });
+            return;
         }
     }
     else if (info.grant_level == 'read') {
@@ -1014,6 +1025,7 @@ function fill_collaborators_table_body(info) {
         tr.append(td);
         tbody.append(tr);
     }
+    cb();
 }
 
 function update_access_exclamation(info) {
