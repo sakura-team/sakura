@@ -340,7 +340,6 @@ function fill_metadata() {
                                                         info.grant_level == 'own' || info.grant_level == 'write');
 
         function cb() {
-            console.log('CALLBACK');
             let meta_div = document.getElementById('web_interface_'+web_interface_current_object_type+'_tmp_meta');
             meta_div.style.display = 'inline';
 
@@ -627,17 +626,15 @@ function showDiv(event, dir) {
 
     let obj_names = ["Datas", "Dataflows", "Operators", "Projects", "Home"];
 
-    //with unknown adresses
+    //Deal with unknown adresses -> always back to home
     let found = false;
     obj_names.forEach( function (n) {
         if (dir.indexOf(n) != -1)
           found = true;
     });
-    if (!found)
-        dir = "Home";
+    if (!found) dir = "Home";
 
     //Loading html and js on demand
-    console.log(dir);
     let tab = dir.split('/');
     files_on_demand(dir, tab[1]);
 
@@ -650,188 +647,6 @@ function showDiv(event, dir) {
     update_navbar(obj);
     update_main_div(dir, obj.toLowerCase(), tab[1]);
 
-
-    // //set url
-    // if (event instanceof PopStateEvent) {}
-    // else {
-    //     var stateObj = { where: dir };
-    //     try {//try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
-    //         history.pushState(stateObj, "page", "#"+dir);
-    //     }
-    //     catch (e) {
-    //         tmp=0;
-    //     }
-    // }
-    // if (dir == "")
-    //     dir = "Home";
-    // else if (dir.match("tmp") || isUrlWithId(dir)) {
-    //     if (!(dir.match("Work") || dir.match("Historic") || dir.match("Meta")))  {
-    //         if (dir[dir.length -1] == '/')
-    //             dir = dir + "Meta";
-    //         else
-    //             dir = dir + "/Meta";
-    //     }
-    // }
-    // var dirs = dir.split("/");
-    //
-    // //show div
-    // mainDivs = document.getElementsByClassName('classMainDiv');
-    // for(i=0;i<mainDivs.length;i++) {
-    //     mainDivs[i].style.display='none';
-    // }
-    // var idDir = "web_interface";
-    // dirs.forEach(function (dir) {
-    //     if (isUrlWithId(dir)) //tmpLocDir.match(/[A-Za-z]+-[0-9]+/)
-    //         idDir += '_tmp';//dir.replace(/([A-Za-z]+)-[0-9]+/,"tmp$1");
-    //     else
-    //         idDir += "_"+dir;
-    // });
-    // idDir = idDir.toLowerCase();
-    //
-    // if (dirs.length == 1)
-    //     idDir += "_div";
-    //
-    // while (idDir.indexOf("tmp_tmp") != -1)
-    //     idDir = idDir.replace("tmp_tmp", "tmp");
-    // document.getElementById(idDir).style.display='inline';
-    //
-    //
-    // //activate navbar
-    // var d = document.getElementById("navbar_ul");
-    // for (var i=0; i< d.children.length; i++) {
-    //     d.children[i].className = "";
-    // }
-    // var navBarElt = document.getElementById("idNavBar"+dirs[0])
-    // if (navBarElt) {
-    //     navBarElt.className = "active";
-    // }
-    //
-    // let c_url = window.location.href.split('//');
-    // let url = c_url[0]+'//'+c_url[1].split('/')[0]
-    //
-    // //set breadcrumb
-    // var bct = "<li><a onclick=\"showDiv(event,'');\" href=\"\" title=\"Sakura\">Sakura</a></li>";
-    // var tmpDir = "";
-    //
-    // for(i=0;i<dirs.length-1;i++) {
-    //     tmpDir = tmpDir + dirs[i] ;
-    //     bct = bct + "<li><a onclick='showDiv(event,\""+tmpDir+"\");' href=\""+tmpDir+"\" title= \""+tmpDir+"\">"+dirs[i]+"</a></li>";
-    //     tmpDir = tmpDir + "/";
-    // }
-    //
-    // if (dirs.indexOf('Projects-') == -1)
-    //     bct = bct + "<li class='active'>"+dirs[i]+"</li>";
-    //
-    // var d = document.getElementById("breadcrumbtrail");
-    // d.innerHTML = bct;
-    //
-    // if (window.location.toString().indexOf('tmpData') == -1 &&
-    //     window.location.toString().indexOf('tmpDataflow') == -1 &&
-    //     window.location.toString().indexOf('tmpProjects') == -1) {
-    //     var tab = window.location.toString().split("/");
-    //      if (tab.length == 5) {
-    //         tab = tab[tab.length-1].split("-");
-    //     }
-    //     else {
-    //         tab = tab[tab.length-2].split("-");
-    //     }
-    //     web_interface_current_id = parseInt(tab[tab.length -1]);
-    // }
-    //
-    // function change_class(elts, acts, _class) {
-    //     elts.forEach( function(elt, i) {
-    //         if (acts[i])
-    //             elt.addClass(_class);
-    //         else
-    //             elt.removeClass(_class);
-    //     });
-    // }
-    //
-    // ////////////////////////////////////////////////////////////////////////////////
-    // if (dir != 'Home') {
-    //     ["Datas", "Dataflows", "Operators", "Projects"].forEach (function (n){
-    //         if (dir.indexOf(n) != -1)
-    //             web_interface_current_object_type = n.toLowerCase();
-    //     });
-    //     var obj = web_interface_current_object_type;
-    //     if (web_interface_current_object_type != 'projects') {
-    //         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
-    //         var li_work = $($('#web_interface_'+obj+'_buttons_work')[0].parentElement);
-    //
-    //         if (dir.indexOf('Meta') != -1 || dir.indexOf('Work') != -1) {
-    //             document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
-    //         }
-    //
-    //         if (dir.indexOf('Meta') != -1) {
-    //             change_class([li_main, li_work], [true, false], "active");
-    //             fill_metadata();
-    //         }
-    //
-    //         if (div_id == 'web_interface_'+obj+'_main_toFullfill') {
-    //             if (dir.indexOf('Work') != -1) {
-    //                 change_class([li_main, li_work], [false, true], "active");
-    //             }
-    //         }
-    //         else {
-    //             var n1 = 'Datas';
-    //             var n2 = 'Data';
-    //             if (web_interface_current_object_type == 'dataflows') {
-    //                 n1 = 'Dataflows';
-    //                 n2 = 'Dataflow';
-    //             }
-    //             else if (web_interface_current_object_type == 'operators') {
-    //                 n1 = 'Operators';
-    //                 n2 = 'Operator';
-    //             }
-    //             $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
-    //             $('#web_interface_'+obj+'_buttons_work').attr('onclick', "showDiv(event, '"+n1+"/"+n2+"-"+web_interface_current_id+"/Work', 'web_interface_"+obj+"_main_toFullfill');");
-    //
-    //             if (dir.indexOf("Work") != -1) {
-    //                 change_class([li_main, li_work], [false, true], "active");
-    //                 fill_work();
-    //             }
-    //         }
-    //     }
-    //     else {
-    //         var li_main = $($('#web_interface_'+obj+'_buttons_main')[0].parentElement);
-    //         if (dir.indexOf('Meta') != -1 || dir.indexOf('Page') != -1)
-    //             document.getElementById('web_interface_'+obj+'_tmp_main').style.display='inline';
-    //
-    //         if (dir.indexOf('Meta') != -1) {
-    //             fill_metadata();
-    //             if (dir.indexOf('Page') == -1)  li_main.addClass('active');
-    //             else                            li_main.removeClass('active');
-    //         }
-    //
-    //         if (dir.indexOf('Projects/Pro') != -1) {
-    //             $('#web_interface_'+obj+'_buttons_main').attr('onclick', "showDiv(event, 'Projects/Project-"+web_interface_current_id+"/', 'web_interface_"+obj+"_main_toFullfill');");
-    //             //now the pages
-    //             fill_pages(dir);
-    //             if (dir.indexOf('Page-') != -1) {
-    //                 document.getElementById('web_interface_projects_tmp_meta').style.display='none';
-    //                 document.getElementById('web_interface_projects_tmp_work').style.display='inline';
-    //             }
-    //         }
-    //     }
-    // }
-    //
-    // var actionsOnShow = document.getElementById(idDir).getElementsByClassName("executeOnShow");
-    //
-    // for (i = 0; i < actionsOnShow.length; i++)
-    //     if (actionsOnShow[i].nodeName == "IFRAME") {
-    //         let aos = actionsOnShow[i];
-    //         if (aos.id == 'iframe_datasets')
-    //             url = "/modules/datasets/index.html?database_id=";
-    //         else if (aos.id == 'iframe_workflow')
-    //             url = "/modules/workflow/index.html?dataflow_id=";
-    //         else if (aos.id == 'iframe_operators')
-    //             url = "TODO!!!!";
-    //         url += web_interface_current_id;
-    //         aos.src = url;
-    //     }
-    //     else
-    //         if (!div_id)
-    //             eval(actionsOnShow[i].href);
     if (event)
         event.preventDefault();
 }
@@ -881,7 +696,6 @@ function web_interface_asking_access(grant, callback) {
 
 // Collaborators Management
 function fill_collaborators_table_body(info, cb) {
-    console.log('ENTERING FILL COLLAB');
     var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
@@ -951,11 +765,9 @@ function fill_collaborators_table_body(info, cb) {
                 let div = $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div');
                 div.empty();
                 div.html(collab_bloc.replace('obj', web_interface_current_object_type));
-                console.log(div);
 
                 let select = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select');
                 select.empty();
-                console.log(select);
 
                 let granted_users = Object.keys(info.grants)
                 let potential_collaborators = [];
@@ -1155,139 +967,97 @@ function chgShowColumns(event) {
 }
 
 
-function editModeSubmitControl(event) {
-    menuSpans=document.getElementsByClassName('editZoneContextualMenu');
-    for(i=0;i<menuSpans.length;i++) {
-        menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);" title="edit"><i class="glyphicon glyphicon-edit"></i></a>';
-    }
-    document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';
-    plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
-    for(i=0;i<plusFieldButtons.length;i++) {
-        plusFieldButtons[i].style.display='';
-    }
-}
+// function editModeSubmitControl(event) {
+//     menuSpans=document.getElementsByClassName('editZoneContextualMenu');
+//     for(i=0;i<menuSpans.length;i++) {
+//         menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);" title="edit"><i class="glyphicon glyphicon-edit"></i></a>';
+//     }
+//     document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';
+//     plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
+//     for(i=0;i<plusFieldButtons.length;i++) {
+//         plusFieldButtons[i].style.display='';
+//     }
+// }
 
 
-function addFile(fileSystem,event) {
-    event.preventDefault();
-    fileSystem.parentElement.children[1].children[1].children[fileSystem.parentElement.children[1].children[1].children.length-1].insertAdjacentHTML("afterend",
-    '<tr><td><input type="file" /></td>'
-    + '<td><input value="description" type="text" size="60"></td>'
-    + '<td><a onclick="saveFile(this,event);" class="validateDescriptionFile" title="save"><i class="glyphicon glyphicon-ok"></i></a></td></tr>');
-}
+// function editField(field,event) {
+//     event.preventDefault();
+//     initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
+//     field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField' title='save'><i class='glyphicon glyphicon-ok'></i></a>"
+//     +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField' title='cancel'><i class='glyphicon glyphicon-ban-circle'></i></a>"
+//     +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField' title='delete'><i class='glyphicon glyphicon-remove'></i></a></span>";
+// }
+//
+//
+// function saveField(field,event) {
+//     event.preventDefault();
+//     fieldValue = field.parentElement.childNodes[0].value;
+//     field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';
+// }
+//
+//
+// function revertField(field,fieldValue,event) {
+//     event.preventDefault();
+//     field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';
+// }
+//
+//
+// function deleteField(field,event) {
+//     event.preventDefault();
+//     res=confirm("Delete Field?");
+//     if (res) {
+//         field.parentElement.parentElement.previousSibling.remove();
+//         field.parentElement.parentElement.remove();
+//     }
+// }
+//
+// function saveModeSubmitControl(event) {
+//     sav=confirm("Save modification (or abort)?");
+//     if (sav) {
+//         //alert("Save")
+//     }
+//     else {
+//         alert("Abort (not yet impemented)");
+//     }
+//
+//     menuSpans=document.getElementsByClassName('editZoneContextualMenu');
+//     for(i=0;i<menuSpans.length;i++) {
+//         menuSpans[i].innerHTML='';
+//     }
+//     document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
+//     plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
+//     for(i=0;i<plusFieldButtons.length;i++) {
+//         plusFieldButtons[i].style.display='none';
+//     }
+// }
+//
+//
+// function searchSubmitControl(event,elt) {
+//     listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
+//     listeInit = listeInit.split("<tr");
+//     searchString = document.getElementById("idInputSearch"+elt).value;
+//     s="";
+//     for(i=1;i<listeInit.length;i++) {
+//         if (listeInit[i].match(searchString)) {
+//             s =  s + "<tr"+listeInit[i];
+//         }
+//         else {
+//             s = s + "<tr style='display:none;'"+listeInit[i];
+//         }
+//     }
+//     document.getElementById("idTBodyList"+elt).innerHTML = s;
+// }
 
 
-function saveFile(fileSystem,event) {
-    event.preventDefault();
-    if (fileSystem.parentElement.parentElement.children[0].children[0].files.length == 0) {
-        alert('select file');
-    }
-    else {
-        fileSystem.parentElement.parentElement.innerHTML = '<tr><td><a onclick="not_yet();">'+fileSystem.parentElement.parentElement.children[0].children[0].files[0].name+'</a></td>'
-        + '<td>'+fileSystem.parentElement.parentElement.children[1].children[0].value+'</td></tr>';
-    }
-}
-
-
-function editField(field,event) {
-    event.preventDefault();
-    initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
-    field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField' title='save'><i class='glyphicon glyphicon-ok'></i></a>"
-    +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField' title='cancel'><i class='glyphicon glyphicon-ban-circle'></i></a>"
-    +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField' title='delete'><i class='glyphicon glyphicon-remove'></i></a></span>";
-}
-
-
-function saveField(field,event) {
-    event.preventDefault();
-    fieldValue = field.parentElement.childNodes[0].value;
-    field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';
-}
-
-
-function revertField(field,fieldValue,event) {
-    event.preventDefault();
-    field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';
-}
-
-
-function deleteField(field,event) {
-    event.preventDefault();
-    res=confirm("Delete Field?");
-    if (res) {
-        field.parentElement.parentElement.previousSibling.remove();
-        field.parentElement.parentElement.remove();
-    }
-}
-
-
-function addField(field,event) {
-    res=prompt("Name for your field","Field Name");
-    if ((res!="")&&(res!=null)) {
-        field.parentElement.children[field.parentElement.children.length-2].insertAdjacentHTML("afterend","<dt class='description-terms-align-left'>"+res+"</dt><dd class='editableDescriptionField'>value?<span class='editZoneContextualMenu'><a class='editDescriptionField' href='' onclick='editField(this,event);'><i class='glyphicon glyphicon-edit'></i></a></span></dd>");
-        return;
-    }
-}
-
-
-function addComment(field,event,idComment) {
-    var comment = document.getElementById(idComment).value;
-    document.getElementById(idComment).value = "Your comments";
-    document.getElementById("commentDataflow").parentElement.parentElement.nextSibling.nextSibling.firstChild.insertAdjacentHTML("beforebegin",
-                '<li><div class="commenterImage"><span class="glyphicon glyphicon-user"></span></div>'
-                + '<div class="commentText"><p class="">'+comment+'</p> '
-                + '<span class="date sub-text">you just now</span></div></li>');
-    return;
-}
-
-
-function saveModeSubmitControl(event) {
-    sav=confirm("Save modification (or abort)?");
-    if (sav) {
-        //alert("Save")
-    }
-    else {
-        alert("Abort (not yet impemented)");
-    }
-
-    menuSpans=document.getElementsByClassName('editZoneContextualMenu');
-    for(i=0;i<menuSpans.length;i++) {
-        menuSpans[i].innerHTML='';
-    }
-    document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
-    plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
-    for(i=0;i<plusFieldButtons.length;i++) {
-        plusFieldButtons[i].style.display='none';
-    }
-}
-
-
-function searchSubmitControl(event,elt) {
-    listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
-    listeInit = listeInit.split("<tr");
-    searchString = document.getElementById("idInputSearch"+elt).value;
-    s="";
-    for(i=1;i<listeInit.length;i++) {
-        if (listeInit[i].match(searchString)) {
-            s =  s + "<tr"+listeInit[i];
-        }
-        else {
-            s = s + "<tr style='display:none;'"+listeInit[i];
-        }
-    }
-    document.getElementById("idTBodyList"+elt).innerHTML = s;
-}
-
-
-function showDivCGU(event) {
-    var d = document.getElementById('idDivCGU');
-    console.log("RMS: In SHOWDIVCGU,doc",d);
-    $("#signInModal").modal("hide");
-    event.preventDefault();
-    console.log("windowL:",window.location);
-    showDiv(event,"CGU");
-//    return; //dismisses the modal box, of course !
-}
+// function showDivCGU(event) {
+//     var d = document.getElementById('idDivCGU');
+//     console.log("RMS: In SHOWDIVCGU,doc",d);
+//     $("#signInModal").modal("hide");
+//     event.preventDefault();
+//     console.log("windowL:",window.location);
+//     showDiv(event,"CGU");
+// //    return; //dismisses the modal box, of course !
+// }
 
 
 function create_warn_icon(obj) {
