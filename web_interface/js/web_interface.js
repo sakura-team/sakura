@@ -225,7 +225,7 @@ function fill_metadata() {
                     if (!(elt.value != undefined && elt.value))
                         elt.value = '';
                     var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
-                    a.editable({url: function(params) {web_interface_updating_page_name(a, params);}});
+                    a.editable({url: function(params) {web_interface_updating_metadata(a, params);}});
                     dd.append(a);
                 }
                 else {
@@ -374,13 +374,6 @@ function open_metadata() {
     fill_metadata();
 }
 
-
-
-function web_interface_updating_page_name(a, params) {
-    console.log(a);
-    console.log(params);
-}
-
 function fill_pages(dir) {
     let ul = $('#web_interface_projects_ul');
     let icon_pap = '<h5 class="glyphicon glyphicon-file" style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;"></h5>'
@@ -395,6 +388,7 @@ function fill_pages(dir) {
     });
 
     current_remote_api_object().info().then(function(info) {
+        console.log(info);
         if (info.pages) {
             info.pages.forEach( function(page) {
                 let active_page = false;
@@ -448,6 +442,7 @@ function fill_pages(dir) {
             }
         }
         else {
+            console.log('NO PAGES');
             document.getElementById('web_interface_projects_tmp_no_pages').style.display = 'inline';
         }
 
@@ -950,115 +945,10 @@ function web_interface_change_access_scope() {
     });
 }
 
-/* Divers */
-function isUrlWithId(url) {
-    return url.match(/[A-Za-z]+-[0-9]+/);
-}
-
-
-function getIdFromUrl(url) {
-    return url.match(/[A-Za-z]+-[0-9]+/)[0].replace(/[A-Za-z]+-([0-9]+)/,"$1");
-}
-
-
 function chgShowColumns(event) {
     showDiv(event,window.location.href.split("#")[1]);
     return;
 }
-
-
-// function editModeSubmitControl(event) {
-//     menuSpans=document.getElementsByClassName('editZoneContextualMenu');
-//     for(i=0;i<menuSpans.length;i++) {
-//         menuSpans[i].innerHTML='<a class="editDescriptionField" href="" onclick="editField(this,event);" title="edit"><i class="glyphicon glyphicon-edit"></i></a>';
-//     }
-//     document.getElementById("idEditModeWidget").innerHTML= '<a onclick="saveModeSubmitControl(event);"  style="cursor: pointer;">Save</a>';
-//     plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
-//     for(i=0;i<plusFieldButtons.length;i++) {
-//         plusFieldButtons[i].style.display='';
-//     }
-// }
-
-
-// function editField(field,event) {
-//     event.preventDefault();
-//     initFieldValue = field.parentElement.parentElement.childNodes[0].textContent;
-//     field.parentElement.parentElement.innerHTML="<span class='editZoneContextualMenu'><input value='"+initFieldValue+"' type='text'><a onclick='saveField(this,event);' class='validateDescriptionField' title='save'><i class='glyphicon glyphicon-ok'></i></a>"
-//     +" <a  onclick='revertField(this,\""+initFieldValue+"\",event);' class='unvalidateDescriptionField' title='cancel'><i class='glyphicon glyphicon-ban-circle'></i></a>"
-//     +" <a  onclick='deleteField(this,event);' class='unvalidateDescriptionField' title='delete'><i class='glyphicon glyphicon-remove'></i></a></span>";
-// }
-//
-//
-// function saveField(field,event) {
-//     event.preventDefault();
-//     fieldValue = field.parentElement.childNodes[0].value;
-//     field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';
-// }
-//
-//
-// function revertField(field,fieldValue,event) {
-//     event.preventDefault();
-//     field.parentElement.parentElement.innerHTML=fieldValue+ '<span class="editZoneContextualMenu"><a class="editDescriptionField" href="" onclick="editField(this,event);"><i class="glyphicon glyphicon-edit"></i></a></span>';
-// }
-//
-//
-// function deleteField(field,event) {
-//     event.preventDefault();
-//     res=confirm("Delete Field?");
-//     if (res) {
-//         field.parentElement.parentElement.previousSibling.remove();
-//         field.parentElement.parentElement.remove();
-//     }
-// }
-//
-// function saveModeSubmitControl(event) {
-//     sav=confirm("Save modification (or abort)?");
-//     if (sav) {
-//         //alert("Save")
-//     }
-//     else {
-//         alert("Abort (not yet impemented)");
-//     }
-//
-//     menuSpans=document.getElementsByClassName('editZoneContextualMenu');
-//     for(i=0;i<menuSpans.length;i++) {
-//         menuSpans[i].innerHTML='';
-//     }
-//     document.getElementById("idEditModeWidget").innerHTML= '<a onclick="editModeSubmitControl(event);"  style="cursor: pointer;">Edit Mode</a>';
-//     plusFieldButtons=document.getElementsByClassName('clPlusFieldButton');
-//     for(i=0;i<plusFieldButtons.length;i++) {
-//         plusFieldButtons[i].style.display='none';
-//     }
-// }
-//
-//
-// function searchSubmitControl(event,elt) {
-//     listeInit = document.getElementById("idTBodyList"+elt).innerHTML.replace(/ style="display:none;"/g,"").replace(/ style='display:none;'/g,"");
-//     listeInit = listeInit.split("<tr");
-//     searchString = document.getElementById("idInputSearch"+elt).value;
-//     s="";
-//     for(i=1;i<listeInit.length;i++) {
-//         if (listeInit[i].match(searchString)) {
-//             s =  s + "<tr"+listeInit[i];
-//         }
-//         else {
-//             s = s + "<tr style='display:none;'"+listeInit[i];
-//         }
-//     }
-//     document.getElementById("idTBodyList"+elt).innerHTML = s;
-// }
-
-
-// function showDivCGU(event) {
-//     var d = document.getElementById('idDivCGU');
-//     console.log("RMS: In SHOWDIVCGU,doc",d);
-//     $("#signInModal").modal("hide");
-//     event.preventDefault();
-//     console.log("windowL:",window.location);
-//     showDiv(event,"CGU");
-// //    return; //dismisses the modal box, of course !
-// }
-
 
 function create_warn_icon(obj) {
     var warn_icon = document.createElement("span");
