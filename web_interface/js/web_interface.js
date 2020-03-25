@@ -151,47 +151,43 @@ function current_remote_api_object() {
         api_objects = sakura.apis.hub.projects;
     else if (web_interface_current_object_type == 'pages')
         api_objects = sakura.apis.hub.pages;
-    console.log('1234', api_objects);
-
     return api_objects[web_interface_current_id]
 }
 
 function fill_head() {
     current_remote_api_object().info().then(function(info) {
+        web_interface_current_object_info = info;
 
+        //Icon
+        $('#web_interface_generic_main_icon').attr("src", "media/"+web_interface_current_object_type+"_icon.svg.png");
         //Name
-        $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
+        $($('#web_interface_generic_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
 
         //Description
+        let desc = $($('#web_interface_generic_main_short_desc')[0]);
         let empty_desc = '<font color="grey"><i>No short description for now</i></font>';
 
         if (info.grant_level == 'own') {
-            var elt = $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]);
-            elt.empty();
-            if (!(info.short_desc != undefined && info.short_desc)) {
-                  info.short_desc = '';
-            }
-            else {
-                  info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
-            }
+            desc.empty();
+            if (!(info.short_desc != undefined && info.short_desc))
+                info.short_desc = '';
+            else
+                info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
+
             var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
             a.editable({emptytext: empty_desc,
-                        url: function(params) {web_interface_updating_metadata(a, params);}});
-            elt.append(a);
+                        url: function(params) {
+                                web_interface_updating_metadata(a, params);
+                            }
+                        });
+            desc.append(a);
         }
         else {
             if (info.short_desc)
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey><i>' + info.short_desc + '</i></font>');
+                desc.html('<font color=grey><i>' + info.short_desc + '</i></font>');
             else
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html(empty_desc+ '&nbsp;&nbsp;');
+                desc.html(empty_desc + '&nbsp;&nbsp;');
         }
-
-        // web_interface_current_object_info = info;
-        // $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
-        // if (info.short_desc)
-        //     $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey>&nbsp;&nbsp;' + info.short_desc + '</font>&nbsp;&nbsp;');
-        // else
-        //     $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=lightgrey>&nbsp;&nbsp; no short description</font>' + '&nbsp;&nbsp;');
     });
 }
 
@@ -201,32 +197,32 @@ function fill_metadata() {
         //General
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
 
-        //Name
-        $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
-
-        //Description
-        let empty_desc = '<font color="grey"><i>No short description for now</i></font>';
-
-        if (info.grant_level == 'own') {
-            var elt = $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]);
-            elt.empty();
-            if (!(info.short_desc != undefined && info.short_desc)) {
-                  info.short_desc = '';
-            }
-            else {
-                  info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
-            }
-            var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
-            a.editable({emptytext: empty_desc,
-                        url: function(params) {web_interface_updating_metadata(a, params);}});
-            elt.append(a);
-        }
-        else {
-            if (info.short_desc)
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey><i>' + info.short_desc + '</i></font>');
-            else
-                $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html(empty_desc+ '&nbsp;&nbsp;');
-        }
+        // //Name
+        // $($('#web_interface_'+web_interface_current_object_type+'_main_name')[0]).html('&nbsp;&nbsp;<em>' + info.name + '</em>&nbsp;&nbsp;');
+        //
+        // //Description
+        // let empty_desc = '<font color="grey"><i>No short description for now</i></font>';
+        //
+        // if (info.grant_level == 'own') {
+        //     var elt = $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]);
+        //     elt.empty();
+        //     if (!(info.short_desc != undefined && info.short_desc)) {
+        //           info.short_desc = '';
+        //     }
+        //     else {
+        //           info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
+        //     }
+        //     var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
+        //     a.editable({emptytext: empty_desc,
+        //                 url: function(params) {web_interface_updating_metadata(a, params);}});
+        //     elt.append(a);
+        // }
+        // else {
+        //     if (info.short_desc)
+        //         $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html('<font color=grey><i>' + info.short_desc + '</i></font>');
+        //     else
+        //         $($('#web_interface_'+web_interface_current_object_type+'_main_short_desc')[0]).html(empty_desc+ '&nbsp;&nbsp;');
+        // }
 
         //Owner
         var owner = empty_text;
@@ -411,18 +407,23 @@ function fill_pages(dir) {
                         active_page = true;
                     }
                 }
+                else {
+                    dir += '/Page-'+page.page_id;
+                    active_page = true;
+                }
+
                 let page_name = "web_interface_projects_li_project_"+page.project_id+"_page_"+page.page_id;
                 let li = $(document.getElementById(page_name));
 
                 if ( ! document.getElementById(page_name)) {
                     li = $('<li>', {'id': page_name});
-                    let url = "Projects/Project-"+web_interface_current_id+"/Page-"+page.page_id;
+                    let url = "Projects/"+web_interface_current_id+"/Page-"+page.page_id;
                     let a = $('<a>',  { 'onclick': "showDiv(event, '"+url+"', 'web_interface_projects_main_toFullfill');",
                                         'style': "color: dimgrey; padding: 2px; padding-right: 10px; padding-left: 10px; cursor: pointer;",
                                         'html': icon_pap+'<font size=2>'+page.page_name+'</font>'
                                       });
                     li.append(a);
-                    li.insertAfter($('#web_interface_projects_li_main'));
+                    li.insertBefore($('#web_interface_projects_li_add'));
                 }
 
                 if (active_page) {
@@ -439,6 +440,8 @@ function fill_pages(dir) {
                     li.removeClass('active');
                 }
             });
+            document.getElementById('web_interface_projects_tmp_work').style.display = 'inline';
+
             let rem = document.getElementById('web_interface_projects_delete_page_button');
             if (info.grant_level != 'write' && info.grant_level != 'own')
                 rem.style.display = 'none';
@@ -446,6 +449,9 @@ function fill_pages(dir) {
                 if (info.pages.length == 1)   rem.style.display = 'none';
                 else                          rem.style.display = 'inline';
             }
+        }
+        else {
+            document.getElementById('web_interface_projects_tmp_no_pages').style.display = 'inline';
         }
 
         let li_add = document.getElementById('web_interface_projects_li_add');
@@ -508,24 +514,24 @@ function web_interface_save_large_description(id) {
     }
 }
 
-function l_html(obj, event, dir, div_id) {
+function l_html(obj, event, dir) {
     $.getScript("js/"+obj+".js", function(scp, status) {
-      $('#main_div').append($('<div>').load("divs/"+obj+"/index.html", function () {
-       $('#main_div').append($('<div>').load("divs/"+obj+"/main.html", function() {
-        $('#main_div').append($('<div>').load("divs/"+obj+"/meta.html", function() {
-         $('#main_div').append($('<div>').load("divs/"+obj+"/work.html", function() {
-          $('#main_div').append($('<div>').load("divs/"+obj+"/historic.html", function() {
-           $('#main_div').append($('<div>').load("divs/create/"+obj+".html", function() {
-              if (obj == 'databases')       loaded_datas_files      = 'done';
-              else if (obj == 'operators')  loaded_operators_files  = 'done';
-              else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
-              else if (obj == 'projects')   loaded_projects_files   = 'done';
-              showDiv(event, dir, div_id);
+      $('#main_div').append($('<div>').load("divs/generic/main.html", function () {
+        $('#main_div').append($('<div>').load("divs/"+obj+"/index.html", function () {
+         $('#main_div').append($('<div>').load("divs/"+obj+"/meta.html", function() {
+           $('#main_div').append($('<div>').load("divs/"+obj+"/work.html", function() {
+            $('#main_div').append($('<div>').load("divs/"+obj+"/historic.html", function() {
+             $('#main_div').append($('<div>').load("divs/create/"+obj+".html", function() {
+                if (obj == 'databases')       loaded_datas_files      = 'done';
+                else if (obj == 'operators')  loaded_operators_files  = 'done';
+                else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
+                else if (obj == 'projects')   loaded_projects_files   = 'done';
+                showDiv(event, dir);
+             }));
+            }));
            }));
           }));
-         }));
         }));
-       }));
       }));
     });
 }
@@ -544,9 +550,7 @@ function files_on_demand(dir, div_id) {
     else if (dir.startsWith('Dataflows')) {
         ldf = loaded_dataflows_files;
         d = 'dataflows';
-        // if (dir.endsWith('Work')) {
-        //     $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js");
-        // }
+        if (div_id) $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js");
     }
     else if (dir.startsWith('Projects')) {
         ldf = loaded_projects_files;
@@ -576,7 +580,6 @@ function update_navbar(obj) {
 }
 
 function update_main_div(dir, obj, id) {
-
     //cleaning current main div
     let mainDivs = document.getElementsByClassName('classMainDiv');
     for (let i=0;i < mainDivs.length;i++) {
@@ -592,7 +595,7 @@ function update_main_div(dir, obj, id) {
         }
     }
     else {
-        let div_head = document.getElementById('web_interface_'+obj+'_tmp_main');
+        let div_head = document.getElementById('web_interface_generic_tmp_main');
         let div_main = document.getElementById('web_interface_'+obj+'_tmp_work');
 
         if (div_head) {
@@ -600,38 +603,45 @@ function update_main_div(dir, obj, id) {
             fill_head();
             div_head.style.display='inline';
             let ifr = document.getElementById('iframe_'+obj);
-            if (obj == 'datas')
+            if (obj == 'datas') {
                 ifr.src = "/modules/datasets/index.html?database_id="+id;
-            else if (obj == 'dataflows')
+                div_main.style.display='inline';
+            }
+            else if (obj == 'dataflows') {
                 ifr.src = "/modules/workflow/index.html?dataflow_id="+id;
-            div_main.style.display='inline';
+                div_main.style.display='inline';
+            }
+            else if (obj == 'projects') {
+                fill_pages(dir);
+            }
         }
     }
 
     //changing current URL
     var stateObj = { where: dir };
     try {//try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
-        let state = "#"+dir;
-        if (id)
-            state += '/'+id;
-        history.pushState(stateObj, "page", state);
+        history.pushState(stateObj, "page", '#'+dir);
     }
     catch (e) { tmp=0; }
 }
 
-function showDiv(event, dir, div_id) {
-
-    console.log('DIR', dir);
-    console.log('ID_', div_id);
+function showDiv(event, dir) {
 
     let obj_names = ["Datas", "Dataflows", "Operators", "Projects", "Home"];
 
     //with unknown adresses
-    if (obj_names.indexOf(dir) == -1)
+    let found = false;
+    obj_names.forEach( function (n) {
+        if (dir.indexOf(n) != -1)
+          found = true;
+    });
+    if (!found)
         dir = "Home";
 
     //Loading html and js on demand
-    files_on_demand(dir, div_id);
+    console.log(dir);
+    let tab = dir.split('/');
+    files_on_demand(dir, tab[1]);
 
     //get current object type
     let obj = null;
@@ -639,9 +649,8 @@ function showDiv(event, dir, div_id) {
             if (dir.indexOf(n) != -1) { obj = n; }
     });
     web_interface_current_object_type = obj.toLowerCase();
-
     update_navbar(obj);
-    update_main_div(dir, obj.toLowerCase(), div_id);
+    update_main_div(dir, obj.toLowerCase(), tab[1]);
 
 
     // //set url

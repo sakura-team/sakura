@@ -42,13 +42,7 @@
                 cb = function() {
                     // when the page is completely loaded,
                     // look for the div and show it.
-                    if (a[1].indexOf('/') == -1) {
-                        showDiv(event, a[1]);
-                    }
-                    else {
-                        let tab = a[1].split('/');
-                        showDiv(event, tab[0], tab[1]);
-                    }
+                    showDiv(event, a[1]);
                 };
             }
             else {
@@ -120,7 +114,7 @@
                 <li class="active">Home</li>
             </ol> -->
 
-            <div class="container-fluid" id="main_div">
+            <div class="container-fluid" id="main_div" style="padding: 0px;">
                 <div w3-include-html="divs/home/index.html"></div>
                 <div w3-include-html="divs/documentation/index.html"></div>
                 <!-- rms-dev:"signIn/index.html must precede "documentation/cgu.html" for correct stacked modal behavior for CGU-->

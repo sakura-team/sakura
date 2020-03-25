@@ -66,7 +66,7 @@ function new_project() {
                 sakura.apis.hub.pages[info.pages[0].page_id].update({ 'page_content': pages_init_text}
                         ).then (function(result) {
                       $('#create_projects_modal').modal('hide');
-                      showDiv(null, 'Projects/Project-'+project_id, null);
+                      showDiv(null, 'Projects/'+project_id, null);
                   })
             });
         }
@@ -109,7 +109,7 @@ function new_page() {
         sakura.apis.hub.pages[page_id].update({'page_content': pages_init_text}
                         ).then (function(result) {
               pages_close_modal();
-              showDiv(null, 'Projects/Project-'+web_interface_current_object_info.project_id+'/Page-'+page_id, null);
+              showDiv(null, 'Projects/'+web_interface_current_object_info.project_id+'/Page-'+page_id, null);
         })
     }).catch( function(result) {
         console.log('Pas Great !!', result);
@@ -125,7 +125,7 @@ function delete_page(page_id){
                           let project_id = web_interface_current_object_info.project_id;
                           let li = document.getElementById("web_interface_projects_li_project_"+project_id+"_page_"+page_id);
                           li.remove();
-                          showDiv(null, 'Projects/Project-'+project_id, null);
+                          showDiv(null, 'Projects/'+project_id, null);
                       });
                   },
                   function() {} );

@@ -1,12 +1,20 @@
 <div style="display:none" id="web_interface_projects_tmp_work" class="classMainDiv">
     <br>
-    <!-- <span style="float: right;" alt="delete page" title="delete page">
-        <a onclick="alert('toto');">
-          <h5 class="glyphicon glyphicon-remove"
-              style="margin-left: 2px; margin-right: 2px; margin-top: 0px; margin-bottom: 0px;">
-          </h5>
-        </a>
-    </span> -->
+    <table style="margin-bottom: 0px;" width=100% cellpadding=5>
+        <tr>
+            <td colspan=2 align="left" style="vertical-align: bottom;">
+                <ul class="nav nav-tabs">
+                    <li id='web_interface_projects_li_add'>
+                        <a id='web_interface_projects_buttons_add_page' data-target="#create_pages_modal" data-toggle="modal" style="color: dimgrey; padding: 2px; padding-right: 10px; padding-left: 10px;">
+                            <h4 class="glyphicon glyphicon-plus-sign"
+                                style=" margin-left: 0px; margin-right: 0px;
+                                        margin-top: 0px; margin-bottom: 0px;
+                                        font-size:2;">
+                            </h4>
+                        </a>
+                    </li>
+                </ul>
+    </table>
     <span   id='web_interface_projects_delete_page_button'
             title="delete"
             class="glyphicon glyphicon-remove"
@@ -14,4 +22,9 @@
             onclick=""></span>
     <textarea id='web_interface_projects_markdownarea'>
     </textarea>
+</div>
+
+<div style="display:none" id="web_interface_projects_tmp_no_pages" class="classMainDiv">
+    <br>
+    <h4>Sorry ! There's no accessible pages (for you) in this project.</h4>
 </div>

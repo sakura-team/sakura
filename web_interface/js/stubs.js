@@ -68,7 +68,7 @@ function buildListStub(idDiv, result, elt) {
                 name.html(row.name+'&nbsp;');
                 name.attr('href', '/'+tmp_elt+'/'+row.id);
                 name.attr('title', 'Accessing '+elt_type.slice(0, -1));
-                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'","' +row.id+'");');
+                name.attr('onclick', 'web_interface_current_db_id = '+row.id+'; showDiv(event, "'+tmp_elt+'/'+row.id+'");');
 
                 n_td1.append(name);
                 if (row.grant_level == 'own') {
