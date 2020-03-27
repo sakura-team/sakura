@@ -14,6 +14,8 @@ class Cache:
         self.per_key = {}   # <key> -> (<expiry_time, <item>)
         self.per_date = []  # list of (<expiry_time, <key>)
         Cache.instances.add(self)
+    def resize(self, size):
+        self.size = size
     def in_cache(self, key, check_expiry=False):
         if key not in self.per_key:
             return False
@@ -45,7 +47,7 @@ class Cache:
             print(id(self), time(), 'cache.save', key, item, expiry_time)
         # remove any previous info linked to key
         self.forget(key)
-        if self.size is not None and len(self.per_date) == self.size:
+        while self.size is not None and len(self.per_date) >= self.size:
             # cache is full, drop oldest entry
             oldest_expiry_time, oldest_key = self.per_date[0]
             assert oldest_key in self.per_key, \

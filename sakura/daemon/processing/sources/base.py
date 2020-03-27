@@ -12,6 +12,7 @@ from itertools import count
 # values, and ensure iterator is kept in cache for
 # at least a delay <t>*<factor>.
 CACHE_VALUE_FACTOR = 10.0
+CACHE_SIZE_PER_SOURCE = 10
 
 class ColumnsRegistry:
     def __init__(self, source):
@@ -89,14 +90,20 @@ class ColumnsRegistry:
                      for col_path, col in self.enumerate(include_subcolumns=True))
 
 class SourceBase:
+    num_instances = 0
+    range_iter_cache = Cache(CACHE_SIZE_PER_SOURCE)
     def __init__(self, label, columns=None):
         self.columns = ColumnsRegistry(self)
         self.label = label
         self.length = None
-        self.range_iter_cache = Cache(10)
         self.origin_id = ORIGIN_ID
         if columns is not None:
             self.columns.rebind(columns)
+        SourceBase.num_instances += 1
+        SourceBase.range_iter_cache.resize(
+                   SourceBase.num_instances * CACHE_SIZE_PER_SOURCE)
+    def __del__(self):
+        SourceBase.num_instances -= 1
     def add_column(self, col_label, col_type, col_tags=(), **col_type_params):
         existing_col_names = set(col._label for col in self.columns.list(True))
         # avoid having twice the same column name
@@ -128,8 +135,8 @@ class SourceBase:
         startup_time = time()
         chunk_len = row_end-row_start
         # try to reuse the last iterator
-        cache_key=(row_start, row_end)
-        it, compute_time = self.range_iter_cache.pop(cache_key, default=(None, None))
+        cache_key=(id(self), row_start, row_end)
+        it, compute_time = SourceBase.range_iter_cache.pop(cache_key, default=(None, None))
         in_cache = it is not None
         # otherwise, create a new iterator
         if not in_cache:
@@ -144,9 +151,9 @@ class SourceBase:
                 new_row_start = row_start + chunk.size
                 compute_time += time()- startup_time
                 expiry_delay = compute_time * CACHE_VALUE_FACTOR
-                cache_key = (new_row_start, new_row_start + chunk_len)
+                cache_key = (id(self), new_row_start, new_row_start + chunk_len)
                 cache_item = (it, compute_time)
-                self.range_iter_cache.save(cache_key, cache_item, expiry_delay)
+                SourceBase.range_iter_cache.save(cache_key, cache_item, expiry_delay)
             return chunk
         # if we are here, stream has ended, return empty chunk
         return NumpyChunk.empty(self.get_dtype())
