@@ -124,21 +124,16 @@ class SourceBase:
         return self.length
     def get_columns_info(self):
         return self.columns.get_info()
-    def get_range(self, row_start, row_end, columns=None, filters=()):
+    def get_range(self, row_start, row_end):
         startup_time = time()
         chunk_len = row_end-row_start
         # try to reuse the last iterator
-        cache_key=(row_start, row_end, columns, filters)
+        cache_key=(row_start, row_end)
         it, compute_time = self.range_iter_cache.pop(cache_key, default=(None, None))
         in_cache = it is not None
         # otherwise, create a new iterator
         if not in_cache:
-            stream = self
-            if columns is not None:
-                stream = stream.select_columns(*columns)
-            for condition in filters:
-                stream = stream.filter(condition)
-            it = stream.chunks(chunk_len, row_start)
+            it = self.chunks(chunk_len, row_start)
             compute_time = 0
         # read next chunk and return it
         for chunk in it:
@@ -149,7 +144,7 @@ class SourceBase:
                 new_row_start = row_start + chunk.size
                 compute_time += time()- startup_time
                 expiry_delay = compute_time * CACHE_VALUE_FACTOR
-                cache_key = (new_row_start, new_row_start + chunk_len, columns, filters)
+                cache_key = (new_row_start, new_row_start + chunk_len)
                 cache_item = (it, compute_time)
                 self.range_iter_cache.save(cache_key, cache_item, expiry_delay)
             return chunk
