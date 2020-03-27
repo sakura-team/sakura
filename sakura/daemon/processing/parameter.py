@@ -212,28 +212,35 @@ class ColumnSelectionParameter(ComboParameter):
     def matching_columns(self):
         if not self.plug.connected():
             return
-        for col_idx, column_info in enumerate(self.plug.get_columns_info()):
+        for col_info in self.plug.get_columns_info():
+            col_path, column_info = col_info[0], col_info[1:]
             if self.condition(*column_info):
-                input_plug_ok = True
-                yield (col_idx,) + column_info + (str(column_info),)
+                yield (col_path,) + column_info + (str(column_info),)
     def get_possible_items(self):
-        for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
+        for col_path, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             value = col_info_str
             label = '%s (of %s)' % (col_label, self.plug.label)
             yield value, label
     @property
     def col_index(self):
+        # deprecated, use self.col_path property below (to handle subcolumns)
+        col_path = self.col_path
+        if self.col_path is None:
+            return None
+        return col_path[0]  # ignore the fact it may actually be a subcolumn
+    @property
+    def col_path(self):
         if self.value is None:
             return None
-        for col_idx, col_label, col_type, col_tags, col_info_str in self.matching_columns():
+        for col_path, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             if col_info_str == self.value:
-                return col_idx
+                return col_path
     @property
     def column(self):
-        col_index = self.col_index
-        if col_index is None:
+        col_path = self.col_path
+        if col_path is None:
             return None
-        return self.plug.source.columns[col_index]
+        return self.plug.source.columns[col_path]
     @staticmethod
     def adapt_with_condition(cond):
         class AdaptedColumnSelection(ColumnSelectionParameter):
@@ -261,12 +268,17 @@ StrColumnSelection = ColumnSelectionParameter.adapt_with_condition(
     lambda col_label, col_type, col_tags: col_type == 'string'
 )
 
+GeometryColumnSelection = ColumnSelectionParameter.adapt_with_condition(
+    lambda col_label, col_type, col_tags: col_type == 'geometry'
+)
+
 PARAMETER_CLASSES = {
     'COMBO': ComboParameter,
     'TAG_BASED_COLUMN_SELECTION': TagBasedColumnSelection,
     'NUMERIC_COLUMN_SELECTION': NumericColumnSelection,
     'FLOAT_COLUMN_SELECTION': FloatColumnSelection,
-    'STRING_COLUMN_SELECTION': StrColumnSelection
+    'STRING_COLUMN_SELECTION': StrColumnSelection,
+    'GEOMETRY_COLUMN_SELECTION': GeometryColumnSelection
 }
 
 def instanciate_parameter(op, param_type, label, *args, **kwargs):

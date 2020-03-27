@@ -49,12 +49,13 @@ class SQLSource(SourceBase):
             yield from chunk
     def chunks(self, chunk_size = None, offset=0):
         return SQLSourceIterator(self, chunk_size, offset)
-    def __select_columns__(self, *col_indexes):
-        new_query = self.query.select_columns(*col_indexes)
-        columns = tuple(self.columns[i] for i in col_indexes)
+    def __select_columns__(self, *columns):
+        col_paths = self.columns.get_paths(*columns)
+        new_query = self.query.select_columns_paths(*col_paths)
         return SQLSource(self.label, new_query, self.db, columns)
-    def __filter__(self, *cond_info):
-        new_query = self.query.filter(*cond_info)
+    def __filter__(self, column, comp_op, other):
+        col_path = self.columns.get_path(column)
+        new_query = self.query.filter(col_path, comp_op, other)
         return SQLSource(self.label, new_query, self.db, self.columns)
     def open_cursor(self, db_conn, offset=0):
         self.query.set_offset(offset)

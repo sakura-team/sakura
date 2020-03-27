@@ -29,13 +29,14 @@ class ItemsComputedSource(SourceBase):
             if i == -1:
                 break
             yield chunk[:i+1].view(NumpyChunk)
-    def __select_columns__(self, *col_indexes):
+    def __select_columns__(self, *columns):
+        col_indexes = self.columns.get_indexes(*columns)
         def filtered_compute_cb():
             for record in self.compute_cb():
                 yield tuple(record[i] for i in col_indexes)
-        columns = tuple(self.columns[i] for i in col_indexes)
         return ItemsComputedSource(self.label, filtered_compute_cb, columns)
-    def __filter__(self, col_index, comp_op, other):
+    def __filter__(self, column, comp_op, other):
+        col_index = self.columns.get_index(column)
         def filtered_compute_cb():
             for record in self.compute_cb():
                 if comp_op(record[col_index], other):
@@ -85,14 +86,14 @@ class ChunksComputedSource(SourceBase):
             if buf_level > 0:
                 buf_chunk = buf_chunk[:buf_level]
                 yield buf_chunk.view(NumpyChunk)
-    def __select_columns__(self, *col_indexes):
+    def __select_columns__(self, *columns):
+        col_indexes = self.columns.get_indexes(*columns)
         def filtered_compute_cb():
             for chunk in self.compute_cb():
-                yield chunk.view(NumpyChunk).__select_columns__(*col_indexes)
-        columns = tuple(self.columns[i] for i in col_indexes)
+                yield chunk.view(NumpyChunk).__select_columns_indexes__(*col_indexes)
         return ChunksComputedSource(self.label, filtered_compute_cb, columns)
-    def __filter__(self, col_index, comp_op, other):
-        col_label = self.columns[col_index]._label
+    def __filter__(self, column, comp_op, other):
+        col_label = column._label
         def filtered_compute_cb():
             for chunk in self.compute_cb():
                 chunk_cond = comp_op(chunk[col_label], other)

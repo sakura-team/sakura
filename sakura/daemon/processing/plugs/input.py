@@ -25,7 +25,7 @@ class InputPlug(PlugBase):
     def notify_source_change(self):
         self.on_change.notify()
     def connected(self):
-        return self.source_plug != None
+        return self.source_plug is not None and self.source_plug.source is not None
     @property
     def source(self):
         self.verify_enabled()

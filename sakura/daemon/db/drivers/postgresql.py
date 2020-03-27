@@ -75,12 +75,11 @@ def esc(name):
     """ function to escape object names (database, table, column names) """
     return '"' + name.replace('%', '%%') + '"'
 
-def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta):
+def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta, **params):
     select_clause_sql = esc(table_name) + "." + esc(col_name)
     where_clause_sql = select_clause_sql
     value_wrapper = '%s'
     tags = ()
-    params = {}
     if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json'):
         col_type = 'object'
     elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
@@ -105,11 +104,21 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
                                 col_name = esc(col_name))
         value_wrapper = 'ST_GeomFromGeoJSON(%s)'
         tags = ('geometry', 'supports_in')
+    elif col_pgtype in ('longitude', 'latitude'):
+        col_type = 'float64'
+        parent_col_name = col_name[:-2]   # e.g. gps.X -> gps
+        func_name = {'longitude': 'ST_X', 'latitude': 'ST_Y'}[col_pgtype]
+        select_clause_sql = '%(func_name)s(%(table_name)s.%(parent_col_name)s) as %(col_name)s' % dict(
+                                func_name = func_name,
+                                table_name = esc(table_name),
+                                parent_col_name = esc(parent_col_name),
+                                col_name = esc(col_name))
+        tags = (col_pgtype,)    # 'latitude' or 'longitude'
     elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
         col_type = TYPES_PG_TO_SAKURA[col_pgtype]
     else:
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
-    metadata_collector.register_column(
+    return metadata_collector.register_column(
             table_name, col_name, col_type,
             select_clause_sql, where_clause_sql, value_wrapper,
             tags, **params)
@@ -359,8 +368,13 @@ class PostgreSQLDBDriver:
             rows = cursor.fetchall()
             for col_name, col_pgtype, col_comment in rows:
                 col_meta = analyse_col_meta(col_comment)
-                register_column(metadata_collector,
+                col_id = register_column(metadata_collector,
                     table_name, col_name, col_pgtype, col_meta)
+                if col_pgtype.startswith('geometry(Point'):
+                    register_column(metadata_collector,
+                        table_name, col_name + '.X', 'longitude', {}, subcolumn_of=col_id)
+                    register_column(metadata_collector,
+                        table_name, col_name + '.Y', 'latitude', {}, subcolumn_of=col_id)
     @staticmethod
     def collect_table_count_estimate(db_conn, metadata_collector, table_name):
         sql = SQL_ESTIMATE_ROWS_COUNT % dict(table_name = table_name)

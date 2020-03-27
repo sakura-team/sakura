@@ -16,6 +16,7 @@ class DBColumn:
         self.select_clause_sql = select_clause_sql
         self.where_clause_sql = where_clause_sql
         self.value_wrapper = value_wrapper
+        self.subcolumns = ()
     @property
     def tags(self):
         for col, col_tags in zip(self.table.columns, self.table.col_tags_info):
@@ -27,3 +28,6 @@ class DBColumn:
         return self.where_clause_sql
     def to_sql_select_clause(self):
         return self.select_clause_sql
+    def add_subcolumn(self, *col_info, **params):
+        col = DBColumn(self.table, *col_info, **params)
+        self.subcolumns += (col,)

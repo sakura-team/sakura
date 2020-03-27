@@ -96,7 +96,7 @@ class NumpyChunk(np.ma.MaskedArray):
             ordered_dt = np.dtype(dict(names=names, formats=formats))
             ordered_array = np.ma.array(self, ordered_dt, mask=self.mask)
             return np.ma.MaskedArray.__reduce__(ordered_array)
-    def __select_columns__(self, *col_indexes):
+    def __select_columns_indexes__(self, *col_indexes):
         # workaround the fact np_select_columns() does not work directly
         # on masked arrays.
         new_data = np_select_columns(self.data, col_indexes).view(np.ma.MaskedArray)
