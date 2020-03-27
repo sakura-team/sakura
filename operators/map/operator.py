@@ -23,25 +23,13 @@ class MapOperator(Operator):
         # custom attributes
         self.curr_heatmap = None
 
-    @property
-    def lng_column(self):
-        return self.lng_column_param.column
-
-    @property
-    def lat_column(self):
-        return self.lat_column_param.column
-
-    def geo_filter(self, source, westlng, eastlng, southlat, northlat, **args):
+    def geo_filter(self, source, lng_column, lat_column,
+                   westlng, eastlng, southlat, northlat, **args):
         """restrict source to visible area"""
-        source = source.where((self.lng_column >= westlng)  &
-                              (self.lng_column <= eastlng)  &
-                              (self.lat_column >= southlat) &
-                              (self.lat_column <= northlat))
-        return source
-
-    def columns_filter(self, source):
-        """restrict source to latitude and longitude columns"""
-        source = source.select(self.lng_column, self.lat_column)
+        source = source.where((lng_column >= westlng)  &
+                              (lng_column <= eastlng)  &
+                              (lat_column >= southlat) &
+                              (lat_column <= northlat))
         return source
 
     def handle_event(self, ev_type, time_credit, **info):
@@ -50,11 +38,13 @@ class MapOperator(Operator):
         if ev_type == 'map_move':
             # update current source...
             source = self.input_plug.source
-            source = self.geo_filter(source, **info)
+            lng_column = self.lng_column_param.column
+            lat_column = self.lat_column_param.column
+            source = self.geo_filter(source, lng_column, lat_column, **info)
             # ...on output plug
             self.output_plug.source = source
-            # ...for heatmap calculation
-            heatmap_source = self.columns_filter(source)
+            # ...for heatmap calculation (keep only lng and lat columns)
+            heatmap_source = source.select(lng_column, lat_column)
             # create heatmap
             self.curr_heatmap = HeatMap(heatmap_source, **info)
         # from now on, map_move or map_continue is the same thing
