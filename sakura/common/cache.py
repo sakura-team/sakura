@@ -1,9 +1,12 @@
 import bisect, weakref
 from time import time
+from sakura.common.actor import actor
 
 # This is the minimum cache resilience value.
 CACHE_MIN_DELAY = 5.0   # seconds
+DEBUG = False
 
+@actor
 class Cache:
     instances = weakref.WeakSet()
     def __init__(self, size = None):
@@ -26,7 +29,8 @@ class Cache:
         return self.per_key[key][1]
     def forget(self, key):
         if key in self.per_key:
-            #print(time(), 'cache.forget', key)
+            if DEBUG:
+                print(id(self), time(), 'cache.forget', key)
             expiry_time, item = self.per_key[key]
             self.per_date.remove((expiry_time, key))
             del self.per_key[key]
@@ -37,7 +41,8 @@ class Cache:
     def save(self, key, item, expiry_delay):
         # ensure we keep in cache for at least CACHE_MIN_DELAY
         expiry_time = time() + max(CACHE_MIN_DELAY, expiry_delay)
-        #print(time(), 'cache.save', key, item, expiry_time)
+        if DEBUG:
+            print(id(self), time(), 'cache.save', key, item, expiry_time)
         # remove any previous info linked to key
         self.forget(key)
         if self.size is not None and len(self.per_date) == self.size:
@@ -54,7 +59,9 @@ class Cache:
         assert len(self.per_date) == len(self.per_key), \
                         '********* cache len issue.'
     def cleanup(self):
-        #print(time(), 'cache.cleanup')
+        if DEBUG:
+            if len(self.per_date) > 0 and self.per_date[0][0] < time():
+                print(id(self), time(), 'cache.cleanup')
         while len(self.per_date) > 0 and self.per_date[0][0] < time():
             self.cleanup_oldest()
     def cleanup_oldest(self):
