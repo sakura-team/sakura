@@ -77,15 +77,19 @@ function datasets_extension_check(f_name, ext) {
 
 }
 function recover_datasets() {
+    console.log('HERE 1');
+    // var searchParams = new URLSearchParams(window.location.search);
+    // var database_id = null;
+    // if (searchParams.has('database_id')) {
+    //     database_id = searchParams.get('database_id')
+    // }
+    database_id = web_interface_current_id;
 
-    var searchParams = new URLSearchParams(window.location.search);
-    var database_id = null;
-    if (searchParams.has('database_id')) {
-        database_id = searchParams.get('database_id')
-    }
-
+    console.log('HERE 2');
     sakura.apis.hub.databases[parseInt(database_id)].info().then(function (result) {
+        console.log('HERE 3');
         if (result.grant_level != 'list') {
+            console.log('HERE 4');
 
             if (result.tables == undefined)
                 result.tables = [];
@@ -117,7 +121,7 @@ function recover_datasets() {
             result.tables.forEach( function(dataset, index) {
                 var dataset_id = dataset.table_id;
                 var new_row = $(document.createElement('tr'));
-                new_row.load('templates/dataset.html', function () {
+                new_row.load('modules/datasets/templates/dataset.html', function () {
                     var tds = new_row.find('td');
                     var spans = $(tds[2]).find('span');
 

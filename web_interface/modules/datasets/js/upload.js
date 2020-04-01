@@ -192,7 +192,7 @@ function datasets_upload_data_format_modal(col) {
     datasets_upload_current_column = col;
     $('#datasets_date_format_header').html('<h3>Date Format for column '+col+': '+datasets_upload_expected_columns[col][0]+'</h3>');
     $('#datasets_date_format_body').html('');
-    $('#datasets_date_format_body').load('templates/date_format_input.html', function () {
+    $('#datasets_date_format_body').load('modules/datasets/templates/date_format_input.html', function () {
         var div = $('#datasets_date_format_body')[0];
         $(div.children[3].children[0]).val(datasets_upload_lines[0][col]);
         if (datasets_upload_checked_columns[col] != null) {

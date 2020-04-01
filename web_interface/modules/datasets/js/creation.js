@@ -96,7 +96,7 @@ function datasets_send_new(database_id) {
 
     //Which table body ?
     var from_what = 'fs';
-    
+
     $('#datasets_creation_ff_pan').attr("class").split(' ').forEach( function (elt) {
         if (elt == 'active') {
             from_what = 'ff';
@@ -213,7 +213,7 @@ function datasets_on_file_selected(f) {
                     nb_cols += 1;
                     var new_row = $(body[0].insertRow(-1));
                     new_row.attr('id', 'datasets_ff_row_' + index);
-                    new_row.load('templates/creation_dataset_row.html', function () {
+                    new_row.load('modules/datasets/templates/creation_dataset_row.html', function () {
                         var before_last_cel = $(new_row[0].childNodes[new_row[0].childNodes.length - 2]);
                         var inputs = new_row.find('input');
                         inputs[0].value = col;
@@ -268,7 +268,7 @@ function datasets_add_a_row(table_id) {
     var new_row = $(body[0].insertRow(nb_rows));
     new_row.attr('id', 'datasets_fs_row_' + datasets_creation_global_ids);
 
-    new_row.load('templates/creation_dataset_row.html', function () {
+    new_row.load('modules/datasets/templates/creation_dataset_row.html', function () {
         var col_name    = $('#datasets_creation_col_name_temp');
         var parent      = col_name.parent(0);
         parent.addClass('has-error');
@@ -841,7 +841,7 @@ function datasets_type_change(row_id, from) {
 
     if (select.val() == 'date' && from.id.indexOf("ff") >= 0) {
         var tmp = document.createElement('input');
-        $(tmp).load("templates/date_format_input.html", function (input) {
+        $(tmp).load("modules/datasets/templates/date_format_input.html", function (input) {
             var div = $(document.createElement('div'));
             div.attr("id", "datasets_date_format_ff_div_"+row_id);
             div.append($(input));

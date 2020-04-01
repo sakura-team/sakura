@@ -534,6 +534,8 @@ function files_on_demand(dir, div_id) {
     if (dir.startsWith('Datas')) {
         ldf = loaded_datas_files;
         d = 'databases';
+        $.getScript("/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js");
+
     }
     else if (dir.startsWith('Operators')) {
         ldf = loaded_operators_files;
@@ -596,7 +598,8 @@ function update_main_div(dir, obj, id) {
             div_head.style.display='inline';
             let ifr = document.getElementById('iframe_'+obj);
             if (obj == 'datas') {
-                ifr.src = "/modules/datasets/index.html?database_id="+id;
+                //ifr.src = "/modules/datasets/index.html?database_id="+id;
+                recover_datasets();
                 div_main.style.display='inline';
             }
             else if (obj == 'dataflows') {

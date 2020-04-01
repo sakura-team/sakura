@@ -1,3 +1,481 @@
-<div style="display:none;" id="web_interface_datas_tmp_work" class="classMainDiv">
+<!-- <div style="display:none;" id="web_interface_datas_tmp_work" class="classMainDiv">
     <iframe id='iframe_datas' class="executeOnShow" src="" frameborder="0" style="margin-top:10px; margin-bottom:10px; width:100%; height:900px;"></iframe>
+</div> -->
+
+<div style="display:none;" id="web_interface_datas_tmp_work" class="classMainDiv">
+    <!-- MAIN TABLE-->
+    <div class="container" id="datasets_container" style='margin: 0px; width: 100%'>
+        <table class="table table-condensed table-hover table-striped" id="table_of_datasets">
+            <thead>
+                <tr>
+                    <th>Dataset Name<th>Description<th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        &nbsp&nbsp
+        <button id="datasets_open_creation_button" title="Add a new dataset" type="button" class="btn btn-primary btn-xs" onclick="not_yet();">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+        </button>
+    </div>
+
+    <!--CREATION MODAL-->
+    <div class="modal fade" id="datasets_creation_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 100%">
+        <div class="modal-dialog modal-lg" role="document" style='width: 90%'>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>New Dataset</h3>
+                </div>
+                <div class="modal-body">
+                        <div class="panel">
+                            <div class="form-group">
+                                <label>Name</label>
+                                <input class="form-control input-sm" id="datasets_creation_name" type="text" placeholder="Give a name to this new dataset">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input class="form-control input-sm" id="datasets_creation_description" type="text" placeholder="Shortly describe this new dataset">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <label>Creation date</label>
+                                <div class="row">
+                                    <div class='col-sm-4'>
+                                        <div class="form-group">
+                                            <div class='input-group date' id='datasets_creation_datetimepicker'>
+                                                <input type='text' class="form-control input-sm" />
+                                                <span class="input-group-addon">
+                                                    <span class="glyphicon glyphicon-calendar"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <ul class="nav nav-pills">
+                        <li class="active"><a data-toggle="pill" href="#datasets_creation_fs_pan" onclick="datasets_creation_change_pan('fs')">From Scratch</a></li>
+                        <li><a data-toggle="pill" href="#datasets_creation_ff_pan" onclick="datasets_creation_change_pan('ff')">From File</a></li>
+                    </ul>
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="tab-content">
+                                <div id="datasets_creation_fs_pan" class="tab-pane fade in active">
+                                    <div class="tab-content">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading" style="padding-top: 5px;padding-bottom: 5px;">
+                                                <h5 style="margin-bottom: 0px;margin-top: 0px;">Columns</h5>
+                                            </div>
+                                            <div class="panel-body" style="padding-top:5px; padding-bottom: 0px;">
+                                                <table class="table table-condensed" id="datasets_creation_fs_columns" style="width: 100%; margin-bottom: 0px;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="text-align:left">Name
+                                                            <th style="text-align:left">Type
+                                                            <th style="text-align:left">Tags
+                                                            <th/>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td colspan=4>
+                                                                <span title="add a column" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_add_a_row('datasets_creation_fs_columns');"></span>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-default" style="margin-bottom: 0px;">
+                                            <div class="panel-heading" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;" data-toggle="collapse" data-target="#datasets_creation_fs_keys_div">
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <h5 style="margin-bottom: 0px;margin-top: 0px;">Keys</h5>
+                                                        <td>
+                                                            &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-chevron-down"/>
+                                                </table>
+                                            </div>
+                                            <div id="datasets_creation_fs_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">
+                                                <table class="table" sytle="width: 100%; border: none;" style="margin-bottom: 0px;">
+                                                    <tr>
+                                                        <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                            <label style="margin-left: 5px;">Primary</label>
+                                                        <td style="border-top: none; padding-top: 1px;" id="datasets_creation_fs_pkey_input">
+                                                            None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>
+                                                    <tr>
+                                                        <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                            <label style="margin-left: 5px;">Foreigns</label>
+                                                        <td style="border-top: none; padding-top: 1px;">
+                                                            <table class="table table-condensed" id="datasets_creation_fs_fkey_list">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <span id="datasets_creation_fs_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_foreign_modal('fs');"></span>
+                                                                </tbody>
+                                                            </table>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="datasets_creation_ff_pan" class="tab-pane fade in">
+                                    <div class="tab-content">
+                                        <div class="panel panel-default">
+                                            <div class="panel-heading" style="padding-top: 5px;padding-bottom: 5px;">
+                                                <h5 style="margin-bottom: 0px;margin-top: 0px;">Columns</h5>
+                                            </div>
+                                            <div class="panel-body" style="padding-top:5px; padding-bottom: 0px;">
+                                                <div id="datasets_file_input" class="form-group" style="margin-bottom: 5px;">
+                                                    <input id="datasets_file_from_HD" type="file" onchange="datasets_on_file_selected(this);">
+                                                </div>
+                                                <hr style="margin-bottom: 0px; margin-top: 0px">
+                                                <table class="table table-condensed" id="datasets_creation_ff_columns">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="col-md-2" style="text-align:left">Name
+                                                            <th class="col-md-1" style="text-align:left">Type
+                                                            <th class="col-md-3" style="text-align:left">Tags
+                                                    </thead>
+                                                    <tbody>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="panel panel-default" style="margin-bottom: 0px;">
+                                            <div class="panel-heading" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;" data-toggle="collapse" data-target="#datasets_creation_ff_keys_div">
+                                                <table>
+                                                    <tr>
+                                                        <td>
+                                                            <h5 style="margin-bottom: 0px;margin-top: 0px;">Keys</h5>
+                                                        <td>
+                                                            &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-chevron-down"/>
+                                                </table>
+                                            </div>
+                                            <div id="datasets_creation_ff_keys_div" class="panel-body collapse" style="padding-top:5px; padding-bottom: 0px;">
+                                                <table class="table" sytle="width: 100%; border: none;" style="margin-bottom: 0px;">
+                                                    <tr>
+                                                        <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                            <label style="margin-left: 5px;">Primary</label>
+                                                        <td style="border-top: none; padding-top: 1px;" id="datasets_creation_ff_pkey_input">
+                                                            None &nbsp;<font color="lightgrey">Click on the keys right to the column names (Warning: order is important)</font>
+                                                    <tr>
+                                                        <td class="col-md-1" style="border-top: none; padding-top: 1px;">
+                                                            <label style="margin-left: 5px;">Foreigns</label>
+                                                        <td style="border-top: none; padding-top: 1px;">
+                                                            <table class="table table-condensed" id="datasets_creation_ff_fkey_list">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>
+                                                                            <span id="datasets_creation_ff_FKey_addButton" type="text" title="add a foreign key" class="glyphicon glyphicon-plus" style="cursor: pointer;" onclick="datasets_foreign_modal('ff');"></span>
+                                                                </tbody>
+                                                            </table>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress" id="datasets_creation_div_progress_bar">
+                        <div id="datasets_creation_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="datasets_cancel_creation_button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="datasets_creation_button" class="btn btn-primary" onclick="">Create Dataset</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SEPARATOR MODAL -->
+    <!--<div id="datasets_csv_separator_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div id="datasets_csv_separator_header" class="modal-header">
+                    <h3 >CSV Separator</h3>
+                </div>
+                <div class="modal-body">
+                    <span>Separator&nbsp;&nbsp;</span>
+                    <input id="datasets_csv_separator" type=text>
+                </div>
+                <div id="datasets_csv_separator_footer" class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" onclick="datasets_parse_file();">Parse the file</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    -->
+
+    <!-- FOREIGN KEY MODAL -->
+    <div id="datasets_creation_fkey_modal" role="dialog" class="modal fade abs-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Foreign Key Definition</h3>
+                </div>
+                <div class="modal-body" style='padding-top:10px; padding-bottom:10px;'>
+                    <label>
+                        Reference&nbsp;&nbsp;
+                    </label>
+                    <select id="datasets_creation_fkey_modal_select_table" onchange="datasets_creation_fill_fkey_matrix();")>
+                        <option value="None">None</option>
+                    </select>
+                    <hr style="margin-top: 10px;">
+                    <table id='datasets_creation_fkey_modal_matrix' style="margin: 0 auto;">
+                        <tbody style="border-spacing: 5px;" cellspacing=2>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button id="datasets_creation_fkey_modal_validate_button" type="button" class="btn btn-primary btn-xs" onclick="datasets_creation_new_fkey();">Create</button>
+                    <button id="datasets_creation_fkey_modal_cancel_button" type="button" class="btn btn-secondary btn-xs" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATASET VISU MODAL -->
+    <div id="datasets_visu_dataset_modal" class="modal fade" style="width: 100%" role="document">
+        <div class="modal-dialog modal-lg" role="document" style="width: 100%;">
+            <div class="modal-content">
+                <div id="datasets_visu_header" class="modal-header">
+                    <h3 >Dataset Name</h3>
+                </div>
+                <div class="modal-body">
+                    <nav aria-label="..." align="center">
+                        <ul class="pagination" style="margin-bottom: 0px; margin-top: 0px;">
+                            <li class="page-item disabled" id ="datasets_visu_table_top_fb">
+                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('fb', -10);">
+                                    <span class="glyphicon glyphicon-fast-backward"></span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled" id ="datasets_visu_table_top_sb">
+                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('sb', -1);">
+                                    <span class="glyphicon glyphicon-step-backward"></span>
+                                </a>
+                            </li>
+                            <li class="page-item" id ="datasets_visu_table_top_sf">
+                                <a class="page-link" onclick="datasets_visu_table_next('sf', 1);">
+                                    <span class="glyphicon glyphicon-step-forward"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    <div style="overflow-x: scroll;">
+                    <table class="table table-condensed table-hover table-striped" id="datasets_visu_table_of_rows" style="margin-bottom: 0px;">
+                        <thead>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    </div>
+                    <nav aria-label="..." align="center">
+                        <ul class="pagination" style="margin-bottom: 0px; margin-top: 5px;">
+                            <li class="page-item disabled" id ="datasets_visu_table_bottom_fb">
+                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('fb', -10);">
+                                    <span class="glyphicon glyphicon-fast-backward"></span>
+                                </a>
+                            </li>
+                            <li class="page-item disabled" id ="datasets_visu_table_bottom_sb">
+                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('sb', -1);">
+                                    <span class="glyphicon glyphicon-step-backward"></span>
+                                </a>
+                            </li>
+                            <li class="page-item" id ="datasets_visu_table_bottom_sf">
+                                <a class="page-link" onclick="datasets_visu_table_next('sf', 1);">
+                                    <span class="glyphicon glyphicon-step-forward"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPLOAD MODAL -->
+    <div id="datasets_upload_modal" class="modal fade" style="width: 100%" role="document">
+        <div class="modal-dialog modal-lg" role="document" style="width: 100%;">
+            <div class="modal-content">
+                <div id="datasets_upload_header" class="modal-header">
+                    <h3 >Upload Data into ...</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="panel">
+                        <div class="form-group">
+                            <h4>Expected columns</h4>
+                            <table class="table table-condensed table-striped" id="datasets_upload_expected_columns_table">
+                                <thead>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h4>Select a file</h4>
+                        <div class="form-group">
+                            <input id="datasets_upload_select_file" type="file" onchange="datasets_upload_on_file_selected();">
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="form-group">
+                            <table class="table table-condensed table-striped" id="datasets_upload_preview_table">
+                                <thead>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="progress" id="datasets_upload_div_progress_bar">
+                        <div id="datasets_upload_progress_bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="datasets_cancel_upload_button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="datasets_upload_button" class="btn btn-primary" onclick="datasets_upload();">Upload data</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- DATE FORMAT MODAL -->
+    <div id="datasets_date_format_modal" class="modal fade" style="" role="document">
+        <div class="modal-dialog modal-lg" role="document" style="">
+            <div class="modal-content">
+                <div id="datasets_date_format_header" class="modal-header">
+                    <h3 >Date Format</h3>
+                </div>
+                <div id="datasets_date_format_body" class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" id="datasets_date_format_button" class="btn btn-primary" onclick="datasets_upload_save_date_format();">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERT MODAL -->
+    <div id="datasets_alert_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="datasets_alert_header" class="modal-header" style="background-color : rgba(255,0,0,0.5);">
+                    <h3>Alert Title</h3>
+                </div>
+                <div id="datasets_alert_body" class="modal-body">
+                    <p> Alert Text</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS BAR MODAL -->
+    <div id="datasets_progress_bar_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="datasets_progress_bar_modal_header" class="modal-header" style="background-color : rgba(255,255,255,0.5);">
+                    <h3>Progress bar Title</h3>
+                </div>
+                <div id="datasets_progress_bar_modal_body" class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="datasets_stop_downloading()">Abort</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASKING MODAL -->
+    <div id="datasets_asking_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="datasets_asking_header" class="panel-heading">
+                    <h3>Alert Title</h3>
+                </div>
+                <div id="datasets_asking_body" class="modal-body">
+                    <p> Alert Text</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="datasets_asking_button_yes"type="button" class="btn btn btn-sm" data-dismiss="modal">Yes</button>
+                    <button id="datasets_asking_button_no" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOWNLOAD MODAL -->
+    <div id="datasets_download_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="datasets_download_modal_header" class="panel-heading">
+                    <h3>Alert Title</h3>
+                </div>
+                <div id="datasets_download_modal_body" class="modal-body">
+                    <p> Alert Text</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="datasets_download_modal_button_csv"type="button" class="btn btn btn-sm" data-dismiss="modal">Csv</button>
+                    <button id="datasets_download_modal_button_gzip" type="button" class="btn btn btn-sm" data-dismiss="modal">Gzip (Csv)</button>
+                    <button id="datasets_download_modal_button_cancel" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- INFO MODAL -->
+    <div id="datasets_info_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="datasets_info_header" class="modal-header" style="background-color : rgba(255,255,255,0.5);">
+                    <h3>Info Title</h3>
+                </div>
+                <div id="datasets_info_body" class="modal-body">
+                    <p> Info Text</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW TAG MODAL -->
+    <div id="datasets_new_tag_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>New tag</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="panel" style="margin-bottom: 1px;">
+                        <input id="datasets_new_tag_name" type="text" class="form-control" placeholder="Tag Name" value=""/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal" onclick="datasets_new_tag();">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="modules/datasets/js/general.js"></script>
+    <script src="modules/datasets/js/visu_table.js"></script>
+    <script src="modules/datasets/js/creation.js"></script>
+    <script src="modules/datasets/js/upload.js"></script>
+    <script src="modules/datasets/js/download.js"></script>
 </div>
