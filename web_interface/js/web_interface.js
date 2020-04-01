@@ -617,8 +617,30 @@ function update_main_div(dir, obj, id) {
     catch (e) { tmp=0; }
 }
 
-function showDiv(event, dir) {
+function update_main_header(dir) {
+    function toggle(add_cl, rem_cl) {
 
+        [ [document.getElementById('anim_logo_cell'), '_logo_cell'],
+          [document.getElementById('anim_logo'), '_logo'],
+          [document.getElementById('anim_head_table'), '_head_table'],
+          [document.getElementById('anim_desc_cell'), '_desc_cell'],
+          [document.getElementById('anim_title_cell'), '_title_cell']].forEach (function (e) {
+              e[0].classList.remove('basic'+e[1]);
+              e[0].classList.remove(rem_cl+e[1]);
+              e[0].classList.add(add_cl+e[1]);
+        });
+        logo_size = add_cl;
+    }
+
+    if (dir == 'Home' && logo_size == 'small') {
+        toggle('big', 'small');
+    }
+    else if (dir != 'Home' && logo_size == 'big') {
+        toggle('small', 'big');
+    }
+}
+
+function showDiv(event, dir) {
     let obj_names = ["Datas", "Dataflows", "Operators", "Projects", "Home"];
 
     //Deal with unknown adresses -> always back to home
@@ -628,6 +650,8 @@ function showDiv(event, dir) {
           found = true;
     });
     if (!found) dir = "Home";
+
+    update_main_header(dir);
 
     //Loading html and js on demand
     let tab = dir.split('/');
@@ -641,6 +665,7 @@ function showDiv(event, dir) {
     web_interface_current_object_type = obj.toLowerCase();
     update_navbar(obj);
     update_main_div(dir, obj.toLowerCase(), tab[1]);
+
 
     if (event)
         event.preventDefault();

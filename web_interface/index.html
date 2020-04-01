@@ -63,48 +63,58 @@
     </head>
     <body>
         <div class="container-fluid">
-            <table width =100%>
-            <tr>
-            <td>
-            <h1>
-                <a id="home_logo" onclick="showDiv(event,'');" href="" style="cursor: pointer;">
-                    <img src="media/logo_Sakura_beta_sm.png" alt="logo_Sakura" height="65" width="280" />
-                </a>
-            </h1>
-            <p>Store and Analyse Data</p>
-            <td align='right' valign='bottom'>
-            <div id="idTopRightWidget" style='margin-bottom: 10px; position: relative;'>
-                <div id="idSignInWidget" name="signInWidget" class="dropdown">
-                    <button onclick="initiateSignInModal(event);" class="btn btn-info dropdown-toggle btn-xs" data-toggle="modal" href="#signInModal">
-                        <span class="glyphicon glyphicon-user" aria-hidden="true">
-                        </span>&nbsp; Sign in
-                    </button>
-                </div>
-                <span class= "glyphicon glyphicon-exclamation-sign"
-                      aria-hidden="true"
-                      style= 'color: orange; position: absolute; right:3px; top:-5px; display: none;'
-                      id= "profile_button_exclamation">
-                </span>
-            </div>
+            <table id="anim_head_table" class="basic_head_table">
+            <tr style="height: 20px; white-space:nowrap;">
+              <td id="anim_logo_cell" class="logos_and_titles basic_logo_cell">
+                  <img onclick="showDiv(event,'');" src="media/favicon.png" alt="logo_Sakura" id="anim_logo" class="logos_and_titles basic_logo" style='cursor: pointer;'/>
+              </td>
+              <td id="anim_title_cell" class="logos_and_titles basic_title_cell" style="vertical-align: bottom;">
+                <h1>
+                    <a id="home_logo" onclick="showDiv(event,'');" href="" style="padding: 0px; margin: 0px; cursor: pointer;">
+                        <img src="media/logo_Sakura_beta_solo_sm.png" alt="logo_Sakura" class="logos_and_titles" style="width:100%"/>
+                    </a>
+                </h1>
+              <td id="anim_desc_cell" class="logos_and_titles basic_desc_cell">
+                <p style="margin-top: 0px;"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Store and Analyse Data</i></p>
+
             </table>
-            <nav class="navbar navbar-default" style="margin-bottom:1px; height: 30px; line-height: 30px; min-height: 32px;">
-                <ul id="navbar_ul" class="nav navbar-nav">
+            <nav class="navbar navbar-default" style="margin-bottom:1px; height: 30px; line-height: 30px; min-height: 34px;">
+                <ul id="navbar_ul" class="nav navbar-nav navbar-left">
                     <li id="idNavBarHome" class="active">
-                        <a onclick="showDiv(event,'Home');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;"><span class="glyphicon glyphicon-home" title="home" aria-hidden="true"></span></a>
+                        <a onclick="showDiv(event,'Home');" style="cursor: pointer; padding-top: 7px; padding-bottom: 5px; min-height: 33px;"><span class="glyphicon glyphicon-home" title="home" aria-hidden="true"></span></a>
                     </li>
                     <li id="idNavBarProjects">
                         <!--<a disabled style="cursor: not-allowed;">Projects</a>-->
-                        <a onclick="showDiv(event,'Projects');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Projects</a>
+                        <a onclick="showDiv(event,'Projects');" style="cursor: pointer; padding-top: 7px; padding-bottom: 5px; min-height: 33px;">Projects</a>
                     </li>
                     <li id="idNavBarDatas">
-                        <a onclick="showDiv(event,'Datas');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Datas</a>
+                        <a onclick="showDiv(event,'Datas');" style="cursor: pointer; padding-top: 7px; padding-bottom: 5px; min-height: 33px;">Datas</a>
                     </li>
                     <li id="idNavBarOperators">
                         <!--<a disabled style="cursor: not-allowed>Operators</a>-->
-                        <a onclick="showDiv(event,'Operators');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Operators</a>
+                        <a onclick="showDiv(event,'Operators');" style="cursor: pointer; padding-top: 7px; padding-bottom: 5px; min-height: 33px;">Operators</a>
                     </li>
                     <li id="idNavBarDataflows">
-                        <a onclick="showDiv(event,'Dataflows');" style="cursor: pointer; padding-top: 5px; padding-bottom: 5px;">Dataflows</a>
+                        <a onclick="showDiv(event,'Dataflows');" style="cursor: pointer; padding-top: 7px; padding-bottom: 5px; min-height: 33px;">Dataflows</a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <!-- <a style="cursor: pointer; padding-top: 5px; padding-bottom: 5px; padding-right: 20px;">here</a> -->
+                        <!-- <div id="idTopRightWidget" style='margin-bottom: 10px; position: relative;'> -->
+                        <div id="idTopRightWidget" style='padding-top: 0px; padding-bottom: 5px; padding-right: 20px;'>
+                            <div id="idSignInWidget" name="signInWidget" class="dropdown">
+                                <button onclick="initiateSignInModal(event);" class="btn btn-info dropdown-toggle btn-xs" data-toggle="modal" href="#signInModal">
+                                    <span class="glyphicon glyphicon-user" aria-hidden="true">
+                                    </span>&nbsp; Sign in
+                                </button>
+                            </div>
+                            <span class= "glyphicon glyphicon-exclamation-sign"
+                                  aria-hidden="true"
+                                  style= 'color: orange; position: absolute; right:3px; top:-5px; display: none;'
+                                  id= "profile_button_exclamation">
+                            </span>
+                        </div>
                     </li>
                 </ul>
             </nav>

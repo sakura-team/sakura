@@ -264,7 +264,7 @@ function fill_profil_button(fill_modal) {
 
             function fill(login, pends) {
                 var gul = null;
-                var butt = $('<button>', {'class': "btn btn-secondary dropdown-toggle btn-xs",
+                var butt = $('<button>', {'class': "btn btn-info dropdown-toggle btn-xs",
                                           'type': "button",
                                           'data-toggle':"dropdown",
                                           'id': "dropdownProfilButton"});

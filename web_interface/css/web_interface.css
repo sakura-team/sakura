@@ -62,13 +62,154 @@ form.form-search:before {
     font-size:11px;
 }
 
-
 .editableDescriptionField > span > a {
     visibility: hidden;
 }
 
 .editableDescriptionField:hover > span > a {
     visibility: visible;
+}
+
+/*Logo Animation*/
+
+.basic_head_table {
+    margin: 5px;
+    display: block;
+    height: 100px;
+}
+
+.big_head_table {
+    margin: 5px;
+    display: block;
+    height: 100px;
+    animation-name: head_table_anim_go;
+    animation-duration: .5s;
+}
+
+.small_head_table {
+    margin: 5px;
+    display: block;
+    height: 20px;
+    animation-name: head_table_anim_back;
+    animation-duration: .5s;
+}
+
+@keyframes head_table_anim_go {
+    from  { height: 20px;  }
+    to    { height: 100px;   }
+}
+
+@keyframes head_table_anim_back {
+    from  { height: 100px;  }
+    to    { height: 20px;   }
+}
+
+.logos_and_titles{
+    padding: 0px;
+    margin: 0px;
+    white-space:nowrap;
+}
+
+.basic_logo_cell {
+    vertical-align: top;
+    width: 100px;
+    height: 100px;
+}
+
+.big_logo_cell{
+    vertical-align: top;
+    width: 100px;
+    height: 100px;
+    animation-name: logo_cell_anim_go;
+    animation-duration: .5s;
+}
+
+.small_logo_cell{
+    vertical-align: top;
+    width: 20px;
+    height: 20px;
+    animation-name: logo_cell_anim_back;
+    animation-duration: .5s;
+}
+
+@keyframes logo_cell_anim_go {
+    from  {   width: 20px;  height: 20px; }
+    to    {   width: 100px; height: 100px; }
+}
+
+@keyframes logo_cell_anim_back {
+    from  {   width: 100px; height: 100px;  }
+    to    {   width: 20px;  height: 20px;  }
+}
+
+.basic_logo {
+    width: 100px;
+    height: 100px;
+}
+
+.big_logo {
+    width: 100px;
+    height: 100px;
+    animation-name: logo_anim_go;
+    animation-duration: .5s;
+}
+
+.small_logo {
+    width: 20px;
+    height: 20px;
+    animation-name: logo_anim_back;
+    animation-duration: .5s;
+}
+
+@keyframes logo_anim_go {
+    from  {  width: 20px;  height: 20px;   }
+    to    {  width: 100px; height: 100px;  }
+}
+
+@keyframes logo_anim_back {
+        from  {  width: 100px;  height: 100px;  }
+        to    {  width: 20px;   height: 20px;   }
+}
+
+.basic_title_cell {
+    width: 350px;
+}
+
+.big_title_cell {
+    width: 350px;
+    animation-name: title_cell_anim_go;
+    animation-duration: .5s;
+}
+
+.small_title_cell {
+    width: 1px;
+    animation-name: title_cell_anim_back;
+    animation-duration: .5s;
+}
+
+@keyframes title_cell_anim_go {
+    from  {   width: 1px   }
+    to    {   width: 350px; }
+}
+
+@keyframes title_cell_anim_back {
+    from  {   width: 350px  }
+    to    {   width: 1px;  }
+}
+
+.basic_desc_cell {
+    vertical-align: bottom;
+    display: visible;
+}
+
+.big_desc_cell {
+    vertical-align: bottom;
+    display: visible;
+}
+
+.small_desc_cell {
+    vertical-align: bottom;
+    display: none;
 }
 
 /* Loading icon */
