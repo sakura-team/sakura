@@ -5,7 +5,7 @@
 var nb_rows     = 50; //temporary, should be put in a dom element. Soon !
 var current_dataset_id = -1
 
-function datasets_visu_dataset(dataset_id) {
+function datasets_visu_dataset(dataset_id, row_in_table) {
     var dataset     = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
     current_dataset_id = dataset_id;
 
@@ -33,21 +33,36 @@ function datasets_visu_dataset(dataset_id) {
     //Rows
     var row_start   = 0;
 
-    sakura.apis.hub.tables[current_dataset_id].get_rows(row_start, row_start + nb_rows).then(function (rows) {
-        datasets_visu_table_fill_rows(body, rows, row_start, dataset);
+    if (row_in_table == openned_accordion) {
+        let dv = $('#datasets_visu_dataset');
+        dv.css("display", "none");
+        $('#dataset_accordion_panel_'+row_in_table).empty();
+        $('#datasets_container').append(dv);
+        close_accordion(row_in_table);
+    }
+    else {
+        close_other_accordions(row_in_table);
+        sakura.apis.hub.tables[current_dataset_id].get_rows(row_start, row_start + nb_rows).then(function (rows) {
+            datasets_visu_table_fill_rows(body, rows, row_start, dataset);
 
-        $('#datasets_visu_table_of_rows').data('row_start', row_start);
-        $('#datasets_visu_table_of_rows').data('nb_rows', nb_rows);
-        $('#datasets_visu_table_of_rows').data('end',rows.length < nb_rows);
+            $('#datasets_visu_table_of_rows').data('row_start', row_start);
+            $('#datasets_visu_table_of_rows').data('nb_rows', nb_rows);
+            $('#datasets_visu_table_of_rows').data('end',rows.length < nb_rows);
 
-        datasets_visu_enable_disable('fb', false);
-        datasets_visu_enable_disable('sb', false);
-        datasets_visu_enable_disable('sf', !(rows.length < nb_rows));
+            datasets_visu_enable_disable('fb', false);
+            datasets_visu_enable_disable('sb', false);
+            datasets_visu_enable_disable('sf', !(rows.length < nb_rows));
 
-        $('#datasets_visu_dataset_modal').modal();
-    }).catch( function(error_msg) {
-        console.log('Error reading the table');
-    });
+            let dv = $('#datasets_visu_dataset');
+            dv.css("display", "block");
+            $('#dataset_accordion_panel_'+row_in_table).empty();
+            $('#dataset_accordion_panel_'+row_in_table).append(dv);
+            open_accordion(row_in_table);
+
+        }).catch( function(error_msg) {
+            console.log('Error reading the table');
+        });
+    }
 }
 
 

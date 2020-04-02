@@ -1,11 +1,11 @@
 //Code started by Michael Ortega for the LIG
 //August, 22nd, 2017
 
-
 var database_infos = null;
 var columns_tags_list = null;
 var mouse = {x: 0, y: 0};
 var chunk_size = 100000;
+var openned_accordion = null;
 
 function not_yet() {
     alert("not yet implemented");
@@ -76,20 +76,35 @@ function datasets_extension_check(f_name, ext) {
     return true;
 
 }
+
+function close_other_accordions(acc_id) {
+    let acc = document.getElementsByClassName("dataset_accordion");
+    for (let i = 0; i < acc.length; i++) {
+        if (i != acc_id) {
+          let panel = document.getElementById('dataset_accordion_panel_'+i);
+          panel.style.maxHeight = 0 + 'px';
+        }
+    };
+}
+
+function open_accordion(acc_id) {
+    let panel = document.getElementById('dataset_accordion_panel_'+acc_id);
+    panel.style.maxHeight = panel.scrollHeight + "px";
+    openned_accordion = acc_id;
+}
+
+function close_accordion(acc_id) {
+    let panel = document.getElementById('dataset_accordion_panel_'+acc_id);
+    panel.style.maxHeight = panel.scrollHeight + "px";
+    openned_accordion = null;
+}
+
+
 function recover_datasets() {
-    console.log('HERE 1');
-    // var searchParams = new URLSearchParams(window.location.search);
-    // var database_id = null;
-    // if (searchParams.has('database_id')) {
-    //     database_id = searchParams.get('database_id')
-    // }
     database_id = web_interface_current_id;
 
-    console.log('HERE 2');
     sakura.apis.hub.databases[parseInt(database_id)].info().then(function (result) {
-        console.log('HERE 3');
         if (result.grant_level != 'list') {
-            console.log('HERE 4');
 
             if (result.tables == undefined)
                 result.tables = [];
@@ -111,6 +126,7 @@ function recover_datasets() {
             //Filling dataset
             var body = $('#table_of_datasets').find('tbody');
             body.empty();
+
             if (result.tables.length == 0) {
                 var tr = $('<tr>');
                 var td = $('<td>', {html: "The list is empty for now"});
@@ -128,7 +144,7 @@ function recover_datasets() {
                     $(tds[0]).empty();
                     $(tds[0]).append($('<a>',{  text: dataset.name,
                                                 style: "cursor: pointer;",
-                                                onclick: "datasets_visu_dataset("+dataset_id+");"
+                                                onclick: "datasets_visu_dataset("+dataset_id+","+index+");"
                                                 })
                                     );
 
@@ -156,6 +172,11 @@ function recover_datasets() {
                         });
                 });
                 body.append(new_row);
+                let tr = $('<tr>');
+                let td = $('<td colspan= 3 style="padding-top: 0px; padding-bottom: 0px;">');
+                td.html('<div class="dataset_accordion_panel" id="dataset_accordion_panel_'+index+'"><p>Following 2</p></div>');
+                tr.append(td);
+                body.append(tr);
             });
 
             if (result.grant_level == 'write' || result.grant_level == 'own') {
