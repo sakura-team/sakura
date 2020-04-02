@@ -367,11 +367,19 @@ function web_interface_updating_metadata(a, params) {
     );
 }
 
-function open_metadata() {
-    console.log('OPEN METADATA', web_interface_current_object_info.name);
-    $('#web_interface_metadata_modal_obj_name').html(web_interface_current_object_info.name);
-    $('#web_interface_metadata_modal_obj_icon').attr('src', '/media/'+web_interface_current_object_type+'_icon_inverse.svg.png');
-    fill_metadata();
+function open_metadata(type, id, name) {
+    if (!type) {
+        $('#web_interface_metadata_modal_obj_name').html(web_interface_current_object_info.name);
+        $('#web_interface_metadata_modal_obj_icon').attr('src', '/media/'+web_interface_current_object_type+'_icon_inverse.svg.png');
+        fill_metadata();
+    }
+    else{
+        web_interface_current_object_type = type.toLowerCase();
+        web_interface_current_id = id;
+        $('#web_interface_metadata_modal_obj_name').html(name);
+        $('#web_interface_metadata_modal_obj_icon').attr('src', '/media/'+web_interface_current_object_type+'_icon_inverse.svg.png');
+        fill_metadata();
+    }
 }
 
 function fill_pages(dir) {
