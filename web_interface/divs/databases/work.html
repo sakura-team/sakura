@@ -15,56 +15,6 @@
         </button>
     </div>
 
-<!-- <div class="container" style='margin: 0px; width: 100%'>
-    <button class="dataset_accordion">Button 1</button>
-    <div class="dataset_accordion_panel" id="dataset_accordion_panel_0">
-        <p>Following 1<br>2</p>
-    </div>
-    <button class="dataset_accordion">Button 2</button>
-    <div class="dataset_accordion_panel" id="dataset_accordion_panel_1">
-        <p>Following 2</p>
-    </div>
-    <button class="dataset_accordion">Button 3</button>
-    <div class="dataset_accordion_panel" id="dataset_accordion_panel_2">
-        <p>Following 3</p>
-    </div>
-</div>
-
-<script>
-    let acc = document.getElementsByClassName("dataset_accordion");
-
-    function close_others(i) {
-        let acc = document.getElementsByClassName("dataset_accordion");
-        for (let j = 0; j < acc.length; j++) {
-            if (j != i) {
-              let panel = document.getElementById('dataset_accordion_panel_'+j);
-              panel.style.maxHeight = 0 + 'px';
-            }
-        };
-    };
-
-    for (let i = 0; i < acc.length; i++) {
-      acc[i].addEventListener("click", function() {
-        close_others(i);
-
-        this.classList.toggle("active");
-        //let panel = this.nextElementSibling;
-        let panel = document.getElementById('dataset_accordion_panel_'+i);
-        if (panel.style.maxHeight && panel.style.maxHeight != '0px' && panel.style.maxHeight != '0') {
-          panel.style.maxHeight = 0 + "px";
-        }
-        else {
-          panel.style.maxHeight = panel.scrollHeight + "px";
-        }
-      });
-    }
-</script>
-
-</div> -->
-
-
-
-
     <!--CREATION MODAL-->
     <div class="modal fade" id="datasets_creation_modal" tabindex="-1" role="dialog" aria-hidden="true" style="width: 100%">
         <div class="modal-dialog modal-lg" role="document" style='width: 90%'>
@@ -262,67 +212,6 @@
         </div>
     </div>
 
-    <!-- DATASET VISU MODAL -->
-    <!-- <div id="datasets_visu_dataset_modal" class="modal fade" style="width: 100%" role="document">
-        <div class="modal-dialog modal-lg" role="document" style="width: 100%;">
-            <div class="modal-content">
-                <div id="datasets_visu_header" class="modal-header">
-                    <h3 >Dataset Name</h3>
-                </div>
-                <div class="modal-body">
-                    <nav aria-label="..." align="center">
-                        <ul class="pagination" style="margin-bottom: 0px; margin-top: 0px;">
-                            <li class="page-item disabled" id ="datasets_visu_table_top_fb">
-                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('fb', -10);">
-                                    <span class="glyphicon glyphicon-fast-backward"></span>
-                                </a>
-                            </li>
-                            <li class="page-item disabled" id ="datasets_visu_table_top_sb">
-                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('sb', -1);">
-                                    <span class="glyphicon glyphicon-step-backward"></span>
-                                </a>
-                            </li>
-                            <li class="page-item" id ="datasets_visu_table_top_sf">
-                                <a class="page-link" onclick="datasets_visu_table_next('sf', 1);">
-                                    <span class="glyphicon glyphicon-step-forward"></span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                    <div style="overflow-x: scroll;">
-                    <table class="table table-condensed table-hover table-striped" id="datasets_visu_table_of_rows" style="margin-bottom: 0px;">
-                        <thead>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                    </div>
-                    <nav aria-label="..." align="center">
-                        <ul class="pagination" style="margin-bottom: 0px; margin-top: 5px;">
-                            <li class="page-item disabled" id ="datasets_visu_table_bottom_fb">
-                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('fb', -10);">
-                                    <span class="glyphicon glyphicon-fast-backward"></span>
-                                </a>
-                            </li>
-                            <li class="page-item disabled" id ="datasets_visu_table_bottom_sb">
-                                <a class="page-link" style="pointer-events: none;" onclick="datasets_visu_table_next('sb', -1);">
-                                    <span class="glyphicon glyphicon-step-backward"></span>
-                                </a>
-                            </li>
-                            <li class="page-item" id ="datasets_visu_table_bottom_sf">
-                                <a class="page-link" onclick="datasets_visu_table_next('sf', 1);">
-                                    <span class="glyphicon glyphicon-step-forward"></span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div> -->
 
     <div style="display: none;" id="datasets_visu_dataset">
         <nav aria-label="..." align="right">
@@ -371,9 +260,6 @@
                 </li>
             </ul>
         </nav>
-        <!-- <div class="modal-footer">
-            <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Close</button>
-        </div> -->
     </div>
 
     <!-- UPLOAD MODAL -->
@@ -555,3 +441,4 @@
     <script src="modules/datasets/js/creation.js"></script>
     <script src="modules/datasets/js/upload.js"></script>
     <script src="modules/datasets/js/download.js"></script>
+</div>

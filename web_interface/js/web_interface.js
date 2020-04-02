@@ -343,6 +343,9 @@ function fill_metadata() {
             let meta_div = document.getElementById('web_interface_'+web_interface_current_object_type+'_tmp_meta');
             meta_div.style.display = 'inline';
 
+            let curr_div = $($('#web_interface_metadata_modal_body').html());
+            curr_div.css('display', 'none');
+            $('body').append(curr_div);
             $('#web_interface_metadata_modal_body').empty();
             $('#web_interface_metadata_modal_body').html(meta_div);
             $('#web_interface_metadata_modal').modal('show');
@@ -396,7 +399,6 @@ function fill_pages(dir) {
     });
 
     current_remote_api_object().info().then(function(info) {
-        console.log(info);
         if (info.pages) {
             info.pages.forEach( function(page) {
                 let active_page = false;
@@ -493,11 +495,15 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
 }
 
 function web_interface_create_large_description_area(datatype, area_id, description, toolbar) {
-    //Erasing previous one
-    if (simplemde)
-        simplemde.toTextArea();
-        simplemde = null;
+    //Deleting previous simplemde
+    let parent = document.getElementById(area_id).parentElement;
+    let simpleMdeClasses = ['editor-toolbar', 'CodeMirror', 'editor-preview-side' ,'editor-statusbar'];
+    for (let i in simpleMdeClasses) {
+        let elementToRemove = parent.querySelector('.' + simpleMdeClasses[i])
+        elementToRemove && elementToRemove.remove();
+    }
 
+    simplemde = null;
     simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
                                   element: document.getElementById(area_id),
                                   toolbar: toolbar ? get_edit_toolbar(datatype, web_interface_current_id) : false
