@@ -192,10 +192,11 @@ function recover_datasets() {
             });
         }
         else {
-            var body = $('#table_of_datasets').find('tbody');
+            let body = $('#table_of_datasets').find('tbody');
             body.empty();
-            var tr = $('<tr>');
-            var td = $('<td>', {html: "You need a read access for seeing the datasets (MetaData/Access)"});
+            let tr = $('<tr>');
+            let td = $('<td colspan=3>');
+            td.html("You need a read access for seeing the datasets (MetaData/Access)");
             tr.append(td);
             body.append(tr);
             $('#datasets_open_creation_button').css('display', 'none');

@@ -183,6 +183,7 @@ function logOut(event) {
                 if (this.id.indexOf(pname) == -1)
                     this.remove();
             });
+            showDiv(event, 'Home');
         });
     });
 }
@@ -291,7 +292,6 @@ function fill_profil_button(fill_modal) {
                       a1.append(ex_span);
 
                 var a2 = $('<a>', {     'class': "dropdown-item",
-                                        'href':"#",
                                         'html': "Log Out&nbsp;&nbsp;",
                                         'onclick': "logOut(event);"});
                 var span_off = $('<span>', {'class': "glyphicon glyphicon-off",
