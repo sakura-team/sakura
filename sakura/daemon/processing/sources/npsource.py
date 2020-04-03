@@ -30,10 +30,10 @@ class NumpyArraySource(SourceBase):
             while offset < indices.size:
                 yield self.array[indices[offset:offset+chunk_size]].view(NumpyChunk)
                 offset += chunk_size
-    def __select_columns__(self, *columns):
-        col_indexes = self.columns.get_indexes(*columns)
-        filtered_array = self.array.view(NumpyChunk).__select_columns_indexes__(*col_indexes)
-        return NumpyArraySource(self.label, filtered_array, columns)
+    def __select_columns__(self, columns):
+        col_indexes = self.columns.get_indexes(columns)
+        filtered_array = self.array.view(NumpyChunk).__select_columns_indexes__(col_indexes)
+        return NumpyArraySource(self.label, filtered_array, self.rows_cond, columns)
     def __filter__(self, column, comp_op, other):
         col_label = column._label
         # we generate a condition of the form:

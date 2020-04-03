@@ -65,9 +65,10 @@ class ColumnsRegistry:
         if bcol is None:
             raise APIRequestError('No column at this index in this source!')
         return bcol
-    def get_paths(self, *columns, allow_subcolumns=True):
+    def get_paths(self, columns, allow_subcolumns=True):
         # in order to handle subcolumns, indexes are returned as a tuple
         # (e.g. (1,0) means "2nd column > 1st subcolumn").
+        paths = []
         for col in columns:
             col_uuid = col.get_uuid()
             col_path = self.uuid_to_path.get(col_uuid)
@@ -75,13 +76,14 @@ class ColumnsRegistry:
                 raise APIRequestError('Column %s not found in this source!' % col)
             if len(col_path) > 1 and not allow_subcolumns:
                 raise APIRequestError('Sorry this source does not handle sub-columns.')
-            yield col_path
+            paths.append(col_path)
+        return tuple(paths)
     def get_path(self, column, allow_subcolumns=True):
-        return next(self.get_paths(column, allow_subcolumns))
-    def get_indexes(self, *columns):
-        return (t[0] for t in self.get_paths(*columns, False))
+        return self.get_paths((column,), allow_subcolumns)[0]
+    def get_indexes(self, columns):
+        return tuple(t[0] for t in self.get_paths(columns, False))
     def get_index(self, column):
-        return next(self.get_indexes(column))
+        return self.get_indexes((column,))[0]
     def get_info(self):
         return tuple(((col_path,) + col.get_info()) \
                      for col_path, col in self.enumerate(include_subcolumns=True))
@@ -166,7 +168,7 @@ class SourceBase:
             return self
         # compute a substream
         columns = (self.columns[idx] for idx in col_indexes)
-        return self.__select_columns__(*columns)
+        return self.__select_columns__(columns)
     # deprecated (use where() instead)
     def filter_column(self, col_index, comp_op, other):
         # compute a substream
@@ -177,6 +179,6 @@ class SourceBase:
         yield from stream_csv(
                     header_labels, stream, gzip_compression)
     def select(self, *columns):
-        return self.__select_columns__(*columns)
+        return self.__select_columns__(columns)
     def where(self, col_filter):
         return col_filter.filtered_source(self)
