@@ -2,6 +2,7 @@ from sakura.daemon.db import drivers
 from sakura.daemon.db import adapters
 from sakura.daemon.db.grants import register_grant
 from sakura.daemon.db.database import Database
+from sakura.daemon.db.pool import ConnectionPool
 from sakura.common.io import pack
 from sakura.common.access import GRANT_LEVELS
 from sakura.common.password import decode_password
@@ -44,7 +45,14 @@ class DataStore:
         self._online = None       # not probed yet
         self.adapter = adapters.get(adapter_label)
         self.access_scope = access_scope
+        self.conn_pools = {}
     def admin_connect(self, db_name = None):
+        pool = self.conn_pools.get(db_name)
+        if pool is None:
+            pool = ConnectionPool(lambda: self.do_admin_connect(db_name))
+            self.conn_pools[db_name] = pool
+        return pool.connect()
+    def do_admin_connect(self, db_name):
         info = dict(
             host = self.host,
             **self.datastore_admin

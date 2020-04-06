@@ -11,6 +11,7 @@ from sakura.daemon.engine import DaemonEngine
 from sakura.daemon.greenlets import HubRPCGreenlet
 from sakura.common.planner import PlannerGreenlet
 from sakura.common.cache import Cache
+from sakura.daemon.db.pool import ConnectionPool
 from sakura.common.streams import enable_standard_streams_redirection
 
 DEBUG_ENDING_GREENLETS = False
@@ -34,6 +35,7 @@ def run():
         if True:
             hub_greenlet.prepare()
             Cache.plan_cleanup(planner_greenlet)
+            ConnectionPool.plan_cleanup(planner_greenlet)
         #except Exception as e:
         #    sys.stderr.write('ERROR: %s\nAborting.\n' % str(e))
         #    sys.exit()
