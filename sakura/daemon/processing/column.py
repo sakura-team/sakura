@@ -10,10 +10,10 @@ class AndColumnFilters:
     def __and__(self, other):
         filters = list(self.filters) + [other]
         return AndColumnFilters(*filters)
-    def filtered_source(self, source):
+    def filtered_sources(self, *sources):
         for f in self.filters:
-            source = f.filtered_source(source)
-        return source
+            sources = f.filtered_sources(*sources)
+        return sources
 
 class SingleColumnFilter:
     def __init__(self, column, op, value):
@@ -22,8 +22,21 @@ class SingleColumnFilter:
         self.value = value
     def __and__(self, other):
         return AndColumnFilters(self, other)
-    def filtered_source(self, source):
-        return source.__filter__(self.column, self.op, self.value)
+    def filtered_sources(self, *sources):
+        new_sources = []
+        could_apply = False
+        for source in sources:
+            if self.column in source.columns:
+                source = source.filtered(self.column, self.op, self.value)
+                could_apply = True
+            new_sources.append(source)
+        if could_apply:
+            return tuple(new_sources)
+        else:
+            raise APIRequestError('Column filter does not apply to specified sources.')
+
+class ColumnData:
+    pass
 
 class ColumnBase:
     def __init__(self, col_label, col_type, col_tags, **col_type_params):
@@ -32,6 +45,7 @@ class ColumnBase:
         self.analyse_type(col_type, **col_type_params)
         self.col_uuid = uuid.uuid4().hex
         self.subcolumns = ()
+        self.data = ColumnData()
     def register_subcolumn(self, subcol):
         self.subcolumns += (subcol,)
     def get_uuid(self):

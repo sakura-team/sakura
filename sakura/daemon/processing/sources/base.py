@@ -52,6 +52,8 @@ class ColumnsRegistry:
         yield from self.ordered_columns
     def __len__(self):
         return len(self.ordered_columns)
+    def __contains__(self, col):
+        return col.get_uuid() in self.uuid_to_path
     def __getitem__(self, col_path):
         if isinstance(col_path, str):
             # by_uuid
@@ -89,23 +91,35 @@ class ColumnsRegistry:
         return tuple(((col_path,) + col.get_info()) \
                      for col_path, col in self.enumerate(include_subcolumns=True))
 
+class SourceCustomData:
+    def copy(self):
+        c = SourceCustomData()
+        for k, v in self.__dict__.items():
+            setattr(c, k, v)
+        return c
+
 class SourceBase:
     num_instances = 0
     range_iter_cache = Cache(CACHE_SIZE_PER_SOURCE)
-    def __init__(self, label, columns=None):
+    def __init__(self, label):
+        # all columns
+        self.all_columns = ColumnsRegistry(self)
+        # selected columns
         self.columns = ColumnsRegistry(self)
+        # row filters
+        self.row_filters = ()
+        # other attributes
         self.label = label
         self.length = None
         self.origin_id = ORIGIN_ID
-        if columns is not None:
-            self.columns.rebind(columns)
         SourceBase.num_instances += 1
         SourceBase.range_iter_cache.resize(
                    SourceBase.num_instances * CACHE_SIZE_PER_SOURCE)
+        self.data = SourceCustomData()
     def __del__(self):
         SourceBase.num_instances -= 1
     def add_column(self, col_label, col_type, col_tags=(), **col_type_params):
-        existing_col_names = set(col._label for col in self.columns.list(True))
+        existing_col_names = set(col._label for col in self.all_columns.list(True))
         # avoid having twice the same column name
         if col_label in existing_col_names:
             for i in count(start=2):
@@ -118,7 +132,9 @@ class SourceBase:
         else:
             col_class = Column
         col = col_class(col_label, col_type, tuple(col_tags), **col_type_params)
+        self.all_columns.append(col)
         self.columns.append(col)
+        return col
     def pack(self):
         return pack(dict(label = self.label,
                     columns = self.columns,
@@ -165,22 +181,41 @@ class SourceBase:
         if len(col_indexes) == 0:
             return self
         col_indexes = tuple(col_indexes)
-        # if all columns are selected in the same order, return self...
-        if col_indexes == tuple(range(len(self.columns))):
-            return self
         # compute a substream
-        columns = (self.columns[idx] for idx in col_indexes)
-        return self.__select_columns__(columns)
+        columns = tuple(self.columns[idx] for idx in col_indexes)
+        return self.select(*columns)
     # deprecated (use where() instead)
     def filter_column(self, col_index, comp_op, other):
-        # compute a substream
-        return self.__filter__(self.columns[col_index], comp_op, other)
+        return self.filtered(self.columns[col_index], comp_op, other)
     def stream_csv(self, gzip_compression=False):
         header_labels = tuple(col._label for col in self.columns)
         stream = self.chunks()
         yield from stream_csv(
                     header_labels, stream, gzip_compression)
+    def filtered(self, col, comp_op, other):
+        new_row_filters = self.row_filters + ((col, comp_op, other),)
+        return self.reinstanciate(row_filters=new_row_filters)
+    def reinstanciate(self, columns = None, row_filters = None):
+        source = self.__class__(self.label)
+        # self.all_columns always remains the same
+        source.all_columns.rebind(self.all_columns)
+        # selected columns may change
+        if columns is None:
+            columns = self.columns  # if unchanged
+        source.columns.rebind(columns)
+        # row_filters may change
+        if row_filters is None:
+            row_filters = self.row_filters  # if unchanged
+        source.row_filters = tuple(row_filters)
+        # transmit custom data
+        source.data = self.copy_data()
+        return source
+    def copy_data(self):
+        return self.data.copy()
     def select(self, *columns):
-        return self.__select_columns__(columns)
+        return self.reinstanciate(columns = columns)
     def where(self, col_filter):
-        return col_filter.filtered_source(self)
+        return col_filter.filtered_sources(self)[0]
+    def __iter__(self):
+        for chunk in self.chunks():
+            yield from chunk
