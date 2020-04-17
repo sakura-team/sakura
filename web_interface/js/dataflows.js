@@ -59,13 +59,13 @@ function new_dataflow() {
 
     var short_d     = $('#dataflows_shortdescription_input').val();
 
-    var access_scope      = 'restricted';
-    $('[id^="dataflows_creation_access_scope_radio"]').each( function() {
-        if (this.checked) {
-            var tab = this.id.split('_');
-            access_scope = tab[tab.length - 1];
-        }
-    });
+    var access_scope      = 'private';
+    // $('[id^="dataflows_creation_access_scope_radio"]').each( function() {
+    //     if (this.checked) {
+    //         var tab = this.id.split('_');
+    //         access_scope = tab[tab.length - 1];
+    //     }
+    // });
 
     var topic= $('#dataflows_topic_input').val();
 

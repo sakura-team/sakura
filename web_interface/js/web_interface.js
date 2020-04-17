@@ -1,7 +1,6 @@
 main_alert/// LIG March 2017
 
 ////////////GLOBALS
-var web_interface_current_id = -1;  //database or dataflow id
 var simplemde  = null;           //large description textarea
 var empty_text = "__";
 
@@ -377,8 +376,8 @@ function open_metadata(type, id, name) {
         fill_metadata();
     }
     else{
-        web_interface_current_object_type = type.toLowerCase();
         web_interface_current_id = id;
+        web_interface_current_object_type = type.toLowerCase();
         $('#web_interface_metadata_modal_obj_name').html(name);
         $('#web_interface_metadata_modal_obj_icon').attr('src', '/media/'+web_interface_current_object_type+'_icon_inverse.svg.png');
         fill_metadata();
@@ -609,7 +608,6 @@ function update_main_div(dir, obj, id) {
         let div_main = document.getElementById('web_interface_'+obj+'_tmp_work');
 
         if (div_head) {
-            web_interface_current_id = id;
             fill_head();
             div_head.style.display='inline';
             if (obj == 'datas') {
@@ -637,11 +635,11 @@ function update_main_div(dir, obj, id) {
 function update_main_header(dir) {
     function toggle(add_cl, rem_cl) {
 
-        [ [document.getElementById('anim_logo_cell'), '_logo_cell'],
-          [document.getElementById('anim_logo'), '_logo'],
-          [document.getElementById('anim_head_table'), '_head_table'],
-          [document.getElementById('anim_desc_cell'), '_desc_cell'],
-          [document.getElementById('anim_title_cell'), '_title_cell']].forEach (function (e) {
+        [ [document.getElementById('anim_logo_cell'),   '_logo_cell'  ],
+          [document.getElementById('anim_logo'),        '_logo'       ],
+          [document.getElementById('anim_head_table'),  '_head_table' ],
+          [document.getElementById('anim_desc_cell'),   '_desc_cell'  ],
+          [document.getElementById('anim_title_cell'),  '_title_cell' ]].forEach (function (e) {
               e[0].classList.remove('basic'+e[1]);
               e[0].classList.remove(rem_cl+e[1]);
               e[0].classList.add(add_cl+e[1]);
@@ -661,31 +659,53 @@ function showDiv(event, dir) {
     let obj_names = ["Datas", "Dataflows", "Operators", "Projects", "Home"];
 
     //Deal with unknown adresses -> always back to home
-    let found = false;
+    let obj = false;
     obj_names.forEach( function (n) {
         if (dir.indexOf(n) != -1)
-          found = true;
+          obj = n;
     });
-    if (!found) dir = "Home";
+    if (!obj) {
+        dir = "Home";
+        obj = "Home";
+    }
+    else
+        web_interface_current_object_type = obj.toLowerCase();
 
-    update_main_header(dir);
-
-    //Loading html and js on demand
     let tab = dir.split('/');
-    files_on_demand(dir, tab[1]);
+    if (tab.length > 1)
+        web_interface_current_id = tab[1];
+    else
+        web_interface_current_id = -1
 
-    //get current object type
-    let obj = null;
-    obj_names.forEach (function (n) {
-            if (dir.indexOf(n) != -1) { obj = n; }
-    });
-    web_interface_current_object_type = obj.toLowerCase();
-    update_navbar(obj);
-    update_main_div(dir, obj.toLowerCase(), tab[1]);
+    if (web_interface_current_object_type &&
+        web_interface_current_object_type != "Home" &&
+        tab.length > 1) {
 
+        current_remote_api_object().info().then( function(o_info) {
+            if (o_info.grant_level != 'list') {
+                update_main_header(dir);
+                files_on_demand(dir, tab[1]);
+                update_navbar(obj);
+                update_main_div(dir, obj.toLowerCase(), tab[1]);
+            }
+            else {
+                main_alert('Access Issue', 'You cannot access this object!');
+                showDiv(event, "Home");
+            }
+        }).catch( function(error) {
+            console.log(error);
+            main_alert('Access Issue', error);
+            showDiv(event, "Home");
+        });
+    }
+    else {
+        update_main_header(dir);
+        files_on_demand(dir, tab[1]);
+        update_navbar(obj);
+        update_main_div(dir, obj.toLowerCase(), tab[1]);
+    }
 
-    if (event)
-        event.preventDefault();
+    if (event)  event.preventDefault();
 }
 
 //Access Managment

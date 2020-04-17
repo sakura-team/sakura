@@ -31,7 +31,6 @@
         var loaded_projects_files  = 'no';
 
         window.onpopstate = function(event) {
-            console.log('here, onpopstate');
             var evt = document.createEvent('Event');
             evt.initEvent('load', false, false);
             window.dispatchEvent(evt);
