@@ -144,6 +144,7 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
         reload_operator_instance(op_focus_id);
         $('#sakura_operator_contextMenu').hide();
     }
+    e.preventDefault();
 });
 
 $('#sakura_link_contextMenu').on("click", "a", function() {

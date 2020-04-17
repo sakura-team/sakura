@@ -6,6 +6,7 @@
 var global_links  = [];
 var link_focus_id = null;
 
+var workflow_link_debug = false;
 
 function create_link(js_id, src_id, dst_id, js_connection) {
 
@@ -227,23 +228,25 @@ function refresh_link_modal(link) {
     });
 }
 
-function test_link(link) {
+function test_link(link, on_hub) {
+    if (workflow_link_debug) console.log('TEST_LINK');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
     if (link.params.length == 0)
-        remove_link(link)
+        remove_link(link, on_hub)
 }
 
 
-function remove_link(link) {
+function remove_link(link, on_hub) {
+    if (workflow_link_debug) console.log('REMOVE_LINK');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
 
     //We first send the removing commands to the hub
     if (link.params.length > 0)
-        delete_link_params(link, true);
+        delete_link_params(link, on_hub);
     else {
         //Then to jsPlumb
         var jsPConn = null;
@@ -270,32 +273,37 @@ function remove_link(link) {
         global_links.splice(index, 1);
     }
 
-    global_links.forEach( function (l) {
-        refresh_link_modal(l);
-    });
-    sakura.apis.hub.operators[link.src].info().then(function (source_inst_info) {
-        sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
-            check_operator(source_inst_info);
-            check_operator(target_inst_info);
-        }).catch( function (res) {
-            console.log('Destination does not exists anymore', res);
+    if (on_hub) {
+        global_links.forEach( function (l) {
+            refresh_link_modal(l);
         });
-    }).catch( function(res) {
-        console.log('Source does not exists anymore', res);
-    });
+
+        sakura.apis.hub.operators[link.src].info().then(function (source_inst_info) {
+            sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
+                check_operator(source_inst_info);
+                check_operator(target_inst_info);
+            }).catch( function (res) {
+                console.log('Destination does not exists anymore', res);
+            });
+        }).catch( function(res) {
+            console.log('Source does not exists anymore', res);
+        });
+    }
 }
 
 
-function remove_connection(hub_id) {
+function remove_connection(hub_id, on_hub) {
+    if (workflow_link_debug) console.log('REMOVE_CONNECTION');
     global_links.forEach( function(link) {
         if (link.src == hub_id || link.dst == hub_id) {
-            remove_link(link, true);
+            remove_link(link, on_hub);
         }
     });
 }
 
 
-function delete_link_params(link, and_main_link) {
+function delete_link_params(link, and_main_link, on_hub) {
+    if (workflow_link_debug) console.log('DELETE LINK PARAMSSSS');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -303,11 +311,13 @@ function delete_link_params(link, and_main_link) {
     var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
     for (var i=0; i< link.params.length; i++) {
         var para = link.params[i];
-        sakura.apis.hub.links[para.hub_id].delete().then(function (result) {
-            if (result) {
-                console.log("Issue with 'delete_link' function from hub:", result);
-            }
-        });
+        if (on_hub) {
+            sakura.apis.hub.links[para.hub_id].delete().then(function (result) {
+                if (result) {
+                    console.log("Issue with 'delete_link' function from hub:", result);
+                }
+            });
+        }
         var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+para.out_id);
         var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
         var line    = document.getElementById("line_modal_link_"+link.id+"_"+para.out_id+"_"+para.in_id);
@@ -319,15 +329,15 @@ function delete_link_params(link, and_main_link) {
         if (i >= link.params.length -1) {
             link.params = [];
             if (and_main_link) {
-                remove_link(link);
+                remove_link(link, on_hub);
             }
         }
     }
 }
 
 
-function delete_link_param(link, side, id) {
-
+function delete_link_param(link, side, id, on_hub) {
+    if (workflow_link_debug) console.log('DELETE LINK PARAM');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -405,6 +415,7 @@ function create_link_line(link, _out, _in) {
 
 
 function copy_link_line(link, _out, _in, gui) {
+
     //Making a fake connection
     var mdiv = document.getElementById("modal_link_"+link.id+"_body");
     var svg_div = document.createElement('div');
@@ -453,10 +464,10 @@ function link_from_instances(src_id, dst_id) {
     return null;
 }
 
-
-function remove_all_links() {
+function remove_all_links(on_hub) {
+    if (workflow_link_debug) console.log('REMOVE_ALL_LINKS');
     global_links.forEach( function(item) {
-        remove_link(item);
+        remove_link(item, on_hub);
     });
     global_links = []
 }

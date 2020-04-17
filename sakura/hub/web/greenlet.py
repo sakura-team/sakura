@@ -81,12 +81,12 @@ def web_greenlet(context, webapp_path):
         with db_session_wrapper():
             yield from serve_video_stream(context, op_id, ogl_id, width, height)
 
-    @app.route('/modules/workflow/tpl/<filepath:path>', method=['POST'])
+    @app.route('/modules/workflow/templates/<filepath:path>', method=['POST'])
     def serve_template(filepath):
         params = json.loads(
                     bottle.request.forms['params'],
                     object_hook = lambda d: to_namedtuple('Params', d))
-        with (Path(webapp_path) / 'modules' / 'workflow' / filepath).open() as f:
+        with (Path(webapp_path) / 'modules' / 'workflow' / 'templates' /filepath).open() as f:
             return template(f.read(), **params._asdict())
 
     @app.route('/webcache/cdnjs/<filepath:path>')

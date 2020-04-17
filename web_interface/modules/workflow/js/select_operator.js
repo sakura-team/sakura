@@ -306,7 +306,6 @@ function select_op_delete_op(id) {
 
 
 function select_op_add_panel() {
-
     var title = document.getElementById('select_op_panel_title').value;
 
     //Here we manage a panel title by default
@@ -359,7 +358,7 @@ function select_op_add_panel() {
     $('#modal_op_selector').modal('hide');
 
     //Send the the current global var to the hub
-    save_dataflow()
+    save_dataflow();
 }
 
 

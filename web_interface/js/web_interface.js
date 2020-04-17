@@ -558,7 +558,9 @@ function files_on_demand(dir, div_id) {
     else if (dir.startsWith('Dataflows')) {
         ldf = loaded_dataflows_files;
         d = 'dataflows';
-        if (div_id) $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js");
+        if (div_id) {
+            $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js");
+        }
     }
     else if (dir.startsWith('Projects')) {
         ldf = loaded_projects_files;
@@ -610,14 +612,12 @@ function update_main_div(dir, obj, id) {
             web_interface_current_id = id;
             fill_head();
             div_head.style.display='inline';
-            let ifr = document.getElementById('iframe_'+obj);
             if (obj == 'datas') {
-                //ifr.src = "/modules/datasets/index.html?database_id="+id;
                 recover_datasets();
                 div_main.style.display='inline';
             }
             else if (obj == 'dataflows') {
-                ifr.src = "/modules/workflow/index.html?dataflow_id="+id;
+                open_workflow();
                 div_main.style.display='inline';
             }
             else if (obj == 'projects') {

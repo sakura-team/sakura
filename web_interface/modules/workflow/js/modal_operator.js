@@ -16,7 +16,7 @@ function create_op_modal(main_div, id, cl_id, tabs) {
                     wrapper,
                     "modal-operator.html",
                     {'id': id, 'cl': cl, 'tabs': tabs, 'inst_id': parseInt(id.split("_")[2])},
-                    function () {
+                    function (r_text) {
                         let modal = wrapper.firstChild;
                         // update the svg icon
                         $(modal).find("#tdsvg").html(cl.svg);
@@ -109,9 +109,10 @@ function fill_params(id) {
         display_issue(id, disabled, warned);
 
         var d = document.getElementById('modal_'+id+'_tab_params');
-        while (d.firstChild) {
-            d.removeChild(d.firstChild);
-        }
+        if (d.firstChild)
+            while (d.firstChild) {
+                d.removeChild(d.firstChild);
+            }
 
         if (result['parameters'].length == 0) {
             d.innerHTML = '<br><p align="center"> No Params</p>';
@@ -248,9 +249,10 @@ function fill_in_out(in_out, id) {
     var d           = document.getElementById('modal_'+id+'_tab_'+in_out+'s');
 
     //cleaning
-    while (d.firstChild) {
-        d.removeChild(d.firstChild);
-    }
+    if (d.firstChild)
+        while (d.firstChild) {
+            d.removeChild(d.firstChild);
+        }
 
     //infos
     sakura.apis.hub.operators[inst_id].info().then(function (result_info) {
@@ -299,9 +301,10 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
     var inst_id = parseInt(id.split("_")[2]);
 
     //cleaning
-    while (d.firstChild) {
-        d.removeChild(d.firstChild);
-    }
+    if (d.firstChild)
+        while (d.firstChild) {
+            d.removeChild(d.firstChild);
+        }
 
     var sp = $('<span>', {class:"glyphicon glyphicon-refresh glyphicon-refresh-animate"});
     var p = $('<p>', {align: "center"});

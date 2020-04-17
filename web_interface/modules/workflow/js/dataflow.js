@@ -3,14 +3,11 @@
 
 
 var global_dataflow_jsFlag = true;
-var current_dataflow_id = null;
+//var current_dataflow_id = null;
 
 //This function is apart because of the asynchronous aspect of ws.
 //Links can only be recovered after recovering all operator instances
 function create_dataflow_links(df_links) {
-
-    //Cleaning the gui from current links
-    remove_all_links();
 
     //Creating the links
     df_links.forEach( function (link) {
@@ -52,55 +49,49 @@ function create_dataflow_links(df_links) {
 }
 
 function current_dataflow() {
+    //Cleanings
+    remove_all_links(false);
+    remove_all_operators_instances(false);
 
-    var starting = 0;
+    //Emptying current accordion
+    let acc_div = document.getElementById('op_left_accordion');
+    let butt = document.getElementById('select_op_add_button').cloneNode(true);
+    $(acc_div).empty();
+    acc_div.appendChild(butt);
 
-    var searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.has('dataflow_id')) {
-        current_dataflow_id = searchParams.get('dataflow_id')
-    }
-
-    if (current_dataflow_id == null) {
-      alert("Issue with dataflow id");
-        return;
-    }
-
-    //Now we ask for the operator classes
+    //We first ask for the operator classes
     sakura.apis.hub.op_classes.list().then(function (result) {
         global_ops_cl = JSON.parse(JSON.stringify(result));
 
         //Then we ask for the instance ids
-        sakura.apis.hub.dataflows[current_dataflow_id].info().then(function (df_info) {
+        sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
+
             df_info.op_instances.forEach( function(opi) {
                 if (opi.gui_data) {
                     var jgui = eval("("+opi.gui_data+")");
                     create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
                 }
             });
+
             create_dataflow_links(df_info.links);
             df_info.op_instances.forEach( function(opi) {
                 check_operator(opi);
             });
 
             //Finally, the panels and the comments
-            sakura.apis.hub.dataflows[current_dataflow_id].get_gui_data().then(function (result) {
+            sakura.apis.hub.dataflows[web_interface_current_id].get_gui_data().then(function (result) {
+                //Cleanings
+                if (result) {
+                    var res = eval("(" + result + ")");
+                    global_op_panels = eval(res.panels);
+                    if (! global_op_panels) {
+                        global_op_panels = []
+                        return;
+                    }
+                }
 
                 if (!result)
                     return
-                var res = eval("(" + result + ")");
-                global_op_panels = eval(res.panels);
-                if (! global_op_panels) {
-                    global_op_panels = []
-                    return;
-                }
-
-                //Emptying current accordion
-                var acc_div = document.getElementById('op_left_accordion');
-                var butt = document.getElementById('select_op_add_button').cloneNode(true);
-                while(acc_div.firstChild){
-                    acc_div.removeChild(acc_div.firstChild);
-                }
-                acc_div.appendChild(butt);
 
                 //Filling accordion with panels
                 var index = 0;
@@ -149,7 +140,11 @@ function save_dataflow() {
         coms.push(get_comment_info(com));
     });
 
-    sakura.apis.hub.dataflows[current_dataflow_id].set_gui_data(JSON.stringify({'panels': global_op_panels, 'comments': coms}));
+    sakura.apis.hub.dataflows[web_interface_current_id].set_gui_data(JSON.stringify({'panels': global_op_panels, 'comments': coms})).then( function(result) {
+
+        }).catch(function(error) {
+            console.log(error);
+        });
 
     //Second the operators
     global_ops_inst.forEach( function(inst) {
@@ -170,7 +165,7 @@ function save_dataflow() {
     });
 };
 
-function new_dataflow() {
+function clean_dataflow() {
     var res = confirm("Are you sure you want to erase the current dataflow ?");
     if (!res)
         return false;
@@ -179,11 +174,11 @@ function new_dataflow() {
     remove_all_links();
 
     //removing operators instances
-    remove_all_operators_instances();
+    remove_all_operators_instances(true);
 };
 
 
 function context_new_dataflow() {
     $('#sakura_main_div_contextMenu').css({visibility: "hidden"});
-    new_dataflow();
+    clean_dataflow();
 }

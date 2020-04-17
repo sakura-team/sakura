@@ -4,16 +4,22 @@
 
 /////////////////////////////////////////////////////////
 //Init Functions
+var jsPlumbLoaded = false;
 
-//Document Initialisation
-function readyCallBack() {
-};
+function open_workflow() {
+    if (! jsPlumbLoaded)
+      $.getScript("/webcache/cdnjs/jsPlumb/2.1.7/jsPlumb.min.js").done( function() {
+          jsPlumbLoaded = true;
+          jsPlumb_init();
+          current_dataflow();
+      });
+    else
+        current_dataflow();
+}
 
-$(document).ready(readyCallBack);
+function jsPlumb_init() {
 
-//jsPlumb initialisation
-$( window ).load(function() {
-
+    //console.log(jsPlumb);
     ///////////////DEFAULTS
     jsPlumb.importDefaults({
         PaintStyle : { lineWidth : 4, strokeStyle : "#333333" },
@@ -42,7 +48,6 @@ $( window ).load(function() {
     jsPlumb.bind("beforeDetach", function(params) {
         //We do nothing here !!!
     });
-
 
     //A connection is established
     jsPlumb.bind("connection", function(params) {
@@ -73,6 +78,4 @@ $( window ).load(function() {
         });
         link_focus_id = link_from_id(params.id);
     });
-
-    current_dataflow();
-});
+}

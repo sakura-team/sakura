@@ -1,4 +1,144 @@
 <div style="display:none;" id="web_interface_dataflows_tmp_work" class="classMainDiv">
+    <!-- <br>
+    <iframe id='iframe_dataflows' class="executeOnShow" src="" frameborder="0" style="margin-top:0px; margin-bottom:10px; width:100%; height:900px;"></iframe> -->
     <br>
-    <iframe id='iframe_dataflows' class="executeOnShow" src="" frameborder="0" style="margin-top:0px; margin-bottom:10px; width:100%; height:900px;"></iframe>
+    <div class="container theme-showcase" role="main" style="padding: 0px; width:100%">
+        <table width="100%">
+            <tr>
+                <td width="250px">
+                    <div id="sakura_left_div" class="sakura_left_tab">
+                        <div class="panel-group" name="op_left_accordion" id="op_left_accordion">
+                        <button title="Create a new panel of operators" type="button" class="btn btn-primary btn-xs" style="width: 182px; margin-left: 1px; margin-top: 1px; padding: 5px;" id="select_op_add_button" onclick="select_op_new_modal();"><span class="glyphicon glyphicon-plus" style="cursor: pointer;"></span></button>
+                        </div>
+                    </div>
+                <td width="100%">
+                    <div id="sakura_main_div" class="sakura_main" style="background-image: url(modules/workflow/img/sakura_flower.jpg); background-repeat: no-repeat; background-position: center; "/>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Context menus -->
+    <div id="sakura_main_div_contextMenu" class="dropdown clearfix" style="visibility: hidden; position: absolute;">
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
+            <li><a tabindex="-1" href="#" onclick="context_new_dataflow();">Clear All</a></li>
+            <li><a tabindex="-1" href="#" onclick="context_new_comment();">Add Comment</a></li>
+        </ul>
+    </div>
+
+    <div id="sakura_operator_contextMenu" class="dropdown clearfix">
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
+            <li><a tabindex="0" value='Info' href="#">Info</a></li>
+            <li><a tabindex="1" value='Reload' href="#">Reload</a></li>
+            <li><a tabindex="2" value='Delete' href="#">Delete</a></li>
+        </ul>
+    </div>
+
+    <div id="sakura_link_contextMenu" class="dropdown clearfix">
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu" style="display:block; position:relative; margin-bottom:1px; z-index: 4;">
+            <li><a tabindex="-1" href="#">Delete</a></li>
+        </ul>
+    </div>
+
+
+    <div class="modal fade" id="modal_op_selector" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Panel of Operators</h2>
+                </div>
+                <div class="modal-body">
+                    <table width="100%">
+                        <tr>
+                        <td style="background-color: #EEEEEE;"><h4 align="center">Select Operators by</h4>
+                        <td><h4 align="center">Future Panel</h4>
+                        <tr>
+                            <td width="40%" style=" vertical-align: top; background-color: #EEEEEE;" >
+                                <table class="table" style="border: none;">
+                                    <tr>
+                                        <td style="vertical-align: middle;">
+                                                <label>Name </label>
+                                        </td>
+                                        <td valign="middle">
+                                            <select class="selectpicker" multiple name="select_op_names_select" id="select_op_names_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="vertical-align: middle;">
+                                            <label>Tag</label>
+                                        </td>
+                                        <td>
+                                            <select class="selectpicker" multiple id="select_op_tags_select" onchange="select_op_on_change();" data-width="200px" data-live-search="true"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td valign='top' style="padding: 5px;">
+                                <table width=100%>
+                                    <tr>
+                                    <td><label>Title</label>
+                                    </td>
+                                    <td>
+                                        <div class="col-xs-7">
+                                        <input type="text" maxlength="10" class="form-control" placeholder="Panel title" id="select_op_panel_title" />
+                                        </div>
+                                        <p><span>(10 chars max)</span></p>
+                                    </td>
+                                </table>
+                                <br>
+                                <div id="select_op_panel" width="100%" style="overflow-y: auto;"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="select_op_update_button" class="btn btn-primary" onclick="select_op_update_panel();" visibility='hidden'>Update panel</button>
+                    <button type="button" id="select_op_make_button" class="btn btn-primary" onclick="select_op_add_panel();">Create new panel</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOWNLOAD MODAL -->
+    <div id="workflow_download_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="workflow_download_modal_header" class="panel-heading">
+                </div>
+                <div class="modal-footer">
+                    <button id="workflow_download_modal_button_csv"type="button" class="btn btn btn-sm" data-dismiss="modal">Csv</button>
+                    <button id="workflow_download_modal_button_gzip" type="button" class="btn btn btn-sm" data-dismiss="modal">Gzip (Csv)</button>
+                    <button id="workflow_download_modal_button_cancel" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS BAR MODAL -->
+    <div id="workflow_progress_bar_modal" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-md" role="dialog">
+            <div class="modal-content">
+                <div id="workflow_progress_bar_modal_header" class="modal-header" style="background-color : rgba(255,255,255,0.5);">
+                    <h3>Progress bar Title</h3>
+                </div>
+                <div id="workflow_progress_bar_modal_body" class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="workflow_stop_downloading()">Abort</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="modules/workflow/js/general.js"></script>
+    <script src="modules/workflow/js/download.js"></script>
+    <script src="modules/workflow/js/comment.js"></script>
+    <script src="modules/workflow/js/operator.js"></script>
+    <script src="modules/workflow/js/link.js"></script>
+    <script src="modules/workflow/js/dataflow.js"></script>
+    <script src="modules/workflow/js/interaction.js"></script>
+    <script src="modules/workflow/js/select_operator.js"></script>
+    <script src="modules/workflow/js/modal_operator.js"></script>
+    <script src="modules/workflow/js/main.js"></script>
 </div>

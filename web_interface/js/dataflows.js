@@ -90,7 +90,7 @@ function new_dataflow() {
         }
         else {
             $('#create_dataflows_modal').modal('hide');
-            showDiv(null, 'Dataflows/Dataflow-'+result, null);
+            showDiv(null, 'Dataflows/'+result, null);
         }
     });
 }

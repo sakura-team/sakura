@@ -23,9 +23,8 @@ function operators_deal_with_events(evt_name, args, proxy, cl_id, hub_inst_id) {
 }
 
 function create_operator_instance_on_hub(drop_x, drop_y, id) {
-
     //We first send the creation command to the sakura hub
-    sakura.apis.hub.operators.create(current_dataflow_id, parseInt(id)).then(function (result) {
+    sakura.apis.hub.operators.create(web_interface_current_id, parseInt(id)).then(function (result) {
         var hub_id = result.op_id;
 
         //Then we create the instance here
@@ -221,7 +220,7 @@ function remove_operator_instance(id, on_hub) {
     hub_id = parseInt(tab[2]);
 
     //First we remove the connections
-    remove_connection(hub_id);
+    remove_connection(hub_id, on_hub);
 
     //remove from jsPlumb
     jsPlumb.remove(id);
@@ -243,10 +242,10 @@ function remove_operator_instance(id, on_hub) {
     }
 }
 
-function remove_all_operators_instances() {
+function remove_all_operators_instances(on_hub) {
     var list = global_ops_inst.slice();
     list.forEach( function (item) {
-        remove_operator_instance("op_"+item.cl.id+"_"+item.hub_id, true);
+        remove_operator_instance("op_"+item.cl.id+"_"+item.hub_id, on_hub);
     });
 }
 
