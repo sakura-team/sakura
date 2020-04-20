@@ -105,6 +105,8 @@ class DatabaseMixin(BaseMixin):
             creation_date = time.time()
         # parse access info from gui
         kwargs = parse_gui_access_info(**kwargs)
+        # owner is current user
+        grants = { context.user.login: { 'level': GRANT_LEVELS.own }}
         # register in central db
         new_db = cls.create_or_update(
                         datastore = datastore,
@@ -112,8 +114,6 @@ class DatabaseMixin(BaseMixin):
                         grants = grants,
                         creation_date = creation_date,
                         **kwargs)
-        # owner is current user
-        new_db.owner = context.user.login
         # request daemon to create db on the remote datastore
         new_db.create_on_datastore()
         # return database_id
