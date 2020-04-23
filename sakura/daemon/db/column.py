@@ -6,6 +6,7 @@ class DBColumn:
                         col_type,
                         select_clause_sql,
                         where_clause_sql,
+                        sort_clause_sql,
                         value_wrapper,
                         tags,
                         **col_type_params):
@@ -15,6 +16,7 @@ class DBColumn:
         self.col_type_params = col_type_params
         self.select_clause_sql = select_clause_sql
         self.where_clause_sql = where_clause_sql
+        self.sort_clause_sql = sort_clause_sql
         self.value_wrapper = value_wrapper
         self.subcolumns = ()
     @property
@@ -28,6 +30,8 @@ class DBColumn:
         return self.where_clause_sql
     def to_sql_select_clause(self):
         return self.select_clause_sql
+    def to_sql_sort_clause(self):
+        return self.sort_clause_sql
     def add_subcolumn(self, *col_info, **params):
         col = DBColumn(self.table, *col_info, **params)
         self.subcolumns += (col,)

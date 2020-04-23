@@ -15,14 +15,9 @@ class NumpyArraySource(SourceBase):
                 col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
                 self.add_column(col_label, col_type, **col_type_params)
     def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE, offset=0):
-        col_indexes = self.all_columns.get_indexes(self.columns)
-        array = self.data.array.view(NumpyChunk).__select_columns_indexes__(col_indexes)
-        if len(self.row_filters) == 0:
-            # iterate over all rows
-            while offset < array.size:
-                yield array[offset:offset+chunk_size].view(NumpyChunk)
-                offset += chunk_size
-        else:
+        array = self.data.array
+        # apply row filters if any
+        if len(self.row_filters) > 0:
             # select appropriate row indices
             row_indices = None  # all indices for now
             for col, comp_op, other in self.row_filters:
@@ -41,6 +36,14 @@ class NumpyArraySource(SourceBase):
                     row_indices = new_indices
                 else:
                     row_indices = row_indices[new_indices]
-            while offset < row_indices.size:
-                yield array[row_indices[offset:offset+chunk_size]].view(NumpyChunk)
-                offset += chunk_size
+            array = array[row_indices]
+        # apply optional sort
+        if len(self.sort_columns) > 0:
+            array = np.sort(array, order=list(col._label for col in self.sort_columns))
+        # only keep selected columns
+        col_indexes = self.all_columns.get_indexes(self.columns)
+        array = array.view(NumpyChunk).__select_columns_indexes__(col_indexes)
+        # iterate over resulting rows
+        while offset < array.size:
+            yield array[offset:offset+chunk_size].view(NumpyChunk)
+            offset += chunk_size

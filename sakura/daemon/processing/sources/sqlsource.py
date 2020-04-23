@@ -99,7 +99,7 @@ class SQLDatabaseSource(SourceBase):
         tables = set(db_col.table.name for db_col in selected_db_cols)
         tables |= set(f[0].table.name for f in db_row_filters)
         from_clause = 'FROM "' + '", "'.join(tables) + '"'
-        where_clause, offset_clause, filter_vals = '', '', ()
+        where_clause, sort_clause, offset_clause, filter_vals = '', '', '', ()
         if len(db_row_filters) > 0:
             filter_texts, filter_vals = (), ()
             for db_row_filter in db_row_filters:
@@ -107,9 +107,12 @@ class SQLDatabaseSource(SourceBase):
                 filter_texts += filter_info[0]
                 filter_vals += filter_info[1]
             where_clause = 'WHERE ' + ' AND '.join(filter_texts)
+        if len(self.sort_columns) > 0:
+            sort_db_cols = tuple(col.data.db_col for col in self.sort_columns)
+            sort_clause = "ORDER BY " + ', '.join(db_col.to_sql_sort_clause() for db_col in sort_db_cols)
         if offset > 0:
             offset_clause = "OFFSET " + str(offset)
-        sql_text = ' '.join((select_clause, from_clause, where_clause, offset_clause))
+        sql_text = ' '.join((select_clause, from_clause, where_clause, sort_clause, offset_clause))
         return (sql_text, filter_vals)
     def db_row_filter_to_sql(self, db_row_filter):
         db_column, comp_op, value = db_row_filter

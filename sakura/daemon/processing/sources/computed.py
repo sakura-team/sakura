@@ -10,7 +10,25 @@ class ComputeMode(Enum):
     ITEMS = 0
     CHUNKS = 1
 
-class ItemsComputedSource(SourceBase):
+class ComputedSourceMixin:
+    def work_from_filtered_dataset(self, array, chunk_size, offset):
+        if len(array) == 0:
+            return
+        # handle sorts
+        array = np.sort(array, order=list(col._label for col in self.sort_columns))
+        # handle offset
+        if offset > 0:
+            array = array[offset:]
+        # handle column selection
+        col_indexes = self.all_columns.get_indexes(self.columns)
+        if col_indexes != tuple(range(len(self.all_columns))):
+            # note: otherwise, all columns are selected, so the following is not useful
+            array = array.view(NumpyChunk).__select_columns_indexes__(col_indexes)
+        # handle chunk size
+        for offset in range(0, len(array), chunk_size):
+            yield array[offset:offset+chunk_size].view(NumpyChunk)
+
+class ItemsComputedSource(SourceBase, ComputedSourceMixin):
     def __init__(self, label, compute_cb = None):
         SourceBase.__init__(self, label)
         self.data.compute_cb = compute_cb
@@ -26,6 +44,22 @@ class ItemsComputedSource(SourceBase):
                         if comp_op(record[col_index], other):
                             yield record
             it = filter_rows(it)
+        # handle sorts
+        dtype = self.get_dtype()
+        if len(self.sort_columns) > 0:
+            # unfortunately, we have no knowledge about the generated rows
+            # so we have to compute the whole dataset before sorting it
+            all_rows_list = list(it)
+            array = np.empty(len(all_rows_list), dtype)
+            if len(all_rows_list) > 0:
+                for i, row in enumerate(all_rows_list):
+                    array[i] = row
+            # then work with this dataset
+            yield from self.work_from_filtered_dataset(array, chunk_size, offset)
+            return
+        # handle offset
+        if offset > 0:
+            it = islice(it, offset, None)
         # handle column selection
         col_indexes = self.all_columns.get_indexes(self.columns)
         if col_indexes != tuple(range(len(self.all_columns))):
@@ -34,10 +68,7 @@ class ItemsComputedSource(SourceBase):
                 for record in it:
                     yield tuple(record[i] for i in col_indexes)
             it = select_cols(it)
-        # handle offset
-        it = islice(it, offset, None)
         # handle chunk size
-        dtype = self.get_dtype()
         while True:
             # we may have "object" columns (e.g. storing strings of unknown length),
             # and np.fromiter() does not work in this case.
@@ -49,7 +80,7 @@ class ItemsComputedSource(SourceBase):
                 break
             yield chunk[:i+1].view(NumpyChunk)
 
-class ChunksComputedSource(SourceBase):
+class ChunksComputedSource(SourceBase, ComputedSourceMixin):
     def __init__(self, label, compute_cb=None):
         SourceBase.__init__(self, label)
         self.data.compute_cb = compute_cb
@@ -67,14 +98,22 @@ class ChunksComputedSource(SourceBase):
                     if chunk.size > 0:
                         yield chunk
             it = filter_rows(it)
-        # handle column selection
-        col_indexes = self.all_columns.get_indexes(self.columns)
-        if col_indexes != tuple(range(len(self.all_columns))):
-            # note: otherwise, all columns are selected, so the following is not useful
-            def select_cols(it):
-                for chunk in it:
-                    yield chunk.view(NumpyChunk).__select_columns_indexes__(col_indexes)
-            it = select_cols(it)
+        # handle sorts
+        dtype = self.get_dtype()
+        if len(self.sort_columns) > 0:
+            # unfortunately, we have no knowledge about the generated rows
+            # so we have to compute the whole dataset before sorting it
+            all_chunks = list(it)
+            whole_len = sum(len(chunk) for chunk in all_chunks)
+            array = np.empty(whole_len, dtype)
+            if whole_len > 0:
+                off = 0
+                for chunk in all_chunks:
+                    array[off:off+len(chunk)] = chunk
+                    off += len(chunk)
+            # then work with this dataset
+            yield from self.work_from_filtered_dataset(array, chunk_size, offset)
+            return
         # handle offset
         if offset > 0:
             def chunks_at_offset(it):
@@ -90,6 +129,14 @@ class ChunksComputedSource(SourceBase):
                     if not discard:
                         yield chunk
             it = chunks_at_offset(it)
+        # handle column selection
+        col_indexes = self.all_columns.get_indexes(self.columns)
+        if col_indexes != tuple(range(len(self.all_columns))):
+            # note: otherwise, all columns are selected, so the following is not useful
+            def select_cols(it):
+                for chunk in it:
+                    yield chunk.view(NumpyChunk).__select_columns_indexes__(col_indexes)
+            it = select_cols(it)
         # handle chunk_size
         requested_chunk_size = chunk_size
         if requested_chunk_size is not None:

@@ -78,6 +78,7 @@ def esc(name):
 def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta, **params):
     select_clause_sql = esc(table_name) + "." + esc(col_name)
     where_clause_sql = select_clause_sql
+    sort_clause_sql = select_clause_sql
     value_wrapper = '%s'
     tags = ()
     if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json'):
@@ -108,11 +109,13 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         col_type = 'float64'
         parent_col_name = col_name[:-2]   # e.g. gps.X -> gps
         func_name = {'longitude': 'ST_X', 'latitude': 'ST_Y'}[col_pgtype]
-        select_clause_sql = '%(func_name)s(%(table_name)s.%(parent_col_name)s) as %(col_name)s' % dict(
+        unaliased_sql = '%(func_name)s(%(table_name)s.%(parent_col_name)s)' % dict(
                                 func_name = func_name,
                                 table_name = esc(table_name),
                                 parent_col_name = esc(parent_col_name),
                                 col_name = esc(col_name))
+        select_clause_sql = unaliased_sql + ' as ' + esc(col_name)
+        sort_clause_sql = unaliased_sql
         tags = (col_pgtype,)    # 'latitude' or 'longitude'
     elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
         col_type = TYPES_PG_TO_SAKURA[col_pgtype]
@@ -120,7 +123,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
     return metadata_collector.register_column(
             table_name, col_name, col_type,
-            select_clause_sql, where_clause_sql, value_wrapper,
+            select_clause_sql, where_clause_sql, sort_clause_sql, value_wrapper,
             tags, **params)
 
 SQL_GET_DS_GRANTS = '''\

@@ -106,6 +106,8 @@ class SourceBase:
         self.all_columns = ColumnsRegistry(self)
         # selected columns
         self.columns = ColumnsRegistry(self)
+        # sorting
+        self.sort_columns = ()
         # row filters
         self.row_filters = ()
         # other attributes
@@ -195,7 +197,7 @@ class SourceBase:
     def filtered(self, col, comp_op, other):
         new_row_filters = self.row_filters + ((col, comp_op, other),)
         return self.reinstanciate(row_filters=new_row_filters)
-    def reinstanciate(self, columns = None, row_filters = None):
+    def reinstanciate(self, columns = None, row_filters = None, sort_columns = None):
         source = self.__class__(self.label)
         # self.all_columns always remains the same
         source.all_columns.rebind(self.all_columns)
@@ -203,6 +205,10 @@ class SourceBase:
         if columns is None:
             columns = self.columns  # if unchanged
         source.columns.rebind(columns)
+        # sort columns may change
+        if sort_columns is None:
+            sort_columns = self.sort_columns  # if unchanged
+        source.sort_columns = sort_columns
         # row_filters may change
         if row_filters is None:
             row_filters = self.row_filters  # if unchanged
@@ -219,3 +225,5 @@ class SourceBase:
     def __iter__(self):
         for chunk in self.chunks():
             yield from chunk
+    def sort(self, *columns):
+        return self.reinstanciate(sort_columns = columns)

@@ -256,6 +256,10 @@ class TagBasedColumnSelection(ColumnSelectionParameter):
             lambda col_label, col_type, col_tags: tag in col_tags
         )
 
+AnyColumnSelection = ColumnSelectionParameter.adapt_with_condition(
+    lambda col_label, col_type, col_tags: True
+)
+
 NumericColumnSelection = ColumnSelectionParameter.adapt_with_condition(
     lambda col_label, col_type, col_tags: is_numeric_type(col_type)
 )
@@ -278,7 +282,8 @@ PARAMETER_CLASSES = {
     'NUMERIC_COLUMN_SELECTION': NumericColumnSelection,
     'FLOAT_COLUMN_SELECTION': FloatColumnSelection,
     'STRING_COLUMN_SELECTION': StrColumnSelection,
-    'GEOMETRY_COLUMN_SELECTION': GeometryColumnSelection
+    'GEOMETRY_COLUMN_SELECTION': GeometryColumnSelection,
+    'ANY_COLUMN_SELECTION': AnyColumnSelection
 }
 
 def instanciate_parameter(op, param_type, label, *args, **kwargs):
