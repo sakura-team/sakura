@@ -79,7 +79,7 @@ function buildListStub(idDiv, result, elt) {
 
                 n_td1.append(name);
                 if (row.grant_level == 'own') {
-                    n_td2.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
+                    n_td2.append('<span title="delete" class="glyphicon glyphicon-trash" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
                 }
             }
             else if (tmp_elt.indexOf('Operators') != -1){
@@ -118,7 +118,7 @@ function buildListStub(idDiv, result, elt) {
                 //so I make the test on the owner attribut
                 if (curr_login !== null) {
                     if (row.owner == curr_login.login) {
-                        op_td3.append('<span title="delete" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
+                        op_td3.append('<span title="delete" class="glyphicon glyphicon-trash" style="cursor: pointer;" onclick="stub_delete('+row.id+',\''+idDiv+'\',\''+elt+'\');"></span>');
                         op_tr.append(op_td3);
                     }
                 }
