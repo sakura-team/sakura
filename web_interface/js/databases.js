@@ -159,7 +159,6 @@ function new_database() {
 
     $("#datas_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
-    console.log(ds_id);
     sakura.apis.hub.databases.create(ds_id, name,
                                 {   'short_desc':   short_d,
                                     'access_scope': access_scope,
@@ -168,19 +167,16 @@ function new_database() {
                                     'data_type':    data_type,
                                     'licence':      licence  }
                                 ).then(function(result) {
-        console.log('Done');
-        //
-        //
-        // //result = new database id
-        // if (result < 0) {
-        //     alert("Something Wrong with the values ! Please check and submit again.");
-        // }
-        // else {
-        //     $('#create_datas_modal').modal('hide');
-        //     showDiv(null, 'Datas/'+result, null);
-        // }
+        //result = new database id
+        if (result < 0) {
+            alert("Something Wrong with the values ! Please check and submit again.");
+        }
+        else {
+            $('#create_datas_modal').modal('hide');
+            showDiv(null, 'Datas/'+result, null);
+        }
     }).catch(function(result) {
-        console.log(result);
+        main_alert('CREATION ISSUE', result);
     });
 }
 
