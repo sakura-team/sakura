@@ -28,3 +28,27 @@
     <br>
     <h4>Sorry ! There's no accessible pages (for you) in this project.</h4>
 </div>
+
+
+<div id="sakura_projects_add_object_menu" class="panel panel-default" style="display:none; position:absolute; z-index: 4;">
+    <div class="panel-heading">
+      <form class="form-search form-inline col-md-offset-3">
+        <input id="web_interface_datas_inputSearch" type="text" class="search-query" placeholder="Search..." onchange="searchSubmitControl(event,'Datas');">
+      </form>
+    </div>
+    <div class="panel-body">
+      <table  id="web_interface_sakura_objects_table"
+              class="table table-condensed table-striped table-bordered table-list"
+              style="margin-bottom: 2px;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>ShortDesc</th>
+          </thead>
+          <tbody id="web_interface_sakura_objects_table_body">
+          </tbody>
+      </table>
+      <button type="button" class="btn btn-primary btn-sm pull-right" onclick="project_close_add_object();"> close </button>
+    </div>
+</div>

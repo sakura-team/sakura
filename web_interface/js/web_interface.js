@@ -1,7 +1,6 @@
 main_alert/// LIG March 2017
 
 ////////////GLOBALS
-var simplemde  = null;           //large description textarea
 var empty_text = "__";
 
 
@@ -43,6 +42,11 @@ function main_success_alert(header_str, body_str, callback, time=0) {
             callback();
     }, time*1000, callback);
 }
+
+$('body').mousemove(function(e) {
+    web_interface_mouse.x = e.clientX;
+    web_interface_mouse.y = e.clientY;
+});
 
 
 function web_interface_deal_with_events(evt_name, args) {
@@ -468,13 +472,13 @@ function fill_history() {
 }
 
 function get_edit_toolbar(datatype, web_interface_current_id) {
-    return [{
+    tb = [{
                 name: "preview",
                 action: function () {
-                    if (!simplemde.isPreviewActive()) {
+                    if (!current_simpleMDE.isPreviewActive()) {
                         web_interface_save_large_description(web_interface_current_id);
                     }
-                    simplemde.togglePreview();
+                    current_simpleMDE.togglePreview();
                   },
                 className: "fa fa-eye no-disable active",
                 title: "Toggle Preview (Cmd-P)",
@@ -489,8 +493,20 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
                   },
                 className: "glyphicon glyphicon-floppy-disk",
                 title: "Save description",
-              }
-            ]
+              }];
+    if (datatype == 'projects') {
+        tb.push("|");
+        tb.push(  {
+                    id: 'toto',
+                    name: "addObject",
+                    action: project_add_object_in_markdown,
+                    className: "glyphicon glyphicon-search",
+                    title: "Add a link to a sakura object"
+                }
+        );
+    }
+
+    return tb;
 }
 
 function web_interface_create_large_description_area(datatype, area_id, description, toolbar) {
@@ -502,20 +518,20 @@ function web_interface_create_large_description_area(datatype, area_id, descript
         elementToRemove && elementToRemove.remove();
     }
 
-    simplemde = null;
-    simplemde = new SimpleMDE({   hideIcons: ['side-by-side'],
+    current_simpleMDE = null;
+    current_simpleMDE = new SimpleMDE({   hideIcons: ['side-by-side'],
                                   element: document.getElementById(area_id),
                                   toolbar: toolbar ? get_edit_toolbar(datatype, web_interface_current_id) : false
                                   });
-    simplemde.value(description);
-    simplemde.togglePreview();
+    current_simpleMDE.value(description);
+    current_simpleMDE.togglePreview();
 }
 
 function web_interface_save_large_description(id) {
     if (web_interface_current_object_type != 'projects')
-        current_remote_api_object().update({'large_desc': simplemde.value()});
+        current_remote_api_object().update({'large_desc': current_simpleMDE.value()});
     else {
-        sakura.apis.hub.pages[current_page.page_id].update({'page_content': simplemde.value()});
+        sakura.apis.hub.pages[current_page.page_id].update({'page_content': current_simpleMDE.value()});
     }
 }
 

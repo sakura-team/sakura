@@ -136,3 +136,71 @@ function delete_page(page_id){
 function pages_close_modal() {
     $('#create_pages_modal').modal('hide');
 }
+
+function project_add_object_in_markdown() {
+    function add(body, elemts, type) {
+        elemts.forEach( function(elemt) {
+            let id = elemt[type+'_id'];
+            if (!id)
+                id = elemt.id;
+            let a = $('<a>', {  'onclick': "project_add_object('"+elemt.name+"', '"+type+"', "+id+");",
+                                'html': elemt.name,
+                                'style': 'cursor: pointer;'});
+            let tr = $('<tr>');
+            let td = $('<td>');
+            tr.append(td.append(a));
+            tr.append('<td>'+type);
+            tr.append('<td>'+elemt.short_desc)
+
+            body.append(tr);
+        })
+    }
+
+    if (project_all_objects_list == 'empty') {
+        let body = $('#web_interface_sakura_objects_table_body');
+        sakura.apis.hub.projects.list().then (function (projects) {
+            sakura.apis.hub.databases.list().then (function (databases) {
+                sakura.apis.hub.dataflows.list().then (function (dataflows) {
+                    sakura.apis.hub.op_classes.list().then (function (operators) {
+                        add(body, projects, 'project')
+                        add(body, databases, 'database')
+                        add(body, dataflows, 'dataflow')
+                        add(body, operators, 'operator')
+                        project_all_objects_list = 'full';
+                        project_open_add_object();
+        });});});});
+    }
+    else
+        project_open_add_object();
+}
+
+function project_add_object(name, type, id) {
+    if (type == 'database') type = 'data';
+    type = type[0].toUpperCase() + type.slice(1);
+    let url = window.location.href.split("#")[0]+'#'+type+'s/'+id;
+    let cm = current_simpleMDE.codemirror;
+    txt = '['+name+']('+url+')';
+    cm.replaceSelection(txt);
+
+
+}
+
+function project_open_add_object() {
+    let mdiv = $('#sakura_projects_add_object_menu');
+    if (mdiv.css('display') == 'none') {
+        mdiv.css({
+              display: "block",
+              left: 20,
+              top: web_interface_mouse.y
+            });
+    }
+}
+
+function project_close_add_object() {
+    let mdiv = $('#sakura_projects_add_object_menu');
+    if (mdiv.css('display') == 'block') {
+        mdiv.css({
+              display: "none"
+            });
+    }
+}
