@@ -165,7 +165,7 @@ function project_add_object_in_markdown() {
                         add(body, projects, 'project')
                         add(body, databases, 'database')
                         add(body, dataflows, 'dataflow')
-                        add(body, operators, 'operator')
+                        //add(body, operators, 'operator')
                         project_all_objects_list = 'full';
                         project_open_add_object();
         });});});});
@@ -202,5 +202,27 @@ function project_close_add_object() {
         mdiv.css({
               display: "none"
             });
+    }
+}
+
+function projects_objects_search(event) {
+    let srch  = $('#web_interface_projects_objects_search');
+    let value = srch.val().replace(/ /g, "'):containsi('")
+    let trs   = $('#web_interface_sakura_objects_table_body').children('tr');
+
+    $.extend($.expr[':'], {'containsi': function(elem, i, match, array){
+        return (elem.textContent ||
+                elem.innerText || '')
+                .toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+        }
+    });
+
+    for ( let i =0; i< trs.length; i++) {
+        let found = false;
+        $(trs[i]).filter(":containsi('"+value+"')").each(function(e){
+            found = true;
+        });
+        if (found)    $(trs[i]).show();
+        else          $(trs[i]).hide();
     }
 }

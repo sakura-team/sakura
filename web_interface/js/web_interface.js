@@ -548,13 +548,7 @@ function l_html(obj, event, dir) {
                 else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
                 else if (obj == 'projects')   loaded_projects_files   = 'done';
                 showDiv(event, dir);
-             }));
-            }));
-           }));
-          }));
-        }));
-      }));
-    });
+    }));}));}));}));}));}));});
 }
 
 function files_on_demand(dir, div_id) {
@@ -564,7 +558,6 @@ function files_on_demand(dir, div_id) {
         ldf = loaded_datas_files;
         d = 'databases';
         $.getScript("/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js");
-
     }
     else if (dir.startsWith('Operators')) {
         ldf = loaded_operators_files;
@@ -1043,4 +1036,28 @@ function create_warn_icon(obj) {
             return warn_icon;
     }
     return null;
+}
+
+
+function searchSubmitControl(event, obj_type) {
+    let srch  = $('#web_interface_'+web_interface_current_object_type+'_inputSearch');
+    let value = srch.val().replace(/ /g, "'):containsi('")
+    let trs   = $('#idTBodyList'+obj_type).children('tr');
+
+    $.extend($.expr[':'], {'containsi': function(elem, i, match, array){
+        return (elem.textContent ||
+                elem.innerText || '')
+                .toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+        }
+    });
+
+    for ( let i =0; i< trs.length; i++) {
+        
+        let found = false;
+        $(trs[i]).filter(":containsi('"+value+"')").each(function(e){
+            found = true;
+        });
+        if (found)    $(trs[i]).show();
+        else          $(trs[i]).hide();
+    }
 }
