@@ -137,13 +137,13 @@ function pages_close_modal() {
     $('#create_pages_modal').modal('hide');
 }
 
-function project_add_object_in_markdown() {
+function projects_add_object_in_markdown() {
     function add(body, elemts, type) {
         elemts.forEach( function(elemt) {
             let id = elemt[type+'_id'];
             if (!id)
                 id = elemt.id;
-            let a = $('<a>', {  'onclick': "project_add_object('"+elemt.name+"', '"+type+"', "+id+");",
+            let a = $('<a>', {  'onclick': "projects_add_object('"+elemt.name+"', '"+type+"', "+id+");",
                                 'html': elemt.name,
                                 'style': 'cursor: pointer;'});
             let tr = $('<tr>');
@@ -156,7 +156,7 @@ function project_add_object_in_markdown() {
         })
     }
 
-    if (project_all_objects_list == 'empty') {
+    if (projects_all_objects_list == 'empty') {
         let body = $('#web_interface_sakura_objects_table_body');
         sakura.apis.hub.projects.list().then (function (projects) {
             sakura.apis.hub.databases.list().then (function (databases) {
@@ -166,15 +166,15 @@ function project_add_object_in_markdown() {
                         add(body, databases, 'database')
                         add(body, dataflows, 'dataflow')
                         //add(body, operators, 'operator')
-                        project_all_objects_list = 'full';
-                        project_open_add_object();
+                        projects_all_objects_list = 'full';
+                        projects_open_add_object();
         });});});});
     }
     else
-        project_open_add_object();
+        projects_open_add_object();
 }
 
-function project_add_object(name, type, id) {
+function projects_add_object(name, type, id) {
     if (type == 'database') type = 'data';
     type = type[0].toUpperCase() + type.slice(1);
     let url = window.location.href.split("#")[0]+'#'+type+'s/'+id;
@@ -185,7 +185,7 @@ function project_add_object(name, type, id) {
 
 }
 
-function project_open_add_object() {
+function projects_open_add_object() {
     let mdiv = $('#sakura_projects_add_object_menu');
     if (mdiv.css('display') == 'none') {
         mdiv.css({
@@ -198,7 +198,7 @@ function project_open_add_object() {
     mbutton.addEventListener("mousedown", web_interface_projects_start_moving);
 }
 
-function project_close_add_object() {
+function projects_close_add_object() {
     let mdiv = $('#sakura_projects_add_object_menu');
     if (mdiv.css('display') == 'block') {
         mdiv.css({

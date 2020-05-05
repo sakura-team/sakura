@@ -511,7 +511,7 @@ function get_edit_toolbar(datatype, web_interface_current_id) {
         tb.push(  {
                     id: 'toto',
                     name: "addObject",
-                    action: project_add_object_in_markdown,
+                    action: projects_add_object_in_markdown,
                     className: "glyphicon glyphicon-search",
                     title: "Add a link to a sakura object"
                 }
