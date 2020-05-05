@@ -190,10 +190,12 @@ function project_open_add_object() {
     if (mdiv.css('display') == 'none') {
         mdiv.css({
               display: "block",
-              left: 20,
-              top: web_interface_mouse.y
+              left: web_interface_mouse.x,
+              top: web_interface_mouse.y + 20
             });
     }
+    let mbutton = document.getElementById('web_interface_projects_move_button');
+    mbutton.addEventListener("mousedown", web_interface_projects_start_moving);
 }
 
 function project_close_add_object() {
@@ -203,6 +205,8 @@ function project_close_add_object() {
               display: "none"
             });
     }
+    let mbutton = document.getElementById('web_interface_projects_move_button');
+    mbutton.removeEventListener("mousedown", web_interface_projects_start_moving);
 }
 
 function projects_objects_search(event) {
@@ -225,4 +229,8 @@ function projects_objects_search(event) {
         if (found)    $(trs[i]).show();
         else          $(trs[i]).hide();
     }
+}
+
+function web_interface_projects_start_moving(event) {
+    web_interface_projects_div_moving = true;
 }

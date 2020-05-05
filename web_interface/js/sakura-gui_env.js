@@ -10,8 +10,8 @@ var pages_init_text = '<span style="color:grey">*Empty ! Edit by clicking on the
 var logo_size = 'big';
 
 var web_interface_mouse = {'x': 0, 'y': 0};
+var web_interface_projects_div_moving = false;
 
 var project_all_objects_list = 'empty';
-
 
 var current_simpleMDE = null;

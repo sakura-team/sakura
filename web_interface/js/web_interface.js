@@ -44,8 +44,20 @@ function main_success_alert(header_str, body_str, callback, time=0) {
 }
 
 $('body').mousemove(function(e) {
+    let dx = e.clientX - web_interface_mouse.x;
+    let dy = e.clientY - web_interface_mouse.y;
     web_interface_mouse.x = e.clientX;
     web_interface_mouse.y = e.clientY;
+
+    if (web_interface_projects_div_moving) {
+        let mdiv = $('#sakura_projects_add_object_menu');
+        mdiv.css('left', mdiv.position().left + dx);
+        mdiv.css('top', mdiv.position().top + dy);
+    }
+});
+
+$('body').mouseup(function(e) {
+    web_interface_projects_div_moving = false;
 });
 
 
@@ -558,17 +570,16 @@ function files_on_demand(dir, div_id, cb) {
             l_html('databases', event, dir, cb);
         });
     }
-    else if (dir.startsWith('Operators')) {
-        l_html('operators', event, dir, cb);
-    }
     else if (dir.startsWith('Dataflows')) {
-        if (div_id) {
+        if (div_id)
             $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js").done( function() {
                 l_html('dataflows', event, dir, cb);
             });
-        }
         else
             l_html('dataflows', event, dir, cb);
+    }
+    else if (dir.startsWith('Operators')) {
+        l_html('operators', event, dir, cb);
     }
     else if (dir.startsWith('Projects')) {
         l_html('projects', event, dir, cb);
@@ -688,7 +699,6 @@ function showDiv(event, dir) {
                     update_navbar(obj);
                     update_main_div(dir, obj.toLowerCase(), tab[1]);
                 });
-
             }
             else {
                 main_alert('Access Issue', 'You cannot access this object!');
