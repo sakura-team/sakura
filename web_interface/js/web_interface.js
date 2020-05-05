@@ -535,7 +535,7 @@ function web_interface_save_large_description(id) {
     }
 }
 
-function l_html(obj, event, dir) {
+function l_html(obj, event, dir, cb) {
     $.getScript("js/"+obj+".js", function(scp, status) {
       $('#main_div').append($('<div>').load("divs/generic/main.html", function () {
         $('#main_div').append($('<div>').load("divs/"+obj+"/index.html", function () {
@@ -547,44 +547,34 @@ function l_html(obj, event, dir) {
                 else if (obj == 'operators')  loaded_operators_files  = 'done';
                 else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
                 else if (obj == 'projects')   loaded_projects_files   = 'done';
-                showDiv(event, dir);
+                cb();
+                //showDiv(event, dir);
     }));}));}));}));}));}));});
 }
 
-function files_on_demand(dir, div_id) {
-    var ldf = null;
-    var d   = null;
+function files_on_demand(dir, div_id, cb) {
     if (dir.startsWith('Datas')) {
-        ldf = loaded_datas_files;
-        d = 'databases';
-        $.getScript("/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js");
+        $.getScript("/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js").done( function() {
+            l_html('databases', event, dir, cb);
+        });
     }
     else if (dir.startsWith('Operators')) {
-        ldf = loaded_operators_files;
-        d = 'operators';
+        l_html('operators', event, dir, cb);
     }
     else if (dir.startsWith('Dataflows')) {
-        ldf = loaded_dataflows_files;
-        d = 'dataflows';
         if (div_id) {
-            $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js");
+            $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js").done( function() {
+                l_html('dataflows', event, dir, cb);
+            });
         }
+        else
+            l_html('dataflows', event, dir, cb);
     }
     else if (dir.startsWith('Projects')) {
-        ldf = loaded_projects_files;
-        d = 'projects';
+        l_html('projects', event, dir, cb);
     }
     else if (dir.length && !dir.startsWith('Home'))
         console.log('Unexpected showDiv() on', dir);
-
-    if (ldf && !(ldf == 'done')) {
-        if (ldf == 'no') {
-            ldf = 'in_progress';
-            l_html(d, event, dir, div_id);
-            return;
-        }
-        return;
-    }
 }
 
 function update_navbar(obj) {
@@ -686,6 +676,7 @@ function showDiv(event, dir) {
     else
         web_interface_current_id = -1
 
+
     if (web_interface_current_object_type &&
         web_interface_current_object_type != "Home" &&
         tab.length > 1) {
@@ -693,9 +684,11 @@ function showDiv(event, dir) {
         current_remote_api_object().info().then( function(o_info) {
             if (o_info.grant_level != 'list') {
                 update_main_header(dir);
-                files_on_demand(dir, tab[1]);
-                update_navbar(obj);
-                update_main_div(dir, obj.toLowerCase(), tab[1]);
+                files_on_demand(dir, tab[1], function() {
+                    update_navbar(obj);
+                    update_main_div(dir, obj.toLowerCase(), tab[1]);
+                });
+
             }
             else {
                 main_alert('Access Issue', 'You cannot access this object!');
@@ -709,9 +702,16 @@ function showDiv(event, dir) {
     }
     else {
         update_main_header(dir);
-        files_on_demand(dir, tab[1]);
-        update_navbar(obj);
-        update_main_div(dir, obj.toLowerCase(), tab[1]);
+        if (dir == 'Home') {
+            update_navbar(obj);
+            update_main_div(dir, obj.toLowerCase(), tab[1]);
+        }
+        else {
+            files_on_demand(dir, tab[1], function() {
+                update_navbar(obj);
+                update_main_div(dir, obj.toLowerCase(), tab[1]);
+            });
+        }
     }
 
     if (event)  event.preventDefault();
@@ -1052,7 +1052,6 @@ function searchSubmitControl(event, obj_type) {
     });
 
     for ( let i =0; i< trs.length; i++) {
-        
         let found = false;
         $(trs[i]).filter(":containsi('"+value+"')").each(function(e){
             found = true;
