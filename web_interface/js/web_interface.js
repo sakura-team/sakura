@@ -560,7 +560,6 @@ function l_html(obj, event, dir, cb) {
                 else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
                 else if (obj == 'projects')   loaded_projects_files   = 'done';
                 cb();
-                //showDiv(event, dir);
     }));}));}));}));}));}));});
 }
 
@@ -634,12 +633,12 @@ function update_main_div(dir, obj, id) {
         }
     }
 
-    //changing current URL
-    var stateObj = { where: dir };
+    //History management
     try {//try catch, car en local, cela soulève une securityError pour des raisons de same origin policy pas gérées de la meme manière  ...
-        history.pushState(stateObj, "page", '#'+dir);
+        if (!history.state || history.state.where != dir)
+            history.pushState({ where: dir }, "page", '#'+dir);
     }
-    catch (e) { tmp=0; }
+    catch (e) {}
 }
 
 function update_main_header(dir) {
