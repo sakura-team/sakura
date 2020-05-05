@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-import itertools, numpy as np, operator
 from sakura.daemon.processing.operator import Operator
 from .heatmap import HeatMap
 from time import time
