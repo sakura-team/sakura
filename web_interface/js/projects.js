@@ -234,3 +234,19 @@ function projects_objects_search(event) {
 function web_interface_projects_start_moving(event) {
     web_interface_projects_div_moving = true;
 }
+
+function projects_add_external_check() {
+    let label = $('#projects_add_object_label_input').val();
+    let url   = $('#projects_add_object_url_input').val();
+    if (label.length && url.length) {
+        $('#projects_add_external_button').removeClass('disabled');
+    }
+    else
+      $('#projects_add_external_button').addClass('disabled');
+}
+
+function projects_add_external_link() {
+    let label = $('#projects_add_object_label_input').val();
+    let url   = $('#projects_add_object_url_input').val();
+    current_simpleMDE.codemirror.replaceSelection('['+label+']('+url+')');
+}

@@ -484,39 +484,37 @@ function fill_history() {
 }
 
 function get_edit_toolbar(datatype, web_interface_current_id) {
-    tb = [{
-                name: "preview",
-                action: function () {
-                    if (!current_simpleMDE.isPreviewActive()) {
-                        web_interface_save_large_description(web_interface_current_id);
-                    }
-                    current_simpleMDE.togglePreview();
-                  },
-                className: "fa fa-eye no-disable active",
-                title: "Toggle Preview (Cmd-P)",
-              },
-              "fullscreen","|","bold","italic","heading","|","quote",
-              "unordered-list","ordered-list","|","link","image","|",
-              "guide", "|",
-              {
-                name: "save",
-                action: function () {
-                    web_interface_save_large_description(web_interface_current_id);
-                  },
-                className: "glyphicon glyphicon-floppy-disk",
-                title: "Save description",
-              }];
+    tb = [{ name: "preview",
+            action: function () {
+              if (!current_simpleMDE.isPreviewActive()) {
+                  web_interface_save_large_description(web_interface_current_id);
+              }
+              current_simpleMDE.togglePreview();
+            },
+            className: "fa fa-eye no-disable active",
+            title: "Toggle Preview (Cmd-P)",
+          },
+          "|","bold","italic","heading","|","quote",
+          "unordered-list","ordered-list","|","image"
+    ];
+
     if (datatype == 'projects') {
-        tb.push("|");
-        tb.push(  {
-                    id: 'toto',
+        tb.push({   id: 'link',
                     name: "addObject",
                     action: projects_add_object_in_markdown,
-                    className: "glyphicon glyphicon-search",
-                    title: "Add a link to a sakura object"
-                }
-        );
+                    className: "fa fa-link",
+                    title: "Add a link (local or external)" });
     }
+    else {
+        tb.push("link");
+    }
+    tb.push("|", "guide", "|");
+    tb.push({ name: "save",
+              action: function () {
+                  web_interface_save_large_description(web_interface_current_id);
+                },
+              className: "glyphicon glyphicon-floppy-disk",
+              title: "Save description" });
 
     return tb;
 }
