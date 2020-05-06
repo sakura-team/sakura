@@ -640,6 +640,11 @@ function update_main_div(dir, obj, id) {
 }
 
 function update_main_header(dir) {
+
+    //closing floating windows
+    if (loaded_projects_files != 'no')
+        projects_close_add_object();
+
     function toggle(add_cl, rem_cl) {
 
         [ [document.getElementById('anim_logo_cell'),   '_logo_cell'  ],
@@ -663,6 +668,7 @@ function update_main_header(dir) {
 }
 
 function showDiv(event, dir) {
+
     let obj_names = ["Datas", "Dataflows", "Operators", "Projects", "Home"];
 
     //Deal with unknown adresses -> always back to home

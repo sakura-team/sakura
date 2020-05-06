@@ -31,15 +31,20 @@
 
 
 <div id="sakura_projects_add_object_menu" class="panel panel-default" style="opacity: 1; display:none; position:absolute; z-index: 4;">
-    <div class="panel-heading">
+    <div class="panel-heading" style='cursor: pointer;'>
       <table width='100%'>
         <tr id="web_interface_projects_move_button">
           <td><h4 style="margin-top: 2px; margin-bottom: 2px;">Adding links tool</h4>
-          <td align='right'>
+          <td align='left'>
             <h4   class="glyphicon glyphicon glyphicon-move"
                   style=" margin-top: 0px; margin-bottom: 0px;
-                          font-size:2; color: grey; cursor: pointer;">
+                          opacity: .3; cursor: pointer;">
             </h4>
+          <td align='right'>
+            <span class="glyphicon glyphicon glyphicon-remove"
+                  onclick="projects_close_add_object();"
+                  style="cursor: pointer;">
+            <span>
       </table>
     </div>
     <div class="panel-body">
@@ -114,13 +119,12 @@
                           onclick="projects_add_external_link();"
                           style="margin-top: 2px;"
                           >
-                  <span class="glyphicon glyphicon-plus"></span>
+                    insert
                 </button>
           </table>
         </div>
 
         </div>
       </div>
-      <button type="button" class="btn btn-primary btn-sm pull-right" onclick="projects_close_add_object();"> close </button>
     </div>
 </div>

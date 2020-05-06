@@ -200,13 +200,15 @@ function projects_open_add_object() {
 
 function projects_close_add_object() {
     let mdiv = $('#sakura_projects_add_object_menu');
-    if (mdiv.css('display') == 'block') {
-        mdiv.css({
-              display: "none"
-            });
+    if (mdiv) {
+        if (mdiv.css('display') == 'block') {
+            mdiv.css({
+                  display: "none"
+                });
+        }
+        let mbutton = document.getElementById('web_interface_projects_move_button');
+        mbutton.removeEventListener("mousedown", web_interface_projects_start_moving);
     }
-    let mbutton = document.getElementById('web_interface_projects_move_button');
-    mbutton.removeEventListener("mousedown", web_interface_projects_start_moving);
 }
 
 function projects_objects_search(event) {
