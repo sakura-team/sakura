@@ -4,6 +4,16 @@ from sakura.common.errors import APIRequestError
 class PlugBase(StatusMixin):
     def __init__(self):
         self.on_change = ObservableEvent()
+    def get_label(self):
+        return self.pack()['label']
+    def get_length(self):
+        return self.pack().get('length', None)
+    def stream_csv(self, gzip_compression=False):
+        if not self.enabled:
+            raise APIRequestError('Operator plug is not enabled yet.')
+        yield from self.source.stream_csv(gzip_compression)
+    def pack(self):
+        raise NotImplementedError   # implement in subclasses
     @property
     def source(self):
         raise NotImplementedError   # implement in subclasses
