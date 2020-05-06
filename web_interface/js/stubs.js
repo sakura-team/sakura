@@ -164,7 +164,12 @@ function buildListStub(idDiv, result, elt) {
                         new_row.append('<td>'+d+'</td>');
                     }
                     else {
-                        new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
+                        if (lch[index] == 'repo_url' && row[lch[index]]) {
+                            let a = '<a href="'+row[lch[index]]+'">'+row[lch[index]]+'<a>'
+                            new_row.append('<td>'+a+'</td>');
+                        }
+                        else
+                            new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
                     }
                 }
             });
