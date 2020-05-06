@@ -6,7 +6,7 @@
 var global_links  = [];
 var link_focus_id = null;
 
-var workflow_link_debug = false;
+var dataflows_link_debug = false;
 
 function create_link(js_id, src_id, dst_id, js_connection) {
 
@@ -229,7 +229,7 @@ function refresh_link_modal(link) {
 }
 
 function test_link(link, on_hub) {
-    if (workflow_link_debug) console.log('TEST_LINK');
+    if (dataflows_link_debug) console.log('TEST_LINK');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -239,7 +239,7 @@ function test_link(link, on_hub) {
 
 
 function remove_link(link, on_hub) {
-    if (workflow_link_debug) console.log('REMOVE_LINK');
+    if (dataflows_link_debug) console.log('REMOVE_LINK');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -293,7 +293,7 @@ function remove_link(link, on_hub) {
 
 
 function remove_connection(hub_id, on_hub) {
-    if (workflow_link_debug) console.log('REMOVE_CONNECTION');
+    if (dataflows_link_debug) console.log('REMOVE_CONNECTION');
     global_links.forEach( function(link) {
         if (link.src == hub_id || link.dst == hub_id) {
             remove_link(link, on_hub);
@@ -303,7 +303,7 @@ function remove_connection(hub_id, on_hub) {
 
 
 function delete_link_params(link, and_main_link, on_hub) {
-    if (workflow_link_debug) console.log('DELETE LINK PARAMSSSS');
+    if (dataflows_link_debug) console.log('DELETE LINK PARAMSSSS');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -337,7 +337,7 @@ function delete_link_params(link, and_main_link, on_hub) {
 
 
 function delete_link_param(link, side, id, on_hub) {
-    if (workflow_link_debug) console.log('DELETE LINK PARAM');
+    if (dataflows_link_debug) console.log('DELETE LINK PARAM');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -465,7 +465,7 @@ function link_from_instances(src_id, dst_id) {
 }
 
 function remove_all_links(on_hub) {
-    if (workflow_link_debug) console.log('REMOVE_ALL_LINKS');
+    if (dataflows_link_debug) console.log('REMOVE_ALL_LINKS');
     global_links.forEach( function(item) {
         remove_link(item, on_hub);
     });

@@ -1,6 +1,6 @@
 /* We want an easy-to-use API call mechanism:
-   hub.workflows[3].info().then(function(result) {
-     console.log('workflow info: ' + result);
+   hub.dataflows[3].info().then(function(result) {
+     console.log('dataflow info: ' + result);
    });
 
    The function call may involve named parameters. In this case, they must be specified

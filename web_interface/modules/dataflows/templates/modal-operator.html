@@ -28,7 +28,7 @@
                         <a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_inputs">Inputs</a></li>
                     <li id="tab_button_params"><a id='tab_button_params_a' style="padding-top: 0px; padding-bottom: 0px; text-align: center;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_params" >Params</a></li>
                     <li id="tab_button_outputs"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_outputs" >Outputs</a></li>
-                    <li id="tab_button_code"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_code" onclick="loadIFrame('modules/workflow/code-editor/index.html?{{inst_id}}','{{id}}')">Code</a></li>
+                    <li id="tab_button_code"><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_code" onclick="loadIFrame('modules/dataflows/code-editor/index.html?{{inst_id}}','{{id}}')">Code</a></li>
                     % for index, tab in enumerate(tabs):
                     <li><a style="padding-top: 0px; padding-bottom: 0px;" class="a_tabs" data-toggle="tab" href="#modal_{{id}}_tab_tab_{{index}}">{{tab.label}}</a></li>
                     % end

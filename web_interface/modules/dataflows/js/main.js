@@ -6,7 +6,7 @@
 //Init Functions
 var jsPlumbLoaded = false;
 
-function open_workflow() {
+function open_dataflow() {
     if (! jsPlumbLoaded)
       $.getScript("/webcache/cdnjs/jsPlumb/2.1.7/jsPlumb.min.js").done( function() {
           jsPlumbLoaded = true;

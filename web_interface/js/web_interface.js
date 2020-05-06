@@ -622,7 +622,7 @@ function update_main_div(dir, obj, id) {
                 div_main.style.display='inline';
             }
             else if (obj == 'dataflows') {
-                open_workflow();
+                open_dataflow();
                 div_main.style.display='inline';
             }
             else if (obj == 'projects') {

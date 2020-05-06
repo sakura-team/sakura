@@ -394,3 +394,52 @@ function datasets_delete_yes(dataset_id, alert) {
             console.log('Error deleting Dataset:', error_msg);
     });
 }
+
+function datasets_download(dataset_id) {
+
+    var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+
+    var txt = 'The size of the file is unkown for now.';
+    if (dataset.count_estimate)
+        txt = 'This dataset has ~'+dataset.count_estimate+' rows.';
+
+    var h = $('#datasets_download_modal_header');
+    var b = $('#datasets_download_modal_body');
+    var bc = $('#datasets_download_modal_button_csv');
+    var bg = $('#datasets_download_modal_button_gzip');
+
+    h.css('background-color', 'rgba(91,192,222)');
+    h.html("<h3><font color=\"white\">Dataset Download</font></h3>");
+    b.html("<p>"+txt+"</p>");
+    bc.attr('onclick', 'datasets_download_start_transfert('+dataset_id+', false);');
+    bg.attr('onclick', 'datasets_download_start_transfert('+dataset_id+', true);');
+
+    $('#datasets_download_modal').modal();
+}
+
+function datasets_download_start_transfert(dataset_id, gzip) {
+
+  var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+  stop_downloading = false;
+
+  sakura.apis.hub.transfers.start().then(function(transfert_id) {
+        current_transfert_id = transfert_id;
+
+        var url = "/tables/"+dataset.table_id+"/export.csv?transfer="+current_transfert_id;
+        if (gzip)
+            url = "/tables/"+dataset.table_id+"/export.csv.gz?transfer="+current_transfert_id;
+
+        //Create a link from downloading the file
+        var element = document.createElement('a');
+        element.setAttribute('href', url);
+        element.setAttribute('download', dataset.name+'.csv');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        download_start_transfert('dataset')
+
+        element.click();
+        document.body.removeChild(element);
+
+    });
+}

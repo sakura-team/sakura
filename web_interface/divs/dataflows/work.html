@@ -12,7 +12,7 @@
                         </div>
                     </div>
                 <td width="100%">
-                    <div id="sakura_main_div" class="sakura_main" style="background-image: url(modules/workflow/img/sakura_flower.jpg); background-repeat: no-repeat; background-position: center; "/>
+                    <div id="sakura_main_div" class="sakura_main" style="background-image: url(modules/dataflows/img/sakura_flower.jpg); background-repeat: no-repeat; background-position: center; "/>
                 </td>
             </tr>
         </table>
@@ -101,44 +101,43 @@
     </div>
 
     <!-- DOWNLOAD MODAL -->
-    <div id="workflow_download_modal" class="modal fade" role="dialog">
+    <div id="dataflows_download_modal" class="modal fade" role="dialog">
         <div class="modal-dialog modal-md" role="dialog">
             <div class="modal-content">
-                <div id="workflow_download_modal_header" class="panel-heading">
+                <div id="dataflows_download_modal_header" class="panel-heading">
                 </div>
                 <div class="modal-footer">
-                    <button id="workflow_download_modal_button_csv"type="button" class="btn btn btn-sm" data-dismiss="modal">Csv</button>
-                    <button id="workflow_download_modal_button_gzip" type="button" class="btn btn btn-sm" data-dismiss="modal">Gzip (Csv)</button>
-                    <button id="workflow_download_modal_button_cancel" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Cancel</button>
+                    <button id="dataflows_download_modal_button_csv"type="button" class="btn btn btn-sm" data-dismiss="modal">Csv</button>
+                    <button id="dataflows_download_modal_button_gzip" type="button" class="btn btn btn-sm" data-dismiss="modal">Gzip (Csv)</button>
+                    <button id="dataflows_download_modal_button_cancel" type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- PROGRESS BAR MODAL -->
-    <div id="workflow_progress_bar_modal" class="modal fade" role="dialog">
+    <div id="dataflows_progress_bar_modal" class="modal fade" role="dialog">
         <div class="modal-dialog modal-md" role="dialog">
             <div class="modal-content">
-                <div id="workflow_progress_bar_modal_header" class="modal-header" style="background-color : rgba(255,255,255,0.5);">
+                <div id="dataflows_progress_bar_modal_header" class="modal-header" style="background-color : rgba(255,255,255,0.5);">
                     <h3>Progress bar Title</h3>
                 </div>
-                <div id="workflow_progress_bar_modal_body" class="modal-body">
+                <div id="dataflows_progress_bar_modal_body" class="modal-body">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary btn-sm" onclick="workflow_stop_downloading()">Abort</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="stop_download()">Abort</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="modules/workflow/js/general.js"></script>
-    <script src="modules/workflow/js/download.js"></script>
-    <script src="modules/workflow/js/comment.js"></script>
-    <script src="modules/workflow/js/operator.js"></script>
-    <script src="modules/workflow/js/link.js"></script>
-    <script src="modules/workflow/js/dataflow.js"></script>
-    <script src="modules/workflow/js/interaction.js"></script>
-    <script src="modules/workflow/js/select_operator.js"></script>
-    <script src="modules/workflow/js/modal_operator.js"></script>
-    <script src="modules/workflow/js/main.js"></script>
+    <script src="modules/dataflows/js/general.js"></script>
+    <script src="modules/dataflows/js/comment.js"></script>
+    <script src="modules/dataflows/js/operator.js"></script>
+    <script src="modules/dataflows/js/link.js"></script>
+    <script src="modules/dataflows/js/dataflow.js"></script>
+    <script src="modules/dataflows/js/interaction.js"></script>
+    <script src="modules/dataflows/js/select_operator.js"></script>
+    <script src="modules/dataflows/js/modal_operator.js"></script>
+    <script src="modules/dataflows/js/main.js"></script>
 </div>

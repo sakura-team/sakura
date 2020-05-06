@@ -83,7 +83,7 @@ function escapeHtml(text) {
 
 
 function load_from_template(elem, template_file, params, cb) {
-    $(elem).load("/modules/workflow/templates/" + template_file, { 'params': JSON.stringify(params) }, cb);
+    $(elem).load("/modules/dataflows/templates/" + template_file, { 'params': JSON.stringify(params) }, cb);
 }
 
 
@@ -94,4 +94,49 @@ function s_sleep(milliseconds) {
             break;
         }
     }
+}
+
+function dataflows_download_table(id_out, in_out) {
+    var h     = $('#dataflows_download_modal_header');
+    var bcsv  = $('#dataflows_download_modal_button_csv');
+    var bgzip = $('#dataflows_download_modal_button_gzip');
+
+    h.css('background-color', 'rgba(91,192,222)');
+    if (in_out == 'output')
+        h.html('<h3><font color="white">Downloading</font> '+current_instance_info.outputs[id_out].label+'</h3>');
+    else
+        h.html('<h3><font color="white">Downloading</font> '+current_instance_info.inputs[id_out].label+'</h3>');
+
+    bcsv.attr('onclick', 'dataflows_download_start_transfert('+id_out+', \''+in_out+'\', false);');
+    bgzip.attr('onclick', 'dataflows_download_start_transfert('+id_out+', \''+in_out+'\',true);');
+
+    $('#dataflows_download_modal').modal('show');
+}
+
+function dataflows_download_start_transfert(id_in_out, in_out, gzip) {
+
+    stop_downloading = false;
+    sakura.apis.hub.transfers.start().then(function(transfert_id) {
+
+        current_transfert_id = transfert_id;
+
+        var url = "/streams/"+current_instance_info.op_id+"/"+in_out+"/"+id_in_out+"/export.csv?transfer="+current_transfert_id;
+        if (gzip)
+            url = "/streams/"+current_instance_info.op_id+"/"+in_out+"/"+id_in_out+"/export.csv.gz?transfer="+current_transfert_id;
+
+        //Create a link from downloading the file
+        var element = document.createElement('a');
+        element.setAttribute('href', url);
+        if (in_out == 'output')
+            element.setAttribute('download', current_instance_info.outputs[id_in_out].label+'.csv');
+        else
+            element.setAttribute('download', current_instance_info.inputs[id_in_out].label+'.csv');
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        download_start_transfert('dataflow');
+
+        element.click();
+        document.body.removeChild(element);
+    });
 }
