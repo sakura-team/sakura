@@ -26,6 +26,7 @@ function new_comment() {
                     {'id': id, 'title': "Comment "+id, 'body': "Edit your comment here"},
                     function () {
                         var com         = wrapper.firstChild;
+                        com.id          = id;
                         com.style.left  = ''+(cursorX - main_div.offsetLeft - 90)+'px';
                         com.style.top   = ''+(cursorY - main_div.offsetTop)+'px';
                         com.setAttribute("draggable", "true");
@@ -47,9 +48,9 @@ function new_comment() {
 
 
 function comment_from(com) {
-    var wrapper = document.createElement('div');
-    var body = com.body.replace(/<br>/g, '\n');
-    var title = com.title.replace(/<br>/g, '\n');
+    let wrapper = document.createElement('div');
+    let body = com.body.replace(/<br>/g, '\n');
+    let title = com.title.replace(/<br>/g, '\n');
 
     load_from_template(
                     wrapper,
@@ -68,6 +69,8 @@ function comment_from(com) {
                         $('#comment_'+com.id+'_title').blur( function (e) {
                             save_dataflow()
                         });
+
+                        $('#comment_'+com.id+'_body').html(com.body);
                         $('#comment_'+com.id+'_body').blur( function (e) {
                             save_dataflow()
                         });

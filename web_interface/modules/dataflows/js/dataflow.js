@@ -134,17 +134,17 @@ function current_dataflow() {
 
 function save_dataflow() {
     //The panels and the comments first
-
-    var coms = [];
+    let coms = [];
     global_coms.forEach( function(com) {
         coms.push(get_comment_info(com));
     });
 
-    sakura.apis.hub.dataflows[web_interface_current_id].set_gui_data(JSON.stringify({'panels': global_op_panels, 'comments': coms})).then( function(result) {
+    let gui_data = JSON.stringify({'panels': global_op_panels, 'comments': coms});
+    sakura.apis.hub.dataflows[web_interface_current_id].set_gui_data(gui_data).then( function(result) {
 
-        }).catch(function(error) {
-            console.log(error);
-        });
+    }).catch(function(error) {
+        console.log('SET GUI ERROR', error);
+    });
 
     //Second the operators
     global_ops_inst.forEach( function(inst) {
