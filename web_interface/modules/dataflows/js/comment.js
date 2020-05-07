@@ -26,17 +26,16 @@ function new_comment() {
                     {'id': id, 'title': "Comment "+id, 'body': "Edit your comment here"},
                     function () {
                         var com         = wrapper.firstChild;
-                        com.id          = id;
                         com.style.left  = ''+(cursorX - main_div.offsetLeft - 90)+'px';
                         com.style.top   = ''+(cursorY - main_div.offsetTop)+'px';
                         com.setAttribute("draggable", "true");
                         main_div.appendChild(com);
 
-                        $('#comment_'+com.id+'_title').blur( function (e) {
-                            save_dataflow()
+                        $('#comment_'+id+'_title').blur( function (e) {
+                            save_dataflow();
                         });
-                        $('#comment_'+com.id+'_body').blur( function (e) {
-                            save_dataflow()
+                        $('#comment_'+id+'_body').blur( function (e) {
+                            save_dataflow();
                         });
 
                         global_coms.push({  'id': id,

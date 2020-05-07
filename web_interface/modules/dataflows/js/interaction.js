@@ -8,7 +8,6 @@ document.addEventListener("dragstart", function ( e ) {
     drag_delta = [e.clientX - e.target.left, e.clientY - e.target.top];
 
     if (currently_dragged.id.includes("svg_modal_link")) {
-        //currently_dragged.innerHTML = svg_round_square("");
         var modal_id = currently_dragged.id.split("_")[3];
         var bdiv = document.getElementById("modal_link_"+modal_id+"_body");
     }
