@@ -141,17 +141,21 @@ function buildListStub(idDiv, result, elt) {
                 var td1 = $('<td>');
                 td1.append(row.default_code_ref);
                 tr.append(td1);
-                /* to be fixed (updating default revision)
                 if (curr_login !== null) {
                     if (row.owner == curr_login.login) {
-                        var td2 = $('<td align="right">');
-                        var span = $('<span title="delete" class="glyphicon \
-                        glyphicon-pencil" style="cursor: pointer;" \
-                        onclick="update_operator_revision(\''+row.code_url+'\',\''+row.id+'\');"></span>');
-                        td2.append(span);
+                        let td2 = $('<td align="right">');
+                        let span = $('<span>', {'title': 'update revision',
+                                                'class': 'glyphicon glyphicon-pencil',
+                                                'style': 'cursor: pointer;',
+                                                'onclick':  'operators_revision_panel_open(\''+row.repo_url+'\',\''+row.code_subdir+'\',\''+row.id+'\');'
+                                              });
+                        let table2 = $('<table>');
+                        table2.append('<td>&nbsp;&nbsp;');
+                        table2.append(span);
+                        td2.append(table2);
                         tr.append(td2);
                     }
-                }*/
+                }
                 table.append(tr);
                 new_td.append(table);
                 new_row.append(new_td);

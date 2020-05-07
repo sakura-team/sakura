@@ -15,3 +15,8 @@ var web_interface_projects_div_moving = false;
 var projects_all_objects_list = 'empty';
 
 var current_simpleMDE = null;
+
+var current_operator_revision = null;
+var current_operator_id       = null;
+var revisions                 = null;
+var current_code_url          = null;

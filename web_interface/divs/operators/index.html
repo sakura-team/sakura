@@ -47,7 +47,7 @@
     </div>
 
     <!-- ASKING MODAL -->
-    <div id="operators_asking_modal" class="modal fade" role="dialog">
+    <!-- <div id="operators_asking_modal" class="modal fade" role="dialog">
         <div class="modal-dialog modal-md" role="dialog">
             <div class="modal-content">
                 <div id="operators_asking_header" class="panel-heading">
@@ -62,5 +62,37 @@
                 </div>
             </div>
         </div>
+    </div> -->
+
+
+    <div  id="operators_revision_panel"
+          class="panel panel-default"
+          style="opacity: 1; display:none; position:absolute; z-index: 4;">
+        <div class="panel-heading" style='cursor: pointer; min-width: 400px;'>
+          <table width='100%'>
+            <tr>
+              <td>
+                <h4 id="operators_revision_title"
+                    style=" margin-top: 2px;
+                            margin-bottom: 2px;
+                            vertical-align: middle;">
+                  Changing Revision
+                </h4>
+              <td align='right'>
+                <span class="glyphicon glyphicon glyphicon-remove"
+                      onclick="operators_revision_panel_close();"
+                      style="cursor: pointer; vertical-align: middle;">
+                <span>
+          </table>
+        </div>
+        <div id="operators_revision_panel_body" class="panel-body">
+        </div>
+        <div class="modal-footer">
+            <button id="operators_revision_panel_change_button"
+                    type="button"
+                    class="btn btn-primary btn-xs pull-right disabled"
+                    onclick="operators_change_revision();">Change</button>
+        </div>
     </div>
+
 </div>

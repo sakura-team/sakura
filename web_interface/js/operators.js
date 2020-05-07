@@ -206,13 +206,95 @@ function operators_close_modal() {
     $('#declare_operators_modal').modal('hide');
 }
 
-function update_operator_revision(code_url, id) {
-    console.log(code_url, parseInt(id));
+//---------OPERATOR REVISIONS
+
+function operators_revision_panel_open(code_url, sub_dir, op_id) {
+
+    //init
+    let orp   = $('#operators_revision_panel');
+    let title = $('#operators_revision_title');
+
+    let op_cl = current_op_classes_list.find( function (e) {
+                        return e.id === parseInt(op_id);
+                    });
+    title.html('Changing Revision of '+ op_cl.name );
+    orp.css({
+          left: 20,
+          top: web_interface_mouse.y + 20
+        });
+    let body = $('#operators_revision_panel_body');
+    body.empty();
+    let span = $('<span>', {'class': "glyphicon \
+                                      glyphicon-refresh \
+                                      glyphicon-refresh-animate"});
+    body.append(span);
+    $('#operators_revision_panel_change_button').addClass('disabled');
+    orp.show();
+
+    //fill
+    console.log(code_url+'/'+sub_dir);
     sakura.apis.hub.misc.list_code_revisions(code_url,
-                                            {'reference_cls_id': parseInt(id)}
+                                            {'reference_cls_id': parseInt(op_id)}
                                             ).then( function (result) {
-        console.log('List of code revisions');
-        console.log(result);
+            current_code_url = code_url;
+            let body = $('#operators_revision_panel_body');
+            body.empty();
+            let select = $('<select>', {'class': 'selectpicker',
+                                        'id': 'operators_revision_panel_select',
+                                        'onchange': 'operators_revision_panel_select_onchange();',
+                                        'data-live-search': 'true',
+                                        'data-width': '100%'
+                                        });
+            let current_txt = '';
+            let selected = false;
+            revisions = result;
+            result.forEach( function(revision, index) {
+                let txt = revision[0]+' @'+revision[1]+' '+revision[2];
+                let opt = $('<option>', { 'value': index,
+                                          'text': txt});
+                if (revision[2].indexOf('current') != -1) {
+                    current_txt = revision[0]+' @'+revision[1];
+                    current_operator_revision = revision;
+                }
+                else {
+                    if (selected == false) {
+                        opt.prop('selected', true);
+                        selected = true;
+                    }
+                    select.append(opt);
+                }
+            })
+
+            body.append('<label>From</label><div>'+current_txt+'</div>');
+            body.append('<label>To</label><br>', select);
+            select.selectpicker('refresh');
+
+            if (selected)
+                $('#operators_revision_panel_change_button').removeClass('disabled');
+            current_operator_id = op_id;
     });
-    not_yet();
+}
+
+function operators_revision_panel_close() {
+    $('#operators_revision_panel').hide();
+}
+
+function operators_revision_panel_select_onchange() {
+    let opt       = $('#operators_revision_panel_select option:selected');
+    let revision  = revisions[parseInt(opt[0].value)];
+
+    if (revision[1] != current_operator_revision[1])
+        $('#operators_revision_panel_change_button').removeClass('disabled');
+    else
+        $('#operators_revision_panel_change_button').addClass('disabled');
+}
+
+function operators_change_revision() {
+    let opt       = $('#operators_revision_panel_select option:selected');
+    let revision  = revisions[parseInt(opt[0].value)];
+    let remote = sakura.apis.hub.op_classes[current_operator_id];
+    remote.update_default_revision(revision[0], revision[1]).then(function(result) {
+        $('#operators_revision_panel').hide();
+        showDiv(null, 'Operators');
+    });
 }
