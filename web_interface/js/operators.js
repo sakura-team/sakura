@@ -232,7 +232,6 @@ function operators_revision_panel_open(code_url, sub_dir, op_id) {
     orp.show();
 
     //fill
-    console.log(code_url+'/'+sub_dir);
     sakura.apis.hub.misc.list_code_revisions(code_url,
                                             {'reference_cls_id': parseInt(op_id)}
                                             ).then( function (result) {
@@ -296,5 +295,10 @@ function operators_change_revision() {
     remote.update_default_revision(revision[0], revision[1]).then(function(result) {
         $('#operators_revision_panel').hide();
         showDiv(null, 'Operators');
+    }).catch( function(error) {
+        let op_cl = current_op_classes_list.find( function (e) {
+            return e.id === parseInt(current_operator_id);
+        });
+        main_alert('Revision of '+op_cl.name, error);
     });
 }
