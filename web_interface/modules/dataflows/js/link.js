@@ -1,11 +1,6 @@
 //Code started by Michael Ortega for the LIG
 //March 20th, 2017
 
-
-//links
-var global_links  = [];
-var link_focus_id = null;
-
 var dataflows_link_debug = false;
 
 function create_link(js_id, src_id, dst_id, js_connection) {
@@ -431,7 +426,6 @@ function copy_link_line(link, _out, _in, gui) {
     return svg;
 }
 
-
 function open_link_params(conn_id) {
     refresh_link_modal(link_from_id(conn_id));
     $('#modal_link_'+conn_id).modal();
@@ -439,13 +433,11 @@ function open_link_params(conn_id) {
     }, 200);
 }
 
-
 function link_from_id(id) {
     return global_links.find( function(e) {
         return e.id === id;
     });
 }
-
 
 function link_exist(src_id, dst_id) {
     var found = false;
@@ -465,7 +457,6 @@ function link_from_instances(src_id, dst_id) {
 }
 
 function remove_all_links(on_hub) {
-    if (dataflows_link_debug) console.log('REMOVE_ALL_LINKS');
     global_links.forEach( function(item) {
         remove_link(item, on_hub);
     });

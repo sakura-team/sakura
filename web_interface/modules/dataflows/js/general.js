@@ -1,23 +1,11 @@
 //Code started by Michael Ortega for the LIG
 //November 14th, 2016
 
-/////////////////////////////////////////////////////////
-//Globals
-
-var global_op_panels    = [];
-var global_ops_cl       = [];
-var global_ops_inst     = [];
-var global_coms         = []
-var op_focus_id         = null;
-var panel_focus_id      = null;
-
-
 //main
 var main_div = document.getElementById('sakura_main_div');
-
-
 var cursorX;
 var cursorY;
+
 document.onmousemove = function(e){
     cursorX = e.pageX;
     cursorY = e.pageY;
@@ -139,4 +127,14 @@ function dataflows_download_start_transfert(id_in_out, in_out, gzip) {
         element.click();
         document.body.removeChild(element);
     });
+}
+
+function dataflows_revision(url, id) {
+    function cb() {
+        let op_id = dataflows_open_modal.split('modal_')[1];
+        $('#'+dataflows_open_modal).modal('hide');
+        reload_operator_instance(op_id);
+    }
+
+    operators_revision_panel_open(url, id, true, cb);
 }

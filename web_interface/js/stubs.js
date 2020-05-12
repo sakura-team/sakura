@@ -147,7 +147,7 @@ function buildListStub(idDiv, result, elt) {
                         let span = $('<span>', {'title': 'update revision',
                                                 'class': 'glyphicon glyphicon-pencil',
                                                 'style': 'cursor: pointer;',
-                                                'onclick':  'operators_revision_panel_open(\''+row.repo_url+'\',\''+row.code_subdir+'\',\''+row.id+'\');'
+                                                'onclick':  'operators_revision_panel_open(\''+row.repo_url+'\',\''+row.id+'\');'
                                               });
                         let table2 = $('<table>');
                         table2.append('<td>&nbsp;&nbsp;');

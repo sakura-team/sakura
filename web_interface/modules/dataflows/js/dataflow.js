@@ -3,7 +3,6 @@
 
 
 var global_dataflow_jsFlag = true;
-//var current_dataflow_id = null;
 
 //This function is apart because of the asynchronous aspect of ws.
 //Links can only be recovered after recovering all operator instances
@@ -49,9 +48,11 @@ function create_dataflow_links(df_links) {
 }
 
 function current_dataflow() {
+
     //Cleanings
     remove_all_links(false);
     remove_all_operators_instances(false);
+    remove_all_comments(false);
 
     //Emptying current accordion
     let acc_div = document.getElementById('op_left_accordion');
@@ -61,7 +62,7 @@ function current_dataflow() {
 
     //We first ask for the operator classes
     sakura.apis.hub.op_classes.list().then(function (result) {
-        global_ops_cl = JSON.parse(JSON.stringify(result));
+        current_op_classes_list = JSON.parse(JSON.stringify(result));
 
         //Then we ask for the instance ids
         sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {

@@ -17,6 +17,20 @@ var projects_all_objects_list = 'empty';
 var current_simpleMDE = null;
 
 var current_operator_revision = null;
-var current_operator_id       = null;
+var current_revised_op        = null;
 var revisions                 = null;
 var current_code_url          = null;
+
+/////////////////////////////////////////////////////////
+//Dataflow Globals
+var jsPlumbLoaded         = false;
+var global_op_panels      = [];
+var global_ops_inst       = [];
+var global_coms           = []
+var op_focus_id           = null;
+var panel_focus_id        = null;
+var dataflows_open_modal  = null;
+
+//links
+var global_links  = [];
+var link_focus_id = null;

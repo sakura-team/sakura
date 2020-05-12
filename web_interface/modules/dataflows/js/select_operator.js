@@ -29,8 +29,8 @@ function select_op_new_modal() {
             div.removeChild(div.firstChild);
         }
 
-        global_ops_cl = JSON.parse(JSON.stringify(result));
-        global_ops_cl.forEach( function (op) {
+        current_op_classes_list = JSON.parse(JSON.stringify(result));
+        current_op_classes_list.forEach( function (op) {
             op['tags'].forEach( function (tag) {
                 if (tags_list.indexOf(tag) == -1) {
                         tags_list.push(tag);
@@ -74,8 +74,8 @@ function select_op_reopen_modal(id) {
             div.removeChild(div.firstChild);
         }
 
-        global_ops_cl = JSON.parse(JSON.stringify(result));
-        global_ops_cl.forEach( function (op) {
+        current_op_classes_list = JSON.parse(JSON.stringify(result));
+        current_op_classes_list.forEach( function (op) {
             op['tags'].forEach( function (tag) {
                 if (tags_list.indexOf(tag) == -1) {
                         tags_list.push(tag);
@@ -173,7 +173,7 @@ function select_op_on_change() {
     //tags
     for (var o=0; o<ops_to.length; o++) {
         if (ops_to[o].selected) {
-            global_ops_cl.forEach( function (op) {
+            current_op_classes_list.forEach( function (op) {
                 if (op['tags'].indexOf(ops_to[o].text) >= 0 && select_op_selected.indexOf(op['id']) == -1) {
                     select_op_divs.push(select_op_new_operator(parseInt(op['id']), true));
                     select_op_selected.push(parseInt(op['id']));

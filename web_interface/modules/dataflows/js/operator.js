@@ -69,7 +69,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
 
         //Now the modal for parameters/creation/visu/...
-        create_op_modal(main_div, ndiv.id, parseInt(id), result.tabs);
+        create_op_modal(main_div, ndiv.id, result);
 
         global_ops_inst.push({  hub_id      : hub_id,
                                 cl          : class_from_id(parseInt(id)),
@@ -141,7 +141,7 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                                                     paintStyle:{fillStyle:"black", radius:6},
                                                     hoverPaintStyle:{ fillStyle:"black", radius:10}
                                                     });
-        create_op_modal(main_div, ndiv.id, parseInt(id), info.tabs);
+        create_op_modal(main_div, ndiv.id, info);
     }
 
     global_ops_inst.push({  hub_id      : info.op_id,
@@ -208,10 +208,23 @@ function check_operator(op) {
     }
 }
 
-function reload_operator_instance(id) {
-    tab = id.split("_");
-    hub_id = parseInt(tab[2]);
-    sakura.apis.hub.operators[hub_id].reload();
+function reload_operator_instance(id, hub_id) {
+    if (!hub_id) {
+        let tab = id.split("_");
+        hub_id = parseInt(tab[2]);
+    }
+    sakura.apis.hub.operators[hub_id].reload().then(function() {
+        sakura.apis.hub.operators[hub_id].info().then(function(info) {
+            console.log(info);
+            let cl_id = id.split("_")[1];
+            let cl = current_op_classes_list.find( function (e) {
+                return e.id === parseInt(cl_id);
+            });
+            main_success_alert( 'Operator Reloading',
+                                '<b>'+cl.name+'</b> operator reloaded',
+                                null, 3);
+        });
+    });
 }
 
 function remove_operator_instance(id, on_hub) {
@@ -295,19 +308,20 @@ function open_op_help(e) {
 
 
 function open_op_modal() {
-    let modal_id = this.id;
-    let modal_name = "modal_"+modal_id;
-    fill_all(modal_id);
-    if ($('#'+modal_name+"_dialog").attr('class').includes("full_width")) {
-        $('#'+modal_name+"_dialog").toggleClass("full_width");
-        $('#'+modal_name+"_body").css("height", "100%");
-        $('#'+modal_name+"_body").children().eq(1).css("height", "100%");
+    current_op_instance_id = this.id;
+    let modal_id = "modal_"+current_op_instance_id;
+    dataflows_open_modal = modal_id;
+    fill_all(current_op_instance_id);
+    if ($('#'+modal_id+"_dialog").attr('class').includes("full_width")) {
+        $('#'+modal_id+"_dialog").toggleClass("full_width");
+        $('#'+modal_id+"_body").css("height", "100%");
+        $('#'+modal_id+"_body").children().eq(1).css("height", "100%");
         current_nb_rows = max_rows;
     }
-    $('#'+modal_name).modal();
+    $('#'+modal_id).modal();
     // add on-close handler
-    $('#'+modal_name).on('hide.bs.modal', function () {
-        release_all(modal_id).then(function(){
+    $('#'+modal_id).on('hide.bs.modal', function () {
+        release_all(current_op_instance_id).then(function(){
 
             }).catch( function (error){
                 console.log('Error 6:', error)
@@ -316,11 +330,10 @@ function open_op_modal() {
 }
 
 function class_from_id(id) {
-    return global_ops_cl.find( function (e) {
+    return current_op_classes_list.find( function (e) {
         return e.id === id;
     });
 }
-
 
 function instance_from_id(id) {
     return global_ops_inst.find( function (e) {

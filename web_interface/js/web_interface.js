@@ -20,12 +20,14 @@ function not_yet(s) {
     }
 }
 
-function main_alert(header_str, body_str) {
+function main_alert(header_str, body_str, cb) {
     var h = $('#main_alert_header');
     var b = $('#main_alert_body');
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     $('#main_alert_modal').modal();
+    if (cb)
+        $('#main_alert_button').click(cb);
 }
 
 function main_success_alert(header_str, body_str, callback, time=0) {
@@ -570,10 +572,14 @@ function files_on_demand(dir, div_id, cb) {
     else if (dir.startsWith('Dataflows')) {
         if (div_id)
             $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js").done( function() {
-                l_html('dataflows', event, dir, cb);
+                function cb2() {
+                    l_html('dataflows', event, dir, cb);
+                };
+                l_html('operators', event, dir, cb2);
             });
-        else
+        else {
             l_html('dataflows', event, dir, cb);
+        }
     }
     else if (dir.startsWith('Operators')) {
         l_html('operators', event, dir, cb);
@@ -708,7 +714,6 @@ function showDiv(event, dir) {
                 showDiv(event, "Home");
             }
         }).catch( function(error) {
-            console.log(error);
             main_alert('Access Issue', error);
             showDiv(event, "Home");
         });

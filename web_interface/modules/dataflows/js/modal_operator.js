@@ -7,15 +7,17 @@ var current_nb_rows = max_rows;
 var current_instance_info = null;
 
 
-function create_op_modal(main_div, id, cl_id, tabs) {
+function create_op_modal(main_div, op_id, info) {
     // load in a temporary div element, then
     // append content obtained to main div.
-    var cl = class_from_id(cl_id);
-    var wrapper= document.createElement('div');
+    let cl = class_from_id(info.cls_id);
+    let wrapper= document.createElement('div');
+    let revision = info.code_ref+' @'+info.commit_hash;
     load_from_template(
                     wrapper,
                     "modal-operator.html",
-                    {'id': id, 'cl': cl, 'tabs': tabs, 'inst_id': parseInt(id.split("_")[2])},
+                    { 'id': op_id, 'cl': cl, 'inst': info, 'tabs': info.tabs,
+                      'inst_id': info.op_id, 'rev': revision},
                     function (r_text) {
                         let modal = wrapper.firstChild;
                         // update the svg icon
@@ -49,15 +51,16 @@ function full_width(elt) {
     $('#'+elt+"_dialog").toggleClass('full_width');
     if ($('#'+elt+"_dialog").attr('class').includes("full_width")) {
         var h = ($(window).height()-$('#'+elt+"_header").height()-80);
+        $('#'+elt+"_dialog").css('width', '100%');
         $('#'+elt+"_body").css("height", h+"px");
         $('#'+elt+"_body").children().eq(1).css("height", (h-60)+"px");
     }
     else {
+        $('#'+elt+"_dialog").css('width', '');
         $('#'+elt+"_body").css("height", "100%");
         $('#'+elt+"_body").children().eq(1).css("height", "100%");
     }
 }
-
 
 function fill_all(id) {
     $('#tab_button_inputs').attr('onclick', 'fill_in_out("input", \''+id+'\');');

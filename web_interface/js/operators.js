@@ -208,20 +208,50 @@ function operators_close_modal() {
 
 //---------OPERATOR REVISIONS
 
-function operators_revision_panel_open(code_url, sub_dir, op_id) {
+function operators_revision_panel_open(code_url, id, instance = false, end_cb) {
 
     //init
-    let orp   = $('#operators_revision_panel');
-    let title = $('#operators_revision_title');
+    let orp       = $('#operators_revision_panel');
+    let title     = $('#operators_revision_title');
+    let op_cl     = null;
+    let op_inst   = null;
+    let op_type   = 'class';
+    let rev_type  = null;
 
-    let op_cl = current_op_classes_list.find( function (e) {
-                        return e.id === parseInt(op_id);
-                    });
-    title.html('Changing Revision of '+ op_cl.name );
+    if (!instance) {
+        op_cl = current_op_classes_list.find( function (e) {
+                            return e.id === parseInt(id);
+                  });
+        title.html('Changing Revision of '+ op_cl.name +' class');
+        rev_type = {'reference_cls_id': parseInt(id)};
+        current_revised_op = {'id': id,
+                              'name': op_cl.name,
+                              'type': 'class',
+                              'data': op_cl};
+    }
+    else {
+        op_inst = global_ops_inst.find( function (e) {
+                           return e.hub_id === parseInt(id);
+                 });
+        title.html('Changing Revision of '+ op_inst.name +' instance' );
+        rev_type = {'reference_op_id': parseInt(id)};
+        current_revised_op = {'id': id,
+                              'name': op_inst.cl.name,
+                              'type': 'instance',
+                              'data': op_inst};
+    }
+
     orp.css({
           left: 20,
           top: web_interface_mouse.y + 20
         });
+
+    if (instance) {
+
+      orp.css('width', $(document).width()-40);
+      //orp.css('left', '');
+    }
+
     let body = $('#operators_revision_panel_body');
     body.empty();
     let span = $('<span>', {'class': "glyphicon \
@@ -233,7 +263,7 @@ function operators_revision_panel_open(code_url, sub_dir, op_id) {
 
     //fill
     sakura.apis.hub.misc.list_code_revisions(code_url,
-                                            {'reference_cls_id': parseInt(op_id)}
+                                            rev_type
                                             ).then( function (result) {
             current_code_url = code_url;
             let body = $('#operators_revision_panel_body');
@@ -263,14 +293,21 @@ function operators_revision_panel_open(code_url, sub_dir, op_id) {
                     select.append(opt);
                 }
             })
-
+            //
             body.append('<label>From</label><div>'+current_txt+'</div>');
             body.append('<label>To</label><br>', select);
             select.selectpicker('refresh');
 
+            let b = $('#operators_revision_panel_change_button');
+            b.attr('onclick', 'operators_change_revision('+end_cb+')');
+
             if (selected)
                 $('#operators_revision_panel_change_button').removeClass('disabled');
-            current_operator_id = op_id;
+    }).catch( function(err) {
+        function cb() {
+            $('#operators_revision_panel').hide();
+        }
+        main_alert('Revision of '+current_revised_op.name, err, cb);
     });
 }
 
@@ -288,17 +325,26 @@ function operators_revision_panel_select_onchange() {
         $('#operators_revision_panel_change_button').addClass('disabled');
 }
 
-function operators_change_revision() {
+function operators_change_revision(end_cb) {
     let opt       = $('#operators_revision_panel_select option:selected');
     let revision  = revisions[parseInt(opt[0].value)];
-    let remote = sakura.apis.hub.op_classes[current_operator_id];
-    remote.update_default_revision(revision[0], revision[1]).then(function(result) {
+    let remote = null;
+
+    if (current_revised_op.type != 'instance')
+        remote = sakura.apis.hub.op_classes[parseInt(current_revised_op.id)].update_default_revision;
+    else
+        remote = sakura.apis.hub.operators[parseInt(current_revised_op.id)].update_revision;
+
+
+    remote(revision[0], revision[1]).then(function(result) {
         $('#operators_revision_panel').hide();
-        showDiv(null, 'Operators');
+        if (!end_cb) {
+            showDiv(null, 'Operators');
+        }
+        else {
+          end_cb();
+        }
     }).catch( function(error) {
-        let op_cl = current_op_classes_list.find( function (e) {
-            return e.id === parseInt(current_operator_id);
-        });
-        main_alert('Revision of '+op_cl.name, error);
+        main_alert('Revision of '+current_revised_op.name, error);
     });
 }

@@ -104,6 +104,16 @@ function remove_comment(id) {
     save_dataflow();
 }
 
+function remove_all_comments(on_hub) {
+    if (!on_hub) {
+        global_coms.forEach( function(com) {
+            main_div.removeChild(comment_from_id(com.id).div);
+        });
+        global_coms = [];
+    } else
+        not_yet();
+}
+
 
 function index_from_comment_id(id) {
     return global_coms.findIndex( function (e) {

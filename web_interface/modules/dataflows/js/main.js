@@ -2,10 +2,6 @@
 //October 10th, 2016
 
 
-/////////////////////////////////////////////////////////
-//Init Functions
-var jsPlumbLoaded = false;
-
 function open_dataflow() {
     if (! jsPlumbLoaded)
       $.getScript("/webcache/cdnjs/jsPlumb/2.1.7/jsPlumb.min.js").done( function() {
@@ -18,8 +14,6 @@ function open_dataflow() {
 }
 
 function jsPlumb_init() {
-
-    //console.log(jsPlumb);
     ///////////////DEFAULTS
     jsPlumb.importDefaults({
         PaintStyle : { lineWidth : 4, strokeStyle : "#333333" },
