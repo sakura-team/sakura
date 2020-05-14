@@ -153,8 +153,8 @@ class DaemonEngine(object):
             return metadata
     def prefetch_code(self, repo_url, code_ref, commit_hash):
         get_worktree(self.code_workdir, repo_url, code_ref, commit_hash)
-    def list_code_revisions(self, repo_url):
-        return list_code_revisions(repo_url)
+    def list_code_revisions(self, repo_url, repo_subdir = None):
+        return list_code_revisions(self.code_workdir, repo_url, repo_subdir = repo_subdir)
     def list_operator_subdirs(self, repo_url, code_ref):
         return list_operator_subdirs(self.code_workdir, repo_url, code_ref)
     def set_col_tags(self, col_tags_info):

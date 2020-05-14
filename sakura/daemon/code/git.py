@@ -7,20 +7,21 @@ GIT_LS_REMOTE_TIMEOUT   =  5.0      # seconds
 
 def fetch_updates(code_dir, code_ref):
     if code_ref.startswith('branch:'):
-        remote_ref = code_ref[7:]
+        cmd = 'git fetch origin ' + code_ref[7:]
     elif code_ref.startswith('tag:'):
-        remote_ref = 'refs/tags/' + code_ref[4:]
+        cmd = 'git fetch origin refs/tags/' + code_ref[4:]
+    elif code_ref == 'all':
+        cmd = 'git fetch origin --tags'     # means "fetch all, including tags"
     try:
-        run_cmd('git fetch origin %(remote_ref)s' % dict(
-                remote_ref = remote_ref), cwd=code_dir)
+        run_cmd(cmd, cwd=code_dir)
     except:
         raise APIRequestError('Fetching code failed. Verify given branch or tag.')
 
-def get_worktree(code_workdir, repo_url, code_ref, commit_hash):
-    code_workdir = Path(code_workdir)
-    code_workdir.mkdir(parents=True, exist_ok=True)
-    code_workdir = code_workdir.resolve()
-    repo_url_path = repo_url.replace('//', '/').replace(':', '')
+def get_repo_url_path(repo_url):
+    return repo_url.replace('//', '/').replace(':', '')
+
+def get_repodir(code_workdir, repo_url):
+    repo_url_path = get_repo_url_path(repo_url)
     code_repodir = code_workdir / 'repos' / repo_url_path
     # clone if needed
     if not code_repodir.exists():
@@ -32,7 +33,19 @@ def get_worktree(code_workdir, repo_url, code_ref, commit_hash):
                 timeout = GIT_CLONE_TIMEOUT)
         except:
             raise APIRequestError('Cloning repository failed. Verify given URL.')
+    return code_repodir
+
+def dir_to_path(directory):
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory.resolve()
+
+def get_worktree(code_workdir, repo_url, code_ref, commit_hash):
+    code_workdir = dir_to_path(code_workdir)
+    # get repo dir
+    code_repodir = get_repodir(code_workdir, repo_url)
     # get worktree if needed
+    repo_url_path = get_repo_url_path(repo_url)
     worktree_dir = code_workdir / 'worktrees' / repo_url_path / commit_hash
     if not worktree_dir.exists():
         # ensure our local clone knows this commit
@@ -64,9 +77,54 @@ def get_commit_metadata(worktree_dir, commit_hash=None):
         commit_subject = commit_subject
     )
 
-def list_code_revisions(repo_url, ref_type = None):
+# we work on the repo directory, with 'git show-ref' to get the list
+# of revisions, and 'git log <ref> -- <subdir>' to chek for any modifications
+# about <subdir> in each <ref>.
+def list_code_revisions_including_subdir(code_workdir, repo_url, ref_type, repo_subdir):
+    code_workdir = dir_to_path(code_workdir)
+    # get repo dir
+    code_repodir = get_repodir(code_workdir, repo_url)
+    # fetch
+    fetch_updates(code_repodir, 'all')
+    # get refs and check each one for existence of the subdir
+    result = []
+    for line in run_cmd("git show-ref", cwd=code_repodir).splitlines():
+        sha1, ref = line.split()
+        if not ref.startswith('refs/remotes') and not ref.startswith('refs/tags'):
+            continue
+        if ref.startswith('refs/remotes'):
+            # branch
+            if ref_type == 'tag':
+                continue    # caller says we should only list tags, not branches
+            sakura_ref = 'branch:' + ref.split('/')[-1]
+            rev_tags = ('HEAD',)
+        elif ref.startswith('refs/tags'):
+            # tag
+            if ref_type == 'branch':
+                continue    # caller says we should only list branches, not tags
+            sakura_ref = 'tag:' + ref.split('/')[-1]
+            rev_tags = ()
+        else:
+            # not branch not tag
+            continue
+        commits = run_cmd('git log --pretty=oneline %(sha1)s -- %(subdir)s' % dict(
+            sha1 = sha1,
+            subdir = repo_subdir
+        ), cwd=code_repodir)
+        if len(commits) == 0:
+            # no commits found modifying this subdir, it does not exist in this branch / tag
+            continue
+        # ok, append to result
+        result.append((sakura_ref, sha1, rev_tags))
+    return tuple(result)
+
+def list_code_revisions(code_workdir, repo_url, ref_type = None, repo_subdir = None):
+    if repo_subdir is not None:
+        # this is more expensive, call this specific procedure
+        return list_code_revisions_including_subdir(code_workdir, repo_url, ref_type, repo_subdir)
     if ref_type is None:
-        return list_code_revisions(repo_url, 'tag') + list_code_revisions(repo_url, 'branch')
+        return list_code_revisions(code_workdir, repo_url, ref_type = 'tag') + \
+               list_code_revisions(code_workdir, repo_url, ref_type = 'branch')
     if ref_type == 'tag':
         opt = '--tags'
         rev_tags = ()

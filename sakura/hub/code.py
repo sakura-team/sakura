@@ -16,18 +16,22 @@ def list_code_revisions(repo_url, reference_cls_id = None, reference_op_id = Non
     context = get_context()
     current_revision, current_code_ref, current_commit_hash = None, None, None
     recommended_revision, recommended_commit_hash = None, None
+    code_subdir = None
     if reference_cls_id is not None:
-        current_revision = context.op_classes[reference_cls_id].default_revision
+        op_cls = context.op_classes[reference_cls_id]
+        current_revision = op_cls.default_revision
         current_code_ref, current_commit_hash = current_revision
+        code_subdir = op_cls.code_subdir
     if reference_op_id is not None:
         op = context.op_instances[reference_op_id]
         current_revision = op.revision
         if op.revision != op.op_class.default_revision:
             recommended_revision = op.op_class.default_revision
             recommended_commit_hash = recommended_revision[1]
+        code_subdir = op.op_class.code_subdir
     # ask daemon
     tags_per_revision = {}
-    for code_ref, commit_hash, tags in daemon.api.list_code_revisions(repo_url):
+    for code_ref, commit_hash, tags in daemon.api.list_code_revisions(repo_url, code_subdir):
         revision = code_ref, commit_hash
         # check if we can match the top of our current branch,
         # and, if yes, then tag it 'newer'.
