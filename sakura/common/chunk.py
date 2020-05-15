@@ -1,19 +1,5 @@
 import numpy as np
-from itertools import count
-
-# iterate over "names" ensuring they are all different.
-# if 2 names match, add suffix "(2)", then "(3)", etc.
-def iter_uniq(names):
-    seen = set()
-    for name in names:
-        if name in seen:
-            for i in count(start=2):
-                alt_name = '%s(%d)' % (name, i)
-                if alt_name not in seen:
-                    name = alt_name
-                    break
-        seen.add(name)
-        yield name
+from sakura.common.tools import iter_uniq
 
 def np_select_columns(array, col_indexes):
     # caution: we may have strange requests here, such
@@ -31,6 +17,26 @@ def np_select_columns(array, col_indexes):
                           offsets=offsets,
                           itemsize=itemsize))
     return array.view(newdt)
+
+def np_paste_recarrays(a1, a2):
+    """allows to 'join' two structured arrays, i.e. paste columns
+       of a2 on the right of existing columns in a1"""
+    joint_itemsize = a1.itemsize + a2.itemsize
+    n = len(a1)
+    # compute resulting array by viewing it as a 2D array of bytes
+    # idea from https://stackoverflow.com/a/5355974
+    joint = np.empty((n, joint_itemsize), dtype=np.uint8)
+    joint[:,0:a1.itemsize] = a1.view(np.uint8).reshape(n,a1.itemsize)
+    joint[:,a1.itemsize:joint_itemsize] = a2.view(np.uint8).reshape(n,a2.itemsize)
+    # compute dtype in a robust way
+    a1_names, a2_names = tuple(a1.dtype.names), tuple(a2.dtype.names)
+    a1_formats, a1_offsets = zip(*(a1.dtype.fields[name][0:2] for name in a1_names))
+    a2_formats, a2_offsets = zip(*(a2.dtype.fields[name][0:2] for name in a2_names))
+    newdt = np.dtype(dict(  names = tuple(iter_uniq(a1_names + a2_names)),
+                          formats = a1_formats + a2_formats,
+                          offsets = a1_offsets + tuple((off + a1.itemsize) for off in a2_offsets),
+                         itemsize = joint_itemsize))
+    return joint.ravel().view(newdt)
 
 # properties are computed when they are accessed;
 # as a result we do not have to deal with
@@ -101,4 +107,12 @@ class NumpyChunk(np.ma.MaskedArray):
         # on masked arrays.
         new_data = np_select_columns(self.data, col_indexes).view(np.ma.MaskedArray)
         new_data.mask = np_select_columns(self.mask, col_indexes)
+        return new_data.view(NumpyChunk)
+    def __paste_right__(self, right):
+        # add columns of 'right' on the right of existing columns in self
+        # ('self' and 'right' must have the same number of items)
+        # again, we work around the fact np_paste_recarrays() does not work
+        # directly on masked arrays.
+        new_data = np_paste_recarrays(self.data, right.data).view(np.ma.MaskedArray)
+        new_data.mask = np_paste_recarrays(self.mask, right.mask)
         return new_data.view(NumpyChunk)

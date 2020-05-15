@@ -14,6 +14,8 @@ class ComputedSourceMixin:
     def work_from_filtered_dataset(self, array, chunk_size, offset):
         if len(array) == 0:
             return
+        if chunk_size is None:
+            chunk_size = DEFAULT_CHUNK_SIZE
         # handle sorts
         array = np.sort(array, order=list(col._label for col in self.sort_columns))
         # handle offset
@@ -45,12 +47,12 @@ class ItemsComputedSource(SourceBase, ComputedSourceMixin):
                             yield record
             it = filter_rows(it)
         # handle sorts
-        dtype = self.get_dtype()
         if len(self.sort_columns) > 0:
             # unfortunately, we have no knowledge about the generated rows
             # so we have to compute the whole dataset before sorting it
             all_rows_list = list(it)
-            array = np.empty(len(all_rows_list), dtype)
+            native_dtype = self.get_native_dtype()
+            array = np.empty(len(all_rows_list), native_dtype)
             if len(all_rows_list) > 0:
                 for i, row in enumerate(all_rows_list):
                     array[i] = row
@@ -69,6 +71,7 @@ class ItemsComputedSource(SourceBase, ComputedSourceMixin):
                     yield tuple(record[i] for i in col_indexes)
             it = select_cols(it)
         # handle chunk size
+        dtype = self.get_dtype()
         while True:
             # we may have "object" columns (e.g. storing strings of unknown length),
             # and np.fromiter() does not work in this case.
@@ -99,18 +102,18 @@ class ChunksComputedSource(SourceBase, ComputedSourceMixin):
                         yield chunk
             it = filter_rows(it)
         # handle sorts
-        dtype = self.get_dtype()
         if len(self.sort_columns) > 0:
             # unfortunately, we have no knowledge about the generated rows
             # so we have to compute the whole dataset before sorting it
             all_chunks = list(it)
             whole_len = sum(len(chunk) for chunk in all_chunks)
-            array = np.empty(whole_len, dtype)
-            if whole_len > 0:
-                off = 0
-                for chunk in all_chunks:
-                    array[off:off+len(chunk)] = chunk
-                    off += len(chunk)
+            if whole_len == 0:
+                return
+            array = np.empty(whole_len, all_chunks[0].dtype)
+            off = 0
+            for chunk in all_chunks:
+                array[off:off+len(chunk)] = chunk
+                off += len(chunk)
             # then work with this dataset
             yield from self.work_from_filtered_dataset(array, chunk_size, offset)
             return

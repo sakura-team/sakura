@@ -5,6 +5,21 @@ import ctypes
 from gevent.subprocess import run, PIPE, STDOUT
 import numpy as np
 from sakura.common.errors import IOReadException, IOWriteException
+from itertools import count
+
+# iterate over "names" ensuring they are all different.
+# if 2 names match, add suffix "(2)", then "(3)", etc.
+def iter_uniq(names):
+    seen = set()
+    for name in names:
+        if name in seen:
+            for i in count(start=2):
+                alt_name = '%s(%d)' % (name, i)
+                if alt_name not in seen:
+                    name = alt_name
+                    break
+        seen.add(name)
+        yield name
 
 class StdoutProxy(object):
     def __init__(self, stdout):

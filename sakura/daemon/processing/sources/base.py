@@ -1,9 +1,11 @@
 import numpy as np
+from sakura.common.tools import iter_uniq
 from sakura.common.io import pack, ORIGIN_ID
 from sakura.common.cache import Cache
 from sakura.common.chunk import NumpyChunk
 from sakura.common.errors import APIRequestError
 from sakura.daemon.processing.column import Column, GeoColumn, BoundColumn
+from sakura.daemon.processing.sources.types import SourceTypes
 from sakura.daemon.csvtools import stream_csv
 from time import time
 from itertools import count
@@ -137,6 +139,8 @@ class SourceBase:
         self.all_columns.append(col)
         self.columns.append(col)
         return col
+    def __contains__(self, col):
+        return col in self.all_columns
     def pack(self):
         return pack(dict(label = self.label,
                     columns = self.columns,
@@ -175,8 +179,14 @@ class SourceBase:
             return chunk
         # if we are here, stream has ended, return empty chunk
         return NumpyChunk.empty(self.get_dtype())
-    def get_dtype(self):
-        return np.dtype(list(bcol.get_dtype() for bcol in self.columns))
+    def get_dtype(self, columns = None):
+        if columns is None:
+            columns = self.columns
+        labels, np_types = zip(*(bcol.get_dtype() for bcol in columns))
+        labels = tuple(iter_uniq(labels))
+        return np.dtype(list(zip(labels, np_types)))
+    def get_native_dtype(self):
+        return self.get_dtype(self.all_columns)
     # deprecated (use select() instead)
     def select_columns(self, *col_indexes):
         # verify that at least 1 column is specified
@@ -220,10 +230,20 @@ class SourceBase:
         return self.data.copy()
     def select(self, *columns):
         return self.reinstanciate(columns = columns)
-    def where(self, col_filter):
-        return col_filter.filtered_sources(self)[0]
+    def where(self, col_filters):
+        source = self
+        for col_filter in col_filters.list():
+            source = col_filter.filtered_sources(source)[0]
+        return source
     def __iter__(self):
         for chunk in self.chunks():
             yield from chunk
     def sort(self, *columns):
         return self.reinstanciate(sort_columns = columns)
+    def join(self, other):
+        join_source = SourceTypes.JoinSource()
+        join_source.add_sub_source(self)
+        join_source.add_sub_source(other)
+        return join_source
+    def select_all(self):
+        return self.select(*self.all_columns)

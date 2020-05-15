@@ -1,44 +1,16 @@
 import numpy as np, operator, uuid
-from sakura.common.errors import APIRequestError
 from sakura.common.ops import LOWER, LOWER_OR_EQUAL, GREATER, GREATER_OR_EQUAL, IN, EQUALS, NOT_EQUALS
 from sakura.common.types import sakura_type_to_np_dtype, np_dtype_to_sakura_type, verify_sakura_type_conversion
 from sakura.daemon.processing.geo import GeoBoundingBox
-
-class AndColumnFilters:
-    def __init__(self, *filters):
-        self.filters = filters
-    def __and__(self, other):
-        filters = list(self.filters) + [other]
-        return AndColumnFilters(*filters)
-    def filtered_sources(self, *sources):
-        for f in self.filters:
-            sources = f.filtered_sources(*sources)
-        return sources
-
-class SingleColumnFilter:
-    def __init__(self, column, op, value):
-        self.column = column
-        self.op = op
-        self.value = value
-    def __and__(self, other):
-        return AndColumnFilters(self, other)
-    def filtered_sources(self, *sources):
-        new_sources = []
-        could_apply = False
-        for source in sources:
-            if self.column in source.columns:
-                source = source.filtered(self.column, self.op, self.value)
-                could_apply = True
-            new_sources.append(source)
-        if could_apply:
-            return tuple(new_sources)
-        else:
-            raise APIRequestError('Column filter does not apply to specified sources.')
+from sakura.daemon.processing.condition import SingleColumnFilter, JoinCondition
 
 class ColumnData:
     pass
 
-class ColumnBase:
+class ColumnObject:
+    pass
+
+class ColumnBase(ColumnObject):
     def __init__(self, col_label, col_type, col_tags, **col_type_params):
         self._label = col_label
         self._tags = col_tags
@@ -77,7 +49,10 @@ class Column(ColumnBase):
     def __ge__(self, val):
         return SingleColumnFilter(self, GREATER_OR_EQUAL, val)
     def __eq__(self, val):
-        return SingleColumnFilter(self, EQUALS, val)
+        if isinstance(val, ColumnObject):
+            return JoinCondition(self, EQUALS, val)
+        else:
+            return SingleColumnFilter(self, EQUALS, val)
     def __ne__(self, val):
         return SingleColumnFilter(self, NOT_EQUALS, val)
 
@@ -108,7 +83,7 @@ class GeoColumn(ColumnBase):
         self.Y = GeoSubColumn(self, 'Y', 'float64', ('latitude',))
         self.register_subcolumn(self.Y)
 
-class BoundColumn:
+class BoundColumn(ColumnObject):
     def __init__(self, col, source):
         # col may be a Column or a BoundColumn (if it was bound to another source)
         if isinstance(col, BoundColumn):
