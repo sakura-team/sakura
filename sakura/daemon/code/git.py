@@ -10,6 +10,8 @@ def fetch_updates(code_dir, code_ref):
         cmd = 'git fetch origin ' + code_ref[7:]
     elif code_ref.startswith('tag:'):
         cmd = 'git fetch origin refs/tags/' + code_ref[4:]
+    elif code_ref.startswith('commit:'):
+        cmd = 'git fetch origin ' + code_ref[7:]
     elif code_ref == 'all':
         cmd = 'git fetch origin --tags'     # means "fetch all, including tags"
     try:
@@ -49,7 +51,7 @@ def get_worktree(code_workdir, repo_url, code_ref, commit_hash):
     worktree_dir = code_workdir / 'worktrees' / repo_url_path / commit_hash
     if not worktree_dir.exists():
         # ensure our local clone knows this commit
-        fetch_updates(code_repodir, code_ref)
+        fetch_updates(code_repodir, 'commit:' + commit_hash)
         # create the worktree dir
         worktree_dir.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -61,6 +63,7 @@ def get_worktree(code_workdir, repo_url, code_ref, commit_hash):
     return worktree_dir
 
 def get_commit_metadata(worktree_dir, commit_hash=None):
+    worktree_dir = dir_to_path(worktree_dir)
     cmd = "git log -1 --format='%H%n%at%n%ct%n%ae%n%s'"
     if commit_hash != None:
         cmd += ' ' + commit_hash
@@ -78,7 +81,7 @@ def get_commit_metadata(worktree_dir, commit_hash=None):
     )
 
 # we work on the repo directory, with 'git show-ref' to get the list
-# of revisions, and 'git log <ref> -- <subdir>' to chek for any modifications
+# of revisions, and 'git log <ref> -- <subdir>' to check for any modifications
 # about <subdir> in each <ref>.
 def list_code_revisions_including_subdir(code_workdir, repo_url, ref_type, repo_subdir):
     code_workdir = dir_to_path(code_workdir)
@@ -125,6 +128,7 @@ def list_code_revisions(code_workdir, repo_url, ref_type = None, repo_subdir = N
     if ref_type is None:
         return list_code_revisions(code_workdir, repo_url, ref_type = 'tag') + \
                list_code_revisions(code_workdir, repo_url, ref_type = 'branch')
+    code_workdir = dir_to_path(code_workdir)
     if ref_type == 'tag':
         opt = '--tags'
         rev_tags = ()
