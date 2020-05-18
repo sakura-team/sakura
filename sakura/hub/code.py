@@ -8,6 +8,9 @@ def get_one_connected_daemon():
         raise APIRequestError('Unable to proceed because no daemon is connected.')
     return daemon
 
+def revision_as_tuple(rev):
+    return rev['code_ref'], rev['commit_hash']
+
 def list_code_revisions(repo_url, reference_cls_id = None, reference_op_id = None):
     if reference_cls_id is not None and reference_op_id is not None:
         raise APIRequestError('Cannot consider 2 references when listing code revisions!')
@@ -19,14 +22,15 @@ def list_code_revisions(repo_url, reference_cls_id = None, reference_op_id = Non
     code_subdir = None
     if reference_cls_id is not None:
         op_cls = context.op_classes[reference_cls_id]
-        current_revision = op_cls.default_revision
+        current_revision = revision_as_tuple(op_cls.default_revision)
         current_code_ref, current_commit_hash = current_revision
         code_subdir = op_cls.code_subdir
     if reference_op_id is not None:
         op = context.op_instances[reference_op_id]
-        current_revision = op.revision
-        if op.revision != op.op_class.default_revision:
-            recommended_revision = op.op_class.default_revision
+        current_revision = revision_as_tuple(op.revision)
+        cls_default_revision = revision_as_tuple(op.op_class.default_revision)
+        if current_revision != cls_default_revision:
+            recommended_revision = cls_default_revision
             recommended_commit_hash = recommended_revision[1]
         code_subdir = op.op_class.code_subdir
     # ask daemon

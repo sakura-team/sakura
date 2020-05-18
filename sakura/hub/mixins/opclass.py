@@ -49,7 +49,7 @@ class OpClassMixin(BaseMixin):
     @property
     def default_revision(self):
         self.check_revision_handling()
-        return self.repo['default_code_ref'], self.repo['default_commit_hash']
+        return dict(code_ref = self.repo['default_code_ref'], commit_hash = self.repo['default_commit_hash'])
 
     def get_sandbox_attrs(self):
         info = OpClassMixin.SANDBOX_INFO[self.repo['sandbox_uuid']]
@@ -168,7 +168,7 @@ class OpClassMixin(BaseMixin):
             if len(revisions) == 1:
                 revision = revisions.pop()
             else:
-                revision = self.default_revision
+                revision = (self.repo['default_code_ref'], self.repo['default_commit_hash'])
             code_ref, commit_hash = revision
             kwargs.update(revision = {
                     'code_ref': code_ref,
