@@ -28,9 +28,6 @@ function buildListStub(idDiv, result, elt) {
         }
 
         new_row_head.append('<th>Name</th>');
-        // if (elt.indexOf('Operator') != -1) {
-        //     new_row_head.append('<th>Revision</th>');
-        // }
 
         lcg.forEach( function (lelt) {
             if (document.getElementById("cbColSelect"+lelt).checked)
@@ -150,18 +147,20 @@ function buildListStub(idDiv, result, elt) {
                         //Revision cell for operators
                         else if (lelt == 'Revision') {
                             var new_td = $('<td>');
+                            let cr = row.default_code_ref;
+                            let t = cr.split(':');
+                            if (t[0] == 'branch')
+                                cr = t[1];
+                            let txt = '<b>'+cr +
+                                      '</b>@' +
+                                      row.default_commit_hash.substring(0,7);
+
                             if (curr_login !== null  && row.owner == curr_login.login) {
                                 let select = $('<select>', {'class': 'selectpicker',
                                                 'data-live-search': 'true',
                                                 'data-width': '100%'
                                                 });
-                                let cr = row.default_code_ref;
-                                let t = cr.split(':');
-                                if (t[0] == 'branch')
-                                    cr = t[1];
-                                let txt = '<b>'+cr +
-                                          '</b>@' +
-                                          row.default_commit_hash.substring(0,7);
+
                                 let opt = $('<option>', { 'value': 0,
                                                           'html': txt,
                                                           'selected': true});
@@ -175,7 +174,7 @@ function buildListStub(idDiv, result, elt) {
                                 select.selectpicker('refresh');
                             }
                             else {
-                                new_td.append(row.default_code_ref);
+                                new_td.append(txt);
                             }
                             new_row.append(new_td);
                         }
