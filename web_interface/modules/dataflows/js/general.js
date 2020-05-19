@@ -128,13 +128,3 @@ function dataflows_download_start_transfert(id_in_out, in_out, gzip) {
         document.body.removeChild(element);
     });
 }
-
-function dataflows_revision(url, id) {
-    function cb() {
-        let op_id = dataflows_open_modal.split('modal_')[1];
-        $('#'+dataflows_open_modal).modal('hide');
-        reload_operator_instance(op_id);
-    }
-
-    operators_revision_panel_open(url, id, true, cb);
-}

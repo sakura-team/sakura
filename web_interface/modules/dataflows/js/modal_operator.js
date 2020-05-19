@@ -12,21 +12,55 @@ function create_op_modal(main_div, op_id, info) {
     // append content obtained to main div.
     let cl = class_from_id(info.cls_id);
     let wrapper= document.createElement('div');
-    let revision = info.code_ref+' @'+info.commit_hash;
+    let revision = info.code_ref+' @'+info.commit_hash.substring(0,7);
     load_from_template(
                     wrapper,
                     "modal-operator.html",
                     { 'id': op_id, 'cl': cl, 'inst': info, 'tabs': info.tabs,
-                      'inst_id': info.op_id, 'rev': revision},
+                      'inst_id': info.op_id},
                     function (r_text) {
                         let modal = wrapper.firstChild;
-                        // update the svg icon
                         $(modal).find("#tdsvg").html(cl.svg);
-                        // append to main div
                         main_div.appendChild(modal);
+                        let select  = $('#modal_'+op_id+'_select_revision');
+                        let cr      = info.code_ref;
+                        let t       = cr.split(':');
+                        if (t[0] == 'branch')
+                            cr = t[1];
+                        let txt = '<b>'+cr +
+                                  '</b>@' +
+                                  info.commit_hash.substring(0,7);
+
+                        let opt = $('<option>', { 'value': 0,
+                                                  'html': txt,
+                                                  'selected': true});
+                        select.append(opt);
+                        select.on('shown.bs.select', function(e) {
+                                      function cb() {
+                                          let op_id = dataflows_open_modal.split('modal_')[1];
+                                          $('#'+dataflows_open_modal).modal('hide');
+                                          reload_operator_instance(op_id);
+                                      }
+
+                                      $(e.target).selectpicker('toggle');
+                                      operators_revision_panel_select_open($(e.target), info, true, cb);
+                                      e.preventDefault();
+                                  });
+                        select.selectpicker('refresh');
                     }
     );
 }
+
+
+let cr = row.default_code_ref;
+let t = cr.split(':');
+if (t[0] == 'branch')
+    cr = t[1];
+let txt = '<b>'+cr +
+          '</b>@' +
+          row.default_commit_hash.substring(0,7);
+
+
 
 function set_tab_urls(id, url_formatter) {
     let op_hub_id = parseInt(id.split("_")[2]);

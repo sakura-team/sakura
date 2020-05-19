@@ -46,13 +46,10 @@
                           <td>
                             <label style="vertical-align: middle; margin: 0px;">Revision&nbsp;&nbsp;&nbsp;</label>
                           <td style="vertical-align: middle;">
-                            <button class="btn" onclick = 'dataflows_revision("{{cl.repo_url}}", "{{inst.op_id}}");'>
-                              {{rev}}&nbsp;&nbsp;
-                              <span title   = 'update revision'
-                                    class   = 'glyphicon glyphicon-pencil'
-                                    style   = 'cursor: pointer;'>
-                              </span>
-                            </button>
+                            <select id="modal_{{id}}_select_revision"
+                                    class = "selectpicker"
+                                    data-width = "100%">
+                            </select>
                         </table>
                       </div>
                       <hr style="margin-top: 5px; margin-bottom: 5px">

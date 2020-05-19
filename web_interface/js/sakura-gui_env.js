@@ -18,7 +18,7 @@ var current_simpleMDE = null;
 
 var current_operator_revision = null;
 var current_revised_op        = null;
-var revisions                 = null;
+var current_revisions         = null;
 var current_code_url          = null;
 
 /////////////////////////////////////////////////////////

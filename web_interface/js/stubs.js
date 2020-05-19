@@ -16,8 +16,8 @@ function buildListStub(idDiv, result, elt) {
         var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
         var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
 
-        var list_cols_gui_op  = ['Tags', 'Id', 'ShortDesc', 'Owner', 'CodeURL', 'SubDir'];
-        var list_cols_hub_op  = ['tags', 'id', 'shortDesc', 'owner', 'repo_url', 'code_subdir'];
+        var list_cols_gui_op  = ['CodeURL', 'Revision', 'ShortDesc', 'Tags', 'Id',  'SubDir', 'Owner'];
+        var list_cols_hub_op  = ['repo_url', 'revision', 'shortDesc', 'tags', 'id',  'code_subdir', 'owner'];
 
         var lcg = list_cols_gui;
         var lch = list_cols_hub;
@@ -28,9 +28,9 @@ function buildListStub(idDiv, result, elt) {
         }
 
         new_row_head.append('<th>Name</th>');
-        if (elt.indexOf('Operator') != -1) {
-            new_row_head.append('<th>Revision</th>');
-        }
+        // if (elt.indexOf('Operator') != -1) {
+        //     new_row_head.append('<th>Revision</th>');
+        // }
 
         lcg.forEach( function (lelt) {
             if (document.getElementById("cbColSelect"+lelt).checked)
@@ -48,6 +48,7 @@ function buildListStub(idDiv, result, elt) {
 
         //Body of the list
         result.forEach( function (row, index) {
+
             var new_row = $(tbody[0].insertRow());
             var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
 
@@ -133,33 +134,7 @@ function buildListStub(idDiv, result, elt) {
             new_td.append(n_table);
             new_row.append(new_td);
 
-            //Revision cell for operators
-            if (tmp_elt.indexOf('Operators') != -1) {
-                var new_td = $('<td>');
-                var table = $('<table width=100%>');
-                var tr = $('<tr>');
-                var td1 = $('<td>');
-                td1.append(row.default_code_ref);
-                tr.append(td1);
-                if (curr_login !== null) {
-                    if (row.owner == curr_login.login) {
-                        let td2 = $('<td align="right">');
-                        let span = $('<span>', {'title': 'update revision',
-                                                'class': 'glyphicon glyphicon-pencil',
-                                                'style': 'cursor: pointer;',
-                                                'onclick':  'operators_revision_panel_open(\''+row.repo_url+'\',\''+row.id+'\');'
-                                              });
-                        let table2 = $('<table>');
-                        table2.append('<td>&nbsp;&nbsp;');
-                        table2.append(span);
-                        td2.append(table2);
-                        tr.append(td2);
-                    }
-                }
-                table.append(tr);
-                new_td.append(table);
-                new_row.append(new_td);
-            }
+            //console.log('here');
             lcg.forEach( function (lelt, index) {
                 if (document.getElementById("cbColSelect"+lelt).checked) {
                     if (lelt == 'Date' && row[lch[index]] instanceof Date) {
@@ -171,6 +146,38 @@ function buildListStub(idDiv, result, elt) {
                         if (lch[index] == 'repo_url' && row[lch[index]]) {
                             let a = '<a href="'+row[lch[index]]+'">'+row[lch[index]]+'<a>'
                             new_row.append('<td>'+a+'</td>');
+                        }
+                        //Revision cell for operators
+                        else if (lelt == 'Revision') {
+                            var new_td = $('<td>');
+                            if (curr_login !== null  && row.owner == curr_login.login) {
+                                let select = $('<select>', {'class': 'selectpicker',
+                                                'data-live-search': 'true',
+                                                'data-width': '100%'
+                                                });
+                                let cr = row.default_code_ref;
+                                let t = cr.split(':');
+                                if (t[0] == 'branch')
+                                    cr = t[1];
+                                let txt = '<b>'+cr +
+                                          '</b>@' +
+                                          row.default_commit_hash.substring(0,7);
+                                let opt = $('<option>', { 'value': 0,
+                                                          'html': txt,
+                                                          'selected': true});
+                                select.append(opt);
+                                new_td.append(select);
+                                select.on('shown.bs.select', function(e) {
+                                              $(e.target).selectpicker('toggle');
+                                              operators_revision_panel_select_open($(e.target), row, false, null);
+                                              e.preventDefault();
+                                          });
+                                select.selectpicker('refresh');
+                            }
+                            else {
+                                new_td.append(row.default_code_ref);
+                            }
+                            new_row.append(new_td);
                         }
                         else
                             new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');

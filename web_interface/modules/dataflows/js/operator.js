@@ -215,14 +215,14 @@ function reload_operator_instance(id, hub_id) {
     }
     sakura.apis.hub.operators[hub_id].reload().then(function() {
         sakura.apis.hub.operators[hub_id].info().then(function(info) {
-            console.log(info);
             let cl_id = id.split("_")[1];
             let cl = current_op_classes_list.find( function (e) {
                 return e.id === parseInt(cl_id);
             });
             main_success_alert( 'Operator Reloading',
                                 '<b>'+cl.name+'</b> operator reloaded',
-                                null, 3);
+                                null, 2);
+            current_dataflow();
         });
     });
 }

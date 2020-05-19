@@ -208,11 +208,9 @@ function operators_close_modal() {
 
 //---------OPERATOR REVISIONS
 
-function operators_revision_panel_open(code_url, id, instance = false, end_cb) {
+function operators_revision_panel_open(code_url, elt, instance = false, pos, end_cb) {
 
-    //init
-    let orp       = $('#operators_revision_panel');
-    let title     = $('#operators_revision_title');
+    let orp       = $('#operators_revision_panel2');
     let op_cl     = null;
     let op_inst   = null;
     let op_type   = 'class';
@@ -220,89 +218,66 @@ function operators_revision_panel_open(code_url, id, instance = false, end_cb) {
 
     if (!instance) {
         op_cl = current_op_classes_list.find( function (e) {
-                            return e.id === parseInt(id);
+                            return e.id === parseInt(elt.id);
                   });
-        title.html('Changing Revision of '+ op_cl.name +' class');
-        rev_type = {'reference_cls_id': parseInt(id)};
-        current_revised_op = {'id': id,
+        rev_type = {'reference_cls_id': parseInt(elt.id)};
+        current_revised_op = {'id': elt.id,
                               'name': op_cl.name,
                               'type': 'class',
                               'data': op_cl};
     }
     else {
         op_inst = global_ops_inst.find( function (e) {
-                           return e.hub_id === parseInt(id);
+                           return e.hub_id === parseInt(elt.op_id);
                  });
-        title.html('Changing Revision of '+ op_inst.name +' instance' );
-        rev_type = {'reference_op_id': parseInt(id)};
-        current_revised_op = {'id': id,
+        rev_type = {'reference_op_id': parseInt(elt.op_id)};
+        current_revised_op = {'id': elt.op_id,
                               'name': op_inst.cl.name,
                               'type': 'instance',
                               'data': op_inst};
     }
 
-    orp.css({
-          left: 20,
-          top: web_interface_mouse.y + 20
-        });
+    orp.css({ left: pos.left + 10, top: pos.top +10});
 
-    if (instance) {
+    orp.empty();
+    let select = $('<select>', {'class': 'selectpicker',
+                                'id': 'operators_revision_panel_select',
+                                'data-live-search': 'true',
+                                'data-width': '100%'
+                                });
+    select.change( function (event) {
+        operators_change_revision(end_cb);
+    });
 
-      orp.css('width', $(document).width()-40);
-      //orp.css('left', '');
-    }
+    select.on('hidden.bs.select', function(e) {
+        $('#operators_revision_panel2').hide();
+    });
 
-    let body = $('#operators_revision_panel_body');
-    body.empty();
     let span = $('<span>', {'class': "glyphicon \
                                       glyphicon-refresh \
                                       glyphicon-refresh-animate"});
-    body.append(span);
-    $('#operators_revision_panel_change_button').addClass('disabled');
+    orp.append(select.append($('<option>').append(span)));
+    select.selectpicker('refresh');
     orp.show();
 
     //fill
-    sakura.apis.hub.misc.list_code_revisions(code_url,
-                                            rev_type
-                                            ).then( function (result) {
+    let remote = sakura.apis.hub.misc;
+    remote.list_code_revisions(code_url, rev_type).then( function (result) {
             current_code_url = code_url;
-            let body = $('#operators_revision_panel_body');
-            body.empty();
-            let select = $('<select>', {'class': 'selectpicker',
-                                        'id': 'operators_revision_panel_select',
-                                        'onchange': 'operators_revision_panel_select_onchange();',
-                                        'data-live-search': 'true',
-                                        'data-width': '100%'
-                                        });
-            let current_txt = '';
-            let selected = false;
-            revisions = result;
+            current_revisions = result;
+            select.empty();
             result.forEach( function(revision, index) {
-                let txt = revision[0]+' @'+revision[1]+' '+revision[2];
+                let txt = '<b>'+revision[0]+'</b> &nbsp;&nbsp;@'+revision[1].substring(0,7)+' &nbsp;&nbsp;<i>'+revision[2]+'<i>';
                 let opt = $('<option>', { 'value': index,
-                                          'text': txt});
+                                          'html': txt});
                 if (revision[2].indexOf('current') != -1) {
-                    current_txt = revision[0]+' @'+revision[1];
                     current_operator_revision = revision;
+                    opt.prop('selected', true);
                 }
-                else {
-                    if (selected == false) {
-                        opt.prop('selected', true);
-                        selected = true;
-                    }
-                    select.append(opt);
-                }
-            })
-            //
-            body.append('<label>From</label><div>'+current_txt+'</div>');
-            body.append('<label>To</label><br>', select);
+                select.append(opt);
+            });
             select.selectpicker('refresh');
-
-            let b = $('#operators_revision_panel_change_button');
-            b.attr('onclick', 'operators_change_revision('+end_cb+')');
-
-            if (selected)
-                $('#operators_revision_panel_change_button').removeClass('disabled');
+            select.selectpicker('toggle');
     }).catch( function(err) {
         function cb() {
             $('#operators_revision_panel').hide();
@@ -311,39 +286,27 @@ function operators_revision_panel_open(code_url, id, instance = false, end_cb) {
     });
 }
 
-function operators_revision_panel_close() {
-    $('#operators_revision_panel').hide();
-}
-
-function operators_revision_panel_select_onchange() {
-    let opt       = $('#operators_revision_panel_select option:selected');
-    let revision  = revisions[parseInt(opt[0].value)];
-
-    if (revision[1] != current_operator_revision[1])
-        $('#operators_revision_panel_change_button').removeClass('disabled');
-    else
-        $('#operators_revision_panel_change_button').addClass('disabled');
+function operators_revision_panel_select_open(select, elt, is_instance, cb) {
+    let pos = { top: select.offset().top - select.position().top,
+                left: select.offset().left - select.position().left};
+    operators_revision_panel_open(elt.repo_url, elt, is_instance, pos, cb);
 }
 
 function operators_change_revision(end_cb) {
     let opt       = $('#operators_revision_panel_select option:selected');
-    let revision  = revisions[parseInt(opt[0].value)];
+    let revision  = current_revisions[parseInt(opt[0].value)];
+    let id        = parseInt(current_revised_op.id);
+
     let remote = null;
-
     if (current_revised_op.type != 'instance')
-        remote = sakura.apis.hub.op_classes[parseInt(current_revised_op.id)].update_default_revision;
+        remote = sakura.apis.hub.op_classes[id].update_default_revision;
     else
-        remote = sakura.apis.hub.operators[parseInt(current_revised_op.id)].update_revision;
-
+        remote = sakura.apis.hub.operators[id].update_revision;
 
     remote(revision[0], revision[1]).then(function(result) {
         $('#operators_revision_panel').hide();
-        if (!end_cb) {
-            showDiv(null, 'Operators');
-        }
-        else {
-          end_cb();
-        }
+        if (!end_cb)  showDiv(null, 'Operators');
+        else          end_cb();
     }).catch( function(error) {
         main_alert('Revision of '+current_revised_op.name, error);
     });
