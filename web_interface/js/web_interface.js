@@ -599,6 +599,14 @@ function update_navbar(obj) {
         $(ids[k]).removeClass('active');
     });
     $('#idNavBar'+obj).addClass('active');
+    if (obj == 'Home') {
+        $('#home_icon').addClass('glyphicon glyphicon-home');
+        $('#home_icon').html('');
+    }
+    else {
+        $('#home_icon').removeClass('glyphicon glyphicon-home');
+        $('#home_icon').html("<img src='media/favicon_home.png' width='17px'/>")
+    }
 }
 
 function update_main_div(dir, obj, id) {

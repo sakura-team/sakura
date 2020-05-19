@@ -89,19 +89,19 @@ form.form-search:before {
 .small_head_table {
     margin: 5px;
     display: block;
-    height: 20px;
+    height: 0px;
     animation-name: head_table_anim_back;
     animation-duration: .5s;
 }
 
 @keyframes head_table_anim_go {
-    from  { height: 20px;  }
+    from  { height: 0px;  }
     to    { height: 100px;   }
 }
 
 @keyframes head_table_anim_back {
     from  { height: 100px;  }
-    to    { height: 20px;   }
+    to    { height: 0px;   }
 }
 
 .logos_and_titles{
@@ -126,20 +126,20 @@ form.form-search:before {
 
 .small_logo_cell{
     vertical-align: top;
-    width: 20px;
-    height: 20px;
+    width: 0px;
+    height: 0px;
     animation-name: logo_cell_anim_back;
     animation-duration: .5s;
 }
 
 @keyframes logo_cell_anim_go {
-    from  {   width: 20px;  height: 20px; }
+    from  {   width: 0px;  height: 0px; }
     to    {   width: 100px; height: 100px; }
 }
 
 @keyframes logo_cell_anim_back {
     from  {   width: 100px; height: 100px;  }
-    to    {   width: 20px;  height: 20px;  }
+    to    {   width: 0px;  height: 0px;  }
 }
 
 .basic_logo {
@@ -155,20 +155,20 @@ form.form-search:before {
 }
 
 .small_logo {
-    width: 20px;
-    height: 20px;
+    width: 0px;
+    height: 0px;
     animation-name: logo_anim_back;
     animation-duration: .5s;
 }
 
 @keyframes logo_anim_go {
-    from  {  width: 20px;  height: 20px;   }
+    from  {  width: 0px;  height: 0px;   }
     to    {  width: 100px; height: 100px;  }
 }
 
 @keyframes logo_anim_back {
         from  {  width: 100px;  height: 100px;  }
-        to    {  width: 20px;   height: 20px;   }
+        to    {  width: 0px;   height: 0px;   }
 }
 
 .basic_title_cell {
