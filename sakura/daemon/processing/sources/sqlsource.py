@@ -95,25 +95,30 @@ class SQLDatabaseSource(SourceBase):
         selected_db_cols = tuple(col.data.db_col for col in self.columns)
         db_row_filters = tuple((col.data.db_col, comp_op, other) for col, comp_op, other in self.row_filters)
         db_row_filters = self.merge_in_bbox_row_filters(db_row_filters)
+        db_join_conds = tuple((left_col.data.db_col, right_col.data.db_col) for left_col, right_col in self.join_conds)
         select_clause = 'SELECT ' + ', '.join(db_col.to_sql_select_clause() for db_col in selected_db_cols)
         tables = set(db_col.table.name for db_col in selected_db_cols)
         tables |= set(f[0].table.name for f in db_row_filters)
         from_clause = 'FROM "' + '", "'.join(tables) + '"'
         where_clause, sort_clause, offset_clause, filter_vals = '', '', '', ()
-        if len(db_row_filters) > 0:
-            filter_texts, filter_vals = (), ()
-            for db_row_filter in db_row_filters:
-                filter_info = self.db_row_filter_to_sql(db_row_filter)
-                filter_texts += filter_info[0]
-                filter_vals += filter_info[1]
-            where_clause = 'WHERE ' + ' AND '.join(filter_texts)
+        cond_texts, cond_vals = (), ()
+        for db_row_filter in db_row_filters:
+            cond_info = self.db_row_filter_to_sql(db_row_filter)
+            cond_texts += cond_info[0]
+            cond_vals += cond_info[1]
+        cond_texts += tuple(self.db_join_cond_to_sql(db_join_cond) for db_join_cond in db_join_conds)
+        if len(cond_texts) > 0:
+            where_clause = 'WHERE ' + ' AND '.join(cond_texts)
         if len(self.sort_columns) > 0:
             sort_db_cols = tuple(col.data.db_col for col in self.sort_columns)
             sort_clause = "ORDER BY " + ', '.join(db_col.to_sql_sort_clause() for db_col in sort_db_cols)
         if offset > 0:
             offset_clause = "OFFSET " + str(offset)
         sql_text = ' '.join((select_clause, from_clause, where_clause, sort_clause, offset_clause))
-        return (sql_text, filter_vals)
+        return (sql_text, cond_vals)
+    def db_join_cond_to_sql(self, db_join_cond):
+        db_left_col, db_right_col = db_join_cond
+        return db_left_col.to_sql_where_clause() + ' = ' + db_right_col.to_sql_where_clause()
     def db_row_filter_to_sql(self, db_row_filter):
         db_column, comp_op, value = db_row_filter
         col_name = db_column.to_sql_where_clause()
@@ -131,11 +136,12 @@ class SQLDatabaseSource(SourceBase):
             assert op_sql != None, ("Don't know how to write %s as an SQL operator." % str(comp_op))
             sql = col_name + ' ' + op_sql + ' ' + db_column.value_wrapper
         return (sql,), (value,)
+    def get_native_join_id(self):
+        return ('SQLDatabaseSource', self.data.db.unique_id())
 
-
-class SQLTableSource(SQLDatabaseSource):
-    def __init__(self, label, db_table = None):
+class SQLTableSource:
+    def __new__(cls, label, db_table = None):
         if db_table is not None:
-            SQLDatabaseSource.__init__(self, label, db_table.db, db_table.columns)
+            return SQLDatabaseSource(label, db_table.db, db_table.columns)
         else:
-            SQLDatabaseSource.__init__(self, label)
+            return SQLDatabaseSource(label)

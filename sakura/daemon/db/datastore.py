@@ -46,6 +46,8 @@ class DataStore:
         self.adapter = adapters.get(adapter_label)
         self.access_scope = access_scope
         self.conn_pools = {}
+    def unique_id(self):
+        return ('Datastore', self.host, self.driver_label)
     def admin_connect(self, db_name = None):
         pool = self.conn_pools.get(db_name)
         if pool is None:

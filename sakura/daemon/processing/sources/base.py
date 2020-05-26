@@ -99,6 +99,8 @@ class SourceCustomData:
         for k, v in self.__dict__.items():
             setattr(c, k, v)
         return c
+    def items(self):
+        yield from self.__dict__.items()
 
 class SourceBase:
     num_instances = 0
@@ -112,6 +114,8 @@ class SourceBase:
         self.sort_columns = ()
         # row filters
         self.row_filters = ()
+        # join conditions
+        self.join_conds = ()
         # other attributes
         self.label = label
         self.length = None
@@ -205,31 +209,24 @@ class SourceBase:
         yield from stream_csv(
                     header_labels, stream, gzip_compression)
     def filtered(self, col, comp_op, other):
-        new_row_filters = self.row_filters + ((col, comp_op, other),)
-        return self.reinstanciate(row_filters=new_row_filters)
-    def reinstanciate(self, columns = None, row_filters = None, sort_columns = None):
+        source = self.reinstanciate()
+        source.row_filters = self.row_filters + ((col, comp_op, other),)
+        return source
+    def reinstanciate(self):
         source = self.__class__(self.label)
-        # self.all_columns always remains the same
         source.all_columns.rebind(self.all_columns)
-        # selected columns may change
-        if columns is None:
-            columns = self.columns  # if unchanged
-        source.columns.rebind(columns)
-        # sort columns may change
-        if sort_columns is None:
-            sort_columns = self.sort_columns  # if unchanged
-        source.sort_columns = sort_columns
-        # row_filters may change
-        if row_filters is None:
-            row_filters = self.row_filters  # if unchanged
-        source.row_filters = tuple(row_filters)
-        # transmit custom data
+        source.columns.rebind(self.columns)
+        source.sort_columns = self.sort_columns
+        source.row_filters = tuple(self.row_filters)
+        source.join_conds = tuple(self.join_conds)
         source.data = self.copy_data()
         return source
     def copy_data(self):
         return self.data.copy()
     def select(self, *columns):
-        return self.reinstanciate(columns = columns)
+        source = self.reinstanciate()
+        source.columns.rebind(columns)
+        return source
     def where(self, col_filters):
         source = self
         for col_filter in col_filters.list():
@@ -239,7 +236,9 @@ class SourceBase:
         for chunk in self.chunks():
             yield from chunk
     def sort(self, *columns):
-        return self.reinstanciate(sort_columns = columns)
+        source = self.reinstanciate()
+        source.sort_columns = columns
+        return source
     def join(self, other):
         join_source = SourceTypes.JoinSource()
         join_source.add_sub_source(self)
@@ -247,3 +246,31 @@ class SourceBase:
         return join_source
     def select_all(self):
         return self.select(*self.all_columns)
+    def get_native_join_id(self):
+        return None     # override in subclass if needed
+    def _native_join(self, other, left_col, right_col):
+        source = self.reinstanciate()
+        # add other.all_columns
+        for col in other.all_columns:
+            if col not in source.all_columns:
+                source.all_columns.append(col)
+        # add other.columns
+        # (except that after this join we want at most one
+        # of left_col or right_col)
+        for col in other.columns:
+            if col not in source.columns:
+                # test if this is right col and left col is already included
+                if col.get_uuid() == right_col.get_uuid() and \
+                        left_col in source.columns:
+                    continue    # exclude right col in this case
+                source.columns.append(col)
+        # ignore any sort occuring before the join
+        source.sort_columns = ()
+        # add other.row_filters
+        source.row_filters += tuple(other.row_filters)
+        # add other.join_conds
+        source.join_conds += tuple(other.join_conds)
+        # add the new join condition relevant for this call
+        source.join_conds += ((left_col, right_col),)
+        # consider source.data and other.data is the same thing
+        return source

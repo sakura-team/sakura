@@ -52,6 +52,8 @@ class Database:
         self.grants = {}
         self._tables = None
         self.metadata = metadata
+    def unique_id(self):
+        return ('Database', self.db_name, self.dbms.unique_id())
     def register_grant(self, db_user, grant):
         register_grant(self.grants, db_user, grant)
     @property

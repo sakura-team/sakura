@@ -1,12 +1,16 @@
 from sakura.daemon.processing.sources.base import SourceBase
 from sakura.daemon.processing.condition import JoinCondition
+from sakura.daemon.processing.join.native import native_join
 from sakura.daemon.processing.join.merge import merge_join
+from collections import defaultdict
+
+# try native join first, merge join as a fallback
+JOIN_METHODS = (native_join, merge_join)
 
 class JoinSource(SourceBase):
     def __init__(self, label = '<join>'):
         SourceBase.__init__(self, label)
         self.data.sub_sources = ()
-        self.data.join_conds = ()
     def add_sub_source(self, source):
         self.data.sub_sources += (source,)
         for col in source.all_columns:
@@ -22,7 +26,7 @@ class JoinSource(SourceBase):
                 self.which_subsource(sub_sources, cond.left_col)
                 self.which_subsource(sub_sources, cond.right_col)
                 # ok
-                source.data.join_conds += (cond,)
+                source.join_conds += (cond,)
                 # do not select both columns in output, since they are joined
                 if cond.left_col in self.columns and cond.right_col in self.columns:
                     cols = (col for col in self.columns \
@@ -43,18 +47,31 @@ class JoinSource(SourceBase):
         raise APIRequestError('Column does not belong to this source.')
     def solve(self):
         sub_sources = self.data.sub_sources
-        source = None
-        for join_cond in self.data.join_conds:
+        join_conds = self.join_conds
+        for join_method in JOIN_METHODS:
+            sub_sources, join_conds = self.solve_joins(sub_sources, join_conds, join_method)
+        if len(sub_sources) > 1:
+            raise APIRequestError('Missing one .where(<col1> == <col2>) join condition on this joint source.')
+        source = sub_sources[0]
+        return source.select(*self.columns)
+    def solve_joins(self, sub_sources, join_conds, join_method):
+        remaining_join_conds = ()
+        for join_cond in join_conds:
             # retrieve left and right source of join
             left_col, right_col = join_cond.left_col, join_cond.right_col
             left_s = self.which_subsource(sub_sources, left_col)
             right_s = self.which_subsource(sub_sources, right_col)
-            # compute a merge join
-            source = merge_join(left_s, right_s, left_col, right_col)
-            # replace sources left_s and right_s with the new source
-            sub_sources = tuple(s for s in sub_sources if s not in (left_s, right_s))
-            sub_sources += (source,)
-        return source.select(*self.columns)
+            # if algorithm allows it, compute joint source
+            source = join_method(left_s, right_s, left_col, right_col)
+            if source is None:
+                # this algorithm cannot join these sources
+                remaining_join_conds += (join_cond,)
+            else:
+                # ok, algorithm did it
+                # replace sources left_s and right_s with the new source
+                sub_sources = tuple(s for s in sub_sources if s not in (left_s, right_s))
+                sub_sources += (source,)
+        return sub_sources, remaining_join_conds
     def sort(self, *columns):
         source = self.solve()
         return source.sort(*columns)
