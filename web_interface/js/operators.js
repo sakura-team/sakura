@@ -278,6 +278,15 @@ function operators_revision_panel_open(code_url, elt, instance = false, pos, end
             });
             select.selectpicker('refresh');
             select.selectpicker('toggle');
+
+            let panW    = $('#operators_revision_panel').outerWidth();
+            let scrW    = $(window).width();
+            let leftW   = parseInt(orp.css('left').split('px')[0]);
+            let rightW  = scrW - leftW - panW;
+
+            if (rightW < 0)
+                orp.css({left: Math.max(0, leftW + rightW - 20)});
+
     }).catch( function(err) {
         function cb() {
             $('#operators_revision_panel').hide();

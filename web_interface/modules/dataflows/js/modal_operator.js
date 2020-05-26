@@ -51,17 +51,6 @@ function create_op_modal(main_div, op_id, info) {
     );
 }
 
-
-let cr = row.default_code_ref;
-let t = cr.split(':');
-if (t[0] == 'branch')
-    cr = t[1];
-let txt = '<b>'+cr +
-          '</b>@' +
-          row.default_commit_hash.substring(0,7);
-
-
-
 function set_tab_urls(id, url_formatter) {
     let op_hub_id = parseInt(id.split("_")[2]);
     return new Promise(function(resolve, reject) {

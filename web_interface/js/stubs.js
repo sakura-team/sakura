@@ -16,8 +16,8 @@ function buildListStub(idDiv, result, elt) {
         var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
         var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
 
-        var list_cols_gui_op  = ['CodeURL', 'Revision', 'ShortDesc', 'Tags', 'Id',  'SubDir', 'Owner'];
-        var list_cols_hub_op  = ['repo_url', 'revision', 'shortDesc', 'tags', 'id',  'code_subdir', 'owner'];
+        var list_cols_gui_op  = ['ShortDesc', 'Tags', 'CodeURL', 'Revision', 'Owner', 'Id',  'SubDir' ];
+        var list_cols_hub_op  = ['shortDesc', 'tags', 'repo_url', 'revision', 'owner',  'id',  'code_subdir'];
 
         var lcg = list_cols_gui;
         var lch = list_cols_hub;
