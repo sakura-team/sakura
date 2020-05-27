@@ -217,9 +217,12 @@ class ColumnSelectionParameter(ComboParameter):
             if self.condition(*column_info):
                 yield (col_path,) + column_info + (str(column_info),)
     def get_possible_items(self):
+        if not self.plug.connected():
+            return
+        source_label = self.plug.source.get_label()
         for col_path, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             value = col_info_str
-            label = '%s (of %s)' % (col_label, self.plug.label)
+            label = '%s (of %s)' % (col_label, source_label)
             yield value, label
     @property
     def col_index(self):
