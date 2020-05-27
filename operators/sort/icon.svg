@@ -1,1 +1,7 @@
-<svg width="38" height="38"><circle cx="19" cy="19" r="17" stroke="black" stroke-width="2" fill="purple" /></svg>
+<svg width="38" height="38">
+<circle cx="19" cy="19" r="17" fill="#eec2ee" stroke="#000" stroke-width="2"/>
+<path d="m6.7337 25.987 22.721-2.7356-0.08964 7.1071z" fill="#d40000" opacity=".99824" stroke="#000" stroke-width="1.0772"/>
+<rect x="23.248" y="8.7764" width="5.6953" height="11.764" fill="#9298ed" opacity=".99824" stroke="#000" stroke-width="1.0772"/>
+<rect x="15.195" y="13.351" width="5.602" height="7.1892" fill="#9298ed" opacity=".99824" stroke="#000" stroke-width="1.0772"/>
+<rect x="7.3292" y="17.086" width="5.3219" height="3.3612" fill="#9298ed" opacity=".99824" stroke="#000" stroke-width="1.0772"/>
+</svg>
