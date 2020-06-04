@@ -13,6 +13,8 @@ class InputPlug(PlugBase):
         self.source_plug.on_change.subscribe(self.notify_source_change)
         self.on_change.notify()
     def disconnect(self):
+        if not self.connected():
+            return  # nothing to do
         try:
             self.source_plug.on_change.unsubscribe(self.notify_source_change)
         except APIRequestErrorOfflineDaemon:
