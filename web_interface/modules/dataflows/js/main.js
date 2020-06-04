@@ -16,7 +16,7 @@ function open_dataflow() {
 function jsPlumb_init() {
     ///////////////DEFAULTS
     jsPlumb.importDefaults({
-        PaintStyle : { lineWidth : 4, strokeStyle : "#333333" },
+        PaintStyle : { lineWidth : 3, strokeStyle : "#333333" },
         MaxConnections : 100,
         Endpoint : ["Dot", {radius:6, zindex:20}],
         EndpointStyle : { fillStyle:"black" },
@@ -45,12 +45,13 @@ function jsPlumb_init() {
 
     //A connection is established
     jsPlumb.bind("connection", function(params) {
+        console.log(params);
         //link creation on hub and other
         if (global_dataflow_jsFlag)
-            create_link( params.connection.id,
-                                parseInt(params.sourceId.split("_")[2]),
-                                parseInt(params.targetId.split("_")[2]),
-                                params.connection );
+            create_link(  params.connection.id,
+                          parseInt(params.sourceId.split("_")[2]),
+                          parseInt(params.targetId.split("_")[2]),
+                          params.connection );
     });
 
     //When the target of a link changes

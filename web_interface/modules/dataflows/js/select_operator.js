@@ -241,8 +241,10 @@ function select_op_new_operator(id, removable) {
         table.append(tr.append([td1, td2.append(td_span)]));
     }
     else {
-      var td = $('<td>', {align: "center"});
-      var svg_div = $('<div>', {draggable:"true", ondragstart:"dragging_svg(event,\'"+ndiv.id+"\')"});
+      var td = $('<td>');
+      var svg_div = $('<div>', {height: "38px",
+                                draggable:"true",
+                                ondragstart:"dragging_svg(event,\'"+ndiv.id+"\')"});
       svg_div.html(svg);
       table.append(tr.append(td.append(svg_div)));
     }
@@ -253,8 +255,8 @@ function select_op_new_operator(id, removable) {
         fname = cl.name.substring(0,7)+'.';
     }
     var tr2 = $('<tr>');
-    var td3 = $('<td>', {align: "center"});
-    td3.html('<font size="1">'+fname+'</font>');
+    var td3 = $('<td>', {align: "center", height: '14px'});
+    td3.html('<p style="line-height:13px; margin-bottom: 0px;"><font size="1">'+fname+'</font></p>');
     table.append(tr2.append(td3));
 
     $(ndiv).append(div1.append(table));
