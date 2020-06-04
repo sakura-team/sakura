@@ -95,6 +95,7 @@ class APIEndpoint:
             except StopIteration:
                 out = (IO_RESP_STOP_ITERATION,)
             except BaseException as e:
+                print_debug(traceback.format_exc())
                 data = getattr(e, 'data', {})
                 out = (IO_RESP_REQUEST_ERROR, e.__class__.__name__, str(e), data)
             # send response
