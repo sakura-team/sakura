@@ -1,6 +1,10 @@
 import numpy as np
 from sakura.common.tools import iter_uniq
 
+def np_compact_dtype(dt):
+    # recompute offsets to make dtype more compact
+    return np.dtype([(name, info[0]) for name, info in dt.fields.items()])
+
 def np_select_columns(array, col_indexes):
     # caution: we may have strange requests here, such
     # as building a stream with twice the same column
@@ -8,35 +12,60 @@ def np_select_columns(array, col_indexes):
     # parameters)
     dt = array.dtype
     itemsize = dt.itemsize
-    names = tuple(dt.names[i] for i in col_indexes)
-    formats = [dt.fields[name][0] for name in names]
-    offsets = [dt.fields[name][1] for name in names]
-    names = tuple(iter_uniq(names))
+    orig_names = tuple(dt.names[i] for i in col_indexes)
+    formats = [dt.fields[name][0] for name in orig_names]
+    offsets = [dt.fields[name][1] for name in orig_names]
+    names = tuple(iter_uniq(orig_names))
     newdt = np.dtype(dict(names=names,
                           formats=formats,
                           offsets=offsets,
                           itemsize=itemsize))
-    return array.view(newdt)
+    # numpy disallows viewing a recarray with a different dtype
+    # if it contains object columns.
+    try:
+        return array.view(newdt)
+    except TypeError:
+        pass    # continue below
+    # as a fallback, return a new array instead of a view.
+    newdt = np_compact_dtype(newdt)
+    new_array = np.empty(len(array), dtype=newdt)
+    for orig_name, name in zip(orig_names, names):
+        new_array[name] = array[orig_name]
+    return new_array
 
 def np_paste_recarrays(a1, a2):
     """allows to 'join' two structured arrays, i.e. paste columns
        of a2 on the right of existing columns in a1"""
-    joint_itemsize = a1.itemsize + a2.itemsize
-    n = len(a1)
-    # compute resulting array by viewing it as a 2D array of bytes
-    # idea from https://stackoverflow.com/a/5355974
-    joint = np.empty((n, joint_itemsize), dtype=np.uint8)
-    joint[:,0:a1.itemsize] = a1.view(np.uint8).reshape(n,a1.itemsize)
-    joint[:,a1.itemsize:joint_itemsize] = a2.view(np.uint8).reshape(n,a2.itemsize)
     # compute dtype in a robust way
+    n = len(a1)
+    joint_itemsize = a1.itemsize + a2.itemsize
     a1_names, a2_names = tuple(a1.dtype.names), tuple(a2.dtype.names)
+    names = tuple(iter_uniq(a1_names + a2_names))
     a1_formats, a1_offsets = zip(*(a1.dtype.fields[name][0:2] for name in a1_names))
     a2_formats, a2_offsets = zip(*(a2.dtype.fields[name][0:2] for name in a2_names))
-    newdt = np.dtype(dict(  names = tuple(iter_uniq(a1_names + a2_names)),
+    newdt = np.dtype(dict(  names = names,
                           formats = a1_formats + a2_formats,
                           offsets = a1_offsets + tuple((off + a1.itemsize) for off in a2_offsets),
                          itemsize = joint_itemsize))
-    return joint.ravel().view(newdt)
+    # numpy disallows viewing a recarray with a different dtype
+    # if it contains object columns.
+    if not a1.dtype.hasobject and not a2.dtype.hasobject:
+        # no objects, we can go fast
+        # compute resulting array by viewing it as a 2D array of bytes
+        # idea from https://stackoverflow.com/a/5355974
+        joint = np.empty((n, joint_itemsize), dtype=np.uint8)
+        joint[:,0:a1.itemsize] = a1.view(np.uint8).reshape(n,a1.itemsize)
+        joint[:,a1.itemsize:joint_itemsize] = a2.view(np.uint8).reshape(n,a2.itemsize)
+        return joint.ravel().view(newdt)
+    else:
+        # just copy columns
+        newdt = np_compact_dtype(newdt)
+        orig_names = a1_names + a2_names
+        orig_arrays = [ a1 ] * len(a1_names) + [ a2 ] * len(a2_names)
+        new_array = np.empty(n, dtype=newdt)
+        for orig_name, orig_array, name in zip(orig_names, orig_arrays, names):
+            new_array[name] = orig_array[orig_name]
+        return new_array
 
 # properties are computed when they are accessed;
 # as a result we do not have to deal with
