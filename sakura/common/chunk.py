@@ -145,3 +145,23 @@ class NumpyChunk(np.ma.MaskedArray):
         new_data = np_paste_recarrays(self.data, right.data).view(np.ma.MaskedArray)
         new_data.mask = np_paste_recarrays(self.mask, right.mask)
         return new_data.view(NumpyChunk)
+
+def reassemble_chunk_stream(it, dt, chunk_size):
+    if chunk_size is None:
+        return it   # nothing to do
+    def reassembled(it):
+        buf_chunk = np.empty(chunk_size, dt)
+        buf_level = 0
+        for chunk in it:
+            while chunk.size > 0:
+                chunk_part = chunk[:chunk_size-buf_level]
+                buf_chunk[buf_level:buf_level+chunk_part.size] = chunk_part
+                buf_level += chunk_part.size
+                if buf_level == chunk_size:
+                    yield buf_chunk.view(NumpyChunk)
+                    buf_level = 0
+                chunk = chunk[chunk_part.size:]
+        if buf_level > 0:
+            buf_chunk = buf_chunk[:buf_level]
+            yield buf_chunk.view(NumpyChunk)
+    return reassembled(it)

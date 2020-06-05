@@ -2,7 +2,7 @@ import numpy as np
 from enum import Enum
 from itertools import islice
 from sakura.daemon.processing.sources.base import SourceBase
-from sakura.common.chunk import NumpyChunk
+from sakura.common.chunk import NumpyChunk, reassemble_chunk_stream
 
 DEFAULT_CHUNK_SIZE = 10000
 
@@ -161,25 +161,7 @@ class ChunksComputedSource(SourceBase, ComputedSourceMixin):
                     yield chunk.view(NumpyChunk).__select_columns_indexes__(col_indexes)
             it = select_cols(it)
         # handle chunk_size
-        requested_chunk_size = chunk_size
-        if requested_chunk_size is not None:
-            # ensure we output chunks of the expected size
-            def reassembled(it):
-                buf_chunk = np.empty(requested_chunk_size, self.get_dtype())
-                buf_level = 0
-                for chunk in it:
-                    while chunk.size > 0:
-                        chunk_part = chunk[:requested_chunk_size-buf_level]
-                        buf_chunk[buf_level:buf_level+chunk_part.size] = chunk_part
-                        buf_level += chunk_part.size
-                        if buf_level == requested_chunk_size:
-                            yield buf_chunk.view(NumpyChunk)
-                            buf_level = 0
-                        chunk = chunk[chunk_part.size:]
-                if buf_level > 0:
-                    buf_chunk = buf_chunk[:buf_level]
-                    yield buf_chunk.view(NumpyChunk)
-            it = reassembled(it)
+        it = reassemble_chunk_stream(it, self.get_dtype(), chunk_size)
         # output NumpyChunk elements
         for chunk in it:
             yield chunk.view(NumpyChunk)
