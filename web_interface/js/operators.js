@@ -181,7 +181,6 @@ function operators_creation_new() {
     access = 'private';
     var revision  = opt.branch
 
-
     sakura.apis.hub.op_classes.register({
                 "repo_type": "git",
                 "repo_url": url,
@@ -190,11 +189,11 @@ function operators_creation_new() {
                 "repo_subdir": sub_dir,
                 "access_scope": access}).then(function (result){
         main_success_alert('Operator Registration', 'Registered !', function () {
+            showDiv(null, 'Operators', null);
             operators_close_modal();
         }, 2);
         $("#operators_submit_button").html('Succefully Registered !');
         //byID('operators_submit_button').disabled = False;
-        showDiv(null, 'Operators', null);
     }).catch( function(error_msg) {
         $("#operators_submit_button").html('Register');
         byID('operators_submit_button').disabled = false;

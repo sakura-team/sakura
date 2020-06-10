@@ -228,30 +228,36 @@ function reload_operator_instance(id, hub_id) {
 }
 
 function remove_operator_instance(id, on_hub) {
+    if (id) {
+        tab = id.split("_");
+        hub_id = parseInt(tab[2]);
 
-    tab = id.split("_");
-    hub_id = parseInt(tab[2]);
+        //First we remove the connections
+        remove_connection(hub_id, on_hub);
 
-    //First we remove the connections
-    remove_connection(hub_id, on_hub);
+        //remove from jsPlumb
+        jsPlumb.remove(id);
+        jsPlumb.repaintEverything();
 
-    //remove from jsPlumb
-    jsPlumb.remove(id);
-    jsPlumb.repaintEverything();
+        //remove modal
+        var mod = document.getElementById("modal_"+id);
+        if (mod) {
+            mod.outerHTML = "";
+            delete mod;
+        }
+        op_focus_id = null;
 
-    //remove modal
-    var mod = document.getElementById("modal_"+id);
-    if (mod) {
-        mod.outerHTML = "";
-        delete mod;
-    }
-    op_focus_id = null;
+        //Remove from the list of instances
+        global_ops_inst.splice(instance_index_from_id(hub_id), 1);
 
-    //Remove from the list of instances
-    global_ops_inst.splice(instance_index_from_id(hub_id), 1);
-
-    if (on_hub) {
-        sakura.apis.hub.operators[hub_id].delete();
+        if (id && on_hub) {
+            //console.log(hub_id);
+            sakura.apis.hub.operators[hub_id].delete().then( function (result) {
+                //console.log('REMOVE OP: ', result);
+            }).catch( function(error) {
+                console.log('ERROR REMOVING OP ', error);
+            });
+        }
     }
 }
 

@@ -45,7 +45,6 @@ function jsPlumb_init() {
 
     //A connection is established
     jsPlumb.bind("connection", function(params) {
-        console.log(params);
         //link creation on hub and other
         if (global_dataflow_jsFlag)
             create_link(  params.connection.id,

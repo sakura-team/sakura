@@ -25,13 +25,15 @@ main_div.addEventListener("drop", function( e ) {
 
     //Operators
     var op = null;
-    if (currently_dragged.id.includes("static")) {
+    if (currently_dragged && currently_dragged.id.includes("static")) {
         op = currently_dragged;
     }
     else if (svg_up_div != null) {
         op = svg_up_div;
         svg_up_div = null;
     }
+
+
     if (op != null) {
         var rect = main_div.getBoundingClientRect();
         create_operator_instance_on_hub(e.clientX - rect.left - drag_delta[0],
@@ -39,7 +41,7 @@ main_div.addEventListener("drop", function( e ) {
                                         op.id.split("_").slice(-2)[0]);
     }
     //Link params
-    else if (currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
+    else if (currently_dragged && currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
         var param_out = currently_dragged;
         var param_in = e.target.parentElement.parentElement;
 
@@ -90,7 +92,7 @@ main_div.addEventListener("drop", function( e ) {
             currently_dragged = null;
         }
     }
-    else if (currently_dragged.id.includes("comment")) {
+    else if (currently_dragged && currently_dragged.id.includes("comment")) {
         var rect = main_div.getBoundingClientRect();
         $('#'+currently_dragged.id).css({
             left: e.clientX - rect.x - drag_delta[0],
@@ -100,7 +102,6 @@ main_div.addEventListener("drop", function( e ) {
         save_dataflow();
     }
     else {
-        console.log("Unknown Drop !!!", currently_dragged.id);
         currently_dragged = null;
     }
 }, false);
@@ -146,9 +147,10 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
     e.preventDefault();
 });
 
-$('#sakura_link_contextMenu').on("click", "a", function() {
+$('#sakura_link_contextMenu').on("click", "a", function(e) {
+  e.preventDefault();
   $('#sakura_link_contextMenu').hide();
-    remove_link(link_focus_id);
+  remove_link(link_focus_id, true);
 });
 
 

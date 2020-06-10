@@ -19,6 +19,7 @@ function create_dataflow_links(df_links) {
                 //jsPlumb creation
                 global_dataflow_jsFlag = false;
                 js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
+                js_link._jsPlumb.hoverPaintStyle = { lineWidth: 7, strokeStyle: "#333333" };
                 global_dataflow_jsFlag = true;
 
                 //our creation
@@ -53,6 +54,7 @@ function current_dataflow() {
     remove_all_links(false);
     remove_all_operators_instances(false);
     remove_all_comments(false);
+    global_op_panels = [];
 
     //Emptying current accordion
     let acc_div = document.getElementById('op_left_accordion');
@@ -66,14 +68,12 @@ function current_dataflow() {
 
         //Then we ask for the instance ids
         sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
-
             df_info.op_instances.forEach( function(opi) {
                 if (opi.gui_data) {
                     var jgui = eval("("+opi.gui_data+")");
                     create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
                 }
             });
-
             create_dataflow_links(df_info.links);
             df_info.op_instances.forEach( function(opi) {
                 check_operator(opi);
@@ -154,15 +154,29 @@ function save_dataflow() {
     });
 
     //Finally the links
+    let p_to_clean = [];
     global_links.forEach( function(link) {
-        link.params.forEach( function(para) {
-            var js = JSON.stringify({'op_src':  link.src,
-                                    'op_dst':   link.dst,
-                                    'top':      para.top,
-                                    'left':     para.left,
-                                    'line':     para.line});
-            sakura.apis.hub.links[parseInt(para.hub_id)].set_gui_data(js);
+        link.params.forEach( function(param, index) {
+            if (param.out_id !== undefined) {
+                var js = JSON.stringify({'op_src':  link.src,
+                                        'op_dst':   link.dst,
+                                        'top':      param.top,
+                                        'left':     param.left,
+                                        'line':     param.line});
+                sakura.apis.hub.links[parseInt(param.hub_id)].set_gui_data(js);
+            }
+            else {
+                console.log('BAD RESIDUAL LINK :');
+                console.log(param, index);
+                p_to_clean.push(index);
+            }
         });
+        if (p_to_clean.length) {
+            p_to_clean.reverse().forEach( function(i) {
+                link.params.splice(i, 1);
+            });
+            p_to_clean = [];
+        }
     });
 };
 

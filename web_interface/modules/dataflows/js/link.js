@@ -4,7 +4,6 @@
 var dataflows_link_debug = false;
 
 function create_link(js_id, src_id, dst_id, js_connection) {
-
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
         if (possible_links.length == 0) {
             alert("These two operators cannot be linked");
@@ -59,6 +58,7 @@ function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui)
                                     in_id,
                                     hub_id,
                                     gui);
+
                 global_links[l - 1].modal = true;
             });
         });
@@ -234,14 +234,13 @@ function test_link(link, on_hub) {
 
 
 function remove_link(link, on_hub) {
-    if (dataflows_link_debug) console.log('REMOVE_LINK');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
 
     //We first send the removing commands to the hub
     if (link.params.length > 0)
-        delete_link_params(link, on_hub);
+        delete_link_params(link, true, on_hub);
     else {
         //Then to jsPlumb
         var jsPConn = null;
@@ -298,7 +297,6 @@ function remove_connection(hub_id, on_hub) {
 
 
 function delete_link_params(link, and_main_link, on_hub) {
-    if (dataflows_link_debug) console.log('DELETE LINK PARAMSSSS');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -317,9 +315,9 @@ function delete_link_params(link, and_main_link, on_hub) {
         var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
         var line    = document.getElementById("line_modal_link_"+link.id+"_"+para.out_id+"_"+para.in_id);
 
-        div_in.innerHTML = svg_round_square("");
-        div_out.innerHTML = svg_round_square("");
-        mdiv.removeChild(line);
+        if (div_in) div_in.innerHTML = svg_round_square("");
+        if (div_out) div_out.innerHTML = svg_round_square("");
+        if (line) mdiv.removeChild(line);
 
         if (i >= link.params.length -1) {
             link.params = [];
