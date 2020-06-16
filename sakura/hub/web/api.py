@@ -177,6 +177,10 @@ class GuiToHubAPI:
     def delete_link(self, link_id):
         return self.context.links[link_id].delete_link()
 
+    @api.links.__getitem__.monitor
+    def link_monitor(self, link_id, obj_id):
+        self.events_monitor(self.context.links[link_id], obj_id)
+
     @api.links.list_possible
     def get_possible_links(self, src_op_id, dst_op_id):
         return self.context.get_possible_links(src_op_id, dst_op_id)

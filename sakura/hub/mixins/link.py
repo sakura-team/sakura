@@ -44,8 +44,10 @@ class LinkMixin(BaseMixin):
             link_id = self.id,
             src_id = self.src_op.id,
             src_out_id = self.src_out_id,
+            src_cls_name = self.src_op.op_class.metadata['name'],
             dst_id = self.dst_op.id,
             dst_in_id = self.dst_in_id,
+            dst_cls_name = self.dst_op.op_class.metadata['name'],
             gui_data = self.gui_data,
             **self.pack_status_info()
         )

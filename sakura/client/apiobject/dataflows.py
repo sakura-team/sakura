@@ -1,5 +1,6 @@
 from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.operators import APIOperator
+from sakura.client.apiobject.links import APILink
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client.apiobject.grants import APIGrants
 from sakura.common.streams import LOCAL_STREAMS
@@ -13,6 +14,13 @@ class APIDataflowOperatorsDict:
                 op_info = remote_api.operators.create(dataflow_id, op_class.id, local_streams=LOCAL_STREAMS)
                 return APIOperator(remote_api, op_info)
         return APIDataflowOperatorsDictImpl()
+
+class APIDataflowLinksDict:
+    def __new__(cls, remote_api, d):
+        class APIDataflowLinksDictImpl(APIObjectRegistryClass(d)):
+            """Sakura links registry for this dataflow"""
+            pass
+        return APIDataflowLinksDictImpl()
 
 class APIDataflow:
     _deleted = set()
@@ -34,6 +42,14 @@ class APIDataflow:
                 d = { op_info['op_id']: APIOperator(remote_api, op_info) \
                       for op_info in info['operators'] }
                 return APIDataflowOperatorsDict(remote_api, self.dataflow_id, d)
+            @property
+            def links(self):
+                info = self.__buffered_get_info__()
+                if 'links' not in info:
+                    raise APIObjectDeniedError('access denied')
+                d = { link_info['link_id']: APILink(remote_api, link_info) \
+                      for link_info in info['links'] }
+                return APIDataflowLinksDict(remote_api, d)
             @property
             def grants(self):
                 return APIGrants(get_remote_obj())
