@@ -11,16 +11,21 @@ class MeanOperator(Operator):
         self.input = self.register_input('Mean input data')
 
         # outputs
-        output_source = ComputedSource('Mean result', self.compute)
-        output_source.add_column('Mean', float)
-        output_source.length = 1
-        self.register_output(
-                label = 'Mean result',
-                source = output_source)
+        self.output = self.register_output(label = 'Mean result')
 
         # parameters
         self.input_column_param = self.register_parameter(
                 'NUMERIC_COLUMN_SELECTION', 'Input column', self.input)
+        self.input_column_param.on_change.subscribe(self.update_output)
+
+    def update_output(self):
+        if self.input_column_param.column is None:
+            self.output.source = None
+        else:
+            output_source = ComputedSource('Mean result', self.compute)
+            output_source.add_column('Mean', float)
+            output_source.length = 1
+            self.output.source = output_source
 
     def compute(self):
         column = self.input_column_param.column
