@@ -27,6 +27,10 @@ class Operator:
         self.opengl_apps.on_change.subscribe(lambda: event_recorder('altered_set_of_opengl_apps'))
     def notify_input_plug_change(self, in_plug):
         self.push_event('altered_input', self.input_plugs.index(in_plug))
+        # if input plug is required and it was disconnected, reset output plugs
+        if in_plug.required and not in_plug.enabled:
+            for out_plug in self.output_plugs:
+                out_plug.source = None
     def notify_output_plug_change(self, out_plug):
         self.push_event('altered_output', self.output_plugs.index(out_plug))
     def notify_parameter_change(self, param):
@@ -50,8 +54,9 @@ class Operator:
     def _trigger_env_affinity_update(self):
         return self._sources_origins != self._last_sources_origins
     # static properties
-    def register_input(self, input_plug_label):
-        return self.register(self.input_plugs, InputPlug(self, input_plug_label))
+    def register_input(self, input_plug_label, required = True):
+        return self.register(self.input_plugs,
+                             InputPlug(self, input_plug_label, required = required))
     def register_output(self, *args, condition = None, **kwargs):
         if condition is None:
             condition = self.is_ready
