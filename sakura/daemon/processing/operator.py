@@ -8,40 +8,52 @@ from gevent.lock import Semaphore
 
 class Operator:
     IGNORED_FILENAMES = ("__pycache__", ".DS_Store")
-    def __init__(self, op_id, event_recorder, op_dir):
+    def __init__(self, op_id, hub_event_recorder, op_dir):
         self.op_id = op_id
         self.root_dir = op_dir
         self.event_lock = Semaphore()
         self._last_sources_origins = (None, None)
         self.pending_move_check = False
-        self.event_recorder = event_recorder
+        self.hub_event_recorder = hub_event_recorder
         self.input_plugs = MonitoredList()
-        self.input_plugs.on_change.subscribe(lambda: event_recorder('altered_set_of_inputs'))
+        self.input_plugs.on_change.subscribe(lambda: self.push_event_to_hub('altered_set_of_inputs'))
         self.output_plugs = MonitoredList()
-        self.output_plugs.on_change.subscribe(lambda: event_recorder('altered_set_of_outputs'))
+        self.output_plugs.on_change.subscribe(lambda: self.push_event_to_hub('altered_set_of_outputs'))
         self.parameters = MonitoredList()
-        self.parameters.on_change.subscribe(lambda: event_recorder('altered_set_of_parameters'))
+        self.parameters.on_change.subscribe(lambda: self.push_event_to_hub('altered_set_of_parameters'))
         self.tabs = MonitoredList()
-        self.tabs.on_change.subscribe(lambda: event_recorder('altered_set_of_tabs'))
+        self.tabs.on_change.subscribe(lambda: self.push_event_to_hub('altered_set_of_tabs'))
         self.opengl_apps = MonitoredList()
-        self.opengl_apps.on_change.subscribe(lambda: event_recorder('altered_set_of_opengl_apps'))
+        self.opengl_apps.on_change.subscribe(lambda: self.push_event_to_hub('altered_set_of_opengl_apps'))
+        self.check_mode = False
+    def push_event_to_hub(self, evt, *args, **kwargs):
+        if not self.check_mode:
+            self.hub_event_recorder(evt, *args, **kwargs)
     def notify_input_plug_change(self, in_plug):
-        self.push_event('altered_input', self.input_plugs.index(in_plug))
+        if self.check_mode:
+            return
+        in_plug_id = self.input_plugs.index(in_plug)
+        self.push_event_to_hub('altered_input', in_plug_id)
         # if input plug is required and it was disconnected, reset output plugs
         if in_plug.required and not in_plug.enabled:
             for out_plug in self.output_plugs:
                 out_plug.source = None
+        # send notification targetting the link mixin object on hub
+        if in_plug.source is None:
+            print(self.op_id, 'input_now_none')
+            self.push_event_to_hub('input_now_none', in_plug_id)
+        else:
+            print(self.op_id, 'input_no_longer_none')
+            self.push_event_to_hub('input_no_longer_none', in_plug_id)
     def notify_output_plug_change(self, out_plug):
-        self.push_event('altered_output', self.output_plugs.index(out_plug))
+        self.push_event_to_hub('altered_output', self.output_plugs.index(out_plug))
     def notify_parameter_change(self, param):
-        self.push_event('altered_parameter', self.parameters.index(param))
-    def push_event(self, evt, *args, **kwargs):
-        self.event_recorder(evt, *args, **kwargs)
+        self.push_event_to_hub('altered_parameter', self.parameters.index(param))
     @property
     def _sources_origins(self):
         inputs_origins, outputs_origins = (), ()
         for in_plug in self.input_plugs:
-            if in_plug.connected():
+            if in_plug.enabled:
                 inputs_origins += (in_plug.source.get_origin_id(),)
             else:
                 inputs_origins += (None,)
@@ -78,7 +90,7 @@ class Operator:
         return obj
     def is_ready(self):
         for plug in self.input_plugs:
-            if not plug.connected():
+            if not plug.enabled:
                 return False
         for parameter in self.parameters:
             if not parameter.selected():
@@ -176,8 +188,7 @@ class Operator:
         with self.event_lock:
             return self.handle_event(*args, **kwargs)
     def set_check_mode(self, check_mode):
-        for parameter in self.parameters:
-            parameter.set_check_mode(check_mode)
+        self.check_mode = check_mode
     def env_affinity(self):
         self._last_sources_origins = self._sources_origins
         inputs_origins, outputs_origins = self._last_sources_origins

@@ -14,9 +14,12 @@ class Parameter(StatusMixin):
         self.on_auto_fill = ObservableEvent()
         self.requested_value = None
         self.value = None
-        self.check_mode = False
         self.is_setup = False
         self.on_change.subscribe(lambda: self.op.notify_parameter_change(self))
+
+    @property
+    def check_mode(self):
+        return self.op.check_mode
 
     def setup(self, requested_value, auto_fill_cb):
         print(self.__class__.__name__ + ' setup -- requested value ' + str(requested_value) + ' + auto-fill cb')
@@ -24,9 +27,6 @@ class Parameter(StatusMixin):
         self.on_auto_fill.subscribe(auto_fill_cb)
         self.is_setup = True
         self.recheck()
-
-    def set_check_mode(self, check_mode):
-        self.check_mode = check_mode
 
     def get_value(self):
         return self.value
@@ -205,19 +205,21 @@ class ColumnSelectionParameter(ComboParameter):
             raise AttributeError
         if not self.plug.connected():
             return 'Input is not connected.'
+        elif self.plug.source is None:
+            return 'Input is not ready.'
         else:
             return 'Input is not compatible.'
     def check_input_compatible(self):
         return self.at_least_one_possible_value()
     def matching_columns(self):
-        if not self.plug.connected():
+        if not self.plug.enabled:
             return
         for col_info in self.plug.get_columns_info():
             col_path, column_info = col_info[0], col_info[1:]
             if self.condition(*column_info):
                 yield (col_path,) + column_info + (str(column_info),)
     def get_possible_items(self):
-        if not self.plug.connected():
+        if not self.plug.enabled:
             return
         source_label = self.plug.source.get_label()
         for col_path, col_label, col_type, col_tags, col_info_str in self.matching_columns():

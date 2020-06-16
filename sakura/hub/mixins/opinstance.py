@@ -177,16 +177,15 @@ class OpInstanceMixin(BaseMixin):
     def delete_on_daemon(self):
         self.enabled = False
         self.daemon_api.delete_operator_instance(self.id)
-    def disable_downlinks(self):
+    def disable_links(self):
         for link in self.downlinks:
-            link.disable()
-            link.dst_op.disable_downlinks()
+            link.deinstanciate()
+        for link in self.uplinks:
+            link.deinstanciate()
     def reload(self):
         if self.enabled:
             OpInstanceMixin.RELOAD_NOT_COMPLETED.add(self.id)
-            for link in self.uplinks:
-                link.disable()
-            self.disable_downlinks()
+            self.disable_links()
         self.reload_on_daemon()
         OpInstanceMixin.RELOAD_NOT_COMPLETED.discard(self.id)
         # a source code change may cause invalid links
@@ -207,7 +206,7 @@ class OpInstanceMixin(BaseMixin):
             # not running yet, create it on daemon
             self.daemon_api.create_operator_instance(
                 self.id,
-                event_recorder = self.push_event,
+                event_recorder = self.on_daemon_event,
                 local_streams = self.local_streams,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
@@ -216,22 +215,35 @@ class OpInstanceMixin(BaseMixin):
             self.enabled = False
             self.daemon_api.reload_operator_instance(
                 self.id,
-                event_recorder = self.push_event,
+                event_recorder = self.on_daemon_event,
                 local_streams = self.local_streams,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         self.enabled = True
+    def on_daemon_event(self, *evt):
+        if evt[0] in ('input_now_none', 'input_no_longer_none'):
+            # translate these events to a callback on the
+            # appropriate link object.
+            dst_in_id = evt[1]
+            link = None
+            for link in tuple(self.uplinks):
+                if link.dst_in_id == dst_in_id:
+                    break
+            # if event was caused by link deletion, we might
+            # not find it!
+            if link is not None:
+                link.on_daemon_event(evt[0])
+        else:
+            self.push_event(*evt)    # just push other events to UI
     def on_daemon_disconnect(self):
         # daemon stopped
-        for link in self.uplinks:
-            link.disable()
-        self.disable_downlinks()
+        self.disable_links()
         self.enabled = False
     def ready(self):
         if not self.enabled:
             return False
         for link in self.uplinks:
-            if not link.enabled:
+            if not link.instanciated:
                 return False
         for param in self.params:
             if not param.is_valid:
@@ -257,8 +269,7 @@ class OpInstanceMixin(BaseMixin):
         op.recheck_params()
         return op
     def delete_instance(self):
-        # the whole down-tree will be affected
-        self.disable_downlinks()
+        self.disable_links()
         # remove 1-hop links (since these are connected to
         # the operator instance we are removing)
         for link in self.uplinks:
@@ -315,9 +326,7 @@ class OpInstanceMixin(BaseMixin):
     def move_out(self):
         if self.enabled:
             # disable links
-            for link in self.uplinks:
-                link.disable()
-            self.disable_downlinks()
+            self.disable_links()
             # drop op
             self.delete_on_daemon()
     def move_in(self, daemon):
@@ -332,27 +341,17 @@ class OpInstanceMixin(BaseMixin):
         return None     # not connected
     def restore_links(self):
         # restore uplinks if src is ok
-        altered = False
         for link in self.uplinks:
-            if link.enabled:
+            if link.instanciated:
                 continue    # nothing to do
-            if link.src_op.ready():
-                # ok, restore!
-                try:
-                    link.enable()
-                    altered = True
-                except:
-                    # this link is no longer valid
-                    # ex: DataSource -> Map, with
-                    # the table selected in DataSource no longer
-                    # valid (offline datastore)
-                    pass    # link is simply not enabled (for now)
-        # if we just got ready, recurse with operators
-        # on downlinks.
-        if altered or len(self.uplinks) == 0:
-            if self.ready():
-                for link in self.downlinks:
-                    link.dst_op.restore_links()
+            if link.src_op.enabled:
+                link.instanciate()
+        # restore downlinks if dst is ok
+        for link in self.downlinks:
+            if link.instanciated:
+                continue    # nothing to do
+            if link.dst_op.enabled:
+                link.instanciate()
     def restore(self):
         self.reload_on_daemon()
         self.resync_params()

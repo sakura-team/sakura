@@ -75,14 +75,14 @@ class DaemonEngine(object):
         dst_op = self.op_instances[dst_op_id]
         dst_input_plug = dst_op.input_plugs[dst_in_id]
         dst_input_plug.connect(src_op.output_plugs[src_out_id])
-        print("connected %s -> %s op_id=%d in%d" % \
-            (src_label, dst_op.NAME, dst_op_id, dst_in_id))
         # auto select (or just check) unselected parameters
         if check_mode:   # just check, do not set parameters
             res = dst_op.check_input_compatibility_parameters(dst_input_plug)
             dst_input_plug.disconnect()     # revert
             return res
         else:
+            print("connected %s -> %s op_id=%d in%d" % \
+                (src_label, dst_op.NAME, dst_op_id, dst_in_id))
             dst_op.auto_fill_parameters(plug = dst_input_plug)
             return True
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
@@ -93,6 +93,7 @@ class DaemonEngine(object):
         print("disconnected [...] -> %s op_id=%d in%d" % \
                 (dst_op.NAME, dst_op_id, dst_in_id))
     def get_possible_links(self, src_op_id, dst_op_id):
+        print('get_possible_links', src_op_id, dst_op_id)
         dst_op = self.op_instances[dst_op_id]
         dst_op.set_check_mode(True)
         if self.is_foreign_operator(src_op_id):
@@ -113,6 +114,7 @@ class DaemonEngine(object):
                     # this link is possible
                     links.append((src_out_id, dst_in_id))
         dst_op.set_check_mode(False)
+        print('found %d possible links' % len(links))
         return links
     def redirected_streams(self, local_streams = None, sandbox_streams = None, **kwargs):
         if local_streams is None:

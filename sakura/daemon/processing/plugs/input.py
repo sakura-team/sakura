@@ -1,4 +1,4 @@
-from sakura.common.errors import APIRequestErrorOfflineDaemon
+from sakura.common.errors import APIRequestErrorOfflineDaemon, APIRequestError
 from sakura.daemon.processing.plugs.base import PlugBase
 
 class InputPlug(PlugBase):
@@ -7,7 +7,10 @@ class InputPlug(PlugBase):
         self.label = label
         self.source_plug = None
         self.required = required
-        self.on_change.subscribe(lambda: operator.notify_input_plug_change(self))
+        self.operator = operator
+        self.on_change.subscribe(self.notify_to_operator)
+    def notify_to_operator(self):
+        self.operator.notify_input_plug_change(self)
     def connect(self, output_plug):
         self.source_plug = output_plug
         # if the source plug changes, propagate the change here
@@ -26,14 +29,15 @@ class InputPlug(PlugBase):
     def notify_source_change(self):
         self.on_change.notify()
     def connected(self):
-        return self.source_plug is not None and self.source_plug.source is not None
+        return self.source_plug is not None
     @property
     def source(self):
-        self.verify_enabled()
-        return self.source_plug.source
+        if not self.connected():
+            return None
+        return self.source_plug.get_source()
     @property
     def enabled(self):
-        return self.connected()
+        return self.source is not None
     @property
     def disabled_message(self):
         if self.enabled:
@@ -44,7 +48,7 @@ class InputPlug(PlugBase):
         return self.source.columns
     def pack(self):
         info = self.pack_status_info()
-        if self.connected():
+        if self.enabled:
             info.update(
                 **self.source_plug.pack()
             )

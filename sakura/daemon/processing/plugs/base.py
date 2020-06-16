@@ -23,6 +23,8 @@ class PlugBase(StatusMixin):
     @property
     def disabled_message(self):
         raise NotImplementedError   # implement in subclasses
+    def get_source(self):
+        return self.source
     def verify_enabled(self):
         if not self.enabled:
             raise APIRequestError(self.disabled_message)

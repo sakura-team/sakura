@@ -12,8 +12,9 @@ class OutputPlug(PlugBase):
         return self._source
     @source.setter
     def source(self, val):
-        self._source = val
-        self.on_change.notify()
+        if val != self._source:
+            self._source = val
+            self.on_change.notify()
     @property
     def enabled(self):
         if self._condition is not None and not self._condition():
