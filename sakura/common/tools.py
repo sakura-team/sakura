@@ -267,8 +267,15 @@ class JsonProtocol:
             raise
         try:
             f.write(res_json)
-        except:
-            raise IOWriteException("Could not write JSON message.")
+        except Exception as e:
+            # if f is closed, then the reason is obvious. Otherwise it's not.
+            if f.closed:
+                msg = "Failed to write JSON message (closed)."
+            else:
+                print('Unexpected failure will writting json message:')
+                traceback.format_exc()
+                msg = "Failed to write JSON message (unexpected)."
+            raise IOWriteException(msg)
 
 class ChunkedIO:
     CHUNK_SIZE = 4096
