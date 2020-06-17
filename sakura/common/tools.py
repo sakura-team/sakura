@@ -199,7 +199,7 @@ def run_cmd(cmd, cwd=None, **options):
         raise Exception(cmd + ' failed!')
     if cwd is not None:
         os.chdir(str(saved_cwd))
-    return status.stdout.decode(sys.stdout.encoding)
+    return status.stdout.decode(sys.getdefaultencoding())
 
 def yield_operator_subdirs(repo_dir):
     # find all operator.py file
