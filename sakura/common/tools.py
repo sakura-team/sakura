@@ -1,11 +1,15 @@
-import os, sys, gevent, json, pickle
+import os, sys, gevent, json, pickle, traceback, ctypes, numpy as np
 from pathlib import Path
 from gevent.queue import Queue
-import ctypes
 from gevent.subprocess import run, PIPE, STDOUT
-import numpy as np
 from sakura.common.errors import IOReadException, IOWriteException
 from itertools import count
+
+DEBUG = True
+
+def print_debug(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
 
 # iterate over "names" ensuring they are all different.
 # if 2 names match, add suffix "(2)", then "(3)", etc.
@@ -159,8 +163,11 @@ class ObservableEvent:
         for cb in callbacks:
             try:
                 cb(*args, **kwargs)
-            except:
-                # obsolete callback
+            except Exception as e:
+                # probably obsolete callback
+                print_debug('Exception in event callback (can probably be ignored):')
+                print_debug(traceback.format_exc())
+                print_debug('Removing this obsolete event callback.')
                 obsoletes.add(cb)
         for cb in obsoletes:
             self.unsubscribe(cb)
