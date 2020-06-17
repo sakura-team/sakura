@@ -10,7 +10,8 @@ class MapOperator(Operator):
         # inputs
         self.input_plug = self.register_input('GPS data')
         # outputs
-        self.output_plug = self.register_output('Filtered GPS data')
+        self.output_plug = self.register_output('Filtered GPS data',
+                                    explain_disabled = self.explain_disabled_output)
         # parameters
         self.lng_column_param = self.register_parameter(
                 'TAG_BASED_COLUMN_SELECTION', 'input longitude', self.input_plug, 'longitude')
@@ -20,6 +21,12 @@ class MapOperator(Operator):
         self.register_tab('Map', 'map.html')
         # custom attributes
         self.curr_heatmap = None
+
+    def explain_disabled_output(self):
+        if self.input_plug.source is None:
+            return 'No output data yet: map operator input is not connected.'
+        else:
+            return "No output data yet: select a geographic region by using the 'Map' tab."
 
     def geo_filter(self, source, lng_column, lat_column,
                    westlng, eastlng, southlat, northlat, **args):

@@ -1,11 +1,12 @@
 from sakura.daemon.processing.plugs.base import PlugBase
 
 class OutputPlug(PlugBase):
-    def __init__(self, operator, label=None, source=None, condition=None):
+    def __init__(self, operator, label=None, source=None, condition=None, explain_disabled = None):
         super().__init__()
         self._label = label
         self._source = source
         self._condition = condition
+        self._explain_disabled = explain_disabled
         self.on_change.subscribe(lambda: operator.notify_output_plug_change(self))
     @property
     def source(self):
@@ -24,7 +25,10 @@ class OutputPlug(PlugBase):
     def disabled_message(self):
         if self.enabled:
             raise AttributeError
-        return 'The operator could not publish output data yet.'
+        if self._explain_disabled is None:
+            return 'The operator could not publish output data yet.'
+        else:
+            return self._explain_disabled()
     def pack(self):
         # caution, the label may be the default value 'Output',
         # or a label provided as an __init__() parameter of this
