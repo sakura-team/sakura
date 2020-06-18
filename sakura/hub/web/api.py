@@ -3,12 +3,14 @@ from sakura.hub.code import list_code_revisions, list_operator_subdirs
 from sakura.common.events import EventsAggregator
 
 api = api_init()
+EVENTS = EventsAggregator()
 
+# Caution: this GuiToHubAPI class is instanciated once for each web connection!
 @api
 class GuiToHubAPI:
+
     def __init__(self, context):
         self.context = context
-        self.events = EventsAggregator()
 
     # Events
     ########################################
@@ -18,15 +20,15 @@ class GuiToHubAPI:
         return self.context.session.id
 
     def events_monitor(self, obj, obj_id):
-        self.events.monitor(self.event_listener_id, obj.all_events, obj_id)
+        EVENTS.monitor(self.event_listener_id, obj.all_events, obj_id)
 
     @api.events.unmonitor
     def events_unmonitor(self, obj_id):
-        self.events.unmonitor(self.event_listener_id, obj_id)
+        EVENTS.unmonitor(self.event_listener_id, obj_id)
 
     @api.events.next_events
     def events_next_events(self, timeout):
-        return self.events.next_events(self.event_listener_id, timeout)
+        return EVENTS.next_events(self.event_listener_id, timeout)
 
     ########################################
     # Daemons
