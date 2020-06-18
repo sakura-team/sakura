@@ -18,14 +18,10 @@ class APILink:
                 return remote_obj
         class APILinkImpl(APIObjectBase):
             __doc__ = 'Sakura Link - ' + short_desc
-            def _check_online(self):
-                if not self.enabled:
-                    raise APIRequestError('Link is disabled!')
             def __get_remote_info__(self):
                 return get_remote_obj().info()
             def delete(self):
                 """Delete this link"""
-                self._check_online()
                 get_remote_obj().delete()
                 APILink._deleted.add(remote_obj)
             def monitor(self):
