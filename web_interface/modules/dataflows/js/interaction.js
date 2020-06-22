@@ -1,6 +1,8 @@
 var currently_dragged   = null;
 var drag_delta          = [0, 0];
 
+var dataflow_interaction_debug = false;
+
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
@@ -35,6 +37,7 @@ main_div.addEventListener("drop", function( e ) {
 
 
     if (op != null) {
+        if (dataflow_interaction_debug) console.log('DROPPING OP');
         var rect = main_div.getBoundingClientRect();
         create_operator_instance_on_hub(e.clientX - rect.left - drag_delta[0],
                                         e.clientY - rect.top - drag_delta[1] + e.target.scrollTop,
@@ -42,6 +45,8 @@ main_div.addEventListener("drop", function( e ) {
     }
     //Link params
     else if (currently_dragged && currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
+        if (dataflow_interaction_debug) console.log('DROPPING LINK');
+
         var param_out = currently_dragged;
         var param_in = e.target.parentElement.parentElement;
 
@@ -85,7 +90,9 @@ main_div.addEventListener("drop", function( e ) {
                 save_dataflow();
                 refresh_link_modal(link);
 
-            });
+            }).catch (function(error) {
+                if (dataflow_interaction_debug) console.log('DID 1:', error);
+          });
         }
         else {
             console.log("Already exists !!");
@@ -93,6 +100,7 @@ main_div.addEventListener("drop", function( e ) {
         }
     }
     else if (currently_dragged && currently_dragged.id.includes("comment")) {
+        if (dataflow_interaction_debug) console.log('DROPPING COMMENT');
         var rect = main_div.getBoundingClientRect();
         $('#'+currently_dragged.id).css({
             left: e.clientX - rect.x - drag_delta[0],
@@ -102,6 +110,7 @@ main_div.addEventListener("drop", function( e ) {
         save_dataflow();
     }
     else {
+        if (dataflow_interaction_debug) console.log('DROPPING NOTHING');
         currently_dragged = null;
     }
 }, false);
@@ -148,11 +157,10 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
 });
 
 $('#sakura_link_contextMenu').on("click", "a", function(e) {
-  e.preventDefault();
-  $('#sakura_link_contextMenu').hide();
-  remove_link(link_focus_id, true);
+    e.preventDefault();
+    $('#sakura_link_contextMenu').hide();
+    remove_link(link_focus_id, true);
 });
-
 
 $('#sakura_main_div').on("click", function (e) {
     $('#sakura_operator_contextMenu').hide();
@@ -161,7 +169,6 @@ $('#sakura_main_div').on("click", function (e) {
     op_focus_id = null;
     $('#sakura_main_div_contextMenu').css({visibility: "hidden"});
 });
-
 
 function jsp_drag_stop(e) {
     var ot = document.getElementById("sakura_main_div");
@@ -183,5 +190,4 @@ function jsp_drag_stop(e) {
 }
 
 function jsp_drag_start(e) {
-    //nothing for now
 }

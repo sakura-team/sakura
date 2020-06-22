@@ -12,10 +12,18 @@ var op_events = [ 'disabled',
                   'enabled',
                   'altered_parameter' ]
 
+var transparent_grey = 'rgba(200, 200, 200, 1)';
+
 function operators_deal_with_events(evt_name, args, proxy, cl_id, hub_inst_id) {
     switch (evt_name) {
         case 'altered_output':
-            fill_in_out('output', 'op_'+cl_id+'_'+hub_inst_id);
+            //console.log(evt_name, args, cl_id, hub_inst_id);
+            if (!op_reloading) {
+                sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                    if (check_output(op))
+                        fill_in_out('output', 'op_'+cl_id+'_'+hub_inst_id);
+                });
+            }
             break;
         // default:
         //     console.log(evt_name);
@@ -138,8 +146,9 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                                                     isSource:true,
                                                     uuid:"ep_"+ndiv.id+"_out",
                                                     cssClass:"sakura_endPoint",
-                                                    paintStyle:{fillStyle:"black", radius:6},
-                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                    isSource: false,
+                                                    paintStyle:{fillStyle:transparent_grey, radius:6},
+                                                    hoverPaintStyle:{ fillStyle:transparent_grey, radius:6}
                                                     });
         create_op_modal(main_div, ndiv.id, info);
     }
@@ -185,9 +194,8 @@ function check_operator(op) {
         op.inputs.forEach( function(inp) { check_elt(inp); });
         op.parameters.forEach( function(param) { check_elt(param); });
 
-        var inst = global_ops_inst[instance_index_from_id(op.op_id)];
+        let inst = instance_from_id(op.op_id);
         if (inst) {
-
             var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
             w_div = document.getElementById(id+"_warning");
 
@@ -195,20 +203,24 @@ function check_operator(op) {
                 w_div.style.color       = 'red';
                 w_div.title             = d_message;
                 w_div.style.visibility  = "visible";
+                if (inst) output_disable(inst);
             }
             else if (warning) {
                 w_div.style.color       = 'orange';
                 w_div.title             = w_message;
                 w_div.style.visibility  = "visible";
+                check_output(op);
             }
             else {
                 w_div.style.visibility  = "hidden";
+                check_output(op);
             }
         }
     }
 }
 
 function reload_operator_instance(id, hub_id) {
+    op_reloading = true
     if (!hub_id) {
         let tab = id.split("_");
         hub_id = parseInt(tab[2]);
@@ -222,6 +234,7 @@ function reload_operator_instance(id, hub_id) {
             main_success_alert( 'Operator Reloading',
                                 '<b>'+cl.name+'</b> operator reloaded',
                                 null, 2);
+            op_reloading = false;
             current_dataflow();
         });
     });
@@ -353,4 +366,54 @@ function instance_index_from_id(hid) {
         if (global_ops_inst[i].hub_id == hid)
             return i;
     return -1
+}
+
+function output_enable(inst) {
+    inst.ep.out.isSource = true;
+    inst.ep.out.setPaintStyle({fillStyle: 'black', radius: 6});
+    inst.ep.out.setHoverPaintStyle({fillStyle: 'black', radius: 10});
+
+    for (let i=0;i<global_links.length;i++) {
+        if (global_links[i].src == inst.hub_id) {
+            global_links[i].jsP.setPaintStyle({strokeStyle: 'black',
+                                              lineWidth: 3});
+            global_links[i].jsP.setHoverPaintStyle({strokeStyle: 'black',
+                                                    lineWidth: 7});
+        }
+    }
+
+    jsPlumb.repaintEverything();
+}
+
+function output_disable(inst) {
+    inst.ep.out.isSource = false;
+    inst.ep.out.setPaintStyle({fillStyle: transparent_grey, radius: 6});
+    inst.ep.out.setHoverPaintStyle({fillStyle: transparent_grey, radius: 6});
+
+    for (let i=0;i<global_links.length;i++) {
+        if (global_links[i].src == inst.hub_id) {
+            global_links[i].jsP.setPaintStyle({strokeStyle: transparent_grey,
+                                              lineWidth: 3});
+            global_links[i].jsP.setHoverPaintStyle({strokeStyle: transparent_grey,
+                                                    lineWidth: 4});
+        }
+    }
+
+    jsPlumb.repaintEverything();
+}
+
+function check_output(op) {
+    if (op.outputs) {
+        let enable = false;
+        op.outputs.forEach( function (o) {
+            if (o.enabled) enable = true;
+        });
+        let inst = instance_from_id(op.op_id);
+        (inst && enable) ? output_enable(inst) : output_disable(inst);
+        return true;
+    }
+    else {
+        console.log('This op has no outputs:', op);
+        return false;
+    }
 }

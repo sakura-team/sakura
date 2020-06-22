@@ -34,3 +34,5 @@ var dataflows_open_modal  = null;
 //links
 var global_links  = [];
 var link_focus_id = null;
+
+var op_reloading = false;

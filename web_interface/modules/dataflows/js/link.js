@@ -1,52 +1,81 @@
 //Code started by Michael Ortega for the LIG
 //March 20th, 2017
 
-var dataflows_link_debug = false;
+var dataflows_link_debug = true;
 
-function create_link(js_id, src_id, dst_id, js_connection) {
+var link_events = [ 'disabled',
+                    'enabled']
+
+function links_deal_with_events(evt_name, args, proxy) {
+    switch (evt_name) {
+        case 'disabled':
+            if (dataflows_link_debug)
+                console.log(evt_name, args);
+            break;
+        case 'enabled':
+            if (dataflows_link_debug)
+                console.log(evt_name, args);
+            break;
+        default:
+            console.log('Unknown Event', evt_name);
+    }
+}
+
+
+
+function create_link(js, src_id, dst_id) {
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
         if (possible_links.length == 0) {
             alert("These two operators cannot be linked");
-            jsPlumb.detach(js_connection);
+            jsPlumb.detach(js);
             jsPlumb.repaintEverything();
             return false;
         }
         else
         {
-            global_links.push({ id: js_id,
-                        src: src_id,
-                        dst: dst_id,
-                        params: []});
-
             sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
                 sakura.apis.hub.operators[dst_id].info().then(function (target_inst_info) {
-                        create_link_modal(  possible_links,
-                                            global_links[global_links.length - 1],
-                                            instance_from_id(src_id).cl,
-                                            instance_from_id(dst_id).cl,
-                                            source_inst_info,
-                                            target_inst_info,
-                                            true);
-                    js_connection._jsPlumb.hoverPaintStyle = { lineWidth: 7, strokeStyle: "#333333" };
+                    global_links.push({ id: js.id,
+                                        src: src_id,
+                                        dst: dst_id,
+                                        params: [],
+                                        jsP: js});
+
+                    create_link_modal(  possible_links,
+                                        global_links[global_links.length - 1],
+                                        instance_from_id(src_id).cl,
+                                        instance_from_id(dst_id).cl,
+                                        source_inst_info,
+                                        target_inst_info,
+                                        true);
+                    js.setDetachable(false);
+
                     return true;
+                }).catch( function(error) {
+                    if (dataflows_link_debug) console.log('CL 3', error);
                 });
+            }).catch( function(error) {
+                if (dataflows_link_debug) console.log('CL 2', error);
             });
         }
+    }).catch( function(error) {
+        if (dataflows_link_debug) console.log('CL 1', error);
     });
 }
 
 
-function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui) {
-
-    var l = global_links.push({ 'id': js_id,
+function create_link_from_hub(js, hub_id, src_id, dst_id, out_id, in_id, gui) {
+    let l = global_links.push({ 'id': js.id,
                                 'src': src_id,
                                 'dst': dst_id,
                                 'params': [],
-                                'modal': false});
-
+                                'modal': false,
+                                'jsP': js});
+    js.setDetachable(false);
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
         sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
             sakura.apis.hub.operators[dst_id].info().then(function (target_inst_info) {
+
                 create_link_modal(  possible_links,
                                     global_links[l - 1],
                                     instance_from_id(src_id).cl,
@@ -58,7 +87,6 @@ function create_link_from_hub(js_id, hub_id, src_id, dst_id, out_id, in_id, gui)
                                     in_id,
                                     hub_id,
                                     gui);
-
                 global_links[l - 1].modal = true;
             });
         });
@@ -108,59 +136,59 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
 
     var wrapper= document.createElement('div');
     load_from_template(
-                    wrapper,
-                    "modal-link.html",
-                    {'id': link.id, 'source_cl': src_cl, 'destination_cl': dst_cl, 'tabs_src_outputs': src_inst_info['outputs'], 'tabs_dst_inputs': dst_inst_info['inputs']},
-                    function () {
-                        var modal = wrapper.firstChild;
-                        // update the svg icon
-                        $(modal).find("#td_src_svg").html(src_cl.svg);
-                        $(modal).find("#td_dst_svg").html(dst_cl.svg);
+        wrapper,
+        "modal-link.html",
+        {'id': link.id, 'source_cl': src_cl, 'destination_cl': dst_cl, 'tabs_src_outputs': src_inst_info['outputs'], 'tabs_dst_inputs': dst_inst_info['inputs']},
+        function () {
+            var modal = wrapper.firstChild;
+            // update the svg icon
+            $(modal).find("#td_src_svg").html(src_cl.svg);
+            $(modal).find("#td_dst_svg").html(dst_cl.svg);
 
-                        var index = 0;
-                        src_inst_info['outputs'].forEach( function (item) {
-                            var found = false;
-                            p_links.forEach( function(item) {
-                                if (item[0] == index)
-                                    found = true;
-                            });
-                            if (found)
-                                $(modal).find("#svg_modal_link_"+link.id+"_out_"+index).html(svg_round_square(""));
-                            index ++;
-                        });
+            var index = 0;
+            src_inst_info['outputs'].forEach( function (item) {
+                var found = false;
+                p_links.forEach( function(item) {
+                    if (item[0] == index)
+                        found = true;
+                });
+                if (found)
+                    $(modal).find("#svg_modal_link_"+link.id+"_out_"+index).html(svg_round_square(""));
+                index ++;
+            });
 
-                        var index = 0;
-                        dst_inst_info['inputs'].forEach( function (item) {
-                            var found = false;
-                            p_links.forEach( function(item) {
-                                if (item[1] == index)
-                                    found = true;
-                            });
-                            if (found)
-                                $(modal).find("#svg_modal_link_"+link.id+"_in_"+index).html(svg_round_square(""));
-                            index ++;
-                        });
+            var index = 0;
+            dst_inst_info['inputs'].forEach( function (item) {
+                var found = false;
+                p_links.forEach( function(item) {
+                    if (item[1] == index)
+                        found = true;
+                });
+                if (found)
+                    $(modal).find("#svg_modal_link_"+link.id+"_in_"+index).html(svg_round_square(""));
+                index ++;
+            });
 
-                        // append to main div
-                        main_div.appendChild(modal);
-                        if (open_now && !auto_link)
-                            $(modal).modal();
-                        else if (!open_now) {
-                            link.params.push({  'out_id': out_id,
-                                                'in_id': in_id,
-                                                'hub_id': hub_id,
-                                                'top': gui.top,
-                                                'left': gui.left,
-                                                'line':  gui.line});
-                            copy_link_line(link, out_id, in_id, gui);
-                            $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
-                            $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
-                        }
-                        else if (auto_link) {  //means should be open now, but we don't cause we link automatically
-                            console.log('Could think about auto link');
-                            $(modal).modal();
-                        }
-                    }
+            // append to main div
+            main_div.appendChild(modal);
+            if (open_now && !auto_link)
+                $(modal).modal();
+            else if (!open_now) {
+                link.params.push({  'out_id': out_id,
+                                    'in_id': in_id,
+                                    'hub_id': hub_id,
+                                    'top': gui.top,
+                                    'left': gui.left,
+                                    'line':  gui.line});
+                copy_link_line(link, out_id, in_id, gui);
+                $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
+                $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
+            }
+            else if (auto_link) {  //means should be open now, but we don't cause we link automatically
+                console.log('Could think about auto link');
+                $(modal).modal();
+            }
+        }
     );
 }
 

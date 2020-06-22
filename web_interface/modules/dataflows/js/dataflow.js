@@ -2,7 +2,26 @@
 //March 9th, 2017
 
 
-var global_dataflow_jsFlag = true;
+var global_dataflow_jsFlag  = true;
+var dataflow_debug          = true;
+var dataflow_events         = [ 'created_link',
+                                'deleted_link']
+
+function dataflows_deal_with_events(evt_name, args, proxy) {
+    switch (evt_name) {
+        case 'created_link':
+            if (dataflow_debug)
+                console.log(evt_name, args);
+            break;
+        case 'deleted_link':
+            if (dataflow_debug)
+                console.log(evt_name, args);
+            break;
+        default:
+            console.log('Unknown Event', evt_name);
+    }
+}
+
 
 //This function is apart because of the asynchronous aspect of ws.
 //Links can only be recovered after recovering all operator instances
@@ -10,7 +29,7 @@ function create_dataflow_links(df_links) {
 
     //Creating the links
     df_links.forEach( function (link) {
-        if (link.enabled) {
+        if (true){//link.enabled) {
             var lgui = eval("("+link.gui_data+")");
             if (! link_exist(link.src_id, link.dst_id)) {
                 var src_inst = instance_from_id(link.src_id);
@@ -18,12 +37,14 @@ function create_dataflow_links(df_links) {
 
                 //jsPlumb creation
                 global_dataflow_jsFlag = false;
-                js_link = jsPlumb.connect({ uuids:[src_inst.ep.out.getUuid(),dst_inst.ep.in.getUuid()] });
-                js_link._jsPlumb.hoverPaintStyle = { lineWidth: 7, strokeStyle: "#333333" };
+                js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
+                                                    dst_inst.ep.in.getUuid()]});
                 global_dataflow_jsFlag = true;
 
                 //our creation
-                create_link_from_hub(js_link.id, link.link_id, link.src_id, link.dst_id, link.src_out_id, link.dst_in_id, lgui);
+                create_link_from_hub( js_link, link.link_id, link.src_id,
+                                      link.dst_id, link.src_out_id,
+                                      link.dst_in_id, lgui);
             }
             else {
                 var link = link_from_instances(link.src_id, link.dst_id);
@@ -44,6 +65,9 @@ function create_dataflow_links(df_links) {
                 }
                 interval_id = setInterval(check_modal, 500);
             }
+        }
+        else {
+            console.log('LINK DISABLE');
         }
     });
 }
@@ -68,6 +92,19 @@ function current_dataflow() {
 
         //Then we ask for the instance ids
         sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
+
+            let proxy = sakura.apis.hub.dataflows[web_interface_current_id];
+            if (proxy) {
+                dataflow_events.forEach( function(e) {
+                    proxy.subscribe_event(e, function(evt_name, args) {
+                          dataflows_deal_with_events(evt_name, args, proxy);
+                    });
+                });
+            }
+            else {
+                console.log('Cannot subscribe_event on dataflow', df_info);
+            }
+
             df_info.op_instances.forEach( function(opi) {
                 if (opi.gui_data) {
                     var jgui = eval("("+opi.gui_data+")");

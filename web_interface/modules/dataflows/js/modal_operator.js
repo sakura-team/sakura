@@ -281,44 +281,47 @@ function fill_in_out(in_out, id) {
         }
 
     //infos
-    sakura.apis.hub.operators[inst_id].info().then(function (result_info) {
-        var nb_in_out = result_info[in_out+'s'].length;
+    let proxy = sakura.apis.hub.operators[inst_id];
+    if (proxy) {
+        proxy.info().then(function (result_info) {
+            var nb_in_out = result_info[in_out+'s'].length;
 
-        if (nb_in_out == 0) {
-            d.innerHTML = '<br><p align="center"> No '+in_out+'s</p>';
-            return;
-        }
+            if (nb_in_out == 0) {
+                d.innerHTML = '<br><p align="center"> No '+in_out+'s</p>';
+                return;
+            }
 
-        var div_tab = document.createElement('div');
-        div_tab.className = 'modal-body';
-        div_tab.id = id+'_'+in_out+'s';
-        div_tab.style["paddingBottom"] = '0px';
+            var div_tab = document.createElement('div');
+            div_tab.className = 'modal-body';
+            div_tab.id = id+'_'+in_out+'s';
+            div_tab.style["paddingBottom"] = '0px';
 
-        var ul          = document.createElement('ul');
-        var tab_content = document.createElement('div');
-        ul.className            = "nav nav-tabs";
-        tab_content.className   = "tab-content";
-        s = '<li class="active"> \
-                <a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
-        for (var i =1; i < nb_in_out; i++) {
-            s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
-        }
-        ul.innerHTML = s;
+            var ul          = document.createElement('ul');
+            var tab_content = document.createElement('div');
+            ul.className            = "nav nav-tabs";
+            tab_content.className   = "tab-content";
+            s = '<li class="active"> \
+                    <a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+0+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+0+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][0]['label']+'</a></li>';
+            for (var i =1; i < nb_in_out; i++) {
+                s += '<li><a style="padding-top: 0px; padding-bottom: 0px;" data-toggle="tab" href="#'+id+'_'+in_out+'_'+i+'" onclick=\'fill_one_in_out(\"'+in_out+'\",\"'+id+'\",'+i+','+0+','+current_nb_rows+');\'>'+result_info[in_out+'s'][i]['label']+'</a></li>';
+            }
+            ul.innerHTML = s;
 
-        s = '<div id="'+id+'_'+in_out+'_'+0+'" class="tab-pane fade in active"></div>';
-        for (var i =1; i < nb_in_out; i++)
-            s += '<div id="'+id+'_'+in_out+'_'+i+'" class="tab-pane fade in active"></div>';
-        tab_content.innerHTML = s;
+            s = '<div id="'+id+'_'+in_out+'_'+0+'" class="tab-pane fade in active"></div>';
+            for (var i =1; i < nb_in_out; i++)
+                s += '<div id="'+id+'_'+in_out+'_'+i+'" class="tab-pane fade in active"></div>';
+            tab_content.innerHTML = s;
 
-        div_tab.appendChild(ul);
-        div_tab.appendChild(tab_content);
-        d.appendChild(div_tab);
+            div_tab.appendChild(ul);
+            div_tab.appendChild(tab_content);
+            d.appendChild(div_tab);
 
-        fill_one_in_out(in_out, id, 0, 0, current_nb_rows, );
+            fill_one_in_out(in_out, id, 0, 0, current_nb_rows, );
 
-    }).catch( function (error){
-        alert('Failed to retrieve operator information:\n' + error);
-    });
+        }).catch( function (error){
+            console.log('Failed to retrieve operator information:\n' + error);
+        });
+    }
 }
 
 

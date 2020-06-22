@@ -26,31 +26,33 @@ function jsPlumb_init() {
 
     ///////////////LINKS EVENTS
     //This piece of code is for preventing two or more identical links
-    jsPlumb.bind("beforeDrop", function(params) {
-        var found = link_exist(params.sourceId, params.targetId);
-
+    jsPlumb.bind("beforeDrop", function(connection) {
+        var found = link_exist( parseInt(connection.sourceId.split("_")[2]),
+                                parseInt(connection.targetId.split("_")[2]));
         //we test the link existence from our side
         if (found == true) {
             console.log("link already exists !");
+            jsPlumb.detach(connection);
+            jsPlumb.repaintEverything();
             return false;
         }
-
         //here we validate the jsPlumb link creation
         return true;
     });
 
-    jsPlumb.bind("beforeDetach", function(params) {
-        //We do nothing here !!!
-    });
+    // jsPlumb.bind("connectionDragStop", function (connection) {
+    //     console.log('CONN_DRAG_STOP');
+    // });
 
     //A connection is established
-    jsPlumb.bind("connection", function(params) {
+    jsPlumb.bind("connection", function(conn) {
         //link creation on hub and other
-        if (global_dataflow_jsFlag)
-            create_link(  params.connection.id,
-                          parseInt(params.sourceId.split("_")[2]),
-                          parseInt(params.targetId.split("_")[2]),
-                          params.connection );
+        //link existence is tested with 'beforeDrop' event
+        if (global_dataflow_jsFlag) {
+                create_link(  conn.connection,
+                              parseInt(conn.sourceId.split("_")[2]),
+                              parseInt(conn.targetId.split("_")[2])   );
+        }
     });
 
     //When the target of a link changes
