@@ -28,7 +28,10 @@ class GuiToHubAPI:
 
     @api.events.next_events
     def events_next_events(self, timeout):
-        return EVENTS.next_events(self.event_listener_id, timeout)
+        evts = EVENTS.next_events(self.event_listener_id, timeout)
+        for evt in evts:
+            print('notify to GUI', *evt)
+        return evts
 
     ########################################
     # Daemons
