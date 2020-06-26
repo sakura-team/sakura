@@ -116,6 +116,10 @@ class SourceBase:
         self.row_filters = ()
         # join conditions
         self.join_conds = ()
+        # offset
+        self._offset = 0
+        # limit
+        self._limit = None
         # other attributes
         self.label = label
         self.length = None
@@ -166,7 +170,7 @@ class SourceBase:
         in_cache = it is not None
         # otherwise, create a new iterator
         if not in_cache:
-            it = self.chunks(chunk_len, row_start)
+            it = self.offset(row_start).chunks(chunk_len)
             compute_time = 0
         # read next chunk and return it
         for chunk in it:
@@ -220,6 +224,8 @@ class SourceBase:
         source.row_filters = tuple(self.row_filters)
         source.join_conds = tuple(self.join_conds)
         source.data = self.copy_data()
+        source._offset = self._offset
+        source._limit = self._limit
         return source
     def copy_data(self):
         return self.data.copy()
@@ -273,4 +279,12 @@ class SourceBase:
         # add the new join condition relevant for this call
         source.join_conds += ((left_col, right_col),)
         # consider source.data and other.data is the same thing
+        return source
+    def offset(self, in_offset):
+        source = self.reinstanciate()
+        source._offset = in_offset
+        return source
+    def limit(self, in_limit):
+        source = self.reinstanciate()
+        source._limit = in_limit
         return source

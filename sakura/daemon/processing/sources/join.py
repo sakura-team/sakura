@@ -53,6 +53,8 @@ class JoinSource(SourceBase):
         if len(sub_sources) > 1:
             raise APIRequestError('Missing one .where(<col1> == <col2>) join condition on this joint source.')
         source = sub_sources[0]
+        source = source.offset(self._offset)
+        source = source.limit(self._limit)
         return source.select(*self.columns)
     def solve_joins(self, sub_sources, join_conds, join_method):
         remaining_join_conds = ()
@@ -75,6 +77,6 @@ class JoinSource(SourceBase):
     def sort(self, *columns):
         source = self.solve()
         return source.sort(*columns)
-    def chunks(self, chunk_size = None, offset=0):
+    def chunks(self, chunk_size = None):
         source = self.solve()
-        return source.chunks(chunk_size, offset)
+        return source.chunks(chunk_size)

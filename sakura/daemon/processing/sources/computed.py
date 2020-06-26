@@ -11,7 +11,7 @@ class ComputeMode(Enum):
     CHUNKS = 1
 
 class ComputedSourceMixin:
-    def work_from_filtered_dataset(self, array, chunk_size, offset):
+    def work_from_filtered_dataset(self, array, chunk_size):
         if len(array) == 0:
             return
         if chunk_size is None:
@@ -19,8 +19,11 @@ class ComputedSourceMixin:
         # handle sorts
         array = np.sort(array, order=list(col._label for col in self.sort_columns))
         # handle offset
-        if offset > 0:
-            array = array[offset:]
+        if self._offset > 0:
+            array = array[self._offset:]
+        # handle limit
+        if self._limit is not None:
+            array = array[:self._limit]
         # handle column selection
         col_indexes = self.all_columns.get_indexes(self.columns)
         if col_indexes != tuple(range(len(self.all_columns))):
@@ -34,7 +37,7 @@ class ItemsComputedSource(SourceBase, ComputedSourceMixin):
     def __init__(self, label, compute_cb = None):
         SourceBase.__init__(self, label)
         self.data.compute_cb = compute_cb
-    def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE, offset=0):
+    def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE):
         it = self.data.compute_cb()
         # handle filters
         if len(self.row_filters) > 0:
@@ -57,11 +60,14 @@ class ItemsComputedSource(SourceBase, ComputedSourceMixin):
                 for i, row in enumerate(all_rows_list):
                     array[i] = row
             # then work with this dataset
-            yield from self.work_from_filtered_dataset(array, chunk_size, offset)
+            yield from self.work_from_filtered_dataset(array, chunk_size)
             return
         # handle offset
-        if offset > 0:
-            it = islice(it, offset, None)
+        if self._offset > 0:
+            it = islice(it, self._offset, None)
+        # handle limit
+        if self._limit is not None:
+            it = islice(it, 0, self._limit)
         # handle column selection
         col_indexes = self.all_columns.get_indexes(self.columns)
         if col_indexes != tuple(range(len(self.all_columns))):
@@ -87,7 +93,7 @@ class ChunksComputedSource(SourceBase, ComputedSourceMixin):
     def __init__(self, label, compute_cb=None):
         SourceBase.__init__(self, label)
         self.data.compute_cb = compute_cb
-    def chunks(self, chunk_size = None, offset=0):
+    def chunks(self, chunk_size = None):
         it = self.data.compute_cb()
         # handle filters
         if len(self.row_filters) > 0:
@@ -115,23 +121,37 @@ class ChunksComputedSource(SourceBase, ComputedSourceMixin):
                 array[off:off+len(chunk)] = chunk
                 off += len(chunk)
             # then work with this dataset
-            yield from self.work_from_filtered_dataset(array, chunk_size, offset)
+            yield from self.work_from_filtered_dataset(array, chunk_size)
             return
         # handle offset
-        if offset > 0:
+        if self._offset > 0:
             def chunks_at_offset(it):
                 curr_offset = 0
                 for chunk in it:
                     discard = False
                     chunk_size = chunk.size
-                    if offset > curr_offset:
-                        chunk = chunk[offset-curr_offset:]
+                    if self._offset > curr_offset:
+                        chunk = chunk[self._offset-curr_offset:]
                         if chunk.size == 0:
                             discard = True
                     curr_offset += chunk_size
                     if not discard:
                         yield chunk
             it = chunks_at_offset(it)
+        # handle limit
+        if self._limit is not None:
+            def chunks_up_to_limit(it):
+                curr_offset = 0
+                for chunk in it:
+                    chunk_size = chunk.size
+                    if curr_offset + chunk_size >= self._limit:
+                        chunk = chunk[:self._limit-curr_offset]
+                        if chunk.size > 0:
+                            yield chunk  # last one
+                        return
+                    yield chunk
+                    curr_offset += chunk_size
+            it = chunks_up_to_limit(it)
         # handle column selection
         col_indexes = self.all_columns.get_indexes(self.columns)
         if col_indexes != tuple(range(len(self.all_columns))):

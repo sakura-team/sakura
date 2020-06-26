@@ -21,11 +21,11 @@ COMP_OP_TO_SQL = {
 PRINT_SQL=True
 
 class SQLSourceIterator:
-    def __init__(self, source, chunk_size, offset):
+    def __init__(self, source, chunk_size):
         self.chunk_size = chunk_size
         self.dtype = source.get_dtype()
         self.db_conn = source.data.db.connect()
-        self.cursor = source.open_cursor(self.db_conn, offset)
+        self.cursor = source.open_cursor(self.db_conn)
         if self.chunk_size == None:
             self.chunk_size = self.cursor.arraysize
     @property
@@ -66,10 +66,10 @@ class SQLDatabaseSource(SourceBase):
                 col.data.db_col = db_col
                 for subcol, db_subcol in zip(col.subcolumns, db_col.subcolumns):
                     subcol.data.db_col = db_subcol
-    def chunks(self, chunk_size = None, offset=0):
-        return SQLSourceIterator(self, chunk_size, offset)
-    def open_cursor(self, db_conn, offset=0):
-        sql_text, values = self.to_sql(offset)
+    def chunks(self, chunk_size = None):
+        return SQLSourceIterator(self, chunk_size)
+    def open_cursor(self, db_conn):
+        sql_text, values = self.to_sql()
         if PRINT_SQL:
             print(sql_text, values)
         cursor = self.data.db.dbms.driver.open_server_cursor(db_conn)
@@ -91,7 +91,7 @@ class SQLDatabaseSource(SourceBase):
                 other_row_filters.append(db_row_filter)
         bbox_row_filters = ((db_column, IN, bbox) for db_column, bbox in bbox_per_column.items())
         return tuple(other_row_filters) + tuple(bbox_row_filters)
-    def to_sql(self, offset):
+    def to_sql(self):
         selected_db_cols = tuple(col.data.db_col for col in self.columns)
         db_row_filters = tuple((col.data.db_col, comp_op, other) for col, comp_op, other in self.row_filters)
         db_row_filters = self.merge_in_bbox_row_filters(db_row_filters)
@@ -100,7 +100,7 @@ class SQLDatabaseSource(SourceBase):
         tables = set(db_col.table.name for db_col in selected_db_cols)
         tables |= set(f[0].table.name for f in db_row_filters)
         from_clause = 'FROM "' + '", "'.join(tables) + '"'
-        where_clause, sort_clause, offset_clause, filter_vals = '', '', '', ()
+        where_clause, sort_clause, offset_clause, limit_clause, filter_vals = '', '', '', '', ()
         cond_texts, cond_vals = (), ()
         for db_row_filter in db_row_filters:
             cond_info = self.db_row_filter_to_sql(db_row_filter)
@@ -112,9 +112,11 @@ class SQLDatabaseSource(SourceBase):
         if len(self.sort_columns) > 0:
             sort_db_cols = tuple(col.data.db_col for col in self.sort_columns)
             sort_clause = "ORDER BY " + ', '.join(db_col.to_sql_sort_clause() for db_col in sort_db_cols)
-        if offset > 0:
-            offset_clause = "OFFSET " + str(offset)
-        sql_text = ' '.join((select_clause, from_clause, where_clause, sort_clause, offset_clause))
+        if self._offset > 0:
+            offset_clause = "OFFSET " + str(self._offset)
+        if self._limit is not None:
+            limit_clause = "LIMIT " + str(self._limit)
+        sql_text = ' '.join((select_clause, from_clause, where_clause, sort_clause, offset_clause, limit_clause))
         return (sql_text, cond_vals)
     def db_join_cond_to_sql(self, db_join_cond):
         db_left_col, db_right_col = db_join_cond

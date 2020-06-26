@@ -14,7 +14,7 @@ class NumpyArraySource(SourceBase):
                 col_dt = array.dtype[col_label]
                 col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
                 self.add_column(col_label, col_type, **col_type_params)
-    def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE, offset=0):
+    def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE):
         array = self.data.array
         # apply row filters if any
         if len(self.row_filters) > 0:
@@ -40,10 +40,16 @@ class NumpyArraySource(SourceBase):
         # apply optional sort
         if len(self.sort_columns) > 0:
             array = np.sort(array, order=list(col._label for col in self.sort_columns))
+        # apply limit and offset
+        if self._limit is not None:
+            array = array[self._offset:self._offset+self._limit]
+        elif self._offset > 0:
+            array = array[self._offset:]
         # only keep selected columns
         col_indexes = self.all_columns.get_indexes(self.columns)
         array = array.view(NumpyChunk).__select_columns_indexes__(col_indexes)
         # iterate over resulting rows
+        offset = 0
         while offset < array.size:
             yield array[offset:offset+chunk_size].view(NumpyChunk)
             offset += chunk_size
