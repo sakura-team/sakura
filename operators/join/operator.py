@@ -22,7 +22,8 @@ class JoinOperator(Operator):
         input_col_1 = self.column_param_1.column
         input_col_2 = self.column_param_2.column
         if input_col_1 is None or input_col_2 is None:
-            return  # not ready yet
+            self.output.source = None  # not ready yet
+            return
         source_1 = self.input_1.source
         source_2 = self.input_2.source
         # apply join
