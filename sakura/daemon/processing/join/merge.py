@@ -39,6 +39,18 @@ from sakura.daemon.processing.sources.types import SourceTypes
 # on the left:  [ 3, 3, 4, 5, 6, 4, 5, 6 ]
 # on the right: [ 1, 2, 4, 4, 4, 5, 5, 5 ]
 
+print("""
+- provide another join algorithm, when the join output needs to be
+  sorted on another column
+  e.g. ... WHERE a.i = b.i order by b.j
+  1) stream b order by j
+  2) for each chunk c,
+      - get the set s of b.i values in c
+      - read stream s = a.where(i in s)
+      - join c with s on i
+      - yield chunks preserving order on b.j
+""")
+
 def merge_right_indices(left, right):
     # prevent possible out of bound case:
     # without this, last index in right_in_left_insert_idx might be len(left),
