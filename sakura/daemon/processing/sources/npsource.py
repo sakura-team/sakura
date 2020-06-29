@@ -2,6 +2,7 @@ import numpy as np
 from sakura.daemon.processing.sources.base import SourceBase
 from sakura.common.chunk import NumpyChunk
 from sakura.common.types import np_dtype_to_sakura_type
+from sakura.common.exactness import EXACT
 
 DEFAULT_CHUNK_SIZE = 100000
 
@@ -14,7 +15,9 @@ class NumpyArraySource(SourceBase):
                 col_dt = array.dtype[col_label]
                 col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
                 self.add_column(col_label, col_type, **col_type_params)
-    def chunks(self, chunk_size = DEFAULT_CHUNK_SIZE):
+    def all_chunks(self, chunk_size = None):
+        if chunk_size is None:
+            chunk_size = DEFAULT_CHUNK_SIZE
         array = self.data.array
         # apply row filters if any
         if len(self.row_filters) > 0:
@@ -51,5 +54,7 @@ class NumpyArraySource(SourceBase):
         # iterate over resulting rows
         offset = 0
         while offset < array.size:
-            yield array[offset:offset+chunk_size].view(NumpyChunk)
+            chunk = array[offset:offset+chunk_size].view(NumpyChunk)
+            chunk.exactness = EXACT
+            yield chunk
             offset += chunk_size

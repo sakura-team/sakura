@@ -1,8 +1,11 @@
 import numpy as np
-from sakura.common.chunk import NumpyChunk, reassemble_chunk_stream
+from sakura.common.chunk import NumpyChunk
+from sakura.common.exactness import EXACT
+from sakura.common.stream import reassemble_chunk_stream
 from sakura.daemon.processing.sources.base import SourceBase
 from sakura.common.ops import LOWER, LOWER_OR_EQUAL, GREATER, GREATER_OR_EQUAL, IN, EQUALS, NOT_EQUALS
 from sakura.daemon.processing.geo import GeoBoundingBox
+from sakura.daemon.processing.sort.tools import get_cut_position
 
 COMP_OP_TO_SQL_SPECIAL = {
     (EQUALS, None):     'IS NULL',
@@ -43,7 +46,7 @@ class SQLSourceIterator:
             self.release()
         if len(chunk_data) == 0:
             raise StopIteration
-        return NumpyChunk.create(chunk_data, self.dtype)
+        return NumpyChunk.create(chunk_data, self.dtype, EXACT)
     def release(self):
         if self.cursor is not None:
             self.cursor.close()
@@ -94,15 +97,6 @@ class SQLSourceIterator:
 # thus we have to compute the LIMIT/OFFSET frontier appropriately: the last
 # row of a subquery and the first row of the next one should have different
 # values on the sort columns.
-
-def get_cut_position(chunk):
-    if len(chunk) < 2:
-        return 0
-    if chunk[-2] != chunk[-1]:  # fast path
-        return chunk.size -1
-    if chunk[0] == chunk[-1]:  # fast path
-        return 0
-    return chunk.searchsorted(chunk[-1])
 
 def sqlsource_skewed_iterator(source, chunk_size):
     it = sqlsource_skewed_raw_iterator(source, chunk_size)
@@ -177,7 +171,7 @@ class SQLDatabaseSource(SourceBase):
                 col.data.db_col = db_col
                 for subcol, db_subcol in zip(col.subcolumns, db_col.subcolumns):
                     subcol.data.db_col = db_subcol
-    def chunks(self, chunk_size = None):
+    def all_chunks(self, chunk_size = None):
         if len(self.sort_columns) > 0 and self._limit is None:
             # Apply our method to skew the database engine towards quickly getting the
             # first rows (see long comment above)

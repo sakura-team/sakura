@@ -4,6 +4,7 @@ from sakura.common.io import pack, ORIGIN_ID
 from sakura.common.cache import Cache
 from sakura.common.chunk import NumpyChunk
 from sakura.common.errors import APIRequestError
+from sakura.common.exactness import EXACT
 from sakura.daemon.processing.column import Column, GeoColumn, BoundColumn
 from sakura.daemon.processing.sources.types import SourceTypes
 from sakura.daemon.csvtools import stream_csv
@@ -186,7 +187,16 @@ class SourceBase:
                 SourceBase.range_iter_cache.save(cache_key, cache_item, expiry_delay)
             return chunk
         # if we are here, stream has ended, return empty chunk
-        return NumpyChunk.empty(self.get_dtype())
+        return NumpyChunk.empty(0, self.get_dtype(), EXACT)
+    def chunks(self, chunk_size = None, allow_approximate = False):
+        if allow_approximate:
+            yield from self.all_chunks(chunk_size)
+        else:
+            for chunk in self.all_chunks(chunk_size):
+                if chunk.exact():
+                    yield chunk
+                else:
+                    print('Ignored approximate chunk:', chunk)
     def get_dtype(self, columns = None):
         if columns is None:
             columns = self.columns
@@ -239,8 +249,7 @@ class SourceBase:
             source = col_filter.filtered_sources(source)[0]
         return source
     def __iter__(self):
-        for chunk in self.chunks():
-            yield from chunk
+        yield from self.chunks()
     def sort(self, *columns):
         source = self.reinstanciate()
         source.sort_columns = columns

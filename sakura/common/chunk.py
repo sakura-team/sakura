@@ -1,5 +1,6 @@
 import numpy as np
 from sakura.common.tools import iter_uniq
+from sakura.common.exactness import EXACT, UNDEFINED
 
 def np_compact_dtype(dt):
     # recompute offsets to make dtype more compact
@@ -67,6 +68,13 @@ def np_paste_recarrays(a1, a2):
             new_array[name] = orig_array[orig_name]
         return new_array
 
+# return
+# *  -1 if a[<i>] < val
+# *  0 if a[<i>] == val
+# *  1 if a[<i>] > val
+def np_array_cmp(a, val):
+    return (a > val).astype(int) - (a < val).astype(int)
+
 # properties are computed when they are accessed;
 # as a result we do not have to deal with
 # the complexity of ndarray subclass initialization.
@@ -92,8 +100,10 @@ class NumpyChunk(np.ma.MaskedArray):
         return tuple(self.get_column(col_name)
                      for col_name in self.dtype.names)
     @staticmethod
-    def empty(dtype):
-        return np.ma.masked_array(np.empty(0, dtype)).view(NumpyChunk)
+    def empty(size, dtype, exactness):
+        chunk = np.ma.masked_array(np.empty(size, dtype)).view(NumpyChunk)
+        chunk.exactness = exactness
+        return chunk
     @staticmethod
     def check_missing_items(row, zero):
         for j, item in enumerate(row):
@@ -102,14 +112,21 @@ class NumpyChunk(np.ma.MaskedArray):
             else:
                 yield (item, False)
     @staticmethod
-    def create(chunk_data, dtype):
+    def create(chunk_data, dtype, exactness):
         chunk = np.ma.empty(len(chunk_data), dtype)
         zero = np.zeros(1, dtype)[0]
         for i, row in enumerate(chunk_data):
             values, mask = tuple(zip(*NumpyChunk.check_missing_items(row, zero)))
             chunk[i] = values
             chunk.mask[i] = mask
-        return chunk.view(NumpyChunk)
+        chunk = chunk.view(NumpyChunk)
+        chunk.exactness = exactness
+        return chunk
+    def __getstate__(self):
+        return (super().__getstate__(), self.exactness)
+    def __setstate__(self, state):
+        super().__setstate__(state[0])
+        self.exactness = state[1]
     def __reduce__(self):
         # workaround for numpy.ma.masked_array failing to deserialize
         # when we have overlapping or out-of-order fields
@@ -129,7 +146,8 @@ class NumpyChunk(np.ma.MaskedArray):
             names = self.dtype.names
             formats = tuple(self.dtype.fields[n][0] for n in names)
             ordered_dt = np.dtype(dict(names=names, formats=formats))
-            ordered_array = np.ma.array(self, ordered_dt, mask=self.mask)
+            ordered_array = np.ma.array(self, ordered_dt, mask=self.mask).view(NumpyChunk)
+            ordered_array.exactness = self.exactness
             return np.ma.MaskedArray.__reduce__(ordered_array)
     def __getitem__(self, idx):
         if isinstance(idx, tuple) and len(idx) == 2:
@@ -140,11 +158,13 @@ class NumpyChunk(np.ma.MaskedArray):
             # on masked arrays.
             new_data = np_select_columns(sub_chunk.data, col_indices).view(np.ma.MaskedArray)
             new_data.mask = np_select_columns(sub_chunk.mask, col_indices)
-            return new_data.view(NumpyChunk)
+            new_data = new_data.view(NumpyChunk)
         else:
             # call base class method
-            return np.ma.MaskedArray.__getitem__(self, idx).view(NumpyChunk)
-    def __or__(self, other):
+            new_data = np.ma.MaskedArray.__getitem__(self, idx).view(NumpyChunk)
+        new_data.exactness = self.exactness
+        return new_data
+    def __or__(self, right):
         # allow notation: left | right
         # we add columns of 'right' on the right of existing columns in left
         # ('left' and 'right' must have the same number of items)
@@ -152,24 +172,30 @@ class NumpyChunk(np.ma.MaskedArray):
         # directly on masked arrays.
         new_data = np_paste_recarrays(self.data, right.data).view(np.ma.MaskedArray)
         new_data.mask = np_paste_recarrays(self.mask, right.mask)
-        return new_data.view(NumpyChunk)
-
-def reassemble_chunk_stream(it, dt, chunk_size):
-    if chunk_size is None:
-        return it   # nothing to do
-    def reassembled(it):
-        buf_chunk = np.empty(chunk_size, dt)
-        buf_level = 0
-        for chunk in it:
-            while chunk.size > 0:
-                chunk_part = chunk[:chunk_size-buf_level]
-                buf_chunk[buf_level:buf_level+chunk_part.size] = chunk_part
-                buf_level += chunk_part.size
-                if buf_level == chunk_size:
-                    yield buf_chunk.view(NumpyChunk)
-                    buf_level = 0
-                chunk = chunk[chunk_part.size:]
-        if buf_level > 0:
-            buf_chunk = buf_chunk[:buf_level]
-            yield buf_chunk.view(NumpyChunk)
-    return reassembled(it)
+        new_data = new_data.view(NumpyChunk)
+        new_data.exactness = min(self.exactness, right.exactness)
+        return new_data
+    def __gt__(self, other):
+        if isinstance(other, tuple):
+            # we want to filter rows strictly higher than the given tuple.
+            # we must first compare first column, check if its higer, lower or equal.
+            # if its equal, we have to check second column, etc.
+            # to better use numpy optimizations, we attach a weight to columns
+            # (4, 2, 1) for instance, and sum the result of the comparisons (-1, 0 or 1
+            # multiplied by the weight).
+            comp_table = np.zeros(len(self), dtype=int)
+            coeffs = 1 << np.flip(np.arange(len(other)))
+            for col, v, coeff in zip(self.columns, other, coeffs):
+                comp_table += np_array_cmp(col, v) * coeff
+            return comp_table > 0
+        else:
+            return super().__gt__(other)
+    def exact(self):
+        if self.exactness == UNDEFINED:
+            raise Exception('Exactness of chunk has never been defined!')
+        return self.exactness == EXACT
+    def __array_finalize__(self, obj):
+        super().__array_finalize__(obj)
+        # if created from another NumpyChunk, propagate its exactness attribute
+        # otherwise, set it to UNDEFINED.
+        self.exactness = getattr(obj, 'exactness', UNDEFINED)

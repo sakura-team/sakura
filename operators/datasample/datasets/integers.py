@@ -8,13 +8,15 @@ NUM_CHUNKS = int(LEN / CHUNK_SIZE)
 COL_TYPE = ('Integers', np.uint16)
 
 def compute():
-    for _ in range(NUM_CHUNKS):
-        chunk = np.random.randint(0, 1000, CHUNK_SIZE, np.uint16)
+    for i in range(NUM_CHUNKS):
+        chunk = np.random.randint(NUM_CHUNKS, 1000, CHUNK_SIZE, np.uint16)
+        i += 1
+        chunk[-i:] = i
         yield chunk.astype([COL_TYPE])
 
 # dataset description
 SOURCE = ComputedSource(
-            'Random integers',
+            'Almost random integers',
             compute,
             compute_mode = ComputeMode.CHUNKS)
 SOURCE.add_column(*COL_TYPE)

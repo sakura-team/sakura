@@ -1,4 +1,5 @@
 import os, sys, gevent, json, pickle, traceback, ctypes, numpy as np
+from time import time
 from pathlib import Path
 from gevent.queue import Queue
 from gevent.subprocess import run, PIPE, STDOUT
@@ -354,3 +355,12 @@ class MonitoredList:
                 self.on_change.notify()
             return res
         setattr(cls, method_name, mlist_method)
+
+class Timer:
+    def __init__(self, period):
+        self.period = period
+        self.startup = time()
+    def reset(self):
+        self.startup = time()
+    def late(self):
+        return self.startup + self.period < time()
