@@ -188,6 +188,9 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
                 console.log('Could think about auto link');
                 $(modal).modal();
             }
+            $(modal).on('hidden.bs.modal', function() {
+                test_link(link.id);
+            });
         }
     );
 }
@@ -267,7 +270,7 @@ function remove_link(link, on_hub) {
     }
 
     //We first send the removing commands to the hub
-    if (link.params.length > 0)
+    if (link && link.params.length > 0)
         delete_link_params(link, true, on_hub);
     else {
         //Then to jsPlumb

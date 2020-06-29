@@ -20,8 +20,16 @@
                                             <tr>
                                                 <td valign="middle" id="modal_link_{{id}}_td_out_{{index}}" style="color:{{tab.color}};">{{tab.label}}
                                                 </td>
-                                                <td title="Drag me to another box, or click to delete my links" onclick="delete_link_param('{{id}}', 'out', '{{index}}');" name="modal_link_{{id}}_out_{{index}}" id="modal_link_{{id}}_out_{{index}}" align="right" valign="middle" width="40px">
-                                                    <div style="width: 24px; height: 24px;" draggable="{{tab.drag}}" id="svg_modal_link_{{id}}_out_{{index}}"></div>
+                                                <td title="Drag me to another box, or click to delete my links"
+                                                    onclick="delete_link_param('{{id}}', 'out', '{{index}}');"
+                                                    name="modal_link_{{id}}_out_{{index}}"
+                                                    id="modal_link_{{id}}_out_{{index}}"
+                                                    align="right"
+                                                    valign="middle"
+                                                    width="40px">
+                                                    <div  style="width: 24px; height: 24px;"
+                                                          draggable="{{tab.drag}}"
+                                                          id="svg_modal_link_{{id}}_out_{{index}}"></div>
                                                 </td>
                                             </tr>
                                             % end
@@ -61,7 +69,7 @@
                                                     </td>
                                                 </tr>
                                                 % end
-                                            </table> 
+                                            </table>
                                         </td>
                                     </tr>
                                 </table>
@@ -71,7 +79,11 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="test_link('{{id}}')">Close</button>
+                <button type="button"
+                        class="btn btn-primary"
+                        data-dismiss="modal"
+                        onclick="test_link('{{id}}')">
+                    Close</button>
             </div>
         </div>
     </div>

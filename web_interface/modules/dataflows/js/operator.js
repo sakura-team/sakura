@@ -24,6 +24,17 @@ function operators_deal_with_events(evt_name, args, proxy, cl_id, hub_inst_id) {
                         fill_in_out('output', 'op_'+cl_id+'_'+hub_inst_id);
                 });
             }
+        case 'enabled':
+            console.log('ENABLED OP', args, hub_inst_id);
+            sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                check_operator(op);
+            });
+            break;
+        case 'disabled':
+            console.log('DISABLED OP', args, hub_inst_id);
+            sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                check_operator(op);
+            });
             break;
         // default:
         //     console.log(evt_name);
