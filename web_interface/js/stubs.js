@@ -131,23 +131,27 @@ function buildListStub(idDiv, result, elt) {
             new_td.append(n_table);
             new_row.append(new_td);
 
-            //console.log('here');
             lcg.forEach( function (lelt, index) {
                 if (document.getElementById("cbColSelect"+lelt).checked) {
-                    if (lelt == 'Date' && row[lch[index]] instanceof Date) {
-                        var d = row[lch[index]].toDateString();
-                        var h = row[lch[index]].toLocaleTimeString();
-                        new_row.append('<td>'+d+'</td>');
-                    }
-                    else {
-                        if (lch[index] == 'repo_url' && row[lch[index]]) {
-                            let a = '<a href="'+row[lch[index]]+'">'+row[lch[index]]+'<a>'
-                            new_row.append('<td>'+a+'</td>');
-                        }
-                        //Revision cell for operators
-                        else if (lelt == 'Revision') {
+                    switch (lelt) {
+                        case 'Date':
+                            if (row[lch[index]] instanceof Date) {
+                                var d = row[lch[index]].toDateString();
+                                var h = row[lch[index]].toLocaleTimeString();
+                                new_row.append('<td>'+d+'</td>');
+                            }
+                            else {
+                                new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
+                            }
+                            break;
+
+                        case ('Revision'):
                             var new_td = $('<td>');
                             let cr = row.default_code_ref;
+                            if (! cr) {
+                                new_row.append('<td>&lt;not applicable&gt;</td>');
+                                break;
+                            }
                             let t = cr.split(':');
                             if (t[0] == 'branch')
                                 cr = t[1];
@@ -177,9 +181,21 @@ function buildListStub(idDiv, result, elt) {
                                 new_td.append(txt);
                             }
                             new_row.append(new_td);
-                        }
-                        else
+                            break;
+
+                        case ('CodeURL'):
+                            if (row[lch[index]]) {
+                                let a = '<a href="'+row[lch[index]]+'">'+row[lch[index]]+'<a>'
+                                new_row.append('<td>'+a+'</td>');
+                            }
+                            else {
+                                new_row.append('<td>&lt;sandbox&gt;</td>');
+                            }
+                            break;
+
+                        default:
                             new_row.append('<td>'+replace_undefined(row[lch[index]])+'</td>');
+
                     }
                 }
             });
