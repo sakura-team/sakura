@@ -5,20 +5,35 @@
 var global_dataflow_jsFlag  = true;
 var dataflow_debug          = true;
 var dataflow_events         = [ 'created_link',
-                                'deleted_link']
+                                'deleted_link',
+                                'created_instance',
+                                'deleted_instance'];
+var LOG_DATAFLOW_EVENTS     = true;
 
 function dataflows_deal_with_events(evt_name, args, proxy) {
     switch (evt_name) {
-        case 'created_link':
-            if (dataflow_debug)
+        case ('created_link'):
+            if (LOG_DATAFLOW_EVENTS) {
                 console.log(evt_name, args);
+            }
             break;
-        case 'deleted_link':
-            if (dataflow_debug)
+        case ('deleted_link'):
+            if (LOG_DATAFLOW_EVENTS) {
                 console.log(evt_name, args);
+            }
+            break;
+        case ('created_instance'):
+            let proxy = sakura.apis.hub.operators[parseInt(args)];
+            proxy.info().then( function (info) {
+                let g = { x: $('#sakura_main_div').width()/2,
+                          y: $('#sakura_main_div').height()/2};
+                create_operator_instance_from_hub(g.x, g.y, info.cls_id, info);
+            });
             break;
         default:
-            console.log('Unknown Event', evt_name);
+            if (LOG_DATAFLOW_EVENTS) {
+                console.log('Unknown Event', evt_name);
+            }
     }
 }
 
@@ -93,6 +108,7 @@ function current_dataflow() {
         //Then we ask for the instance ids
         sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
 
+            //Subscribe to hub events
             let proxy = sakura.apis.hub.dataflows[web_interface_current_id];
             if (proxy) {
                 dataflow_events.forEach( function(e) {
@@ -107,8 +123,16 @@ function current_dataflow() {
 
             df_info.op_instances.forEach( function(opi) {
                 if (opi.gui_data) {
-                    var jgui = eval("("+opi.gui_data+")");
+                    let jgui = eval("("+opi.gui_data+")");
                     create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
+                }
+                else {
+                    console.log('NO GUI for this op !!!!');
+                    let g = { x: $('#sakura_main_div').width()/2,
+                              y: $('#sakura_main_div').height()/2};
+                    sakura.apis.hub.operators[parseInt(opi.op_id)].set_gui_data(JSON.stringify(g)).then(  function(){
+                        create_operator_instance_from_hub(g.x, g.y, opi.cls_id, opi);
+                    });
                 }
             });
             create_dataflow_links(df_info.links);

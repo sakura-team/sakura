@@ -1,10 +1,10 @@
 //Code started by Michael Ortega for the LIG
 //March 20th, 2017
 
-var dataflows_link_debug = true;
+var dataflows_link_debug  = false;
+var link_events           = [ 'disabled', 'enabled'];
+var lOG_LINKS_EVENTS      = false;
 
-var link_events = [ 'disabled',
-                    'enabled']
 
 function links_deal_with_events(evt_name, args, proxy) {
     switch (evt_name) {
@@ -17,10 +17,11 @@ function links_deal_with_events(evt_name, args, proxy) {
                 console.log(evt_name, args);
             break;
         default:
-            console.log('Unknown Event', evt_name);
+            if (lOG_LINKS_EVENTS) {
+                console.log('Unknown Event', evt_name);
+        }
     }
 }
-
 
 
 function create_link(js, src_id, dst_id) {
@@ -94,7 +95,11 @@ function create_link_from_hub(js, hub_id, src_id, dst_id, out_id, in_id, gui) {
 }
 
 
-function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_inst_info, open_now, out_id, in_id, hub_id, gui) {
+function create_link_modal( p_links,  link,
+                            src_cl,   dst_cl,
+                            src_inst_info, dst_inst_info,
+                            open_now,
+                            out_id, in_id, hub_id, gui) {
 
     //Here we automatically connect tables into the link
     var auto_link = false;
@@ -184,7 +189,7 @@ function create_link_modal(p_links, link, src_cl, dst_cl, src_inst_info, dst_ins
                 $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
                 $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
             }
-            else if (auto_link) {  //means should be open now, but we don't cause we link automatically
+            else if (auto_link) {  //means should be open now, but we don't because we link automatically
                 console.log('Could think about auto link');
                 $(modal).modal();
             }

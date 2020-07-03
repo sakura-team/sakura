@@ -14,30 +14,47 @@ var op_events = [ 'disabled',
 
 var transparent_grey = 'rgba(200, 200, 200, 1)';
 
+var LOG_OPS_EVENTS = false;
+
 function operators_deal_with_events(evt_name, args, proxy, cl_id, hub_inst_id) {
     switch (evt_name) {
         case 'altered_output':
-            //console.log(evt_name, args, cl_id, hub_inst_id);
-            if (!op_reloading) {
+            if (! op_reloading) {
                 sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
                     if (check_output(op))
                         fill_in_out('output', 'op_'+cl_id+'_'+hub_inst_id);
                 });
             }
+            break;
         case 'enabled':
-            console.log('ENABLED OP', args, hub_inst_id);
-            sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
-                check_operator(op);
+            if (LOG_OPS_EVENTS) {
+                console.log('ENABLED OP', args, hub_inst_id);
+            }
+            let inst = instance_from_id(hub_inst_id);
+            remove_operator_instance('op_'+inst.cl.id+'_'+hub_inst_id, false);
+
+            let proxy = sakura.apis.hub.operators[hub_inst_id];
+            let g = { x: $('#sakura_main_div').width()/2,
+                      y: $('#sakura_main_div').height()/2};
+            proxy.set_gui_data(JSON.stringify(g)).then( function() {
+                proxy.info().then( function (opi) {
+                    create_operator_instance_from_hub(g.x, g.y, opi.cls_id, opi);
+                    check_operator(opi);
+                });
             });
             break;
         case 'disabled':
-            console.log('DISABLED OP', args, hub_inst_id);
+            if (LOG_OPS_EVENTS) {
+                console.log('DISABLED OP', args, hub_inst_id);
+            }
+            break;
+        default:
+            if (LOG_OPS_EVENTS) {
+                console.log('OP EVENT', evt_name, args);
+            }
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
                 check_operator(op);
             });
-            break;
-        // default:
-        //     console.log(evt_name);
     }
 }
 
@@ -64,6 +81,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
         ndiv.onmouseenter   = op_mouse_enter;
         ndiv.onmouseleave   = op_mouse_leave;
 
+
         main_div.appendChild(ndiv);
 
         //Plumbery: draggable + connections
@@ -88,7 +106,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
 
         //Now the modal for parameters/creation/visu/...
-        create_op_modal(main_div, ndiv.id, result);
+        create_op_modal(ndiv.id, result);
 
         global_ops_inst.push({  hub_id      : hub_id,
                                 cl          : class_from_id(parseInt(id)),
@@ -140,35 +158,17 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     //Plumbery: draggable + connections
     jsPlumb.draggable(ndiv.id, {start: jsp_drag_start, stop: jsp_drag_stop});
 
-    var e_in = null;
-    var e_out = null;
-    if (info.enabled) {
-        if ( info.inputs.length > 0) {
-            e_in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
-                                                    isTarget:true,
-                                                    uuid:"ep_"+ndiv.id+"_in",
-                                                    cssClass:"sakura_endPoint",
-                                                    paintStyle:{fillStyle:"black", radius:6},
-                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
-                                                    });
-        }
-        if (info.outputs.length > 0)
-            e_out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
-                                                    isSource:true,
-                                                    uuid:"ep_"+ndiv.id+"_out",
-                                                    cssClass:"sakura_endPoint",
-                                                    isSource: false,
-                                                    paintStyle:{fillStyle:transparent_grey, radius:6},
-                                                    hoverPaintStyle:{ fillStyle:transparent_grey, radius:6}
-                                                    });
-        create_op_modal(main_div, ndiv.id, info);
-    }
-
+    let e_in = null;
+    let e_out = null;
     global_ops_inst.push({  hub_id      : info.op_id,
                             cl          : class_from_id(parseInt(id)),
                             ep          : {in: e_in, out: e_out},
                             gui         : {x: drop_x, y: drop_y}
                             });
+    if (info.enabled) {
+        create_op_outputs(info, ndiv);
+        create_op_modal(ndiv.id, info);
+    }
 
     let proxy = sakura.apis.hub.operators[info.op_id];
     if (proxy) {
@@ -181,6 +181,31 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     else {
         console.log('Cannot subscribe_event on op', info.op_id);
     }
+}
+
+
+function create_op_outputs(info, ndiv) {
+    let inst = instance_from_id(info.op_id);
+    inst.ep.in = null;
+    inst.ep.out = null;
+    if ( info.inputs.length > 0) {
+        inst.ep.in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
+                                                isTarget:true,
+                                                uuid:"ep_"+ndiv.id+"_in",
+                                                cssClass:"sakura_endPoint",
+                                                paintStyle:{fillStyle:"black", radius:6},
+                                                hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                });
+    }
+    if (info.outputs.length > 0)
+        inst.ep.out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
+                                                isSource:true,
+                                                uuid:"ep_"+ndiv.id+"_out",
+                                                cssClass:"sakura_endPoint",
+                                                isSource: false,
+                                                paintStyle:{fillStyle:transparent_grey, radius:6},
+                                                hoverPaintStyle:{ fillStyle:transparent_grey, radius:6}
+                                                });
 }
 
 function check_operator(op) {
@@ -214,7 +239,7 @@ function check_operator(op) {
                 w_div.style.color       = 'red';
                 w_div.title             = d_message;
                 w_div.style.visibility  = "visible";
-                if (inst) output_disable(inst);
+                if (inst && inst.outputs) { output_disable(inst); }
             }
             else if (warning) {
                 w_div.style.color       = 'orange';

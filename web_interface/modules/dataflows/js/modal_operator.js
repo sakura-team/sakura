@@ -6,12 +6,12 @@ var max_rows = 10;
 var current_nb_rows = max_rows;
 var current_instance_info = null;
 
-
-function create_op_modal(main_div, op_id, info) {
+function create_op_modal(op_id, info) {
     // load in a temporary div element, then
     // append content obtained to main div.
     let cl = class_from_id(info.cls_id);
-    let wrapper= document.createElement('div');
+
+    let wrapper = document.createElement('div');
     let revision = info.code_ref+' @'+info.commit_hash.substring(0,7);
     load_from_template(
                     wrapper,

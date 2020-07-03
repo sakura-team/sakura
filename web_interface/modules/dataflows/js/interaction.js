@@ -1,7 +1,7 @@
 var currently_dragged   = null;
 var drag_delta          = [0, 0];
 
-var dataflow_interaction_debug = true;
+var dataflow_interaction_debug = false;
 
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
