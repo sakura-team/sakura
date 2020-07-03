@@ -1,7 +1,7 @@
 var currently_dragged   = null;
 var drag_delta          = [0, 0];
 
-var dataflow_interaction_debug = false;
+var dataflow_interaction_debug = true;
 
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
@@ -43,9 +43,10 @@ main_div.addEventListener("drop", function( e ) {
                                         e.clientY - rect.top - drag_delta[1] + e.target.scrollTop,
                                         op.id.split("_").slice(-2)[0]);
     }
+
     //Link params
     else if (currently_dragged && currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
-        if (dataflow_interaction_debug) console.log('DROPPING LINK');
+        if (dataflow_interaction_debug) console.log('DROPPING PARAM');
 
         var param_out = currently_dragged;
         var param_in = e.target.parentElement.parentElement;
@@ -61,18 +62,18 @@ main_div.addEventListener("drop", function( e ) {
             param_out = e.target.parentElement.parentElement;
         }
 
-        var tab1 = param_out.id.split("_");
-        var out_id = parseInt(tab1[6]);
-        var in_id = parseInt(param_in.id.split("_")[6]);
+        let tab1 = param_out.id.split("_");
+        let out_id = parseInt(tab1[6]);
+        let in_id = parseInt(param_in.id.split("_")[6]);
 
         var link = link_from_id('con_'+parseInt(tab1[4]));
-
         if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
             sakura.apis.hub.links.create(link.src, out_id, link.dst, in_id).then(function (link_id_from_hub) {
+                console.log('CREATION SENT');
 
                 //local creation
-                var line = create_link_line(link, out_id, in_id);
-                var svg_line = document.getElementById("line_modal_link_"+link.id+"_"+out_id+"_"+in_id);
+                let line = create_link_line(link.id, out_id, in_id);
+                let svg_line = document.getElementById("line_modal_link_"+link.id+"_"+out_id+"_"+in_id);
                 link.params.push({  'out_id':   out_id,
                                     'in_id':    in_id,
                                     'hub_id':   parseInt(link_id_from_hub),
@@ -81,18 +82,16 @@ main_div.addEventListener("drop", function( e ) {
                                     'line':     line});
 
                 //changing svgs
-                var div_out = document.getElementById(param_out.id)
-                var div_in  = document.getElementById(param_in.id);
-                div_in.innerHTML = svg_round_square_crossed("");
-                div_out.innerHTML = svg_round_square_crossed("");
+                let div_in  = document.getElementById(param_in.id);
+                document.getElementById(param_in.id).innerHTML = svg_round_square_crossed("");
+                document.getElementById(param_out.id).innerHTML = svg_round_square_crossed("");
 
                 currently_dragged = null;
                 save_dataflow();
                 refresh_link_modal(link);
-
             }).catch (function(error) {
                 if (dataflow_interaction_debug) console.log('DID 1:', error);
-          });
+            });
         }
         else {
             console.log("Already exists !!");
@@ -137,9 +136,13 @@ $(window).bind('keypress', function(e){
 $('#sakura_operator_contextMenu').on("click", "a", function(e) {
     var val = e.target.attributes['value'].value;
     if (val == 'Delete') {
-        remove_operator_instance(op_focus_id, true);
-        jsPlumb.repaintEverything();
-        $('#sakura_operator_contextMenu').hide();
+        let tab = op_focus_id.split("_");
+        let hub_id = parseInt(tab[2]);
+        sakura.apis.hub.operators[hub_id].delete().then( function (result) {
+            $('#sakura_operator_contextMenu').hide();
+        }).catch( function(error) {
+            console.log('ERROR REMOVING OP ', error);
+        });
     }
     else if (val == 'Info') {
         var op_cl = class_from_id(parseInt(op_focus_id.split("_")[1]));

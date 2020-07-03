@@ -14,77 +14,96 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
     switch (evt_name) {
         case ('created_link'):
             if (LOG_DATAFLOW_EVENTS) {
-                console.log(evt_name, args);
+                sakura.apis.hub.links[args].info().then(function (link) {
+                    console.log('----');
+                    console.log(evt_name, args);
+                    console.log(link);
+                    console.log('----');
+                    create_dataflow_links([link], from_shell=true);
+                });
             }
             break;
+
         case ('deleted_link'):
-            if (LOG_DATAFLOW_EVENTS) {
-                console.log(evt_name, args);
-            }
+            if (LOG_DATAFLOW_EVENTS) {  console.log(evt_name, args);  }
             break;
+
         case ('created_instance'):
-            let proxy = sakura.apis.hub.operators[parseInt(args)];
-            proxy.info().then( function (info) {
-                let g = { x: $('#sakura_main_div').width()/2,
-                          y: $('#sakura_main_div').height()/2};
-                create_operator_instance_from_hub(g.x, g.y, info.cls_id, info);
-            });
-            break;
-        default:
-            if (LOG_DATAFLOW_EVENTS) {
-                console.log('Unknown Event', evt_name);
+            if (LOG_DATAFLOW_EVENTS) {  console.log('CREATED INSTANCE', args);  }
+
+            if (! waiting_gui) {
+                waiting_gui = { x: $('#sakura_main_div').width()/2,
+                                y: $('#sakura_main_div').height()/2};
             }
+            instances_waiting_for_creation.push({id: args, gui: waiting_gui});
+            waiting_gui = null;
+
+            let proxy = sakura.apis.hub.operators[args];
+            if (proxy) {
+                op_events.forEach( function(e) {
+                  proxy.subscribe_event(e, function(evt_name, argus) {
+                        operators_deal_with_events(evt_name, argus, proxy, args);
+                  });
+              });
+            }
+            else {  console.log('Cannot subscribe_event on op', args);  }
+
+            break;
+
+        case ('deleted_instance'):
+            if (LOG_DATAFLOW_EVENTS) {  console.log('DELETED INSTANCE', args);  }
+            let inst = instance_from_id(args);
+            remove_operator_instance('op_'+inst.cl.id+"_"+inst.hub_id, false);
+            break;
+
+        default:
+            if (LOG_DATAFLOW_EVENTS) {  console.log('Unknown Event', evt_name); }
     }
 }
 
 
 //This function is apart because of the asynchronous aspect of ws.
 //Links can only be recovered after recovering all operator instances
-function create_dataflow_links(df_links) {
-
+function create_dataflow_links(df_links, from_shell=false) {
     //Creating the links
-    df_links.forEach( function (link) {
-        if (true){//link.enabled) {
-            var lgui = eval("("+link.gui_data+")");
-            if (! link_exist(link.src_id, link.dst_id)) {
-                var src_inst = instance_from_id(link.src_id);
-                var dst_inst = instance_from_id(link.dst_id);
+    for (let i=0; i < df_links.length; i++) {
+        let link = df_links[i];
+        let lgui = {};
+        if (link.gui_data !== "") {
+            lgui = eval("("+link.gui_data+")");
+        }
+        if (! link_exist(link.src_id, link.dst_id)) {
+            //jsPlumb creation
+            let src_inst = instance_from_id(link.src_id);
+            let dst_inst = instance_from_id(link.dst_id);
+            
+            global_dataflow_jsFlag = false;
+            js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
+                                                dst_inst.ep.in.getUuid()]});
+            global_dataflow_jsFlag = true;
 
-                //jsPlumb creation
-                global_dataflow_jsFlag = false;
-                js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
-                                                    dst_inst.ep.in.getUuid()]});
-                global_dataflow_jsFlag = true;
-
-                //our creation
-                create_link_from_hub( js_link, link.link_id, link.src_id,
-                                      link.dst_id, link.src_out_id,
-                                      link.dst_in_id, lgui);
-            }
-            else {
-                var link = link_from_instances(link.src_id, link.dst_id);
-                var interval_id = null;
-                var check_modal = function () {
-                    if (link.modal) {
-                        link.params.push({  'out_id': link.src_out_id,
-                                            'in_id': link.dst_in_id,
-                                            'hub_id': link.link_id,
-                                            'top':    lgui.top,
-                                            'left':   lgui.left,
-                                            'line':  lgui.line});
-                        $("#svg_modal_link_"+link.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
-                        $("#svg_modal_link_"+link.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
-                        copy_link_line(link, link.src_out_id, link.dst_in_id, lgui);
-                        clearInterval(interval_id);
-                    }
-                }
-                interval_id = setInterval(check_modal, 500);
-            }
+            create_link_from_hub( js_link, link, lgui, from_shell);
         }
         else {
-            console.log('LINK DISABLE');
+            link = link_from_instances(link.src_id, link.dst_id);
+            let interval_id = null;
+            let check_modal = function () {
+                if (link.modal) {
+                    link.params.push({  'out_id': link.src_out_id,
+                                        'in_id': link.dst_in_id,
+                                        'hub_id': link.link_id,
+                                        'top':    lgui.top,
+                                        'left':   lgui.left,
+                                        'line':  lgui.line});
+                    $("#svg_modal_link_"+link.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
+                    $("#svg_modal_link_"+link.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
+                    copy_link_line(link, link.src_out_id, link.dst_in_id, lgui);
+                    clearInterval(interval_id);
+                }
+            }
+            interval_id = setInterval(check_modal, 500);
         }
-    });
+    };
 }
 
 function current_dataflow() {
@@ -215,9 +234,11 @@ function save_dataflow() {
     });
 
     //Finally the links
-    let p_to_clean = [];
-    global_links.forEach( function(link) {
-        link.params.forEach( function(param, index) {
+    for (let i=0; i< global_links.length; i++) {
+        let link = global_links[i];
+        for (let j=0; j< link.params.length; j++) {
+            let param = link.params[j];
+            //if -> Bad behavior of length with object arrays
             if (param.out_id !== undefined) {
                 var js = JSON.stringify({'op_src':  link.src,
                                         'op_dst':   link.dst,
@@ -226,19 +247,8 @@ function save_dataflow() {
                                         'line':     param.line});
                 sakura.apis.hub.links[parseInt(param.hub_id)].set_gui_data(js);
             }
-            else {
-                console.log('BAD RESIDUAL LINK :');
-                console.log(param, index);
-                p_to_clean.push(index);
-            }
-        });
-        if (p_to_clean.length) {
-            p_to_clean.reverse().forEach( function(i) {
-                link.params.splice(i, 1);
-            });
-            p_to_clean = [];
-        }
-    });
+        };
+    };
 };
 
 function clean_dataflow() {

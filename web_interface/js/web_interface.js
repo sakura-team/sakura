@@ -93,8 +93,6 @@ function web_interface_deal_with_events(evt_name, args) {
                 }
             }
             break;
-        case 'altered_output':
-            console.log('ALTERED OUTPUT', args);
         default:
             //if (DEBUG)
                 console.log('Unmanaged event', evt_name);

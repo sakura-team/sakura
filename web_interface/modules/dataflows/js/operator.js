@@ -14,121 +14,75 @@ var op_events = [ 'disabled',
 
 var transparent_grey = 'rgba(200, 200, 200, 1)';
 
-var LOG_OPS_EVENTS = false;
+var LOG_OPS_EVENTS = true;
+var dataflows_operators_debug = false;
 
-function operators_deal_with_events(evt_name, args, proxy, cl_id, hub_inst_id) {
+function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
     switch (evt_name) {
         case 'altered_output':
             if (! op_reloading) {
                 sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
-                    if (check_output(op))
-                        fill_in_out('output', 'op_'+cl_id+'_'+hub_inst_id);
+                    if (check_output(op)) {
+                        fill_in_out('output', 'op_'+op.cls_id+'_'+hub_inst_id);
+                    }
+                }).catch ( function (error) {
+                    console.log('OPERATORS.js: error 1', error);
                 });
             }
             break;
         case 'enabled':
-            if (LOG_OPS_EVENTS) {
-                console.log('ENABLED OP', args, hub_inst_id);
-            }
-            let inst = instance_from_id(hub_inst_id);
-            remove_operator_instance('op_'+inst.cl.id+'_'+hub_inst_id, false);
+            if (LOG_OPS_EVENTS) { console.log('ENABLED OP', args, hub_inst_id); }
 
-            let proxy = sakura.apis.hub.operators[hub_inst_id];
-            let g = { x: $('#sakura_main_div').width()/2,
-                      y: $('#sakura_main_div').height()/2};
-            proxy.set_gui_data(JSON.stringify(g)).then( function() {
-                proxy.info().then( function (opi) {
-                    create_operator_instance_from_hub(g.x, g.y, opi.cls_id, opi);
-                    check_operator(opi);
+            let inst_index = -1;
+            for (let i=0; i< instances_waiting_for_creation.length; i++) {
+                if  (instances_waiting_for_creation[i].id == hub_inst_id) {
+                    inst_index = i;
+                }
+            };
+            console.log('INST', instances_waiting_for_creation[inst_index]);
+            if ( inst_index != -1) {
+                let proxy = sakura.apis.hub.operators[hub_inst_id];
+                let g = { x: instances_waiting_for_creation[inst_index].gui.x,
+                          y: instances_waiting_for_creation[inst_index].gui.y
+                        }
+                proxy.set_gui_data(JSON.stringify(g)).then( function() {
+                    proxy.info().then( function (opi) {
+                        create_operator_instance_from_hub(g.x,
+                                                          g.y,
+                                                          opi.cls_id, opi);
+                        check_operator(opi);
+                    }).catch ( function (error) {
+                        console.log('OPERATORS.js: error 2', error);
+                    });
+                }).catch ( function (error) {
+                    console.log('OPERATORS.js: error 3', error);
                 });
-            });
+
+                //remove from waiting list
+                instances_waiting_for_creation.pop(inst_index);
+            }
+            else {
+                console.log('SHOULD NOT CREATE OP');
+            }
             break;
         case 'disabled':
-            if (LOG_OPS_EVENTS) {
-                console.log('DISABLED OP', args, hub_inst_id);
-            }
+            if (LOG_OPS_EVENTS) { console.log('DISABLED OP', args, proxy, hub_inst_id);}
             break;
         default:
-            if (LOG_OPS_EVENTS) {
-                console.log('OP EVENT', evt_name, args);
-            }
+            let en = evt_name;
+            if (LOG_OPS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
                 check_operator(op);
+            }).catch ( function (error) {
+                console.log('OPERATORS.js: error 4, event: ', en, ', ', error);
             });
     }
 }
 
 function create_operator_instance_on_hub(drop_x, drop_y, id) {
+    waiting_gui = {x: drop_x, y: drop_y}
     //We first send the creation command to the sakura hub
     sakura.apis.hub.operators.create(web_interface_current_id, parseInt(id)).then(function (result) {
-        var hub_id = result.op_id;
-
-        //Then we create the instance here
-        var ndiv = document.getElementById('select_op_selected_'+id+'_static').cloneNode(true);
-
-        //New div creation (cloning)
-        ndiv.id = "op_" + id + "_" + hub_id;
-        ndiv.classList.add("sakura_dynamic_operator");
-        ndiv.setAttribute('draggable', 'false');
-        ndiv.childNodes[1].id = ndiv.id+"_help";
-        ndiv.childNodes[2].id = ndiv.id+"_warning";
-
-        ndiv.style.left     = drop_x+"px";
-        ndiv.style.top      = drop_y+"px";
-
-        ndiv.ondblclick     = open_op_modal;
-        ndiv.onclick        = op_click;
-        ndiv.onmouseenter   = op_mouse_enter;
-        ndiv.onmouseleave   = op_mouse_leave;
-
-
-        main_div.appendChild(ndiv);
-
-        //Plumbery: draggable + connections
-        jsPlumb.draggable(ndiv.id, {start: jsp_drag_start, stop: jsp_drag_stop});
-
-        var e_in = null;
-        var e_out = null;
-        if ( result.inputs.length > 0)
-            e_in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
-                                                    isTarget:true,
-                                                    cssClass:"sakura_endPoint",
-                                                    paintStyle:{fillStyle:"black", radius:6},
-                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
-                                                    });
-        if (result.outputs.length > 0)
-            e_out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
-                                                    isSource:true,
-                                                    cssClass:"sakura_endPoint",
-                                                    paintStyle:{fillStyle:"black", radius:6},
-                                                    hoverPaintStyle:{ fillStyle:"black", radius:10}
-                                                    });
-
-
-        //Now the modal for parameters/creation/visu/...
-        create_op_modal(ndiv.id, result);
-
-        global_ops_inst.push({  hub_id      : hub_id,
-                                cl          : class_from_id(parseInt(id)),
-                                ep          : {in: e_in, out: e_out},
-                                gui         : {x: drop_x, y: drop_y}
-                                });
-
-        let proxy = sakura.apis.hub.operators[hub_id];
-        if (proxy) {
-            op_events.forEach( function(e) {
-              proxy.subscribe_event(e, function(evt_name, args) {
-                    operators_deal_with_events(evt_name, args, proxy, id, hub_id);
-              });
-          });
-        }
-        else {
-            console.log('Cannot subscribe_event on op', info.op_id);
-        }
-
-        //Now we add the current coordinates of the operator to the hub
-        save_dataflow();
-        check_operator(result);
     }).catch( function (error){
         console.log('Error 7:', error)
     });
@@ -165,6 +119,7 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                             ep          : {in: e_in, out: e_out},
                             gui         : {x: drop_x, y: drop_y}
                             });
+
     if (info.enabled) {
         create_op_outputs(info, ndiv);
         create_op_modal(ndiv.id, info);
@@ -174,8 +129,11 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     if (proxy) {
         op_events.forEach( function(e) {
           proxy.subscribe_event(e, function(evt_name, args) {
-                operators_deal_with_events(evt_name, args, proxy, id, info.op_id);
+                operators_deal_with_events(evt_name, args, proxy, info.op_id);
           });
+          // .catch ( function (error) {
+          //     console.log('OPERATORS.js: error 5', error);
+          // });
       });
     }
     else {
@@ -272,6 +230,10 @@ function reload_operator_instance(id, hub_id) {
                                 null, 2);
             op_reloading = false;
             current_dataflow();
+        }).catch ( function (error) {
+            console.log('OPERATORS.js: error 6', error);
+        }).catch ( function (error) {
+            console.log('OPERATORS.js: error 7', error);
         });
     });
 }
@@ -302,9 +264,8 @@ function remove_operator_instance(id, on_hub) {
         if (id && on_hub) {
             //console.log(hub_id);
             sakura.apis.hub.operators[hub_id].delete().then( function (result) {
-                //console.log('REMOVE OP: ', result);
-            }).catch( function(error) {
-                console.log('ERROR REMOVING OP ', error);
+            }).catch ( function (error) {
+                console.log('OPERATORS.js: error 8', error);
             });
         }
     }
@@ -398,7 +359,7 @@ function instance_from_id(id) {
 
 
 function instance_index_from_id(hid) {
-    for (var i=0; i< global_ops_inst.length; i++)
+    for (let i = 0; i< global_ops_inst.length; i++)
         if (global_ops_inst[i].hub_id == hid)
             return i;
     return -1
@@ -439,17 +400,20 @@ function output_disable(inst) {
 }
 
 function check_output(op) {
-    if (op.outputs) {
+    if (op.outputs && op.outputs.length) {
         let enable = false;
+        let inst = instance_from_id(op.op_id);
+
         op.outputs.forEach( function (o) {
             if (o.enabled) enable = true;
         });
-        let inst = instance_from_id(op.op_id);
         (inst && enable) ? output_enable(inst) : output_disable(inst);
         return true;
     }
     else {
-        console.log('This op has no outputs:', op);
+        if (dataflows_operators_debug) {
+            console.log('This op has no outputs:', op);
+        }
         return false;
     }
 }

@@ -6,6 +6,10 @@ var main_div = document.getElementById('sakura_main_div');
 var cursorX;
 var cursorY;
 
+
+instances_waiting_for_creation = [];
+waiting_gui = null;
+
 document.onmousemove = function(e){
     cursorX = e.pageX;
     cursorY = e.pageY;

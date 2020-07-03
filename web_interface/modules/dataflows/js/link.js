@@ -3,7 +3,7 @@
 
 var dataflows_link_debug  = false;
 var link_events           = [ 'disabled', 'enabled'];
-var lOG_LINKS_EVENTS      = false;
+var lOG_LINKS_EVENTS      = true;
 
 
 function links_deal_with_events(evt_name, args, proxy) {
@@ -25,9 +25,12 @@ function links_deal_with_events(evt_name, args, proxy) {
 
 
 function create_link(js, src_id, dst_id) {
+    if (dataflows_link_debug) {console.log('CREATE LINK', js, src_id, dst_id);}
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
+        console.log('POSS LINKS', possible_links.length, possible_links);
         if (possible_links.length == 0) {
-            alert("These two operators cannot be linked");
+            // alert("These two operators cannot be linked");
+            main_alert("LINK", 'These two operators cannot be linked', null);
             jsPlumb.detach(js);
             jsPlumb.repaintEverything();
             return false;
@@ -62,32 +65,41 @@ function create_link(js, src_id, dst_id) {
     }).catch( function(error) {
         if (dataflows_link_debug) console.log('CL 1', error);
     });
+    js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});
+    jsPlumb.repaintEverything();
 }
 
 
-function create_link_from_hub(js, hub_id, src_id, dst_id, out_id, in_id, gui) {
+function create_link_from_hub(js, link, gui, from_shell=false) {
+    if (dataflows_link_debug) {console.log('CREATE LINK FROM HUB');}
     let l = global_links.push({ 'id': js.id,
-                                'src': src_id,
-                                'dst': dst_id,
+                                'src': link.src_id,
+                                'dst': link.dst_id,
                                 'params': [],
                                 'modal': false,
                                 'jsP': js});
     js.setDetachable(false);
-    sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
-        sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
-            sakura.apis.hub.operators[dst_id].info().then(function (target_inst_info) {
+    if (!link.enabled) {
+        js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});
+        js.setHoverPaintStyle({strokeStyle: transparent_grey, radius: 6});
+    }
+
+    sakura.apis.hub.links.list_possible(link.src_id, link.dst_id).then(function (possible_links) {
+        sakura.apis.hub.operators[link.src_id].info().then(function (source_inst_info) {
+            sakura.apis.hub.operators[link.dst_id].info().then(function (target_inst_info) {
 
                 create_link_modal(  possible_links,
                                     global_links[l - 1],
-                                    instance_from_id(src_id).cl,
-                                    instance_from_id(dst_id).cl,
+                                    instance_from_id(link.src_id).cl,
+                                    instance_from_id(link.dst_id).cl,
                                     source_inst_info,
                                     target_inst_info,
                                     false,
-                                    out_id,
-                                    in_id,
-                                    hub_id,
-                                    gui);
+                                    link.src_out_id,
+                                    link.dst_in_id,
+                                    link.link_id,
+                                    gui,
+                                    from_shell);
                 global_links[l - 1].modal = true;
             });
         });
@@ -99,14 +111,16 @@ function create_link_modal( p_links,  link,
                             src_cl,   dst_cl,
                             src_inst_info, dst_inst_info,
                             open_now,
-                            out_id, in_id, hub_id, gui) {
+                            out_id, in_id, hub_id, gui,
+                            from_shell ) {
+
+    console.log('CREATING MODAL LINK');
 
     //Here we automatically connect tables into the link
-    var auto_link = false;
-    if (src_inst_info['outputs'].length == 1 && dst_inst_info['inputs'].length == src_inst_info['outputs'].length) {
-        auto_link = true;
-    }
-
+    // var auto_link = false;
+    // if (src_inst_info['outputs'].length == 1 && dst_inst_info['inputs'].length == src_inst_info['outputs'].length) {
+    //     auto_link = true;
+    // }
     for (var i=0; i < src_inst_info['outputs'].length; i++) {
         var found = false;
         p_links.forEach( function(item) {
@@ -176,9 +190,16 @@ function create_link_modal( p_links,  link,
 
             // append to main div
             main_div.appendChild(modal);
-            if (open_now && !auto_link)
+            if (open_now) {
                 $(modal).modal();
+            }
             else if (!open_now) {
+                // if (from_shell) {
+                //     gui.line  = create_link_line(link.id, out_id, in_id);
+                //     let svg_line = document.getElementById("line_modal_link_"+link.id+"_"+out_id+"_"+in_id);
+                //     gui.top   = svg_line.style.top;
+                //     gui.left  = svg_line.style.left;
+                // }
                 link.params.push({  'out_id': out_id,
                                     'in_id': in_id,
                                     'hub_id': hub_id,
@@ -188,11 +209,17 @@ function create_link_modal( p_links,  link,
                 copy_link_line(link, out_id, in_id, gui);
                 $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
                 $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
+
+                if (from_shell) {
+                    check_operator(src_inst_info);
+                    check_operator(dst_inst_info);
+                }
             }
-            else if (auto_link) {  //means should be open now, but we don't because we link automatically
-                console.log('Could think about auto link');
-                $(modal).modal();
-            }
+            // else if (auto_link) {  //means should be open now, but we don't because we link automatically
+            //     console.log('Could think about auto link');
+            //     $(modal).modal();
+            // }
+
             $(modal).on('hidden.bs.modal', function() {
                 test_link(link.id);
             });
@@ -264,8 +291,9 @@ function test_link(link, on_hub) {
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
-    if (link.params.length == 0)
-        remove_link(link, on_hub)
+    if (link && link.params.length == 0) {
+        remove_link(link, on_hub);
+    }
 }
 
 
@@ -274,6 +302,7 @@ function remove_link(link, on_hub) {
         link = link_from_id(link);
     }
 
+    if (dataflows_link_debug) console.log('REMOVE_LINK');
     //We first send the removing commands to the hub
     if (link && link.params.length > 0)
         delete_link_params(link, true, on_hub);
@@ -341,11 +370,13 @@ function delete_link_params(link, and_main_link, on_hub) {
     for (var i=0; i< link.params.length; i++) {
         var para = link.params[i];
         if (on_hub) {
-            sakura.apis.hub.links[para.hub_id].delete().then(function (result) {
-                if (result) {
-                    console.log("Issue with 'delete_link' function from hub:", result);
-                }
-            });
+            if (para.hub_id) {
+                sakura.apis.hub.links[para.hub_id].delete().then(function (result) {
+                    if (result) {
+                        console.log("Issue with 'delete_link' function from hub:", result);
+                    }
+                });
+            }
         }
         var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+para.out_id);
         var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
@@ -407,23 +438,31 @@ function delete_link_param(link, side, id, on_hub) {
 }
 
 
-function create_link_line(link, _out, _in) {
+function create_link_line(link_id, _out, _in) {
+    let new_div = false;
 
     //Making a fake connection
-    var mdiv = document.getElementById("modal_link_"+link.id+"_body");
-    var svg_div = document.createElement('div');
-    svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
+    let mdiv = document.getElementById("modal_link_"+link_id+"_body");
+
+    let line_id = "line_modal_link_"+link_id+"_"+_out+"_"+_in;;
+    let svg_div = document.getElementById(line_id);
+    if (svg_div == null) {
+        new_div = true;
+        svg_div = document.createElement('div');
+        svg_div.id = line_id;
+    }
+
     svg_div.style.position = 'absolute';
 
-    var rect0 = document.getElementById("modal_link_"+link.id+"_dialog").getBoundingClientRect();
-    var rect1 = document.getElementById("svg_modal_link_"+link.id+'_out_'+_out).getBoundingClientRect();
-    var rect2 = document.getElementById("svg_modal_link_"+link.id+'_in_'+_in).getBoundingClientRect();
+    let rect0 = document.getElementById("modal_link_"+link_id+"_dialog").getBoundingClientRect();
+    let rect1 = document.getElementById("svg_modal_link_"+link_id+'_out_'+_out).getBoundingClientRect();
+    let rect2 = document.getElementById("svg_modal_link_"+link_id+'_in_'+_in).getBoundingClientRect();
 
-    var w = Math.abs(rect2.x-rect1.x-24+2);
-    var h = Math.abs(rect2.y-rect1.y+2);
+    let w = Math.abs(rect2.x-rect1.x-24+2);
+    let h = Math.abs(rect2.y-rect1.y+2);
 
     svg_div.style.left = (rect1.x-rect0.x+24-1)+'px';
-    var svg = '';
+    let svg = '';
     if (parseInt(rect2.y) - parseInt(rect1.y) >= 0) {
         svg_div.style.top = (rect1.y-rect0.y+12-1)+'px';
         svg = '<svg height="'+(h+20)+'" width="'+(w)+'"> \
@@ -438,7 +477,9 @@ function create_link_line(link, _out, _in) {
     }
 
     svg_div.innerHTML = svg;
-    mdiv.appendChild(svg_div);
+    if (new_div) {
+        mdiv.appendChild(svg_div);
+    }
     return svg;
 }
 
@@ -446,14 +487,14 @@ function create_link_line(link, _out, _in) {
 function copy_link_line(link, _out, _in, gui) {
 
     //Making a fake connection
-    var mdiv = document.getElementById("modal_link_"+link.id+"_body");
-    var svg_div = document.createElement('div');
+    let mdiv = document.getElementById("modal_link_"+link.id+"_body");
+    let svg_div = document.createElement('div');
     svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
     svg_div.style.position = 'absolute';
 
     svg_div.style.left = gui.left;
     svg_div.style.top = gui.top;
-    svg = gui.line;
+    let svg = gui.line;
 
     svg_div.innerHTML = svg;
     mdiv.appendChild(svg_div);
@@ -462,9 +503,26 @@ function copy_link_line(link, _out, _in, gui) {
 
 function open_link_params(conn_id) {
     refresh_link_modal(link_from_id(conn_id));
+    $('#modal_link_'+conn_id).on('shown.bs.modal', function (e) {
+        check_link_params(conn_id);
+    });
     $('#modal_link_'+conn_id).modal();
     setTimeout(function() {
     }, 200);
+}
+
+function check_link_params(conn_id) {
+    let link = link_from_id(conn_id);
+    let para = link.params;
+    for (let i = 0; i< para.length; i++) {
+        if (! para[i].top) {
+            let line = create_link_line(link.id, para[i].out_id, para[i].in_id);
+            let svg_line = document.getElementById("line_modal_link_"+link.id+"_"+para[i].out_id+"_"+para[i].in_id);
+            link.params.top   = svg_line.style.top;
+            link.params.left  = svg_line.style.left;
+            link.params.line  = line;
+        }
+    }
 }
 
 function link_from_id(id) {
