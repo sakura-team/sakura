@@ -131,12 +131,19 @@ class NumpyChunk(np.ma.MaskedArray):
             ordered_dt = np.dtype(dict(names=names, formats=formats))
             ordered_array = np.ma.array(self, ordered_dt, mask=self.mask)
             return np.ma.MaskedArray.__reduce__(ordered_array)
-    def __select_columns_indexes__(self, col_indexes):
-        # workaround the fact np_select_columns() does not work directly
-        # on masked arrays.
-        new_data = np_select_columns(self.data, col_indexes).view(np.ma.MaskedArray)
-        new_data.mask = np_select_columns(self.mask, col_indexes)
-        return new_data.view(NumpyChunk)
+    def __getitem__(self, idx):
+        if isinstance(idx, tuple) and len(idx) == 2:
+            # allow notation: chunk[<rows>,<cols>]
+            rows, col_indices = idx
+            sub_chunk = self[rows]
+            # workaround the fact np_select_columns() does not work directly
+            # on masked arrays.
+            new_data = np_select_columns(sub_chunk.data, col_indices).view(np.ma.MaskedArray)
+            new_data.mask = np_select_columns(sub_chunk.mask, col_indices)
+            return new_data.view(NumpyChunk)
+        else:
+            # call base class method
+            return np.ma.MaskedArray.__getitem__(self, idx).view(NumpyChunk)
     def __paste_right__(self, right):
         # add columns of 'right' on the right of existing columns in self
         # ('self' and 'right' must have the same number of items)

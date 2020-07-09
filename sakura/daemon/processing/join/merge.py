@@ -206,8 +206,8 @@ def merge_join(left_s, right_s, left_col, right_col):
                 # compute merge indices
                 left_indices, right_indices = get_join_indices(left_col0, right_col0)
                 if left_indices is not None:  # note: if not None, then right_indices is not None either
-                    left = left_chunk[left_indices].__select_columns_indexes__(left_col_indices)
-                    right = right_chunk[right_indices].__select_columns_indexes__(right_col_indices)
+                    left = left_chunk[left_indices, left_col_indices]
+                    right = right_chunk[right_indices, right_col_indices]
                     merged = left.__paste_right__(right)
                     yield merged
                 # forward for next loop

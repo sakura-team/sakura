@@ -47,7 +47,7 @@ class NumpyArraySource(SourceBase):
             array = array[self._offset:]
         # only keep selected columns
         col_indexes = self.all_columns.get_indexes(self.columns)
-        array = array.view(NumpyChunk).__select_columns_indexes__(col_indexes)
+        array = array.view(NumpyChunk)[:,col_indexes]
         # iterate over resulting rows
         offset = 0
         while offset < array.size:

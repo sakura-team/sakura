@@ -129,8 +129,8 @@ def sqlsource_skewed_raw_iterator(orig_source, chunk_size):
         source = work_source.offset(offset).limit(limit)
         it = SQLSourceIterator(source, chunk_size)
         for chunk in it:
-            sort_cols_chunk = chunk.__select_columns_indexes__(sort_col_indexes)
-            other_cols_chunk = chunk.__select_columns_indexes__(other_col_indexes)
+            sort_cols_chunk = chunk[:,sort_col_indexes]
+            other_cols_chunk = chunk[:,other_col_indexes]
             # if for all rows of new chunk sort columns equal the previous value,
             # hold it as a whole (we check the last value only, since the chunk is ordered...)
             if curr_sort_columns is not None and sort_cols_chunk[-1] == curr_sort_columns:
