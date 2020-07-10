@@ -144,9 +144,10 @@ class NumpyChunk(np.ma.MaskedArray):
         else:
             # call base class method
             return np.ma.MaskedArray.__getitem__(self, idx).view(NumpyChunk)
-    def __paste_right__(self, right):
-        # add columns of 'right' on the right of existing columns in self
-        # ('self' and 'right' must have the same number of items)
+    def __or__(self, other):
+        # allow notation: left | right
+        # we add columns of 'right' on the right of existing columns in left
+        # ('left' and 'right' must have the same number of items)
         # again, we work around the fact np_paste_recarrays() does not work
         # directly on masked arrays.
         new_data = np_paste_recarrays(self.data, right.data).view(np.ma.MaskedArray)
