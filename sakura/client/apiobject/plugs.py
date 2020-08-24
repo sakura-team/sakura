@@ -1,5 +1,6 @@
 from sakura.client.apiobject.base import APIObjectBase
 from sakura.client.apiobject.observable import APIObservableEvent
+from sakura.client.resultset import ResultSet
 
 # factorize here what's common to input and output plugs
 def get_plug_impl_cls(remote_plug, op_activate_events, op_id, plug_id):
@@ -14,11 +15,33 @@ def get_plug_impl_cls(remote_plug, op_activate_events, op_id, plug_id):
         def on_change(self):
             if not hasattr(self, '_on_change'):
                 self._on_change = APIObservableEvent()
+                self._on_change.subscribe(self._discard_resultset)
                 op_activate_events()
             return self._on_change
+        @property
+        def _resultset(self):
+            if not hasattr(self, '_internal_resultset'):
+                it = remote_plug.chunks(allow_approximate = True)
+                self._internal_resultset = ResultSet(self.dtype, it)
+            return self._internal_resultset
+        def _discard_resultset(self):
+            if hasattr(self, '_internal_resultset'):
+                delattr(self, '_internal_resultset')
         def get_range(self, row_start, row_end):
             """Query a range of records"""
             return remote_plug.get_range(row_start, row_end)
+        def snapshot(self):
+            """Retrieve currently available partial/approximate data"""
+            return self._resultset.snapshot()
+        def show(self):
+            """View data interactively"""
+            return self._resultset.show()
+        def data(self):
+            """Wait and retrieve fully computed data"""
+            return self._resultset.data()
+        @property
+        def _preview(self):
+            return repr(self._resultset)
         def __get_remote_info__(self):
             return remote_plug.info()
     return APIOperatorPlugImpl

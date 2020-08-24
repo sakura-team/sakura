@@ -153,7 +153,8 @@ class SourceBase:
     def pack(self):
         return pack(dict(label = self.label,
                     columns = self.columns,
-                    length = self.length))
+                    length = self.length,
+                    dtype = self.get_dtype()))
     def get_origin_id(self):
         return self.origin_id
     def get_label(self):

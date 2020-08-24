@@ -252,6 +252,8 @@ class JsonProtocol:
             return float(obj)
         elif isinstance(obj, np.integer):
             return int(obj)
+        elif isinstance(obj, np.dtype):
+            return str(obj)
         else:
             import traceback; traceback.print_stack()
             raise TypeError(

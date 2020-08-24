@@ -1,7 +1,7 @@
 import numpy as np
 from sakura.common.tools import iter_uniq
 from sakura.common.exactness import EXACT, UNDEFINED
-from sakura.common.pprint import pp_display
+from sakura.common.pprint import pp_display_dataframe
 
 def np_compact_dtype(dt):
     # recompute offsets to make dtype more compact
@@ -205,5 +205,5 @@ class NumpyChunk(np.ma.MaskedArray):
             # single row (as obtained by chunk[33] for instance)
             a = NumpyChunk.empty(1, self.dtype, self.exactness)
             a[0] = self
-            return pp_display(a)
-        return pp_display(self)
+            return pp_display_dataframe(a)
+        return pp_display_dataframe(self)

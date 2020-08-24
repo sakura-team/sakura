@@ -109,6 +109,10 @@ class GuiToHubAPI:
     def get_operator_input_range(self, op_id, in_id, row_start, row_end):
         return pack(self.context.op_instances[op_id].input_plugs[in_id].get_range(row_start, row_end))
 
+    @api.operators.__getitem__.inputs.__getitem__.chunks
+    def get_operator_input_chunks(self, op_id, in_id, allow_approximate=False):
+        yield from self.context.op_instances[op_id].input_plugs[in_id].chunks(allow_approximate=allow_approximate)
+
     @api.operators.__getitem__.outputs.__getitem__.info
     def get_operator_output_info(self, op_id, out_id):
         return pack(self.context.op_instances[op_id].output_plugs[out_id])
@@ -116,6 +120,10 @@ class GuiToHubAPI:
     @api.operators.__getitem__.outputs.__getitem__.get_range
     def get_operator_output_range(self, op_id, out_id, row_start, row_end):
         return pack(self.context.op_instances[op_id].output_plugs[out_id].get_range(row_start, row_end))
+
+    @api.operators.__getitem__.outputs.__getitem__.chunks
+    def get_operator_output_chunks(self, op_id, out_id, allow_approximate=False):
+        yield from self.context.op_instances[op_id].output_plugs[out_id].chunks(allow_approximate=allow_approximate)
 
     @api.operators.__getitem__.outputs.__getitem__.get_link_id
     def get_operator_outputplug_link_id(self, op_id, out_id):

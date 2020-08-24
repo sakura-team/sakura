@@ -52,6 +52,12 @@ def get_methods_desc(obj, excluded_attrs):
                    ': ' + method.__doc__ + '\n'
     return res
 
+def get_preview_desc(obj):
+    if hasattr(obj, '_preview'):
+        return '\n  preview:\n  ' + '\n  '.join(obj._preview.splitlines()) + '\n'
+    else:
+        return ''
+
 def get_subitems_desc(obj):
     items = list(obj.__doc_subitems__())
     if len(items) == 0:
@@ -91,6 +97,7 @@ class APIObjectBase:
                 res += attr_desc
                 res += get_methods_desc(self, excluded_attrs = attr_names)
                 res += get_subitems_desc(self)
+                res += get_preview_desc(self)
                 res += '>'
             return res
     def __buffered_get_info__(self):

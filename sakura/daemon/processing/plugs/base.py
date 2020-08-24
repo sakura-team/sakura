@@ -31,6 +31,9 @@ class PlugBase(StatusMixin):
     def get_range(self, *args, **kwargs):
         self.verify_enabled()
         return self.source.get_range(*args, **kwargs)
+    def chunks(self, *args, **kwargs):
+        self.verify_enabled()
+        return self.source.chunks(*args, **kwargs)
     def __iter__(self):
         self.verify_enabled()
         return self.source.__iter__()
