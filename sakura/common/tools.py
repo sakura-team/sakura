@@ -4,6 +4,7 @@ from pathlib import Path
 from gevent.queue import Queue
 from gevent.subprocess import run, PIPE, STDOUT
 from sakura.common.errors import IOReadException, IOWriteException
+from base64 import b64encode, b64decode
 from itertools import count
 
 DEBUG = True
@@ -330,6 +331,17 @@ class FastChunkedPickle:
         return pickle.dump(obj, self._get_chunked_io(f), protocol = 4)
 
 FAST_PICKLE = FastChunkedPickle()
+
+# websocket messages are self delimited, thus their read and write
+# methods do not specify a length, and they cannot be interfaced
+# with pickle dump / load interface. We use loads / dumps instead.
+class WsockPickle:
+    def load(self, f):
+        return pickle.loads(b64decode(f.read().encode('ascii')))
+    def dump(self, obj, f):
+        return f.write(b64encode(pickle.dumps(obj)).decode('ascii'))
+
+WSOCK_PICKLE = WsockPickle()
 
 class MonitoredList:
     """Wrapper around the 'list' class that can notify about changes."""

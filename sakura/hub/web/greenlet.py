@@ -28,15 +28,16 @@ def web_greenlet(context, webapp_path):
     allowed_startup_urls = ('/', '/index.html')
 
     @monitored
-    def ws_handle():
+    def ws_handle(proto_name):
         wsock = bottle_get_wsock()
         with db_session_wrapper():
-            rpc_manager(context, wsock)
+            rpc_manager(context, wsock, proto_name)
 
     @app.route('/websocket')
     @app.route('/api-websocket')
     def ws_create():
-        ws_handle()
+        proto_name = bottle.request.query.protocol or 'json'
+        ws_handle(proto_name)
 
     @app.route('/opfiles/<op_id:int>/<filepath:path>')
     def serve_operator_file(op_id, filepath):

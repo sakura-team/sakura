@@ -1,6 +1,6 @@
 import bottle
 from contextlib import contextmanager
-from sakura.common.tools import JSON_PROTOCOL
+from sakura.common.tools import JSON_PROTOCOL, WSOCK_PICKLE
 from sakura.common.io import APIEndpoint
 from sakura.hub.web.api import GuiToHubAPI
 from sakura.hub.db import db_session_wrapper
@@ -57,7 +57,7 @@ def handle_login_info(context, wsock):
         wsock.close()
         return False
 
-def rpc_manager(context, wsock):
+def rpc_manager(context, wsock, proto_name):
     print('New GUI RPC connection.')
     if bottle.request.path == '/api-websocket':
         login_ok = handle_login_info(context, wsock)
@@ -68,14 +68,19 @@ def rpc_manager(context, wsock):
     # manage api requests
     local_api = GuiToHubAPI(context)
     web_session_wrapper = get_web_session_wrapper(context.session.id)
-    handler = APIEndpoint(f, JSON_PROTOCOL, local_api,
-                session_wrapper = web_session_wrapper)
-    context.session.num_ws += 1
-    try:
-        handler.loop()
-    except BaseException as e:
-        print(e)
-        pass    # hub must stay alive
+    protocol = { 'json': JSON_PROTOCOL,
+                 'pickle': WSOCK_PICKLE }.get(proto_name)
+    if protocol is None:
+        print('Invalid protocol.')
+    else:
+        handler = APIEndpoint(f, protocol, local_api,
+                    session_wrapper = web_session_wrapper)
+        context.session.num_ws += 1
+        try:
+            handler.loop()
+        except BaseException as e:
+            print(e)
+            pass    # hub must stay alive
     context.session.num_ws -= 1
     print('GUI RPC disconnected.')
 

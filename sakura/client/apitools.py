@@ -7,10 +7,13 @@ from sakura.client import conf
 from sakura.client.apiobject.root import APIRoot
 from sakura.common.io.serializer import Serializer
 from sakura.common.io import APIEndpoint
-from sakura.common.tools import JSON_PROTOCOL
+from sakura.common.tools import WSOCK_PICKLE, JSON_PROTOCOL
 from sakura.common.errors import IOReadException, IOWriteException
 
 DEBUG=False
+PROTOCOLS = { 'json': JSON_PROTOCOL,
+              'pickle': WSOCK_PICKLE }
+PROTO_NAME = 'pickle'
 
 def debug_print(*args, **kwargs):
     if DEBUG:
@@ -61,7 +64,7 @@ class GeventWSockConnector(object):
     def connect(self):
         web_protocol, hub_host = conf.hub_url.rstrip('/').split('://')
         protocol = web_protocol.replace('http', 'ws')
-        url = "%s://%s/api-websocket" % (protocol, hub_host)
+        url = "%s://%s/api-websocket?protocol=%s" % (protocol, hub_host, PROTO_NAME)
         self.wsock = Serializer(GeventWSock(create_connection(url)))
         self.login()
         self.ever_connected = True
@@ -122,7 +125,7 @@ class WSManager:
         self.connecting_message = ProgressMessage()
         self.connect_timeout = None
         self.connect_attempt = 0
-        self.endpoint = APIEndpoint(self, JSON_PROTOCOL, None, silent_disconnect=True)
+        self.endpoint = APIEndpoint(self, PROTOCOLS[PROTO_NAME], None, silent_disconnect=True)
         self.endpoint_greenlet = None
         self.proxy = self.endpoint.proxy
         self.waiting_greenlets = {}
