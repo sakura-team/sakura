@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from sakura.client import api, conf
 from pathlib import Path
+from gevent.socket import wait_read
 import sys, code, readline, atexit, rlcompleter
 
 def handle_cmd_history():
@@ -51,6 +52,8 @@ def run():
     env = dict(api = api, sys = sys)
     handle_cmd_history()
     enable_completion(env)
+    # let other greenlets work when user has not started writing a new command.
+    readline.set_pre_input_hook(lambda : wait_read(sys.stdin.fileno()))
     # read-eval-loop
     console = InteractiveConsole(locals=env)
     console.interact(banner='Entering interpreter prompt. Use "api" variable to interact with the platform.')
