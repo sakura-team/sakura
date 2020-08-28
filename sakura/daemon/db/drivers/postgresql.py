@@ -81,7 +81,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     sort_clause_sql = select_clause_sql
     value_wrapper = '%s'
     tags = ()
-    if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json'):
+    if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json', 'jsonb'):
         col_type = 'object'
     elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
         col_type = 'date'
