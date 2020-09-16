@@ -287,10 +287,10 @@ function fill_metadata() {
 
         //Access
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').empty();
-        var dl2 = $('<dl>', { class:  "dl-horizontal col-md-6",
+        let dl2 = $('<dl>', { class:  "dl-horizontal col-md-6",
                               style:  "margin-bottom:0px;"});
-        var dt1 = $('<dt>', { html:  "<i>Access Scope</i>"});
-        var dd1 = $('<dd>');
+        let dt1 = $('<dt>', { html:  "<i>Access Scope</i>"});
+        let dd1 = $('<dd>');
         if (info.grant_level == 'own') {
             dt1.attr('style', "vertical-align: middle; margin-top: 5px;");
             var select = $('<select>', {id:   'web_interface_access_scope_select',
@@ -548,44 +548,74 @@ function web_interface_save_large_description(id) {
 }
 
 function l_html(obj, event, dir, cb) {
-    $.getScript("js/"+obj+".js", function(scp, status) {
-      $('#main_div').append($('<div>').load("divs/generic/main.html", function () {
+
+    function get_html(obj) {
         $('#main_div').append($('<div>').load("divs/"+obj+"/index.html", function () {
          $('#main_div').append($('<div>').load("divs/"+obj+"/meta.html", function() {
            $('#main_div').append($('<div>').load("divs/"+obj+"/work.html", function() {
             $('#main_div').append($('<div>').load("divs/"+obj+"/historic.html", function() {
              $('#main_div').append($('<div>').load("divs/create/"+obj+".html", function() {
-                if (obj == 'databases')       loaded_datas_files      = 'done';
+                if (obj == 'databases')       loaded_databases_files  = 'done';
                 else if (obj == 'operators')  loaded_operators_files  = 'done';
                 else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
                 else if (obj == 'projects')   loaded_projects_files   = 'done';
                 cb();
-    }));}));}));}));}));}));});
+        }));}));}));}));}));
+    }
+
+    $.getScript("js/"+obj+".js", function(scp, status) {
+        if (loaded_generic_files != 'done') {
+            $('#main_div').append($('<div>').load("divs/generic/main.html", function () {
+                loaded_generic_files = 'done';
+                get_html(obj);
+            }));
+        }
+        else { get_html(obj); }
+    });
 }
 
 function files_on_demand(dir, div_id, cb) {
     if (dir.startsWith('Datas')) {
         $.getScript("/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js").done( function() {
-            l_html('databases', event, dir, cb);
+            if (loaded_databases_files != 'done') {
+                l_html('databases', event, dir, cb);
+            }
+            else { cb(); }
         });
     }
     else if (dir.startsWith('Dataflows')) {
-        if (div_id)
+        if (div_id) {
             $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js").done( function() {
                 function cb2() {
-                    l_html('dataflows', event, dir, cb);
+                    if (loaded_dataflows_files != 'done') {
+                      l_html('dataflows', event, dir, cb);
+                    }
+                    else { cb(); }
                 };
-                l_html('operators', event, dir, cb2);
+                if (loaded_operators_files != 'done') {
+                    l_html('operators', event, dir, cb2);
+                }
+                else { cb(); }
             });
+        }
         else {
-            l_html('dataflows', event, dir, cb);
+            if (loaded_dataflows_files != 'done') {
+                l_html('dataflows', event, dir, cb);
+            }
+            else { cb(); }
         }
     }
     else if (dir.startsWith('Operators')) {
-        l_html('operators', event, dir, cb);
+        if (loaded_operators_files != 'done') {
+            l_html('operators', event, dir, cb);
+        }
+        else { cb(); }
     }
     else if (dir.startsWith('Projects')) {
-        l_html('projects', event, dir, cb);
+        if (loaded_projects_files != 'done') {
+            l_html('projects', event, dir, cb);
+        }
+        else { cb(); }
     }
     else if (dir.length && !dir.startsWith('Home'))
         console.log('Unexpected showDiv() on', dir);
@@ -999,17 +1029,20 @@ function adding_collaborators() {
 }
 
 function web_interface_access_collapse() {
-    var label = $('<label>', {class:    "glyphicon ",
+
+    let label = $('<label>', {class:    "glyphicon ",
                               href:     "#web_interface_"+web_interface_current_object_type+"_collapse",
                               onclick:  "web_interface_access_collapse();",
                               style:    "cursor: pointer;"});
 
     label.attr('data-toggle',  'collapse');
 
-    if ($('#web_interface_'+web_interface_current_object_type+'_collapse')[0].className.indexOf('in') != -1)
+    if ($('#web_interface_'+web_interface_current_object_type+'_collapse')[0].className.indexOf('in') != -1) {
         label.addClass('glyphicon-chevron-down');
-    else
+    }
+    else {
         label.addClass('glyphicon-chevron-up');
+    }
 
     $('#web_interface_'+web_interface_current_object_type+'_collapse_icon_cell').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+label.get(0).outerHTML);
 }

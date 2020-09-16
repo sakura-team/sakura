@@ -473,7 +473,7 @@ function datasets_primary_key(row, from_what) {
         //Button appearance
         butt.removeClass('active');
         butt.removeClass('btn-primary');
-        butt.html('<img src="images/key.png" width="13px" height="13px"/>');
+        butt.html('<img src="modules/datasets/images/key.png" width="13px" height="13px"/>');
 
         //Globla var
         var index = datasets_creation_pkeys[from_what].rows.indexOf(row);
