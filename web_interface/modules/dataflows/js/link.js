@@ -1,23 +1,22 @@
 //Code started by Michael Ortega for the LIG
 //March 20th, 2017
 
-var dataflows_link_debug  = false;
 var link_events           = [ 'disabled', 'enabled'];
-var lOG_LINKS_EVENTS      = true;
+var LOG_LINKS_EVENTS      = false;
 
 
 function links_deal_with_events(evt_name, args, proxy) {
     switch (evt_name) {
         case 'disabled':
-            if (dataflows_link_debug)
+            if (LOG_LINKS_EVENTS)
                 console.log(evt_name, args);
             break;
         case 'enabled':
-            if (dataflows_link_debug)
+            if (LOG_LINKS_EVENTS)
                 console.log(evt_name, args);
             break;
         default:
-            if (lOG_LINKS_EVENTS) {
+            if (LOG_LINKS_EVENTS) {
                 console.log('Unknown Event', evt_name);
         }
     }
@@ -25,9 +24,9 @@ function links_deal_with_events(evt_name, args, proxy) {
 
 
 function create_link(js, src_id, dst_id) {
-    if (dataflows_link_debug) {console.log('CREATE LINK', js, src_id, dst_id);}
+    if (LOG_LINKS_EVENTS) {console.log('CREATE LINK', js, src_id, dst_id);}
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
-        console.log('POSS LINKS', possible_links.length, possible_links);
+        if (LOG_LINKS_EVENTS) {console.log('POSS LINKS', possible_links.length, possible_links);}
         if (possible_links.length == 0) {
             // alert("These two operators cannot be linked");
             main_alert("LINK", 'These two operators cannot be linked', null);
@@ -56,14 +55,14 @@ function create_link(js, src_id, dst_id) {
 
                     return true;
                 }).catch( function(error) {
-                    if (dataflows_link_debug) console.log('CL 3', error);
+                    if (LOG_LINKS_EVENTS) console.log('CL 3', error);
                 });
             }).catch( function(error) {
-                if (dataflows_link_debug) console.log('CL 2', error);
+                if (LOG_LINKS_EVENTS) console.log('CL 2', error);
             });
         }
     }).catch( function(error) {
-        if (dataflows_link_debug) console.log('CL 1', error);
+        if (LOG_LINKS_EVENTS) console.log('CL 1', error);
     });
     js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});
     jsPlumb.repaintEverything();
@@ -71,7 +70,7 @@ function create_link(js, src_id, dst_id) {
 
 
 function create_link_from_hub(js, link, gui, from_shell=false) {
-    if (dataflows_link_debug) {console.log('CREATE LINK FROM HUB');}
+    if (LOG_LINKS_EVENTS) {console.log('CREATE LINK FROM HUB');}
     let l = global_links.push({ 'id': js.id,
                                 'src': link.src_id,
                                 'dst': link.dst_id,
@@ -114,7 +113,7 @@ function create_link_modal( p_links,  link,
                             out_id, in_id, hub_id, gui,
                             from_shell ) {
 
-    console.log('CREATING MODAL LINK');
+    if (LOG_LINKS_EVENTS) {console.log('CREATING MODAL LINK');}
 
     //Here we automatically connect tables into the link
     // var auto_link = false;
@@ -287,7 +286,7 @@ function refresh_link_modal(link) {
 }
 
 function test_link(link, on_hub) {
-    if (dataflows_link_debug) console.log('TEST_LINK');
+    if (LOG_LINKS_EVENTS) console.log('TEST_LINK');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -302,7 +301,7 @@ function remove_link(link, on_hub) {
         link = link_from_id(link);
     }
 
-    if (dataflows_link_debug) console.log('REMOVE_LINK');
+    if (LOG_LINKS_EVENTS) console.log('REMOVE_LINK');
     //We first send the removing commands to the hub
     if (link && link.params.length > 0)
         delete_link_params(link, true, on_hub);
@@ -352,7 +351,7 @@ function remove_link(link, on_hub) {
 
 
 function remove_connection(hub_id, on_hub) {
-    if (dataflows_link_debug) console.log('REMOVE_CONNECTION');
+    if (LOG_LINKS_EVENTS) console.log('REMOVE_CONNECTION');
     global_links.forEach( function(link) {
         if (link.src == hub_id || link.dst == hub_id) {
             remove_link(link, on_hub);
@@ -366,7 +365,7 @@ function delete_link_params(link, and_main_link, on_hub) {
         link = link_from_id(link);
     }
 
-    var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
+    let mdiv    = document.getElementById("modal_link_"+link.id+"_body");
     for (var i=0; i< link.params.length; i++) {
         var para = link.params[i];
         if (on_hub) {
@@ -397,15 +396,15 @@ function delete_link_params(link, and_main_link, on_hub) {
 
 
 function delete_link_param(link, side, id, on_hub) {
-    if (dataflows_link_debug) console.log('DELETE LINK PARAM');
+    if (LOG_LINKS_EVENTS) console.log('DELETE LINK PARAM');
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
 
-    var link_p = null;
-    var index_p = 0;
-    var mdiv    = document.getElementById("modal_link_"+link.id+"_body");
-    for (var i=0; i<link.params.length; i++)
+    let link_p = null;
+    let index_p = 0;
+    let mdiv    = document.getElementById("modal_link_"+link.id+"_body");
+    for (let i=0; i<link.params.length; i++)
     {
         if (side == 'in' && link.params[i].in_id == parseInt(id)) {
             link_p = link.params[i];
@@ -422,9 +421,9 @@ function delete_link_param(link, side, id, on_hub) {
                 console.log("Issue with 'delete_link' function from hub:", result);
             }
         });
-        var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
-        var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
-        var line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
+        let div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
+        let div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
+        let line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
 
         div_in.innerHTML = svg_round_square("");
         div_out.innerHTML = svg_round_square("");
@@ -488,17 +487,22 @@ function copy_link_line(link, _out, _in, gui) {
 
     //Making a fake connection
     let mdiv = document.getElementById("modal_link_"+link.id+"_body");
-    let svg_div = document.createElement('div');
-    svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
-    svg_div.style.position = 'absolute';
+    if (mdiv) {
+        let svg_div = document.createElement('div');
+        svg_div.id = "line_modal_link_"+link.id+"_"+_out+"_"+_in;
+        svg_div.style.position = 'absolute';
 
-    svg_div.style.left = gui.left;
-    svg_div.style.top = gui.top;
-    let svg = gui.line;
+        svg_div.style.left = gui.left;
+        svg_div.style.top = gui.top;
+        let svg = gui.line;
 
-    svg_div.innerHTML = svg;
-    mdiv.appendChild(svg_div);
-    return svg;
+        svg_div.innerHTML = svg;
+        mdiv.appendChild(svg_div);
+        return svg;
+    }
+    else {
+        return null;
+    }
 }
 
 function open_link_params(conn_id) {

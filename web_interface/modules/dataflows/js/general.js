@@ -7,14 +7,18 @@ var cursorX;
 var cursorY;
 
 
-instances_waiting_for_creation = [];
-waiting_gui = null;
+var instances_waiting_for_creation = [];
+var waiting_gui = null;
+
+var LOG_INTERACTION_EVENT   = false;
+var LOG_DATAFLOW_EVENTS     = false;
+var LOG_LINKS_EVENTS        = false;
+var LOG_OPERATORS_EVENTS    = false;
 
 document.onmousemove = function(e){
     cursorX = e.pageX;
     cursorY = e.pageY;
 }
-
 
 function not_yet(s = '') {
     if (s == '')
@@ -23,7 +27,6 @@ function not_yet(s = '') {
         alert('Not implemented yet: '+ s);
 }
 
-
 //send the index of the row where arr[row][col] == e
 function index_in_array_of_tuples(arr, col, e) {
     for (var i = 0; i< arr.length; i++)
@@ -31,7 +34,6 @@ function index_in_array_of_tuples(arr, col, e) {
             return i;
     return -1;
 }
-
 
 function tuple_in_array_of_tuples(arr, tuple) {
     for (var i = 0; i< arr.length; i++) {

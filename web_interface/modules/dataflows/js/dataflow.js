@@ -3,29 +3,35 @@
 
 
 var global_dataflow_jsFlag  = true;
-var dataflow_debug          = true;
 var dataflow_events         = [ 'created_link',
                                 'deleted_link',
                                 'created_instance',
                                 'deleted_instance'];
-var LOG_DATAFLOW_EVENTS     = true;
 
 function dataflows_deal_with_events(evt_name, args, proxy) {
     switch (evt_name) {
         case ('created_link'):
-            if (LOG_DATAFLOW_EVENTS) {
-                sakura.apis.hub.links[args].info().then(function (link) {
+            sakura.apis.hub.links[args].info().then(function (link) {
+                if (LOG_DATAFLOW_EVENTS) {
                     console.log('----');
                     console.log(evt_name, args);
                     console.log(link);
                     console.log('----');
-                    create_dataflow_links([link], from_shell=true);
-                });
-            }
+                }
+                create_dataflow_links([link], from_shell=true);
+            });
             break;
 
         case ('deleted_link'):
-            if (LOG_DATAFLOW_EVENTS) {  console.log(evt_name, args);  }
+            if (LOG_DATAFLOW_EVENTS) {
+                global_links.some( function (link) {
+                    if (link.params[0].hub_id == args) {
+                        remove_link(link, false);
+                        return true;
+                    }
+                    return false;
+                });
+            }
             break;
 
         case ('created_instance'):
@@ -76,7 +82,7 @@ function create_dataflow_links(df_links, from_shell=false) {
             //jsPlumb creation
             let src_inst = instance_from_id(link.src_id);
             let dst_inst = instance_from_id(link.dst_id);
-            
+
             global_dataflow_jsFlag = false;
             js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
                                                 dst_inst.ep.in.getUuid()]});

@@ -1,7 +1,7 @@
 var currently_dragged   = null;
 var drag_delta          = [0, 0];
 
-var dataflow_interaction_debug = true;
+var LOG_INTERACTION_EVENT = false;
 
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
@@ -37,7 +37,7 @@ main_div.addEventListener("drop", function( e ) {
 
 
     if (op != null) {
-        if (dataflow_interaction_debug) console.log('DROPPING OP');
+        if (LOG_INTERACTION_EVENT) console.log('DROPPING OP');
         var rect = main_div.getBoundingClientRect();
         create_operator_instance_on_hub(e.clientX - rect.left - drag_delta[0],
                                         e.clientY - rect.top - drag_delta[1] + e.target.scrollTop,
@@ -46,7 +46,7 @@ main_div.addEventListener("drop", function( e ) {
 
     //Link params
     else if (currently_dragged && currently_dragged.id.includes("svg_modal_link") && e.target.parentElement.parentElement.id.includes("svg_modal_link")) {
-        if (dataflow_interaction_debug) console.log('DROPPING PARAM');
+        if (LOG_INTERACTION_EVENT) {console.log('DROPPING PARAM')};
 
         var param_out = currently_dragged;
         var param_in = e.target.parentElement.parentElement;
@@ -69,7 +69,7 @@ main_div.addEventListener("drop", function( e ) {
         var link = link_from_id('con_'+parseInt(tab1[4]));
         if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
             sakura.apis.hub.links.create(link.src, out_id, link.dst, in_id).then(function (link_id_from_hub) {
-                console.log('CREATION SENT');
+                if (LOG_INTERACTION_EVENT) {console.log('CREATION SENT')};
 
                 //local creation
                 let line = create_link_line(link.id, out_id, in_id);
@@ -90,7 +90,7 @@ main_div.addEventListener("drop", function( e ) {
                 save_dataflow();
                 refresh_link_modal(link);
             }).catch (function(error) {
-                if (dataflow_interaction_debug) console.log('DID 1:', error);
+                if (LOG_INTERACTION_EVENT) console.log('DID 1:', error);
             });
         }
         else {
@@ -99,7 +99,7 @@ main_div.addEventListener("drop", function( e ) {
         }
     }
     else if (currently_dragged && currently_dragged.id.includes("comment")) {
-        if (dataflow_interaction_debug) console.log('DROPPING COMMENT');
+        if (LOG_INTERACTION_EVENT) console.log('DROPPING COMMENT');
         var rect = main_div.getBoundingClientRect();
         $('#'+currently_dragged.id).css({
             left: e.clientX - rect.x - drag_delta[0],
@@ -109,7 +109,7 @@ main_div.addEventListener("drop", function( e ) {
         save_dataflow();
     }
     else {
-        if (dataflow_interaction_debug) console.log('DROPPING NOTHING');
+        if (LOG_INTERACTION_EVENT) console.log('DROPPING NOTHING');
         currently_dragged = null;
     }
 }, false);

@@ -14,7 +14,6 @@ var op_events = [ 'disabled',
 
 var transparent_grey = 'rgba(200, 200, 200, 1)';
 
-var LOG_OPS_EVENTS = true;
 var dataflows_operators_debug = false;
 
 function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
@@ -31,7 +30,7 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
             }
             break;
         case 'enabled':
-            if (LOG_OPS_EVENTS) { console.log('ENABLED OP', args, hub_inst_id); }
+            if (LOG_OPERATORS_EVENTS) { console.log('ENABLED OP', args, hub_inst_id); }
 
             let inst_index = -1;
             for (let i=0; i< instances_waiting_for_creation.length; i++) {
@@ -66,11 +65,11 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
             }
             break;
         case 'disabled':
-            if (LOG_OPS_EVENTS) { console.log('DISABLED OP', args, proxy, hub_inst_id);}
+            if (LOG_OPERATORS_EVENTS) { console.log('DISABLED OP', args, proxy, hub_inst_id);}
             break;
         default:
             let en = evt_name;
-            if (LOG_OPS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
+            if (LOG_OPERATORS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
                 check_operator(op);
             }).catch ( function (error) {
