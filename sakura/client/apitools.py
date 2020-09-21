@@ -159,7 +159,7 @@ class WSManager:
         if curr_greenlet not in self.waiting_greenlets:
             self.waiting_greenlets[curr_greenlet] = Queue()
         queue = self.waiting_greenlets[curr_greenlet]
-        queue.wait()
+        queue.get()
         return
     def silent_endpoint_loop(self):
         try:
