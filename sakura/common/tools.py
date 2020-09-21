@@ -153,11 +153,14 @@ class ObservableEvent:
     def __init__(self):
         self.observer_callbacks = []
     def subscribe(self, cb):
+        """Attach a callback to be called when event occurs"""
         self.observer_callbacks.append(cb)
     def unsubscribe(self, cb):
+        """Detach a callback"""
         if cb in self.observer_callbacks:
             self.observer_callbacks.remove(cb)
     def notify(self, *args, **kwargs):
+        """Notify subscribers when the event occurs"""
         # we work on a copy because running a callback
         # might actually recursively call this method...
         callbacks = set(self.observer_callbacks)

@@ -53,14 +53,6 @@ class APIDataflow:
             @property
             def grants(self):
                 return APIGrants(get_remote_obj())
-            def monitor(self):
-                """Include events about this object in api.stream_events()"""
-                obj_id = 'dataflows[%d]' % dataflow_id
-                get_remote_obj().monitor(obj_id)
-            def unmonitor(self):
-                """Stop including events about this object in api.stream_events()"""
-                obj_id = 'dataflows[%d]' % dataflow_id
-                remote_api.events.unmonitor(obj_id)
             def delete(self):
                 """Delete this dataflow"""
                 get_remote_obj().delete()

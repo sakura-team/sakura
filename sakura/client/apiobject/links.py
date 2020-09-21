@@ -24,12 +24,4 @@ class APILink:
                 """Delete this link"""
                 get_remote_obj().delete()
                 APILink._deleted.add(remote_obj)
-            def monitor(self):
-                """Include events about this object in api.stream_events()"""
-                obj_id = 'links[%d]' % link_id
-                get_remote_obj().monitor(obj_id)
-            def unmonitor(self):
-                """Stop including events about this object in api.stream_events()"""
-                obj_id = 'links[%d]' % link_id
-                remote_api.events.unmonitor(obj_id)
         return APILinkImpl()
