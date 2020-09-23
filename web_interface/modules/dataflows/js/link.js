@@ -191,12 +191,20 @@ function create_link_modal( p_links,  link,
                 $(modal).modal();
             }
             else if (!open_now) {
-                link.params.push({  'out_id': out_id,
-                                    'in_id': in_id,
-                                    'hub_id': hub_id,
-                                    'top': gui.top,
-                                    'left': gui.left,
-                                    'line':  gui.line});
+                let ij = param_exist(hub_id);
+                if (!ij) {
+                    link.params.push({  'out_id': out_id,
+                                        'in_id': in_id,
+                                        'hub_id': hub_id,
+                                        'top': gui.top,
+                                        'left': gui.left,
+                                        'line':  gui.line});
+                }
+                else {
+                    link.params[ij[1]].top = gui.top;
+                    link.params[ij[1]].left = gui.left;
+                    link.params[ij[1]].line= gui.line;
+                }
                 copy_link_line(link, out_id, in_id, gui);
                 $("#svg_modal_link_"+link.id+'_out_'+out_id).html(svg_round_square_crossed(""));
                 $("#svg_modal_link_"+link.id+'_in_'+in_id).html(svg_round_square_crossed(""));
@@ -353,13 +361,15 @@ function remove_connection(hub_id, on_hub) {
 
 
 function delete_link_params(link, and_main_link, on_hub) {
+    if (LOG_LINKS_EVENTS) {console.log('DELETE LINK PARAMS');}
+
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
 
     let mdiv    = document.getElementById("modal_link_"+link.id+"_body");
-    for (var i=0; i< link.params.length; i++) {
-        var para = link.params[i];
+    for (let i=0; i< link.params.length; i++) {
+        let para = link.params[i];
         if (on_hub) {
             if (para.hub_id) {
                 sakura.apis.hub.links[para.hub_id].delete().then(function (result) {
@@ -369,9 +379,9 @@ function delete_link_params(link, and_main_link, on_hub) {
                 });
             }
         }
-        var div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+para.out_id);
-        var div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
-        var line    = document.getElementById("line_modal_link_"+link.id+"_"+para.out_id+"_"+para.in_id);
+        let div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+para.out_id);
+        let div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+para.in_id);
+        let line    = document.getElementById("line_modal_link_"+link.id+"_"+para.out_id+"_"+para.in_id);
 
         if (div_in) div_in.innerHTML = svg_round_square("");
         if (div_out) div_out.innerHTML = svg_round_square("");
@@ -387,8 +397,8 @@ function delete_link_params(link, and_main_link, on_hub) {
 }
 
 
-function delete_link_param(link, side, id) {
-    if (LOG_LINKS_EVENTS) console.log('DELETE LINK PARAM');
+function delete_link_param(link, side, id, on_hub = true) {
+    if (LOG_LINKS_EVENTS) {console.log('DELETE LINK PARAM');}
     if (typeof link == 'string') {
         link = link_from_id(link);
     }
@@ -408,11 +418,13 @@ function delete_link_param(link, side, id) {
         }
     }
     if (link_p) {
-        sakura.apis.hub.links[link_p.hub_id].delete().then(function (result) {
-            if (result) {
-                console.log("Issue with 'delete_link' function from hub:", result);
-            }
-        });
+        if (on_hub) {
+            sakura.apis.hub.links[link_p.hub_id].delete().then(function (result) {
+                if (result) {
+                    console.log("Issue with 'delete_link' function from hub:", result);
+                }
+            });
+        }
         let div_out = document.getElementById("svg_modal_link_"+link.id+"_out_"+link_p.out_id);
         let div_in  = document.getElementById("svg_modal_link_"+link.id+"_in_"+link_p.in_id);
         let line    = document.getElementById("line_modal_link_"+link.id+"_"+link_p.out_id+"_"+link_p.in_id);
@@ -532,6 +544,18 @@ function link_exist(src_id, dst_id) {
     for (let i=0; i < global_links.length; i++) {
         if (global_links[i].src == src_id && global_links[i].dst == dst_id) {
             found = true;
+        }
+    }
+    return found;
+}
+
+function param_exist(hub_id) {
+    let found = null;
+    for (let i=0; i < global_links.length; i++) {
+        for (let j=0; j < global_links[i].params.length; j++) {
+            if (global_links[i].params[j].hub_id == hub_id) {
+                found = [i, j];
+            }
         }
     }
     return found;

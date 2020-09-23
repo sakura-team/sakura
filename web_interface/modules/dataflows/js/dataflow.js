@@ -23,15 +23,26 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
             break;
 
         case ('deleted_link'):
-            if (LOG_DATAFLOW_EVENTS) {
-                global_links.some( function (link) {
-                    if (link.params[0].hub_id == args) {
-                        remove_link(link, false);
+            if (LOG_DATAFLOW_EVENTS) { console.log('DELETED LINK', args);}
+            console.log('delete_link', args);
+            global_links.some( function (link) {
+                link.params.some( function (param) {
+                    if (param.hub_id == args) {
+                        if (link.params.length > 1) {
+                            delete_link_param(link.id, 'in', param.in_id, false);
+                        }
+                        else {
+                            remove_link(link, false);
+                        }
                         return true;
                     }
-                    return false;
                 });
-            }
+                // if (link.params[0].hub_id == args) {
+                //     remove_link(link, false);
+                //     return true;
+                // }
+                return false;
+            });
             break;
 
         case ('created_instance'):
@@ -95,12 +106,20 @@ function create_dataflow_links(df_links, from_shell=false) {
             llink = link_from_instances(link.src_id, link.dst_id);
             let interval_id = null;
             let check_modal = function () {
-                llink.params.push({ 'out_id': link.src_out_id,
-                                    'in_id': link.dst_in_id,
-                                    'hub_id': link.link_id,
-                                    'top':    lgui.top,
-                                    'left':   lgui.left,
-                                    'line':  lgui.line});
+                let ij = param_exist(link.link_id);
+                if (!ij) {
+                    llink.params.push({ 'out_id': link.src_out_id,
+                                        'in_id': link.dst_in_id,
+                                        'hub_id': link.link_id,
+                                        'top':    lgui.top,
+                                        'left':   lgui.left,
+                                        'line':  lgui.line});
+                }
+                else {
+                    llink.params[ij[1]].top = lgui.top;
+                    llink.params[ij[1]].left = lgui.left;
+                    llink.params[ij[1]].line = lgui.line;
+                }
 
                 $("#svg_modal_link_"+llink.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
                 $("#svg_modal_link_"+llink.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));

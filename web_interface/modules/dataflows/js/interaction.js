@@ -73,12 +73,20 @@ main_div.addEventListener("drop", function( e ) {
                 //local creation
                 let line = create_link_line(link.id, out_id, in_id);
                 let svg_line = document.getElementById("line_modal_link_"+link.id+"_"+out_id+"_"+in_id);
-                link.params.push({  'out_id':   out_id,
+                let ij = param_exist(parseInt(link_id_from_hub));
+                if (!ij) {
+                    link.params.push({  'out_id':   out_id,
                                     'in_id':    in_id,
                                     'hub_id':   parseInt(link_id_from_hub),
                                     'top':      svg_line.style.top,
                                     'left':     svg_line.style.left,
                                     'line':     line});
+                }
+                else {
+                      link.params.top = svg_line.style.top;
+                      link.params.left = svg_line.style.left;
+                      link.params.line = svg_line.style.line;
+                }
 
                 //changing svgs
                 let div_in  = document.getElementById(param_in.id);
