@@ -1,8 +1,6 @@
 var currently_dragged   = null;
 var drag_delta          = [0, 0];
 
-var LOG_INTERACTION_EVENT = false;
-
 document.addEventListener("dragstart", function ( e ) {
     e.dataTransfer.setData('text/plain', null);
     var rect = e.target.getBoundingClientRect();
@@ -23,6 +21,7 @@ main_div.addEventListener("dragover", function( e ) {
 
 
 main_div.addEventListener("drop", function( e ) {
+    if (LOG_INTERACTION_EVENT) {console.log('DROP EVENT')};
     e.preventDefault();
 
     //Operators

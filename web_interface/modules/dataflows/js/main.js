@@ -59,6 +59,11 @@ function jsPlumb_init() {
     jsPlumb.bind("connectionMoved", function(params) {
     });
 
+    jsPlumb.bind("beforeDetach", function (e) {
+        if (LOG_INTERACTION_EVENT) {console.log('BEFORE DETACH');}
+        //return false; //WARNING !!! Keep this for avoiding deleting connections
+    });
+
     //On double click we open the link parameters
     jsPlumb.bind("dblclick", function(connection) {
         open_link_params(connection.id);

@@ -74,6 +74,7 @@ function create_dataflow_links(df_links, from_shell=false) {
     //Creating the links
     for (let i=0; i < df_links.length; i++) {
         let link = df_links[i];
+
         let lgui = {};
         if (link.gui_data !== "") {
             lgui = eval("("+link.gui_data+")");
@@ -91,21 +92,20 @@ function create_dataflow_links(df_links, from_shell=false) {
             create_link_from_hub( js_link, link, lgui, from_shell);
         }
         else {
-            link = link_from_instances(link.src_id, link.dst_id);
+            llink = link_from_instances(link.src_id, link.dst_id);
             let interval_id = null;
             let check_modal = function () {
-                if (link.modal) {
-                    link.params.push({  'out_id': link.src_out_id,
-                                        'in_id': link.dst_in_id,
-                                        'hub_id': link.link_id,
-                                        'top':    lgui.top,
-                                        'left':   lgui.left,
-                                        'line':  lgui.line});
-                    $("#svg_modal_link_"+link.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
-                    $("#svg_modal_link_"+link.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
-                    copy_link_line(link, link.src_out_id, link.dst_in_id, lgui);
-                    clearInterval(interval_id);
-                }
+                llink.params.push({ 'out_id': link.src_out_id,
+                                    'in_id': link.dst_in_id,
+                                    'hub_id': link.link_id,
+                                    'top':    lgui.top,
+                                    'left':   lgui.left,
+                                    'line':  lgui.line});
+
+                $("#svg_modal_link_"+llink.id+'_out_'+link.src_out_id).html(svg_round_square_crossed(""));
+                $("#svg_modal_link_"+llink.id+'_in_'+link.dst_in_id).html(svg_round_square_crossed(""));
+                copy_link_line(llink, link.src_out_id, link.dst_in_id, lgui);
+                clearInterval(interval_id);
             }
             interval_id = setInterval(check_modal, 500);
         }

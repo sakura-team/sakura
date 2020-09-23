@@ -2,7 +2,6 @@
 //March 20th, 2017
 
 var link_events           = [ 'disabled', 'enabled'];
-var LOG_LINKS_EVENTS      = false;
 
 
 function links_deal_with_events(evt_name, args, proxy) {
@@ -51,7 +50,7 @@ function create_link(js, src_id, dst_id) {
                                         source_inst_info,
                                         target_inst_info,
                                         true);
-                    js.setDetachable(false);
+                    //js.setDetachable(false);
 
                     return true;
                 }).catch( function(error) {
@@ -77,7 +76,7 @@ function create_link_from_hub(js, link, gui, from_shell=false) {
                                 'params': [],
                                 'modal': false,
                                 'jsP': js});
-    js.setDetachable(false);
+    //js.setDetachable(false);
     if (!link.enabled) {
         js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});
         js.setHoverPaintStyle({strokeStyle: transparent_grey, radius: 6});
@@ -86,7 +85,6 @@ function create_link_from_hub(js, link, gui, from_shell=false) {
     sakura.apis.hub.links.list_possible(link.src_id, link.dst_id).then(function (possible_links) {
         sakura.apis.hub.operators[link.src_id].info().then(function (source_inst_info) {
             sakura.apis.hub.operators[link.dst_id].info().then(function (target_inst_info) {
-
                 create_link_modal(  possible_links,
                                     global_links[l - 1],
                                     instance_from_id(link.src_id).cl,
@@ -193,12 +191,6 @@ function create_link_modal( p_links,  link,
                 $(modal).modal();
             }
             else if (!open_now) {
-                // if (from_shell) {
-                //     gui.line  = create_link_line(link.id, out_id, in_id);
-                //     let svg_line = document.getElementById("line_modal_link_"+link.id+"_"+out_id+"_"+in_id);
-                //     gui.top   = svg_line.style.top;
-                //     gui.left  = svg_line.style.left;
-                // }
                 link.params.push({  'out_id': out_id,
                                     'in_id': in_id,
                                     'hub_id': hub_id,
@@ -395,7 +387,7 @@ function delete_link_params(link, and_main_link, on_hub) {
 }
 
 
-function delete_link_param(link, side, id, on_hub) {
+function delete_link_param(link, side, id) {
     if (LOG_LINKS_EVENTS) console.log('DELETE LINK PARAM');
     if (typeof link == 'string') {
         link = link_from_id(link);
@@ -484,7 +476,6 @@ function create_link_line(link_id, _out, _in) {
 
 
 function copy_link_line(link, _out, _in, gui) {
-
     //Making a fake connection
     let mdiv = document.getElementById("modal_link_"+link.id+"_body");
     if (mdiv) {
@@ -495,7 +486,8 @@ function copy_link_line(link, _out, _in, gui) {
         svg_div.style.left = gui.left;
         svg_div.style.top = gui.top;
         let svg = gui.line;
-
+        if (!svg)
+            svg = "";
         svg_div.innerHTML = svg;
         mdiv.appendChild(svg_div);
         return svg;
@@ -536,10 +528,11 @@ function link_from_id(id) {
 }
 
 function link_exist(src_id, dst_id) {
-    var found = false;
-    for (var i=0; i<global_links.length; i++) {
-        if (global_links[i].src == src_id && global_links[i].dst == dst_id)
+    let found = false;
+    for (let i=0; i < global_links.length; i++) {
+        if (global_links[i].src == src_id && global_links[i].dst == dst_id) {
             found = true;
+        }
     }
     return found;
 }
