@@ -67,7 +67,9 @@ main_div.addEventListener("drop", function( e ) {
 
         var link = link_from_id('con_'+parseInt(tab1[4]));
         if (! link.params || (link.params.out_id != out_id && link.params.in_id != in_id)) {
+            push_request('links_create');
             sakura.apis.hub.links.create(link.src, out_id, link.dst, in_id).then(function (link_id_from_hub) {
+                pop_request('links_create');
                 if (LOG_INTERACTION_EVENT) {console.log('CREATION SENT')};
 
                 //local creation
@@ -145,9 +147,12 @@ $('#sakura_operator_contextMenu').on("click", "a", function(e) {
     if (val == 'Delete') {
         let tab = op_focus_id.split("_");
         let hub_id = parseInt(tab[2]);
+        push_request('operators_delete');
         sakura.apis.hub.operators[hub_id].delete().then( function (result) {
+            pop_request('operators_delete');
             $('#sakura_operator_contextMenu').hide();
         }).catch( function(error) {
+            pop_request('operators_delete');
             console.log('ERROR REMOVING OP ', error);
         });
     }

@@ -29,8 +29,8 @@ $(document).mousemove(function(e) {
 
 
 function datasets_info(header_str, body_str) {
-    var h = $('#datasets_info_header');
-    var b = $('#datasets_info_body');
+    let h = $('#datasets_info_header');
+    let b = $('#datasets_info_body');
     h.html("<h3><font color=\"black\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     $('#datasets_info_modal').modal();
@@ -38,8 +38,8 @@ function datasets_info(header_str, body_str) {
 
 
 function datasets_alert(header_str, body_str) {
-    var h = $('#datasets_alert_header');
-    var b = $('#datasets_alert_body');
+    let h = $('#datasets_alert_header');
+    let b = $('#datasets_alert_body');
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     $('#datasets_alert_modal').modal();
@@ -47,10 +47,10 @@ function datasets_alert(header_str, body_str) {
 
 
 function datasets_asking(header_str, body_str, rgba_color, func_yes, func_no) {
-    var h = $('#datasets_asking_header');
-    var b = $('#datasets_asking_body');
-    var b_yes = $('#datasets_asking_button_yes');
-    var b_no = $('#datasets_asking_button_no');
+    let h = $('#datasets_asking_header');
+    let b = $('#datasets_asking_body');
+    let b_yes = $('#datasets_asking_button_yes');
+    let b_no = $('#datasets_asking_button_no');
 
     h.css('background-color', rgba_color);
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
@@ -68,7 +68,7 @@ function datasets_asking(header_str, body_str, rgba_color, func_yes, func_no) {
 
 function datasets_extension_check(f_name, ext) {
     //check the name: should have .csv extension
-    var s_name = f_name.split('.');
+    let s_name = f_name.split('.');
     if (s_name[s_name.length - 1].toLowerCase() != ext.toLowerCase()) {
         datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
         return false;
@@ -103,7 +103,9 @@ function close_accordion(acc_id) {
 function recover_datasets() {
     database_id = web_interface_current_id;
 
+    push_request('databases_info');
     sakura.apis.hub.databases[parseInt(database_id)].info().then(function (result) {
+        pop_request('databases_info');
         if (result.grant_level != 'list') {
 
             if (result.tables == undefined)
@@ -124,22 +126,22 @@ function recover_datasets() {
 
 
             //Filling dataset
-            var body = $('#table_of_datasets').find('tbody');
+            let body = $('#table_of_datasets').find('tbody');
             body.empty();
 
             if (result.tables.length == 0) {
-                var tr = $('<tr>');
-                var td = $('<td>', {html: "The list is empty for now"});
+                let tr = $('<tr>');
+                let td = $('<td>', {html: "The list is empty for now"});
                 tr.append(td);
                 body.append(tr);
             }
 
             result.tables.forEach( function(dataset, index) {
-                var dataset_id = dataset.table_id;
-                var new_row = $(document.createElement('tr'));
+                let dataset_id = dataset.table_id;
+                let new_row = $(document.createElement('tr'));
                 new_row.load('modules/datasets/templates/dataset.html', function () {
-                    var tds = new_row.find('td');
-                    var spans = $(tds[2]).find('span');
+                    let tds = new_row.find('td');
+                    let spans = $(tds[2]).find('span');
 
                     $(tds[0]).empty();
                     $(tds[0]).append($('<a>',{  text: dataset.name,
@@ -156,17 +158,17 @@ function recover_datasets() {
                     if (result.grant_level == 'write' || result.grant_level == 'own')
                         spans.toArray().forEach( function(span) {
                             if ($(span).attr('onclick')) {
-                                var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
+                                let new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
                                 $(span).attr('onclick', new_oc);
                             }
                         });
                     else if (result.grant_level == 'read')
                         spans.toArray().forEach( function(span) {
-                            var className = $(span).attr('class');
+                            let className = $(span).attr('class');
                             if (className.indexOf('download') == -1)
                                 $(span).css('display', 'none');
                             else {
-                                var new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
+                                let new_oc = $(span).attr('onclick').replace('ds_id', dataset_id);
                                 $(span).attr('onclick', new_oc);
                             }
                         });
@@ -187,7 +189,9 @@ function recover_datasets() {
                 $('#datasets_open_creation_button').css('display', 'none');
 
             //Ask for the existing tags
+            push_request('datastores_list_expected_columns_tags');
             sakura.apis.hub.datastores[database_infos.datastore_id].list_expected_columns_tags().then(function (tags_list) {
+                pop_request('datastores_list_expected_columns_tags');
                 columns_tags_list = tags_list;
             });
         }
@@ -206,16 +210,16 @@ function recover_datasets() {
 
 
 function datasets_send_file(dataset_id, f, dates, modal, from_what) {
-    var first_chunk     = true;
-    var f_size          = f.size;
-    var sent_data_size  = 0;
-    var date            = new Date();
-    var nb_cols         = 0;
-    var length_alert_done = false;
+    let first_chunk     = true;
+    let f_size          = f.size;
+    let sent_data_size  = 0;
+    let date            = new Date();
+    let nb_cols         = 0;
+    let length_alert_done = false;
 
 
     Papa.LocalChunkSize = chunk_size;
-    var chunks_to_do = [];
+    let chunks_to_do = [];
 
     Papa.parse(f, {
         comments: true,
@@ -235,9 +239,9 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                         $('#datasets_alert_body').html('One or more lines of your file doesn\'t have the correct number of columns. These lines are truncated, or filled with null values.');
                         $('#datasets_alert_modal').modal('show');
                     }
-                    var diff = nb_cols - line.length;
+                    let diff = nb_cols - line.length;
                     if (diff > 0)
-                        for (var i =0; i< diff; i++)
+                        for (let i =0; i< diff; i++)
                             line.push('');
                     else
                         line.splice(line.length + diff, - diff)
@@ -258,9 +262,11 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                 parser.pause();
 
                 chunks_to_do.push(1);
+                push_request('tables_add_rows');
                 sakura.apis.hub.tables[dataset_id].add_rows(chunk.data).then(function(result) {
+                    pop_request('tables_add_rows');
                     sent_data_size += Papa.LocalChunkSize;
-                    var perc = parseInt(sent_data_size/f.size * 100);
+                    let perc = parseInt(sent_data_size/f.size * 100);
                     $('#datasets_'+from_what+'_button').removeClass("btn-primary");
                     $('#datasets_'+from_what+'_button').addClass("btn-success");
                     $('#datasets_'+from_what+'_button').html('Uploading ...'+ perc + '%');
@@ -275,10 +281,11 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                         datasets_send_file_ended(date, modal);
                     }
                 }).catch( function(error_msg){
-
+                    pop_request('tables_add_rows');
                     //We delete the freshly created table
+                    push_request('tables_delete');
                     sakura.apis.hub.tables[dataset_id].delete().then( function(result) {
-
+                        pop_request('tables_delete');
                         //Update the display
                         $('#datasets_cancel_creation_button').prop("disabled", false);
                         $('#datasets_creation_button').prop("disabled", false);
@@ -289,15 +296,15 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
 
                         //Testing chunk
                         //-- Test on types
-                        var cols_list = []
-                        var nb_rows = chunk.data.length;
-                        var nb_cols = chunk.data[0].length;
-                        for (var c=0; c<nb_cols; c++) {
-                            var types = [$('#datasets_ff_type_select_'+c).val()];
-                            for (var r=0; r<nb_rows; r++) {
+                        let cols_list = []
+                        let nb_rows = chunk.data.length;
+                        let nb_cols = chunk.data[0].length;
+                        for (let c=0; c<nb_cols; c++) {
+                            let types = [$('#datasets_ff_type_select_'+c).val()];
+                            for (let r=0; r<nb_rows; r++) {
                                 types.push(get_type(chunk.data[r][c]));
                             }
-                            var ntype = check_types(types);
+                            let ntype = check_types(types);
                             if (ntype != $('#datasets_ff_type_select_'+c).val()) {
                                 cols_list.push([$('#datasets_creation_col_name_ff_'+c).val(), ntype]);
                             }
@@ -306,7 +313,7 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                         }
 
                         //Then give the message
-                        var msg = 'According to the error, the type of the following columns <b>has been udpated</b>:<br>';
+                        let msg = 'According to the error, the type of the following columns <b>has been udpated</b>:<br>';
                         cols_list.forEach( function(e) {
                             msg += '- <b>'+e[0]+'</b> >> '+e[1]+'<br>';
                         });
@@ -325,6 +332,7 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                         return false;
                     }).catch(
                     function (error_msg) {
+                        pop_request('tables_delete');
                         console.log('Error in deleting Table !!!');
                     });
                 });
@@ -342,9 +350,9 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
 }
 
 function datasets_send_file_ended(date, modal) {
-    var ndate = new Date();
-    var s = parseInt((ndate.getTime() - date.getTime())/1000);
-    var m = parseInt(s/60);
+    let ndate = new Date();
+    let s = parseInt((ndate.getTime() - date.getTime())/1000);
+    let m = parseInt(s/60);
     console.log("Uploading time: "+m+"min:"+s+"s");
     modal.modal('hide');
     recover_datasets();
@@ -352,7 +360,7 @@ function datasets_send_file_ended(date, modal) {
 
 
 function datasets_check_date_format(date, format_div, format_input, result_div, result_input) {
-    var m2 = moment(date, format_input.val());
+    let m2 = moment(date, format_input.val());
     if (! m2._isValid) {
         format_div.attr("class", "has-error");
         result_div.attr("class", "has-error");
@@ -382,12 +390,14 @@ function datasets_delete(dataset_id) {
 }
 
 function datasets_delete_yes(dataset_id, alert) {
-    console.log('Deleting !!!', dataset_id);
+    push_request('tables_delete');
     sakura.apis.hub.tables[dataset_id].delete().then(function() {
+        pop_request('tables_delete');
         console.log("Dataset deleted");
         //refresh datasets list
         recover_datasets();
     }).catch( function (error_msg) {
+        pop_request('tables_delete');
         if (alert)
             datasets_alert('Error deleting Dataset', error_msg);
         else
@@ -397,16 +407,16 @@ function datasets_delete_yes(dataset_id, alert) {
 
 function datasets_download(dataset_id) {
 
-    var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+    let dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
 
-    var txt = 'The size of the file is unkown for now.';
+    let txt = 'The size of the file is unkown for now.';
     if (dataset.count_estimate)
         txt = 'This dataset has ~'+dataset.count_estimate+' rows.';
 
-    var h = $('#datasets_download_modal_header');
-    var b = $('#datasets_download_modal_body');
-    var bc = $('#datasets_download_modal_button_csv');
-    var bg = $('#datasets_download_modal_button_gzip');
+    let h = $('#datasets_download_modal_header');
+    let b = $('#datasets_download_modal_body');
+    let bc = $('#datasets_download_modal_button_csv');
+    let bg = $('#datasets_download_modal_button_gzip');
 
     h.css('background-color', 'rgba(91,192,222)');
     h.html("<h3><font color=\"white\">Dataset Download</font></h3>");
@@ -419,18 +429,20 @@ function datasets_download(dataset_id) {
 
 function datasets_download_start_transfert(dataset_id, gzip) {
 
-  var dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
+  let dataset = $.grep(database_infos.tables, function(e){ return e.table_id == dataset_id; })[0];
   stop_downloading = false;
 
+  push_request('transfers_start');
   sakura.apis.hub.transfers.start().then(function(transfert_id) {
+        pop_request('transfers_start');
         current_transfert_id = transfert_id;
 
-        var url = "/tables/"+dataset.table_id+"/export.csv?transfer="+current_transfert_id;
+        let url = "/tables/"+dataset.table_id+"/export.csv?transfer="+current_transfert_id;
         if (gzip)
             url = "/tables/"+dataset.table_id+"/export.csv.gz?transfer="+current_transfert_id;
 
         //Create a link from downloading the file
-        var element = document.createElement('a');
+        let element = document.createElement('a');
         element.setAttribute('href', url);
         element.setAttribute('download', dataset.name+'.csv');
         element.style.display = 'none';

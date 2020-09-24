@@ -110,7 +110,9 @@ function dataflows_download_table(id_out, in_out) {
 function dataflows_download_start_transfert(id_in_out, in_out, gzip) {
 
     stop_downloading = false;
+    push_request('transfert_start');
     sakura.apis.hub.transfers.start().then(function(transfert_id) {
+        pop_request('transfert_start');
         current_transfert_id = transfert_id;
 
         var url = "/streams/"+current_instance_info.op_id+"/"+in_out+"/"+id_in_out+"/export.csv?transfer="+current_transfert_id;

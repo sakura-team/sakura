@@ -156,12 +156,14 @@ function datasets_send_new(database_id) {
         $('#datasets_creation_button').addClass('btn-success');
         $('#datasets_creation_button').html("Creating Table <span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span>");
     }
+    push_request('tables_create');
     sakura.apis.hub.tables.create(database_id, name, columns,
                                 {   'short_desc':       desc,
                                     'creation_date':    creation_date,
                                     'primary_key':      pkey,
                                     'foreign_keys':     fkeys   }).then(
     function(dataset_id) {
+        pop_request('tables_create');
         if (dataset_id >= 0) {
             //Sending file
             if (from_what == 'ff') {
@@ -174,6 +176,7 @@ function datasets_send_new(database_id) {
             datasets_creation_first_time = true;
         }
     }).catch( function(error) {
+        pop_request('tables_create');
         console.log(error);
     });
 }
