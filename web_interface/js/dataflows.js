@@ -30,7 +30,7 @@ function dataflows_creation_check_shortdescription() {
 }
 
 function dataflows_creation_check_mandatory() {
-    var ok = true;
+    let ok = true;
     for (x in dataflows_mandatory)
         if (!dataflows_mandatory[x])
             ok = false;
@@ -50,41 +50,43 @@ function dataflows_update_creation_modal() {
 
 
 function new_dataflow() {
-    var name = $('#dataflows_name_input').val();
+    let name = $('#dataflows_name_input').val();
 
     if ((name.replace(/ /g,"")).length == 0) {
         alert("Empty name!! We cannot create data without a name.");
         return ;
     }
 
-    var short_d     = $('#dataflows_shortdescription_input').val();
+    let short_d     = $('#dataflows_shortdescription_input').val();
 
-    var access_scope      = 'private';
+    let access_scope      = 'private';
     // $('[id^="dataflows_creation_access_scope_radio"]').each( function() {
     //     if (this.checked) {
-    //         var tab = this.id.split('_');
+    //         let tab = this.id.split('_');
     //         access_scope = tab[tab.length - 1];
     //     }
     // });
 
-    var topic= $('#dataflows_topic_input').val();
+    let topic= $('#dataflows_topic_input').val();
 
-    var licence = "Public";
+    let licence = "Public";
     $('[id^="dataflows_data_licence"]').each( function() {
         if (this.checked) {
-            var tab = this.id.split("_");
+            let tab = this.id.split("_");
             licence = tab[tab.length-1];
         }
     });
 
     $("#dataflows_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
+    push_request('dataflows_create');
     sakura.apis.hub.dataflows.create(name,
                                 {   'short_desc': short_d,
                                     'access_scope': access_scope,
                                     'topic': topic,
                                     'licence': licence  }).then(
                                 function(result) {
+        pop_request('dataflows_create');
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }

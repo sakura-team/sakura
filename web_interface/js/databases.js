@@ -2,8 +2,6 @@
 //August, 21st, 2017
 
 var datas_datastores = null;
-
-
 var datas_mandatory = {'name': false, 'short_description': false}
 
 function datas_creation_check_name() {
@@ -33,13 +31,13 @@ function datas_creation_check_shortdescription() {
 
 
 function datas_creation_check_mandatory() {
-    var ok = true;
+    let ok = true;
     for (x in datas_mandatory)
         if (!datas_mandatory[x])
             ok = false;
     if (ok) {
         //Datastore check
-        var ds_id       = parseInt($('#datas_datastore_input').val());
+        let ds_id       = parseInt($('#datas_datastore_input').val());
         if (isNaN(ds_id)) {
             $('#datas_submit_button').prop('disabled', true);
         }
@@ -57,15 +55,17 @@ function datas_update_creation_modal() {
     $("#datas_submit_button").html('Submit');
 
     //first we ask the hub the datastore
+    push_request('datastores_list');
     sakura.apis.hub.datastores.list().then(function (result) {
+        pop_request('datastores_list');
         datas_datastores = result;
         $('#datas_datastore_input').empty();
 
         result.forEach( function(ds) {
 
-            var opt = $('<option>', { value: ds['datastore_id']});
-            var p = $('<p>');
-            var txt = '';
+            let opt = $('<option>', { value: ds['datastore_id']});
+            let p = $('<p>');
+            let txt = '';
             if (ds.grant_level == 'list') {
                 opt.attr('disabled', 'disabled');
                 opt.attr('style', 'cursor: pointer; background-color: rgba(255,0,0,.5);');
@@ -80,7 +80,7 @@ function datas_update_creation_modal() {
                 }
                 txt += "</font>";
 
-                var w_icon = create_warn_icon(ds);
+                let w_icon = create_warn_icon(ds);
                 if (w_icon) {
                     p.append(w_icon);
                 }
@@ -96,7 +96,7 @@ function datas_update_creation_modal() {
                 }
 
             }
-            var w_icon = create_warn_icon(ds);
+            let w_icon = create_warn_icon(ds);
             if (w_icon) {
                 p.append(w_icon);
             }
@@ -114,44 +114,44 @@ function datas_update_creation_modal() {
 
 
 function new_database() {
-    var name = $('#datas_name_input').val();
+    let name = $('#datas_name_input').val();
 
     if ((name.replace(/ /g,"")).length == 0) {
         alert("Empty name!! We cannot create data without a name.");
         return ;
     }
 
-    var short_d     = $('#datas_shortdescription_input').val();
-    var ds_id       = parseInt($('#datas_datastore_input').val());
+    let short_d     = $('#datas_shortdescription_input').val();
+    let ds_id       = parseInt($('#datas_datastore_input').val());
     if (isNaN(ds_id)) {
         return
     }
 
 
-    var access_scope      = 'restricted';
+    let access_scope      = 'restricted';
     $('[id^="datas_creation_access_scope_radio"]').each( function() {
         if (this.checked) {
-            var tab = this.id.split('_');
+            let tab = this.id.split('_');
             access_scope = tab[tab.length - 1];
         }
     });
 
-    var agent_type  = $('#datas_agent_type_input').val();
-    var topic= $('#datas_topic_input').val();
-    //var licence     = $('#datas_licence_input').val();
+    let agent_type  = $('#datas_agent_type_input').val();
+    let topic= $('#datas_topic_input').val();
+    //let licence     = $('#datas_licence_input').val();
 
-    var data_type   = '';
+    let data_type   = '';
     $('[id^="datas_data_type_input"]').each( function() {
         if (this.checked) {
-            var tab = this.id.split("_");
+            let tab = this.id.split("_");
             data_type = tab[tab.length-1];
         }
     });
 
-    var licence = "Public";
+    let licence = "Public";
     $('[id^="datas_data_licence"]').each( function() {
         if (this.checked) {
-            var tab = this.id.split("_");
+            let tab = this.id.split("_");
             licence = tab[tab.length-1];
         }
     });
@@ -159,6 +159,7 @@ function new_database() {
 
     $("#datas_submit_button").html('Creating...<span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>');
 
+    push_request('databases_create');
     sakura.apis.hub.databases.create(ds_id, name,
                                 {   'short_desc':   short_d,
                                     'access_scope': access_scope,
@@ -168,6 +169,7 @@ function new_database() {
                                     'licence':      licence  }
                                 ).then(function(result) {
         //result = new database id
+        pop_request('databases_create');
         if (result < 0) {
             alert("Something Wrong with the values ! Please check and submit again.");
         }
@@ -176,6 +178,7 @@ function new_database() {
             showDiv(null, 'Datas/'+result, null);
         }
     }).catch(function(result) {
+        pop_request('databases_create');
         main_alert('CREATION ISSUE', result);
     });
 }

@@ -22,16 +22,20 @@ function giga_mega_kilo(val, txt) {
 }
 
 function stop_download() {
+    push_request('transfers_abort');
     sakura.apis.hub.transfers[current_transfert_id].abort().then(function(result) {
+        pop_request('transfers_abort');
         stop_downloading = true;
     });
 }
 
 function download_start_transfert(object) {
     //Get first transfert status
+    push_request('transfers_get_status');
     sakura.apis.hub.transfers[current_transfert_id].get_status().then(function(status) {
-        var pb = null;
-        var pb_txt = null;
+        pop_request('transfers_get_status');
+        let pb = null;
+        let pb_txt = null;
         $('#'+object+'s_progress_bar_modal_header').html("<table width=\"100%\"><tr><td><h3>Downloading ...</h3><td align=\"right\"><span class=\"glyphicon glyphicon-refresh glyphicon-refresh-animate\"></span></table>");
 
         if (status.percent == -1)
@@ -39,7 +43,7 @@ function download_start_transfert(object) {
         else {
             $('#'+object+'s_progress_bar_modal_body').empty();
 
-            var pbdiv = $('<div></div>', {'id': object+"s_download_progress_bar_div",
+            let pbdiv = $('<div></div>', {'id': object+"s_download_progress_bar_div",
                               'class': "progress" });
 
             pb = $('<div></div>', { 'id': object+"s_download_progress_bar",
@@ -69,7 +73,9 @@ function download_start_transfert(object) {
 
 function download_update_feedback(object, progress_bar, progress_bar_txt, init_date) {
 
+    push_request('transfers_get_started');
     sakura.apis.hub.transfers[current_transfert_id].get_status().then(function(status) {
+        pop_request('transfers_get_started');
         if (status.status == 'waiting' && !stop_downloading) {
           setTimeout(function () {
               download_update_feedback(object, progress_bar, progress_bar_txt, init_date);
@@ -77,15 +83,15 @@ function download_update_feedback(object, progress_bar, progress_bar_txt, init_d
         }
         else if (status.status != 'done' && !stop_downloading) {
             if (status.percent == -1) {
-                var nd = new Date();
+                let nd = new Date();
                 s =  parseInt((nd.getTime() - init_date.getTime())/1000);
                 m = parseInt(s/60);
                 s = s - (m*60)
                 $('#'+object+'s_progress_bar_modal_body').html("<p align=\"center\">"+status.rows+" rows ; "+m+"min:"+s+"s</p>");
             }
             else {
-                var o = giga_mega_kilo(status.bytes, 'bytes');
-                var r = giga_mega_kilo(status.rows, 'rows');
+                let o = giga_mega_kilo(status.bytes, 'bytes');
+                let r = giga_mega_kilo(status.rows, 'rows');
 
                 progress_bar_txt.html(r.val+' '+r.txt+'/ '+o.val+' '+o.txt);
                 progress_bar.css("width", ""+status.percent+"%");

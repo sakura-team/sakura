@@ -9,7 +9,7 @@ var users_list = null;
 
 
 function initiateSignInModal(event) {
-    var $signUpForm = document.getElementById("signUpForm");
+    let $signUpForm = document.getElementById("signUpForm");
     for (i = 0; i < $signUpForm.length; i++) {
         if ($signUpForm.elements[i].classList.contains("form-control")) {
             $signUpForm.elements[i].className = "form-control";
@@ -31,8 +31,8 @@ function initiateSignInModal(event) {
     // RMS: Change the default country in this code block if required.
     // RMS: Update country-codes.json for correcting erroneous entries, if any.
     $.getJSON("./divs/signIn/country-codes.json", function (data) {
-        var $selectCountry = $("#signUpCountry");
-        var countryNames = [];
+        let $selectCountry = $("#signUpCountry");
+        let countryNames = [];
         $selectCountry.empty();
         $.each(data, function (idx, entry) {
             if (entry.name === 'France') {
@@ -52,9 +52,9 @@ function initiateSignInModal(event) {
 function registerUser(event = '') {
     if (event.type === 'click') {
         event.preventDefault();
-        var userAccountValues = {}; // dictionary of all values input by user
-        var $modalForm = document.getElementById("signInModal");
-        var formInstance = $('#signUpForm').parsley();
+        let userAccountValues = {}; // dictionary of all values input by user
+        let $modalForm = document.getElementById("signInModal");
+        let formInstance = $('#signUpForm').parsley();
 
         formInstance.on('form:validated', function () {
             console.log("In form:validated function");
@@ -63,9 +63,9 @@ function registerUser(event = '') {
             $('.bs-callout-warning').toggleClass('hidden', ok);
         });
 
-        var formValidated = formInstance.validate();
+        let formValidated = formInstance.validate();
         if (formValidated) {
-            var fieldsObj = formInstance.fields;
+            let fieldsObj = formInstance.fields;
             if (fieldsObj.length > 0) {
                 fieldsObj.forEach(function (fieldIdx) {
                     userAccountValues[fieldIdx.element.name] = fieldIdx.value;
@@ -86,8 +86,10 @@ function registerUser(event = '') {
             userAccountValues['password'] = client_hashed;
 
             //begin request calls for websocket
+            push_request('users_create');
             sakura.apis.hub.users.create(userAccountValues).then(
-                function (wsResult) {
+              function (wsResult) {
+                    pop_request('users_create');
                     if (wsResult) {
                         userAccountValues = {};
         	    		      alert("'"+login + "' has been registered");
@@ -104,7 +106,8 @@ function registerUser(event = '') {
                     }
                 }).catch(
                 function (error_message) {
-            	      alert(error_message);
+            	      pop_request('users_create');
+                    alert(error_message);
                     if (DEBUG) console.log("E3", error_message);
                 });
         }
@@ -117,7 +120,7 @@ function registerUser(event = '') {
 function signInSubmitControl(event, login, passw) {
     if (event.type === 'click' || event.keyCode == 13) {
         event.preventDefault();
-    	  var userSignInValues = {}; // dictionary of email and password entered by user
+    	  let userSignInValues = {}; // dictionary of email and password entered by user
         let loginOrEmail = null;
         let password = null;
 
@@ -135,7 +138,9 @@ function signInSubmitControl(event, login, passw) {
             let client_hashed = hashed_sha256.toString(CryptoJS.enc.Base64);
             userSignInValues.login_or_email = loginOrEmail;
             userSignInValues.password = client_hashed;
+            push_request('login');
             sakura.apis.hub.login(userSignInValues).then(function (wsResult) {
+                pop_request('login');
     		    	  $('#signInModal').on('hidden.bs.modal', function () {
     	    			    $(this).find('form').trigger('reset');
                 });
@@ -149,7 +154,7 @@ function signInSubmitControl(event, login, passw) {
                 fill_profil_button();
 
                 //Back to the current div
-                var url = window.location.href.split('#');
+                let url = window.location.href.split('#');
                 if (url.length > 1)
                     showDiv(event, url[1], '');
                 else
@@ -157,6 +162,7 @@ function signInSubmitControl(event, login, passw) {
     	    		  return;
             }).catch(
   	        function (error_message) {
+                pop_request('login');
   	    	      alert(error_message);
                 if (DEBUG) console.log("E4", error_message);
             });
@@ -173,7 +179,9 @@ function openUserProfil(event) {
 
 function logOut(event) {
     yes_no_asking('Sign Out', 'Are you sure you want to sign out ?', function() {
+        push_request('logout');
         sakura.apis.hub.logout().then(function (result) {
+            pop_request('logout');
             current_user = null;
             fill_profil_button();
 
@@ -191,12 +199,14 @@ function logOut(event) {
 function pwdRecoverySubmitControl(event) {
 	if (event.type === 'click') {
 	  event.preventDefault();
-	  var pwdRecoveryValues = {}; // dictionary of email and password entered by user
+	  let pwdRecoveryValues = {}; // dictionary of email and password entered by user
 	  let loginOrEmail = document.getElementById("pwdRecoveryLoginOrEmail").value;
 	  if (loginOrEmail.length > 0){
 		  pwdRecoveryValues.login_or_email = loginOrEmail;
+        push_request('recover_password');
 	      sakura.apis.hub.recover_password(pwdRecoveryValues).then(
 	        function (wsResult) {
+                pop_request('recover_password');
                 alert("Mail sent. Checkout your mailbox.");
                 $('#signInModal').on('hidden.bs.modal', function () {
                       $(this).find('form').trigger('reset');
@@ -204,6 +214,7 @@ function pwdRecoverySubmitControl(event) {
                 return;
             }).catch(
 	        function (error_message) {
+                  pop_request('recover_password');
                   alert(error_message);
                   if (DEBUG) console.log("E5", error_message);
             });
@@ -215,7 +226,7 @@ function pwdRecoverySubmitControl(event) {
 function changePasswordSubmitControl(event) {
   	if (event.type === 'click') {
     	  event.preventDefault();
-    	  var changePasswordValues = {}; // dictionary of email and password entered by user
+    	  let changePasswordValues = {}; // dictionary of email and password entered by user
     	  let loginOrEmail = document.getElementById("changePasswordLoginOrEmail").value;
     	  let currentPasswordOrRT = document.getElementById("changePasswordCurrentPasswordOrRT").value;
     	  let newPassword = document.getElementById("changePasswordNewPassword").value;
@@ -239,8 +250,9 @@ function changePasswordSubmitControl(event) {
             let hashed_new_sha256 = CryptoJS.SHA256(newPassword);
             let client_new_hashed = hashed_new_sha256.toString(CryptoJS.enc.Base64);
             changePasswordValues.new_password = client_new_hashed;
+            push_request('change_password');
             sakura.apis.hub.change_password(changePasswordValues).then(function (wsResult) {
-                console.log("wsResult:"+wsResult);
+                pop_request('change_password');
                 alert("Password changed");
                 $('#signInModal').on('hidden.bs.modal', function () {
                   $(this).find('form').trigger('reset');});
@@ -248,8 +260,9 @@ function changePasswordSubmitControl(event) {
                 return;
             }).catch(
     	      function (error_message) {
-    	         alert(error_message);
-               if (DEBUG) console.log("E6", error_message);
+                pop_request('change_password');
+    	          alert(error_message);
+                if (DEBUG) console.log("E6", error_message);
             });
         }
         else {
@@ -259,17 +272,19 @@ function changePasswordSubmitControl(event) {
 }
 
 function fill_profil_button(fill_modal) {
+    push_request('users_current');
     sakura.apis.hub.users.current.info().then( function (result) {
+        pop_request('users_current');
         if (result) {
             current_user = result;
 
             function fill(login, pends) {
-                var gul = null;
-                var butt = $('<button>', {'class': "btn btn-info dropdown-toggle btn-xs",
+                let gul = null;
+                let butt = $('<button>', {'class': "btn btn-info dropdown-toggle btn-xs",
                                           'type': "button",
                                           'data-toggle':"dropdown",
                                           'id': "dropdownProfilButton"});
-                var span = $('<span>', {'class': "glyphicon glyphicon-user",
+                let span = $('<span>', {'class': "glyphicon glyphicon-user",
                                         'aria-hidden': "true"})
                 butt.append(span);
                 butt.append('&nbsp;&nbsp;'+login.login+'&nbsp;&nbsp;');
@@ -277,24 +292,24 @@ function fill_profil_button(fill_modal) {
 
                 gul = $('<ul>', { 'class':"dropdown-menu dropdown-menu-right",
                                         'aria-labelledby': "dropdownProfilButton"});
-                var li1 = $('<li>', {'role': "presentation"});
-                var li2 = $('<li>', {'role': "presentation", 'class': "divider"});
-                var li3 = $('<li>', {'role': "presentation"});
+                let li1 = $('<li>', {'role': "presentation"});
+                let li2 = $('<li>', {'role': "presentation", 'class': "divider"});
+                let li3 = $('<li>', {'role': "presentation"});
 
-                var ex_span = $('<span>', { 'class': "glyphicon glyphicon-exclamation-sign",
+                let ex_span = $('<span>', { 'class': "glyphicon glyphicon-exclamation-sign",
                                             'aria-hidden': "true",
                                             'style': 'color: orange; position: absolute; left:3px; top: 0px; display: block;'});
-                var a1 = $('<a>', {     'class': "dropdown-item",
+                let a1 = $('<a>', {     'class': "dropdown-item",
                                         'html': "Profile",
                                         'onclick': "openUserProfil(event);",
                                         'style': "cursor: pointer;"});
                 if (pends)
                       a1.append(ex_span);
 
-                var a2 = $('<a>', {     'class': "dropdown-item",
+                let a2 = $('<a>', {     'class': "dropdown-item",
                                         'html': "Log Out&nbsp;&nbsp;",
                                         'onclick': "logOut(event);"});
-                var span_off = $('<span>', {'class': "glyphicon glyphicon-off",
+                let span_off = $('<span>', {'class': "glyphicon glyphicon-off",
                                             'aria-hidden': "true"});
                 a2.append(span_off);
                 li1.append(a1);
@@ -314,9 +329,11 @@ function fill_profil_button(fill_modal) {
             }
 
             if (current_user.privileges.indexOf('admin') != -1) {
+                push_request('users_list');
                 sakura.apis.hub.users.list().then(function (result){
+                    pop_request('users_list');
                     users_list = result;
-                    var pendings = users_list.some( function(user){
+                    let pendings = users_list.some( function(user){
                               return user.requested_privileges.length !== 0;
                             });
                     fill(current_user, pendings);
@@ -332,11 +349,11 @@ function fill_profil_button(fill_modal) {
 
         }
         else {
-            var butt = $('<button>', {'onclick': "initiateSignInModal(event);",
+            let butt = $('<button>', {'onclick': "initiateSignInModal(event);",
                                       'class': "btn btn-info btn-xs",
                                       'data-toggle': "modal",
                                       'href': "#signInModal"});
-            var span = $('<span>', {'class': "glyphicon glyphicon-user",
+            let span = $('<span>', {'class': "glyphicon glyphicon-user",
                                     'aria-hidden': "true"})
             butt.append(span);
             butt.append('&nbsp;&nbsp;Sign In');
@@ -349,21 +366,21 @@ function fill_profil_button(fill_modal) {
 }
 
 function fill_profil_modal(user_infos) {
-    var bdy = $('#profil_body');
+    let bdy = $('#profil_body');
     bdy.empty();
 
-    var div   = $('<div>', {  'class': "panel panel-default"});
-    var divh  = $('<div>', {  'class': "panel-heading",
+    let div   = $('<div>', {  'class': "panel panel-default"});
+    let divh  = $('<div>', {  'class': "panel-heading",
                               'html':  "<h4 style=\"margin-bottom: 0px; \
                                         margin-top: 0px\">General Informations</h4>",
                               'style': "margin-bottom: 0px; margin-top: 0px"})
-    var divb  = $('<div>', {  'class': "panel-body"})
-    var dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
+    let divb  = $('<div>', {  'class': "panel-body"})
+    let dl    = $('<dl>', {   'class': "dl-horizontal col-md-6",
                               'style': "margin-bottom: 0px; width: 100%;"})
 
     Object.keys(user_infos).forEach( function(item) {
         if (item != 'privileges' && item != 'requested_privileges') {
-            var txt = user_infos[item];
+            let txt = user_infos[item];
             if (user_infos[item] === '' || user_infos[item] == null) {
                 txt = '<i><font color="lightgrey">not specified</font></i>';
             }
@@ -371,7 +388,7 @@ function fill_profil_modal(user_infos) {
                 txt = '<b>'+txt+'</b>';
             }
             else {
-                var txt = $('<a name="short_desc" href="#" data-type="text" data-title="txt">'+txt+'</a>');
+                let txt = $('<a name="short_desc" href="#" data-type="text" data-title="txt">'+txt+'</a>');
                 txt.editable({emptytext: txt,
                             url: function(params) {update_profile(item, txt, params);}});
             }
@@ -381,26 +398,26 @@ function fill_profil_modal(user_infos) {
     });
     bdy.append(div.append(divh, divb.append(dl)));
 
-    var div = $('<div>', {  'class': "panel panel-default"});
-    var divh = $('<div>', { 'class': "panel-heading",
+    div = $('<div>', {  'class': "panel panel-default"});
+    divh = $('<div>', { 'class': "panel-heading",
                             'html': "<h4 style=\"margin-bottom: 0px; \
                                     margin-top: 0px\">Your Privileges</h4>"})
-    var divb = $('<div>', { 'class': "panel-body"})
+    divb = $('<div>', { 'class': "panel-body"})
 
-    var dl = $('<dl>', {'class': "dl-horizontal col-md-6",
+    dl = $('<dl>', {'class': "dl-horizontal col-md-6",
                         'style': "margin-bottom: 0px; width: 100%;"})
 
-    var priv_dict = { 'granted':      'btn btn-success btn-xs',
+    let priv_dict = { 'granted':      'btn btn-success btn-xs',
                       'not granted':  'btn btn-secondary btn-xs',
                       'pending':      'btn btn-warning btn-xs'};
 
-    var possible_privileges = ['admin', 'developer'];
-    var found_privileges = [];
+    let possible_privileges = ['admin', 'developer'];
+    let found_privileges = [];
 
     possible_privileges.forEach( function(privilege) {
-        var dd = $('<dd>');
+        let dd = $('<dd>');
         if (user_infos.privileges.indexOf(privilege) != -1){
-            var a = $('<button>', { 'type': "button",
+            let a = $('<button>', { 'type': "button",
                                     'class': 'btn btn-success btn-xs',
                                     'style': "width: 150px;",
                                     'text': 'granted'});
@@ -408,7 +425,7 @@ function fill_profil_modal(user_infos) {
             dd.append(a);
         }
         else if (user_infos.requested_privileges.indexOf(privilege) != -1) {
-            var a = $('<button>', { 'type': "button",
+            let a = $('<button>', { 'type': "button",
                                     'class': 'btn btn-warning btn-xs',
                                     'style': "width: 150px;",
                                     'text': 'pending'});
@@ -416,7 +433,7 @@ function fill_profil_modal(user_infos) {
             dd.append(a);
         }
         else {
-          var a = $('<button>', { 'type': "button",
+          let a = $('<button>', { 'type': "button",
                                   'style': "cursor: pointer;",
                                   'class': "btn btn-primary btn-xs btn-block",
                                   'style': "width: 150px;",
@@ -431,26 +448,26 @@ function fill_profil_modal(user_infos) {
 
     if (user_infos.privileges.indexOf('admin') != -1) {
         //TABLE HEAD
-        var pdiv = $('<div>', {  'class': "panel panel-default",
+        let pdiv = $('<div>', {  'class': "panel panel-default",
                                 'style': "margin-bottom: 0px;"});
-        var pdivh = $('<div>', { 'class': "panel-heading",
+        let pdivh = $('<div>', { 'class': "panel-heading",
                                 'html': "<h4 style=\"margin-bottom: 0px; \
                                         margin-top: 0px\">User Privileges</h4>"})
-        var pdivb = $('<div>', {  'class': "panel-body"})
+        let pdivb = $('<div>', {  'class': "panel-body"})
 
-        var ptable = $('<table>', { 'width': '100%',
+        let ptable = $('<table>', { 'width': '100%',
                                     'class': "table table-striped table-condensed header-fixed",
                                     'style': "margin-bottom: 0px"});
-        var pthead = $('<thead>', {'style': "background: lightgray;"});
-        var ptbody = $('<tbody>');
-        var th1 = $('<th>', { 'html': '<b>&nbsp;</b>',    'style': "text-align: center;"});
-        var th2 = $('<th>', { 'html': '<b>admin</b>',     'style': "text-align: center;"});
-        var th3 = $('<th>', { 'html': '<b>developer</b>', 'style': "text-align: center;"});
-        var tr = $('<tr>');
+        let pthead = $('<thead>', {'style': "background: lightgray;"});
+        let ptbody = $('<tbody>');
+        let th1 = $('<th>', { 'html': '<b>&nbsp;</b>',    'style': "text-align: center;"});
+        let th2 = $('<th>', { 'html': '<b>admin</b>',     'style': "text-align: center;"});
+        let th3 = $('<th>', { 'html': '<b>developer</b>', 'style': "text-align: center;"});
+        let tr = $('<tr>');
         pthead.append(tr.append(th1, th2, th3));
 
         function new_check(user, privilege){
-            var i = $('<input>', { 'type': "checkbox",});
+            let i = $('<input>', { 'type': "checkbox",});
             i.on('change', function (event) {
                 update_privilege(event, user.login, privilege, event);
             });
@@ -470,18 +487,18 @@ function fill_profil_modal(user_infos) {
         }
 
         users_list.forEach( function(user){
-            var tr = $('<tr>');
-            var td1 = $('<td>', { 'html': user.login,
+            let tr = $('<tr>');
+            let td1 = $('<td>', { 'html': user.login,
                                   'align': "center",
                                   'style': "padding: 0px"
                                   });
-            var td2 = $('<td>', { 'align': "center",
+            let td2 = $('<td>', { 'align': "center",
                                   'style': "padding: 0px"
                                   });
-            var td3 = $('<td>', { 'align': "center",
+            let td3 = $('<td>', { 'align': "center",
                                   'style': "padding: 0px"
                                   });
-            var tog1 = new_check(user, 'admin');
+            let tog1 = new_check(user, 'admin');
             if (user.privileges.indexOf('admin') != -1) {
                 tog1.prop('checked', true);
             }
@@ -491,7 +508,7 @@ function fill_profil_modal(user_infos) {
                 tog1.append(y_button(user.login, 'admin'), "&nbsp;&nbsp;", n_button(user.login, 'admin'));
             }
 
-            var tog2 = new_check(user, 'developer');
+            let tog2 = new_check(user, 'developer');
             if (user.privileges.indexOf('developer') != -1) {
                 tog2.prop('checked', true);
             }
@@ -509,16 +526,18 @@ function fill_profil_modal(user_infos) {
 }
 
 function validate_pending(value, login, privilege){
-    var func_yes = function() {
+    let func_yes = function() {
         if (value == true) {
+            push_request('users_privileges');
             sakura.apis.hub.users[login].privileges.add(privilege).then(function () {
-                console.log('add');
+                pop_request('users_privileges');
                 fill_profil_button(true);
             });
         }
         else {
+            push_request('users_privileges');
             sakura.apis.hub.users[login].privileges.deny(privilege).then(function () {
-                console.log('deny');
+                pop_request('users_privileges');
                 fill_profil_button(true);
             });
         }
@@ -536,22 +555,24 @@ function validate_pending(value, login, privilege){
 }
 
 function update_privilege(event, login, privilege, checkbox) {
-    var value = event.target.checked;
-    var func_yes = function() {
+    let value = event.target.checked;
+    let func_yes = function() {
         if (value) {
+            push_request('users_privileges');
             sakura.apis.hub.users[login].privileges.add(privilege).then(function (result) {
-                console.log('add');
+                pop_request('users_privileges');
                 fill_profil_button(true);
             });
         }
         else {
+            push_request('users_privileges');
             sakura.apis.hub.users[login].privileges.remove(privilege).then(function (result) {
-                console.log('remove');
+                pop_request('users_privileges');
                 fill_profil_button(true);
             });
         }
     }
-    var func_no = function() {
+    let func_no = function() {
         event.target.checked = !event.target.checked;
     }
 
@@ -573,7 +594,9 @@ function update_privilege(event, login, privilege, checkbox) {
 function update_profile(item, a, params) {
     let kwargs = {};
     kwargs[item] = params.value;
+    push_request('users_current');
     sakura.apis.hub.users.current.update(kwargs).then( function(result) {
+        pop_request('users_current');
         if (result) {
             alert('something went wrong');
         }
@@ -583,10 +606,10 @@ function update_profile(item, a, params) {
 //Privilege Managment
 function ask_for_privilege_open_modal(privilege) {
 
-    var txt1 = "An email will be sent to the administrators for asking for \
+    let txt1 = "An email will be sent to the administrators for asking for \
                 a <b>"+privilege+"</b> status. Please describe your needs.";
 
-    var txt2 = "Hello,\n\nI am a ...,\n";
+    let txt2 = "Hello,\n\nI am a ...,\n";
     txt2 += "I would like to get "+privilege+" status for ...\n\n";
     txt2 += "Thank you !";
     h = $('#web_interface_asking_privilege_modal_header');
@@ -596,7 +619,7 @@ function ask_for_privilege_open_modal(privilege) {
     h.append("<h3><font color='white'>Asking for "+privilege+" Access</font></h3>");
     b.append($('<p>', {html: txt1}));
 
-    var ti = $('<textarea>', {  class: 'form-control',
+    let ti = $('<textarea>', {  class: 'form-control',
                                 id: 'web_interface_asking_privilege_textarea',
                                 rows: '6',
                                 text: txt2});
@@ -606,11 +629,13 @@ function ask_for_privilege_open_modal(privilege) {
 }
 
 function ask_for_privilege(privilege, callback) {
+    push_request('users_current_privileges');
     sakura.apis.hub.users.current.privileges.request(privilege).then( function(result) {
+        pop_request('users_current_privileges');
         if (!result) {
             $('#web_interface_asking_privilege_modal').modal('hide');
-            var header = 'Asking For New Status';
-            var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
+            let header = 'Asking For New Status';
+            let body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
             fill_profil_button(true)
         }

@@ -4,23 +4,23 @@ function buildListStub(idDiv, result, elt) {
     //ask for the current login
     sakura.apis.hub.users.current.info().then( function (curr_login) {
 
-        var eltAncetre=elt.split("/")[0];
-        var elt_type = elt.split('/')[0].toLowerCase();
+        let eltAncetre=elt.split("/")[0];
+        let elt_type = elt.split('/')[0].toLowerCase();
 
         //Head of the list, according to the selected columns
-        var thead = $('#'+idDiv).find('thead');
-        var tbody = $('#'+idDiv).find('tbody');
+        let thead = $('#'+idDiv).find('thead');
+        let tbody = $('#'+idDiv).find('tbody');
         thead.empty();
         tbody.empty();
-        var new_row_head = $(thead[0].insertRow());
-        var list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
-        var list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
+        let new_row_head = $(thead[0].insertRow());
+        let list_cols_gui = ['Tags', 'Id', 'ShortDesc', 'Date', 'Modification', 'Owner'];
+        let list_cols_hub = ['tags', 'id', 'shortDesc', 'date', 'modification', 'owner'];
 
-        var list_cols_gui_op  = ['ShortDesc', 'Tags', 'CodeURL', 'Revision', 'Owner', 'Id',  'SubDir' ];
-        var list_cols_hub_op  = ['shortDesc', 'tags', 'repo_url', 'revision', 'owner',  'id',  'code_subdir'];
+        let list_cols_gui_op  = ['ShortDesc', 'Tags', 'CodeURL', 'Revision', 'Owner', 'Id',  'SubDir' ];
+        let list_cols_hub_op  = ['shortDesc', 'tags', 'repo_url', 'revision', 'owner',  'id',  'code_subdir'];
 
-        var lcg = list_cols_gui;
-        var lch = list_cols_hub;
+        let lcg = list_cols_gui;
+        let lch = list_cols_hub;
 
         if (elt.indexOf('Operator') != -1) {
             lcg = list_cols_gui_op;
@@ -35,9 +35,9 @@ function buildListStub(idDiv, result, elt) {
         });
 
         //Last col for the wrench
-        var last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
+        let last_cell = new_row_head[0].cells[new_row_head[0].cells.length-1];
 
-        var cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
+        let cell = $('<th>', { style: "width:26px; padding:0px; overflow:hidden"});
         cell.append('<a class="btn" style="padding:6px;" data-toggle="modal" data-target="#colSelectModal">'
             + '<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span></a>'
             + '<a href="javascript:listRequestStub(\''+idDiv+'\',10,\''+elt+'\')" class="executeOnShow"> </a>');
@@ -46,23 +46,23 @@ function buildListStub(idDiv, result, elt) {
         //Body of the list
         result.forEach( function (row, index) {
 
-            var new_row = $(tbody[0].insertRow());
-            var tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
+            let new_row = $(tbody[0].insertRow());
+            let tmp_elt=elt.replace(/tmp(.*)/,"$1-"+row.id);
 
             //adding link
-            var new_td = $('<td>');
-            var n_table = $('<table width=100%>');
-            var n_row = $('<tr>');
+            let new_td = $('<td>');
+            let n_table = $('<table width=100%>');
+            let n_row = $('<tr>');
             n_table.append(n_row);
 
-            var n_td1 = $('<td>');
-            var n_td2 = $('<td align="right">');
-            var warn_icon = create_warn_icon(row);
+            let n_td1 = $('<td>');
+            let n_td2 = $('<td align="right">');
+            let warn_icon = create_warn_icon(row);
             if (warn_icon)
                 n_td1.append(warn_icon);
 
             if ((row.name.indexOf('OFFLINE') === -1) && (tmp_elt.indexOf('Operators') === -1)) {
-                var name = $('<a>');
+                let name = $('<a>');
                 name.html(row.name+'&nbsp;');
                 if (row.grant_level == 'list') {
                     name.css('cursor', 'pointer');
@@ -83,13 +83,13 @@ function buildListStub(idDiv, result, elt) {
             else if (tmp_elt.indexOf('Operators') != -1){
 
                 //Updating svg
-                var svg_div = $('<div>');
+                let svg_div = $('<div>');
                 svg_div.append(row.svg);
-                var svg     = svg_div.children()[0];
+                let svg     = svg_div.children()[0];
 
-                var width   = svg.getAttribute('width').split('px')[0];
-                var height  = svg.getAttribute('height').split('px')[0];
-                var viewbox = svg.getAttribute('viewBox');
+                let width   = svg.getAttribute('width').split('px')[0];
+                let height  = svg.getAttribute('height').split('px')[0];
+                let viewbox = svg.getAttribute('viewBox');
                 vb_vals = [0, 0];
                 if (viewbox != null)
                     vb_vals = viewbox.split(' ')
@@ -99,11 +99,11 @@ function buildListStub(idDiv, result, elt) {
                 svg.setAttribute('viewBox', ""+vb_vals[0]+" "+vb_vals[1]+" "+width+" "+height);
 
                 //Adding svg and name
-                var op_table = $('<table width="100%">');
-                var op_tr = $('<tr>');
-                var op_td1 = $('<td style="width: 30px;">');
-                var op_td2 = $('<td>');
-                var op_td3 = $('<td align="right">');
+                let op_table = $('<table width="100%">');
+                let op_tr = $('<tr>');
+                let op_td1 = $('<td style="width: 30px;">');
+                let op_td2 = $('<td>');
+                let op_td3 = $('<td align="right">');
 
 
                 op_td1.append(svg);
@@ -136,8 +136,8 @@ function buildListStub(idDiv, result, elt) {
                     switch (lelt) {
                         case 'Date':
                             if (row[lch[index]] instanceof Date) {
-                                var d = row[lch[index]].toDateString();
-                                var h = row[lch[index]].toLocaleTimeString();
+                                let d = row[lch[index]].toDateString();
+                                let h = row[lch[index]].toLocaleTimeString();
                                 new_row.append('<td>'+d+'</td>');
                             }
                             else {
@@ -146,7 +146,7 @@ function buildListStub(idDiv, result, elt) {
                             break;
 
                         case ('Revision'):
-                            var new_td = $('<td>');
+                            let new_td = $('<td>');
                             let cr = row.default_code_ref;
                             if (! cr) {
                                 new_row.append('<td>&lt;not applicable&gt;</td>');
@@ -199,14 +199,14 @@ function buildListStub(idDiv, result, elt) {
                     }
                 }
             });
-            var last_cell = new_row[0].cells[new_row[0].cells.length-1];
+            let last_cell = new_row[0].cells[new_row[0].cells.length-1];
             last_cell.colSpan = 2;
         });
         tbody[0].id = 'idTBodyList'+eltAncetre;
 
         if (result.length == 0) {
-            var new_row = $(tbody[0].insertRow());
-            var msg = "There is no accessible "+elt_type;
+            let new_row = $(tbody[0].insertRow());
+            let msg = "There is no accessible "+elt_type;
             new_row.append('<td align=center colspan='+$(new_row_head)[0].children.length+'>'+msg+'</td>');
         }
         if (curr_login === null)
@@ -223,10 +223,10 @@ function databases_sort(a, b) {
 
 function stub_delete(db_id, idDiv, elt) {
 
-    var type = null;
-    var asking_msg = null;
-    var stub = null;
-    var method = null;
+    let type = null;
+    let asking_msg = null;
+    let stub = null;
+    let method = null;
 
     if (idDiv.indexOf('dataflows') != -1) {
         type = 'Dataflow';
@@ -284,8 +284,10 @@ function listRequestStub(idDiv, n, elt) {
     //Here we deal with the databases
     //if (elt == 'Datas/tmpData') {
     if (elt == 'Datas' || elt == 'datas') {
+        push_request('databases_list');
         sakura.apis.hub.databases.list().then(function (databases) {
-            var result = new Array();
+            pop_request('databases_list');
+            let result = new Array();
             databases.sort(databases_sort);
             databases.forEach( function(db) {
                 result_info = { 'type': 'database', 'name': db.name,'id':db.database_id, 'isGreyedOut': !db.enabled,
@@ -307,8 +309,10 @@ function listRequestStub(idDiv, n, elt) {
     //Here is for Dataflows
     //else if (elt == 'Dataflows/tmpDataflow') {
     else if (elt == 'Dataflows' || elt == 'dataflows') {
+        push_request('dataflows_list');
         sakura.apis.hub.dataflows.list().then(function (dataflows) {
-            var result = new Array();
+            pop_request('dataflows_list');
+            let result = new Array();
             dataflows.sort(dataflows_sort);
             dataflows.forEach( function(df) {
 
@@ -329,12 +333,14 @@ function listRequestStub(idDiv, n, elt) {
     //Operators
     //else if (elt == 'Operators/tmpOperator') {
     else if (elt == 'Operators' || elt == 'operators') {
+        push_request('op_classes_list');
         sakura.apis.hub.op_classes.list().then(function (operators) {
-            var result = new Array();
+            pop_request('op_classes_list');
+            let result = new Array();
             current_op_classes_list = operators;
             operators.forEach( function(op) {
 
-                var result_info = { 'shortDesc': op.short_desc,
+                let result_info = { 'shortDesc': op.short_desc,
                                     'modif': op.modification_date};
                 Object.keys(op).forEach( function(key){
                     if (key != 'shortDesc' && key != 'modif') {
@@ -355,10 +361,12 @@ function listRequestStub(idDiv, n, elt) {
     }
     //else if (elt == 'Projects/tmpProject') {
     else if (elt == 'Projects' || elt == 'projects') {
+        push_request('projects_list');
         sakura.apis.hub.projects.list().then(function (projects) {
-            var result = new Array();
+            pop_request('projects_list');
+            let result = new Array();
             projects.forEach( function (proj) {
-                var result_info = { 'type': 'project',
+                let result_info = { 'type': 'project',
                                     'name': proj.name,
                                     'id':proj.project_id,
                                     'shortDesc': proj.short_desc,

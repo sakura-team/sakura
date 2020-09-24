@@ -22,7 +22,7 @@ function not_yet(s) {
 
 function push_request(id) {
     requests_sent.push(id);
-    console.log('RS', requests_sent);
+    //console.log('RS', requests_sent);
     $('#request_icon').show();
 }
 
@@ -31,12 +31,12 @@ function pop_request(id) {
     if (requests_sent.length == 0) {
         $('#request_icon').hide();
     }
-    console.log('RS', requests_sent);
+    //console.log('RS', requests_sent);
 }
 
 function main_alert(header_str, body_str, cb) {
-    var h = $('#main_alert_header');
-    var b = $('#main_alert_body');
+    let h = $('#main_alert_header');
+    let b = $('#main_alert_body');
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
     $('#main_alert_modal').modal();
@@ -46,8 +46,8 @@ function main_alert(header_str, body_str, cb) {
 
 function main_success_alert(header_str, body_str, callback, time=0) {
     //displayig success modal during 'time' sec
-    var h = $('#web_interface_success_modal_header');
-    var b = $('#web_interface_success_modal_body');
+    let h = $('#web_interface_success_modal_header');
+    let b = $('#web_interface_success_modal_body');
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html('<h4 align="center" style="margin: 5px;"><font color="black"> '+body_str+'</font></h4>');
 
@@ -83,9 +83,12 @@ function web_interface_deal_with_events(evt_name, args) {
             if (  location.href.indexOf('Operators') != -1 ||
                   (location.href.indexOf('Dataflows') != -1 &&
                   location.href.indexOf('Work') != -1)  ) {
+                push_request('op_classes_info');
                 sakura.apis.hub.op_classes[args].info().then( function (result) {
+                    pop_request('op_classes_info');
                     location.reload();
                 }).catch(function (result) {
+                    pop_request('op_classes_info');
                     // access to this object is not allowed, nothing to do
                 });
             }
@@ -114,10 +117,10 @@ function web_interface_deal_with_events(evt_name, args) {
 }
 
 function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
-    var h = $('#stub_asking_header');
-    var b = $('#stub_asking_body');
-    var b_yes = $('#stub_asking_button_yes');
-    var b_no = $('#stub_asking_button_no');
+    let h = $('#stub_asking_header');
+    let b = $('#stub_asking_body');
+    let b_yes = $('#stub_asking_button_yes');
+    let b_no = $('#stub_asking_button_no');
 
     h.css('background-color', rgba_color);
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
@@ -133,10 +136,10 @@ function stub_asking(header_str, body_str, rgba_color, func_yes, func_no) {
 }
 
 function yes_no_asking(header_str, body_str, func_yes, func_no) {
-    var h = $('#web_interface_yes_no_modal_header');
-    var b = $('#web_interface_yes_no_modal_body');
-    var b_yes = $('#web_interface_yes_no_modal_yes_button');
-    var b_no = $('#web_interface_yes_no_modal_no_button');
+    let h = $('#web_interface_yes_no_modal_header');
+    let b = $('#web_interface_yes_no_modal_body');
+    let b_yes = $('#web_interface_yes_no_modal_yes_button');
+    let b_no = $('#web_interface_yes_no_modal_no_button');
 
     h.html("<h3><font color=\"white\">"+header_str+"</font></h3>");
     b.html("<p>"+body_str+"</p>");
@@ -180,7 +183,7 @@ function recursiveReplace(node, init_text, new_text) {
 }
 
 function current_remote_api_object() {
-    var api_objects = sakura.apis.hub.databases;
+    let api_objects = sakura.apis.hub.databases;
     if (web_interface_current_object_type == 'dataflows')
         api_objects = sakura.apis.hub.dataflows;
     else if (web_interface_current_object_type == 'operators')
@@ -193,7 +196,9 @@ function current_remote_api_object() {
 }
 
 function fill_head() {
+    push_request('object_info');
     current_remote_api_object().info().then(function(info) {
+        pop_request('object_info');
         web_interface_current_object_info = info;
 
         //Icon
@@ -212,7 +217,7 @@ function fill_head() {
             else
                 info.short_desc = '<font color="grey"><i>'+info.short_desc+'</i></font>';
 
-            var a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
+            let a = $('<a name="short_desc" href="#" data-type="text" data-title="Short discription">'+info.short_desc+'</a>');
             a.editable({emptytext: empty_desc,
                         url: function(params) {
                                 web_interface_updating_metadata(a, params);
@@ -236,26 +241,26 @@ function fill_metadata() {
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
 
         //Owner
-        var owner = empty_text;
+        let owner = empty_text;
         if (info.owner && info.owner != 'null')
             owner =  info.owner;
 
         //Creation date
-        var date = empty_text;
+        let date = empty_text;
         if (info.creation_date)
             date = moment.unix(info.creation_date).local().format('YYYY-MM-DD,  HH:mm');
 
         //Main Meta
         function add_fields(list, elt) {
-            var dl1 = $('<dl>', { class:  "dl-horizontal col-md-6",
+            let dl1 = $('<dl>', { class:  "dl-horizontal col-md-6",
                                   style:  "margin-bottom:0px;"});
             list.forEach( function (elt){
-                var dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
-                var dd = $('<dd>');
+                let dt = $('<dt>', {html: '<i>'+elt.label+'</i>'});
+                let dd = $('<dd>');
                 if (elt.editable && info.grant_level == 'own') {
                     if (!(elt.value != undefined && elt.value))
                         elt.value = '';
-                    var a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
+                    let a = $('<a name="'+elt.name+'" href="#" data-type="text" data-title="'+elt.label+'">'+elt.value+'</a>');
                     a.editable({url: function(params) {web_interface_updating_metadata(a, params);}});
                     dd.append(a);
                 }
@@ -271,14 +276,16 @@ function fill_metadata() {
 
         if (web_interface_current_object_type == 'datas') {
             //Should call for datastores list
+            push_request('datastores_list');
             sakura.apis.hub.datastores.list().then(function(lds) {
-                var dt_store = empty_text;
+                pop_request('datastores_list');
+                let dt_store = empty_text;
                 lds.forEach( function(ds) {
                     if (ds.datastore_id == info.datastore_id)
                       dt_store = ds.host+'';
                 });
 
-                var list = [{name: '', label: "Creation Date", value: date, editable: false},
+                let list = [{name: '', label: "Creation Date", value: date, editable: false},
                             {name: '', label: "Datastore Host", value: dt_store, editable: false},
                             {name: 'agent_type', label: "Agent Type", value: info.agent_type, editable: true},
                             {name: '', label: "Licence", value: info.licence, editable: false},
@@ -288,13 +295,13 @@ function fill_metadata() {
             });
         }
         else if (web_interface_current_object_type == 'dataflows') {
-            var list = [  {name: '', label: "Creation Date", value: date, editable: false},
+            let list = [  {name: '', label: "Creation Date", value: date, editable: false},
                           {name: 'topic', label: "Topic", value: info.topic, editable: true} ];
             add_fields(list);
         }
 
         else if (web_interface_current_object_type == 'projects') {
-            var list = [  {name: '', label: "Creation Date", value: date, editable: false},
+            let list = [  {name: '', label: "Creation Date", value: date, editable: false},
                           {name: 'topic', label: "Topic", value: info.topic, editable: true} ];
             add_fields(list);
         }
@@ -307,7 +314,7 @@ function fill_metadata() {
         let dd1 = $('<dd>');
         if (info.grant_level == 'own') {
             dt1.attr('style', "vertical-align: middle; margin-top: 5px;");
-            var select = $('<select>', {id:   'web_interface_access_scope_select',
+            let select = $('<select>', {id:   'web_interface_access_scope_select',
                                         class: 'selectpicker',
                                         onchange: 'web_interface_asking_change_access_scope();'
                                         });
@@ -330,20 +337,20 @@ function fill_metadata() {
         dl2.append(dt1, dd1);
 
         //Owner
-        var owner = '__';
+        owner = '__';
         if (info.owner && info.owner != 'null')
             owner =  info.owner;
 
         //Grant level
-        var grant = "__"
+        let grant = "__"
         if (info.grant_level && info.grant_level != 'null')
             grant =  info.grant_level;
 
         [   {name: "<i>Owner</i>", value: owner},
             {name: "<i>Your Grant Level</i>", value: grant }].forEach( function(elt) {
 
-            var dt = $('<dt>', { html:  elt.name});
-            var dd = $('<dd>', { html: elt.value});
+            let dt = $('<dt>', { html:  elt.name});
+            let dd = $('<dd>', { html: elt.value});
             dl2.append(dt, dd);
         });
 
@@ -354,7 +361,7 @@ function fill_metadata() {
         $('#web_interface_'+web_interface_current_object_type+'_metadata2').append(dl2);
 
         //Large Description
-        var l_desc = '<span style="color:grey">*No description !';
+        let l_desc = '<span style="color:grey">*No description !';
 
         if (info.large_desc) {
             l_desc = info.large_desc;
@@ -387,7 +394,7 @@ function fill_metadata() {
 }
 
 function web_interface_updating_metadata(a, params) {
-    var jsn = JSON.parse('{"'+a.get(0).name+'": "'+params.value+'"}');
+    let jsn = JSON.parse('{"'+a.get(0).name+'": "'+params.value+'"}');
 
     current_remote_api_object().update(jsn).then(
         function(result) {
@@ -557,7 +564,10 @@ function web_interface_save_large_description(id) {
     if (web_interface_current_object_type != 'projects')
         current_remote_api_object().update({'large_desc': current_simpleMDE.value()});
     else {
-        sakura.apis.hub.pages[current_page.page_id].update({'page_content': current_simpleMDE.value()});
+        push_request('pages_update');
+        sakura.apis.hub.pages[current_page.page_id].update({'page_content': current_simpleMDE.value()}).then( function() {
+            pop_request('pages_update');
+        });
     }
 }
 
@@ -789,10 +799,10 @@ function showDiv(event, dir) {
 
 //Access Managment
 function web_interface_asking_access_open_modal(o_name, o_type, grant, callback) {
-    var txt1 = "An email will be sent to the owner of <b>"+o_name+"</b> for asking for a <b>"+grant+"</b> access on this "+o_type;
+    let txt1 = "An email will be sent to the owner of <b>"+o_name+"</b> for asking for a <b>"+grant+"</b> access on this "+o_type;
     txt1 += "Please describe your needs.";
 
-    var txt2 = "Hello,\n\nI am a ...,\n";
+    let txt2 = "Hello,\n\nI am a ...,\n";
     txt2 += "I would like to get "+grant+" access to this "+o_type+" for my ... activity on...\n\n";
     txt2 += "Thank you !";
     h = $('#web_interface_asking_access_modal_header');
@@ -802,7 +812,7 @@ function web_interface_asking_access_open_modal(o_name, o_type, grant, callback)
     h.append("<h3><font color='white'>Asking Access for </font>"+o_name+" </h3>");
     b.append($('<p>', {html: txt1}));
 
-    var ti = $('<textarea>', {  class: 'form-control',
+    let ti = $('<textarea>', {  class: 'form-control',
                                 id: 'web_interface_asking_access_textarea',
                                 rows: '6',
                                 text: txt2});
@@ -813,12 +823,12 @@ function web_interface_asking_access_open_modal(o_name, o_type, grant, callback)
 }
 
 function web_interface_asking_access(grant, callback) {
-    var txt = $('#web_interface_asking_access_textarea').val();
+    let txt = $('#web_interface_asking_access_textarea').val();
     current_remote_api_object().grants.request(grant, txt).then(function(result) {
         if (!result) {
             $('#web_interface_asking_access_modal').modal('hide');
-            var header = 'Asking for Access';
-            var body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
+            let header = 'Asking for Access';
+            let body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
             current_remote_api_object().info().then(function(info) {
                 fill_collaborators_table_body(info);
@@ -832,12 +842,12 @@ function web_interface_asking_access(grant, callback) {
 
 // Collaborators Management
 function fill_collaborators_table_body(info, cb) {
-    var tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
+    let tbody = $('#web_interface_'+web_interface_current_object_type+'_collaborators_table_body');
     tbody.empty();
 
     function access_button(access) {
-        var hobj_type = matching_hub_name(web_interface_current_object_type);
-        var a = $('<button>', { html: "Ask for <b>"+access+"</b> access"});
+        let hobj_type = matching_hub_name(web_interface_current_object_type);
+        let a = $('<button>', { html: "Ask for <b>"+access+"</b> access"});
         a.click(function () {
             web_interface_asking_access_open_modal(info.name, hobj_type, access, null);
         });
@@ -851,27 +861,27 @@ function fill_collaborators_table_body(info, cb) {
             grant = info.grants[user];
             if (grant.level == 'own')
                 continue;
-            var td2 = $('<td>')
+            let td2 = $('<td>')
             if (info.grant_level == 'own') {
                 if (grant.requested_level) {
                     td2.attr('bgcolor', '#f0ad4e');
-                    var b1 = $('<button>', { html: "Accept"});
-                    var b2 = $('<button>', { html: "Refuse"});
+                    let b1 = $('<button>', { html: "Accept"});
+                    let b2 = $('<button>', { html: "Refuse"});
                     b1.attr('onclick','access_requested('+true+',"'+user+'","'+grant.requested_level+'");');
                     b2.attr('onclick','access_requested('+false+',"'+user+'","'+grant.requested_level+'");');
-                    var p = $('<p>', {html: '<font color=white><b>'+grant.requested_level+'</b> level requested'+'</font>',
+                    let p = $('<p>', {html: '<font color=white><b>'+grant.requested_level+'</b> level requested'+'</font>',
                                       style: 'margin-bottom: 0px;'});
                     td2.append(p.append(b1, b2));
                 }
                 else {
-                    var sel = $('<select>', { class: "selectpicker"});
+                    let sel = $('<select>', { class: "selectpicker"});
                     sel.change( function() {
                         change_collaborator_access(web_interface_current_id, user, $(this));
                     });
                     if (info.access_scope != 'public')
                         sel.append($('<option>', { text: "Read"}));
 
-                    var op2 = $('<option>', { text: "Write"});
+                    let op2 = $('<option>', { text: "Write"});
                     if (grant.level == 'write')
                         op2.attr("selected","selected");
                     sel.append(op2);
@@ -880,24 +890,26 @@ function fill_collaborators_table_body(info, cb) {
                 }
             }
 
-            var td3 = $('<td>');
+            let td3 = $('<td>');
             if (info.grant_level == 'own')
                 td3 = $('<td>', {html: '<span title="delete collaborator from list" class="glyphicon glyphicon-remove" style="cursor: pointer;" onclick="delete_collaborator('+web_interface_current_id+', \''+user+'\');"></span>'});
 
-            var td1 = $('<td>', {html: user});
+            let td1 = $('<td>', {html: user});
             if (grant.requested_level)
             {
                 td1.attr('bgcolor', '#f0ad4e');
                 td3.attr('bgcolor', '#f0ad4e');
             }
-            var tr = $('<tr>');
+            let tr = $('<tr>');
             tr.append(td1, td2, td3);
 
             tbody.append(tr);
         }
 
         if (info.grant_level == 'own') {
+            push_request('users_list');
             sakura.apis.hub.users.list().then(function(result) {
+                pop_request('users_list');
                 let div = $('#web_interface_'+web_interface_current_object_type+'_collaborators_select_div');
                 div.empty();
                 div.html(collab_bloc.replace('obj', web_interface_current_object_type));
@@ -927,13 +939,13 @@ function fill_collaborators_table_body(info, cb) {
         }
     }
     else if (info.grant_level == 'read') {
-        var tr = $('<tr>');
-        var td = $('<td>');
+        let tr = $('<tr>');
+        let td = $('<td>');
 
         if (current_user != null) {
             if (info.grants[current_user.login] && info.grants[current_user.login].requested_level) {
-              var access = info.grants[current_user.login].requested_level;
-              var a = $('<button>');
+              let access = info.grants[current_user.login].requested_level;
+              let a = $('<button>');
               a.html('Pending <b>'+access+'</b> access');
               a.prop('disabled', true);
               a.prop('class', 'btn btn-warning btn-xs');
@@ -947,15 +959,15 @@ function fill_collaborators_table_body(info, cb) {
         tbody.append(tr);
     }
     else if (info.grant_level == 'list') {
-        var tr = $('<tr>');
-        var td = $('<td>');
+        let tr = $('<tr>');
+        let td = $('<td>');
         if (current_user != null) {
-            var granted_users = Object.keys(info.grants);
-            var uindex = granted_users.indexOf(current_user.login);
+            let granted_users = Object.keys(info.grants);
+            let uindex = granted_users.indexOf(current_user.login);
 
             if (info.grants[current_user.login] && info.grants[current_user.login].requested_level) {
-              var access = info.grants[current_user.login].requested_level;
-              var a = $('<button>');
+              let access = info.grants[current_user.login].requested_level;
+              let a = $('<button>');
               a.html('Pending <b>'+access+'</b> access');
               a.prop('disabled', true);
               a.prop('class', 'btn btn-warning btn-xs');
@@ -977,7 +989,7 @@ function fill_collaborators_table_body(info, cb) {
 }
 
 function update_access_exclamation(info) {
-    var header = $('#web_interface_datas_access_header_exclamation');
+    let header = $('#web_interface_datas_access_header_exclamation');
     header.css('display', 'none');
 
     for (let user in info.grants) {
@@ -1019,9 +1031,9 @@ function delete_collaborator(id, login) {
 }
 
 function adding_collaborators() {
-    var opts  = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
-    var nbs   = 0;
-    var index = 0;
+    let opts  = $('#web_interface_'+web_interface_current_object_type+'_adding_collaborators_select option');
+    let nbs   = 0;
+    let index = 0;
 
     opts.map( function (i, opt) {
         if (opt.selected)
@@ -1067,15 +1079,15 @@ function cleaning_collaborators() {
 }
 
 function web_interface_asking_change_access_scope() {
-    var h = $('#web_interface_yes_no_modal_header');
-    var b = $('#web_interface_yes_no_modal_body');
+    let h = $('#web_interface_yes_no_modal_header');
+    let b = $('#web_interface_yes_no_modal_body');
 
     h.css('background-color', 'rgba(91,192,222)');
     h.html("<h3><font color='white'>Changing Access Scope on </font>"+web_interface_current_object_info.name+"</h3");
 
     b.html("Are you sure you want to change access scope from <b>'"+web_interface_current_object_info.access_scope+"'</b> to <b>'"+$('#web_interface_access_scope_select').val()+"'</b> ?");
 
-    var butt = $('#web_interface_yes_no_modal_yes_button');
+    let butt = $('#web_interface_yes_no_modal_yes_button');
     butt.unbind("click");
     butt.click(function() { web_interface_change_access_scope(); });
 
@@ -1095,7 +1107,7 @@ function chgShowColumns(event) {
 }
 
 function create_warn_icon(obj) {
-    var warn_icon = document.createElement("span");
+    let warn_icon = document.createElement("span");
     warn_icon.className ="glyphicon glyphicon-exclamation-sign icon-large";
     warn_icon.innerHTML = '&nbsp;';
     if (obj.disabled_message) {
