@@ -11,7 +11,9 @@ var dataflow_events         = [ 'created_link',
 function dataflows_deal_with_events(evt_name, args, proxy) {
     switch (evt_name) {
         case ('created_link'):
+            push_request('links_info');
             sakura.apis.hub.links[args].info().then(function (link) {
+                pop_request('links_info');
                 if (LOG_DATAFLOW_EVENTS) {
                     console.log('----');
                     console.log(evt_name, args);
@@ -24,7 +26,6 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
 
         case ('deleted_link'):
             if (LOG_DATAFLOW_EVENTS) { console.log('DELETED LINK', args);}
-            console.log('delete_link', args);
             global_links.some( function (link) {
                 link.params.some( function (param) {
                     if (param.hub_id == args) {
@@ -146,12 +147,16 @@ function current_dataflow() {
     acc_div.appendChild(butt);
 
     //We first ask for the operator classes
+    push_request('op_classes_list');
     sakura.apis.hub.op_classes.list().then(function (result) {
+        pop_request('op_classes_list');
         current_op_classes_list = JSON.parse(JSON.stringify(result));
 
         //Then we ask for the instance ids
-        sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
 
+        push_request('dataflows_info');
+        sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
+            pop_request('dataflows_info');
             //Subscribe to hub events
             let proxy = sakura.apis.hub.dataflows[web_interface_current_id];
             if (proxy) {
@@ -174,7 +179,9 @@ function current_dataflow() {
                     console.log('NO GUI for this op !!!!');
                     let g = { x: $('#sakura_main_div').width()/2,
                               y: $('#sakura_main_div').height()/2};
+                    push_request('operators_set_gui_data');
                     sakura.apis.hub.operators[parseInt(opi.op_id)].set_gui_data(JSON.stringify(g)).then(  function(){
+                        pop_request('operators_set_gui_data');
                         create_operator_instance_from_hub(g.x, g.y, opi.cls_id, opi);
                     });
                 }
@@ -185,7 +192,9 @@ function current_dataflow() {
             });
 
             //Finally, the panels and the comments
+            push_request('dataflows_get_gui_data');
             sakura.apis.hub.dataflows[web_interface_current_id].get_gui_data().then(function (result) {
+                pop_request('dataflows_get_gui_data');
                 //Cleanings
                 if (result) {
                     var res = eval("(" + result + ")");
@@ -246,16 +255,21 @@ function save_dataflow() {
     });
 
     let gui_data = JSON.stringify({'panels': global_op_panels, 'comments': coms});
+    push_request('dataflows_set_gui_data');
     sakura.apis.hub.dataflows[web_interface_current_id].set_gui_data(gui_data).then( function(result) {
-
+        pop_request('dataflows_set_gui_data');
     }).catch(function(error) {
         console.log('SET GUI ERROR', error);
+        pop_request('dataflows_set_gui_data');
     });
 
     //Second the operators
     global_ops_inst.forEach( function(inst) {
         var gui = {x: inst.gui.x,    y: inst.gui.y};
-        sakura.apis.hub.operators[parseInt(inst.hub_id)].set_gui_data(JSON.stringify(gui));
+        push_request('operators_set_gui_data');
+        sakura.apis.hub.operators[parseInt(inst.hub_id)].set_gui_data(JSON.stringify(gui)).then( function() {
+            pop_request('operators_set_gui_data');
+        });
     });
 
     //Finally the links
@@ -270,7 +284,10 @@ function save_dataflow() {
                                         'top':      param.top,
                                         'left':     param.left,
                                         'line':     param.line});
-                sakura.apis.hub.links[parseInt(param.hub_id)].set_gui_data(js);
+                push_request('links_set_gui_data');
+                sakura.apis.hub.links[parseInt(param.hub_id)].set_gui_data(js).then( function () {
+                    pop_request('links_set_gui_data');
+                });
             }
         };
     };

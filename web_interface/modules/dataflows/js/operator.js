@@ -20,7 +20,9 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
     switch (evt_name) {
         case 'altered_output':
             if (! op_reloading) {
+                push_request('operators_info');
                 sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                    pop_request('operators_info');
                     if (check_output(op)) {
                         fill_in_out('output', 'op_'+op.cls_id+'_'+hub_inst_id);
                     }
@@ -44,16 +46,22 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                 let g = { x: instances_waiting_for_creation[inst_index].gui.x,
                           y: instances_waiting_for_creation[inst_index].gui.y
                         }
+                push_request('operators_set_gui_data');
                 proxy.set_gui_data(JSON.stringify(g)).then( function() {
+                    pop_request('operators_set_gui_data');
+                    push_request('operators_info');
                     proxy.info().then( function (opi) {
+                        pop_request('operators_info');
                         create_operator_instance_from_hub(g.x,
                                                           g.y,
                                                           opi.cls_id, opi);
                         check_operator(opi);
                     }).catch ( function (error) {
+                        pop_request('operators_info');
                         console.log('OPERATORS.js: error 2', error);
                     });
                 }).catch ( function (error) {
+                    pop_request('operators_set_gui_data');
                     console.log('OPERATORS.js: error 3', error);
                 });
 
@@ -70,9 +78,12 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
         default:
             let en = evt_name;
             if (LOG_OPERATORS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
+            push_request('operators_info');
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                pop_request('operators_info');
                 check_operator(op);
             }).catch ( function (error) {
+                pop_request('operators_info');
                 console.log('OPERATORS.js: error 4, event: ', en, ', ', error);
             });
     }
@@ -81,8 +92,11 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
 function create_operator_instance_on_hub(drop_x, drop_y, id) {
     waiting_gui = {x: drop_x, y: drop_y}
     //We first send the creation command to the sakura hub
+    push_request('operators_create');
     sakura.apis.hub.operators.create(web_interface_current_id, parseInt(id)).then(function (result) {
+        pop_request('operators_create');
     }).catch( function (error){
+        pop_request('operators_create');
         console.log('Error 7:', error)
     });
 }
@@ -218,8 +232,12 @@ function reload_operator_instance(id, hub_id) {
         let tab = id.split("_");
         hub_id = parseInt(tab[2]);
     }
+    push_request('operators_reload');
     sakura.apis.hub.operators[hub_id].reload().then(function() {
+        pop_request('operators_reload');
+        push_request('operators_info');
         sakura.apis.hub.operators[hub_id].info().then(function(info) {
+            pop_request('operators_info');
             let cl_id = id.split("_")[1];
             let cl = current_op_classes_list.find( function (e) {
                 return e.id === parseInt(cl_id);
@@ -230,10 +248,12 @@ function reload_operator_instance(id, hub_id) {
             op_reloading = false;
             current_dataflow();
         }).catch ( function (error) {
+            pop_request('operators_info');
             console.log('OPERATORS.js: error 6', error);
-        }).catch ( function (error) {
-            console.log('OPERATORS.js: error 7', error);
         });
+    }).catch ( function (error) {
+        pop_request('operators_reload');
+        console.log('OPERATORS.js: error 7', error);
     });
 }
 
@@ -262,8 +282,11 @@ function remove_operator_instance(id, on_hub) {
 
         if (id && on_hub) {
             //console.log(hub_id);
+            push_request('operators_delete');
             sakura.apis.hub.operators[hub_id].delete().then( function (result) {
+                pop_request('operators_delete');
             }).catch ( function (error) {
+                pop_request('operators_delete');
                 console.log('OPERATORS.js: error 8', error);
             });
         }

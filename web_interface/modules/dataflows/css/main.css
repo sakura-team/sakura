@@ -83,6 +83,12 @@
     z-index: 3;
  }
 
+ .navbar-nav.navbar-center {
+    position: absolute;
+    left: 50%;
+    transform: translatex(-50%);
+}
+
  /* Loading icon */
  .glyphicon-refresh-animate {
      -animation: spin .7s infinite linear;

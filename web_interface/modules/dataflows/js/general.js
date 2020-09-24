@@ -111,7 +111,6 @@ function dataflows_download_start_transfert(id_in_out, in_out, gzip) {
 
     stop_downloading = false;
     sakura.apis.hub.transfers.start().then(function(transfert_id) {
-
         current_transfert_id = transfert_id;
 
         var url = "/streams/"+current_instance_info.op_id+"/"+in_out+"/"+id_in_out+"/export.csv?transfer="+current_transfert_id;

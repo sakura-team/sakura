@@ -24,7 +24,9 @@ function links_deal_with_events(evt_name, args, proxy) {
 
 function create_link(js, src_id, dst_id) {
     if (LOG_LINKS_EVENTS) {console.log('CREATE LINK', js, src_id, dst_id);}
+    push_request('links_list_possible');
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
+        pop_request('links_list_possible');
         if (LOG_LINKS_EVENTS) {console.log('POSS LINKS', possible_links.length, possible_links);}
         if (possible_links.length == 0) {
             // alert("These two operators cannot be linked");
@@ -35,8 +37,12 @@ function create_link(js, src_id, dst_id) {
         }
         else
         {
+            push_request('operators_info');
             sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
+                pop_request('operators_info');
+                push_request('operators_info');
                 sakura.apis.hub.operators[dst_id].info().then(function (target_inst_info) {
+                    pop_request('operators_info');
                     global_links.push({ id: js.id,
                                         src: src_id,
                                         dst: dst_id,
@@ -54,9 +60,11 @@ function create_link(js, src_id, dst_id) {
 
                     return true;
                 }).catch( function(error) {
+                    pop_request('operators_info');
                     if (LOG_LINKS_EVENTS) console.log('CL 3', error);
                 });
             }).catch( function(error) {
+                pop_request('operators_info');
                 if (LOG_LINKS_EVENTS) console.log('CL 2', error);
             });
         }
@@ -82,9 +90,15 @@ function create_link_from_hub(js, link, gui, from_shell=false) {
         js.setHoverPaintStyle({strokeStyle: transparent_grey, radius: 6});
     }
 
+    push_request('links_info');
     sakura.apis.hub.links.list_possible(link.src_id, link.dst_id).then(function (possible_links) {
+        pop_request('links_info');
+        push_request('operators_info');
         sakura.apis.hub.operators[link.src_id].info().then(function (source_inst_info) {
+            pop_request('operators_info');
+            push_request('operators_info');
             sakura.apis.hub.operators[link.dst_id].info().then(function (target_inst_info) {
+                pop_request('operators_info');
                 create_link_modal(  possible_links,
                                     global_links[l - 1],
                                     instance_from_id(link.src_id).cl,
@@ -228,10 +242,15 @@ function create_link_modal( p_links,  link,
 
 
 function refresh_link_modal(link) {
+    push_request('links_list_possible');
     sakura.apis.hub.links.list_possible(link.src, link.dst).then(function (p_links) {
+        pop_request('links_list_possible');
+        push_request('operators_info');
         sakura.apis.hub.operators[link.src].info().then(function (source_inst_info) {
+            pop_request('operators_info');
+            push_request('operators_info');
             sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
-
+                pop_request('operators_info');
                 //sources
                 for(var i=0; i<source_inst_info.outputs.length;i++) {
                     var found = false;
@@ -336,14 +355,20 @@ function remove_link(link, on_hub) {
             refresh_link_modal(l);
         });
 
+        push_request('operators_info');
         sakura.apis.hub.operators[link.src].info().then(function (source_inst_info) {
+            pop_request('operators_info');
+            push_request('operators_info');
             sakura.apis.hub.operators[link.dst].info().then(function (target_inst_info) {
+                pop_request('operators_info');
                 check_operator(source_inst_info);
                 check_operator(target_inst_info);
             }).catch( function (res) {
+                pop_request('operators_info');
                 console.log('Destination does not exists anymore', res);
             });
         }).catch( function(res) {
+            pop_request('operators_info');
             console.log('Source does not exists anymore', res);
         });
     }
@@ -372,7 +397,9 @@ function delete_link_params(link, and_main_link, on_hub) {
         let para = link.params[i];
         if (on_hub) {
             if (para.hub_id) {
+                push_request('links_delete');
                 sakura.apis.hub.links[para.hub_id].delete().then(function (result) {
+                    pop_request('links_delete');
                     if (result) {
                         console.log("Issue with 'delete_link' function from hub:", result);
                     }
@@ -419,7 +446,9 @@ function delete_link_param(link, side, id, on_hub = true) {
     }
     if (link_p) {
         if (on_hub) {
+            push_request('links_delete');
             sakura.apis.hub.links[link_p.hub_id].delete().then(function (result) {
+                pop_request('links_delete');
                 if (result) {
                     console.log("Issue with 'delete_link' function from hub:", result);
                 }

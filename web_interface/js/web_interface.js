@@ -20,6 +20,20 @@ function not_yet(s) {
     }
 }
 
+function push_request(id) {
+    requests_sent.push(id);
+    console.log('RS', requests_sent);
+    $('#request_icon').show();
+}
+
+function pop_request(id) {
+    requests_sent.splice(requests_sent.indexOf(id), 1);
+    if (requests_sent.length == 0) {
+        $('#request_icon').hide();
+    }
+    console.log('RS', requests_sent);
+}
+
 function main_alert(header_str, body_str, cb) {
     var h = $('#main_alert_header');
     var b = $('#main_alert_body');
