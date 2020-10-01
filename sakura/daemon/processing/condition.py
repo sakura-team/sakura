@@ -2,16 +2,16 @@ from sakura.common.errors import APIRequestError
 
 class Condition:
     def __init__(self):
-        self.next = None
+        self.prev = None
     def __and__(self, other):
-        self.next = other
+        other.prev = self
         return other    # to continue chaining
     def list(self):
         l = []
         cond = self
         while cond is not None:
             l.append(cond)
-            cond = cond.next
+            cond = cond.prev
         return l
 
 class SingleColumnFilter(Condition):
