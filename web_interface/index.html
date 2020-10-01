@@ -36,7 +36,19 @@
             evt.initEvent('load', false, false);
             window.dispatchEvent(evt);
         }
+
         window.onload = function(event) {
+
+            //Check if ticket in url
+            let urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('ticket')){
+                console.log('We have a ticket:', urlParams.get('ticket'));
+            }
+            else {
+                console.log('We don\'t have a ticket');
+            }
+
+
             let a = window.location.href.split("#");
             if (a.length>1) {
                 // permalink
@@ -115,7 +127,7 @@
                         <!-- <div id="idTopRightWidget" style='margin-bottom: 10px; position: relative;'> -->
                         <div id="idTopRightWidget" style='padding-top: 0px; padding-bottom: 5px; padding-right: 20px;'>
                             <div id="idSignInWidget" name="signInWidget" class="dropdown">
-                                <button onclick="initiateSignInModal(event);" class="btn btn-info dropdown-toggle btn-xs" data-toggle="modal" href="#signInModal">
+                                <button onclick="" class="btn btn-info dropdown-toggle btn-xs">
                                     <span class="glyphicon glyphicon-user" aria-hidden="true">
                                     </span>&nbsp; Sign in
                                 </button>
@@ -149,6 +161,31 @@
                 <p align="center" class="text-muted">Page maintained by the LIG, viewed <span class="label label-primary">127</span> since January 2017, last updated on Oct 2017.</p>
             </div>
             -->
+        </div>
+
+        <!--Login choice modal-->
+        <div id="web_interface_login_choice_modal" class="modal fade" role="document">
+            <div class="modal-dialog modal-md" role="document" style="">
+                <div class="modal-content">
+                    <div id="web_interface_asking_login_choice_header" class="panel-heading" style="background-color: rgba(91,192,222);">
+                        <h3> <font color='white'> Choose your authentification system</font></h3>
+                    </div>
+                    <div id="web_interface_asking_login_choice_body" class="modal-body">
+                      <table width=100%>
+                        <tr>
+                          <td align='center' width=50%>
+                              <img src="media/logo-cas-uga.svg" style='width: 100px; cursor:pointer;' onclick="sign_in_with('cas');"/>
+                          </td>
+                          <td align='center'>
+                            <img src="media/logo_Sakura_beta_solo_sm.png" style='width: 200px; cursor:pointer;' onclick="sign_in_with('sakura');";/>
+                          </td>
+                      </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!--Asking access modal-->

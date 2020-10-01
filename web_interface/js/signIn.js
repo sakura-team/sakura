@@ -6,7 +6,18 @@
 
 var current_user = null;
 var users_list = null;
+var authentification_type = 'cas';
 
+function sign_in_with(auth) {
+    if (auth == 'cas') {
+        let host = window.location.host;
+        window.open("https://cas-uga.grenet.fr/login?service=http://"+host, "_self");
+    }
+    else {
+        $('#web_interface_login_choice_modal').modal('hide');
+        initiateSignInModal(event);
+    }
+}
 
 function initiateSignInModal(event) {
     let $signUpForm = document.getElementById("signUpForm");
@@ -44,7 +55,7 @@ function initiateSignInModal(event) {
         });
     });
 
-    $('#signInModal').show();
+    $('#signInModal').modal();
     // END: Populating the country codes -------------
 }
 
@@ -191,6 +202,12 @@ function logOut(event) {
                 if (this.id.indexOf(pname) == -1)
                     this.remove();
             });
+
+            if (authentification_type == 'cas') {
+              let host = window.location.host;
+              window.open("https://cas-uga.grenet.fr/logout?service=http://"+host, "_self");
+            }
+
             showDiv(event, 'Home');
         });
     });
@@ -349,10 +366,9 @@ function fill_profil_button(fill_modal) {
 
         }
         else {
-            let butt = $('<button>', {'onclick': "initiateSignInModal(event);",
-                                      'class': "btn btn-info btn-xs",
-                                      'data-toggle': "modal",
-                                      'href': "#signInModal"});
+            let butt = $('<button>', {'onclick': "$('#web_interface_login_choice_modal').modal();",
+                                      'class': "btn btn-info btn-xs"
+                                    });
             let span = $('<span>', {'class': "glyphicon glyphicon-user",
                                     'aria-hidden': "true"})
             butt.append(span);
