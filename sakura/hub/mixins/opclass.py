@@ -89,9 +89,6 @@ class OpClassMixin(BaseMixin):
         if repo_type == 'git':
             if None in (repo_url, default_code_ref, default_commit_hash):
                 raise APIRequestError('Invalid operator class registration request: need repo_url, default_code_ref and default_commit_hash.')
-            if any(op_cls.code_subdir == repo_subdir and op_cls.repo['type'] == 'git' and op_cls.repo['url'] == repo_url \
-                        for op_cls in cls.select()):
-                raise APIRequestError('This operator class is already registered!')
             repo_info = dict(type = 'git',
                              url = repo_url,
                              default_code_ref = default_code_ref,
@@ -119,6 +116,13 @@ class OpClassMixin(BaseMixin):
                 raise APIRequestError("Invalid request: Access scope was not specified.")
             if access_scope not in (ACCESS_SCOPES.public, ACCESS_SCOPES.private):
                 raise APIRequestError("Invalid request: Access scope for an operator class should be 'public' or 'private'.")
+            if access_scope == ACCESS_SCOPES.public and any(
+                            op_cls.code_subdir == repo_subdir and \
+                            op_cls.repo['type'] == 'git' and \
+                            op_cls.repo['url'] == repo_url and \
+                            op_cls.access_scope == ACCESS_SCOPES.public \
+                        for op_cls in cls.select()):
+                raise APIRequestError('This operator class is already registered!')
         if not context.user_is_logged_in():
             raise APIRequestError("Invalid request: one has to login before registering an operator class.")
         # create
