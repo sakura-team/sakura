@@ -79,8 +79,8 @@ class TableMixin(BaseMixin):
     def restore_table(cls, database, columns, **tbl):
         table = cls.create_or_update(database, **tbl)
         table.columns = set(
-                get_context().columns.restore_column(table, col_id, *col) \
-                        for col_id, col in enumerate(columns))
+                get_context().columns.restore_column(table, *col) \
+                        for col in columns)
         return table
     def update_foreign_keys(self, foreign_keys):
         self.foreign_keys = []
@@ -105,8 +105,8 @@ class TableMixin(BaseMixin):
         new_table = cls(database = database,
                         name = name)
         cols = []
-        for col_id, col_info in enumerate(columns):
-            col = context.columns.create_column(new_table, col_id, *col_info)
+        for col_info in columns:
+            col = context.columns.create_column(new_table, *col_info)
             cols.append(col)
         new_table.columns = cols
         new_table.update_attributes(creation_date = creation_date,

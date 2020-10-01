@@ -18,21 +18,28 @@ class ColumnMixin:
     def pack_for_daemon(self):
         return self.col_name, self.col_type
     @classmethod
-    def create_or_update(cls, table, col_id, **kwargs):
-        column = cls.get(table = table, col_id = col_id)
+    def generate_col_id(cls, table):
+        if len(table.columns) > 0:
+            return max(col.col_id for col in table.columns) +1
+        else:
+            return 0
+    @classmethod
+    def create_or_update(cls, table, col_name, **kwargs):
+        column = cls.get(table = table, col_name = col_name)
         if column is None:
-            column = cls(table = table, col_id = col_id, **kwargs)
+            col_id = cls.generate_col_id(table)
+            column = cls(table = table, col_id = col_id, col_name = col_name, **kwargs)
         else:
             column.set(**kwargs)
         return column
     @classmethod
-    def restore_column(cls, table, col_id, col_name, col_type):
-        return cls.create_or_update(table, col_id,
+    def restore_column(cls, table, col_name, col_type):
+        return cls.create_or_update(table,
                                     col_name = col_name,
                                     col_type = col_type)
     @classmethod
-    def create_column(cls, table, col_id, col_name, col_type, user_tags):
-        return cls.create_or_update(table, col_id,
+    def create_column(cls, table, col_name, col_type, user_tags):
+        return cls.create_or_update(table,
                                     col_name = col_name,
                                     col_type = col_type,
                                     user_tags = user_tags)
