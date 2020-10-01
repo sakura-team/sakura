@@ -288,3 +288,10 @@ div.bootstrap-switch-container {
     outline: none;
     font-size: 15px;
 }
+
+.back_grey {
+  background-color: lightgrey;
+}
+.back_white {
+  background-color: white;
+}

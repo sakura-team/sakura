@@ -6,6 +6,7 @@ from sakura.common.tools import ObservableEvent
 from sakura.common.events import EventSourceMixin
 from sakura.hub.secrets import TemporarySecretsRegistry
 from sakura.hub.web.transfers import Transfer
+from sakura.common.errors import APIRequestError
 
 # object storing greenlet-local data
 greenlet_env = local()
@@ -147,3 +148,88 @@ class HubContext(EventSourceMixin):
     def login(self, login_or_email, password):
         self.session.user = self.users.from_credentials(login_or_email, password)
         return self.session.user.login
+    def other_login(self, type, ticket, service):
+        if type == 'cas':
+            import json
+            try:
+                f = open('hub-authentification.conf', 'r')
+            except Exception as e:
+                raise APIRequestError('Hub error: Cannot find file <b>hub-authentification.conf</b> !')
+                return None
+
+            auths = json.loads(f.read())
+
+            import requests
+            format = 'JSON'
+            url = auths['cas']['url']
+            x = requests.get( url+'?ticket='+ticket+'&format='+format+'&service='+service)
+            succ = x.text.find('authenticationSuccess')
+            if succ != -1:
+                print('CAS AUTHENTICATION SUCCESS')
+                login = x.text.split('<cas:user>')[1].split('</cas:user>')[0]
+                print('\t Login:', login)
+                print()
+                found = None
+                all_u = tuple(u.pack() for u in self.users.select())
+                for u in all_u:
+                    if u['login'] == login:
+                        found = u
+                if found != None:
+                    self.session.user = self.users.from_login_or_email(login)
+                    return self.session.user.login
+                else:
+                    print('\tNew user, asking to LDAP for informations ...')
+                    #We ask to LDAP
+                    import ldap3, ssl
+
+                    try:
+                        url = auths['ldap']['url']
+                        port = auths['ldap']['port']
+                        dn = auths['ldap']['dn']
+                        bdn = auths['ldap']['binddn']
+                        pw = auths['ldap']['password']
+                        if auths['ldap']['tls version'] == 'v1':
+                            tls = ldap3.Tls(version = ssl.PROTOCOL_TLSv1)
+                    except Exception as e:
+                        raise APIRequestError('LDAP description error in <b>hub-authentification.conf</b> !')
+                        return None
+
+                    server = ldap3.Server(url+':'+port, tls=tls, get_info=ldap3.ALL, connect_timeout=3.0)
+
+                    try:
+                        conn = ldap3.Connection(server, user=bdn, password=pw)
+                    except Exception as e:
+                        raise APIRequestError('LDAP Connection Failed !')
+                        return None
+
+                    try:
+                        conn.bind()
+                    except Exception as e:
+                        raise APIRequestError('LDAP Connection Timeout !<br><b>'+login+'</b> cannot login !')
+                        return None
+
+                    entry = conn.search(dn, '(&(objectclass=person)(uid='+l+'))', attributes=['*'])
+                    if not entry:
+                        raise APIRequestError('<b>'+login+'</b> not found in LDAP server !')
+                        return None
+                    u = conn.entries[0]
+
+                    # print(u['mail'])
+                    # print(u['given name'])
+                    # print(u['sn'])
+
+                    user_info = {   'login': login,
+                                    'password': '__CAS__',
+                                    'email': u['mail'],
+                                    'first_name': u['given name'],
+                                    'last_name': u['sn'] }
+
+                    if self.users.new_user(**user_info):
+                        self.session.user = self.users.from_login_or_email(login)
+                        return self.session.user.login
+                    return None
+            else:
+                print('CAS AUTHENTICATION FAILURE', x.text)
+                return 'cas authentication failure'
+        else:
+            return 'Unkown connection type'
