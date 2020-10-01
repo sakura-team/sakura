@@ -66,15 +66,15 @@ function datasets_asking(header_str, body_str, rgba_color, func_yes, func_no) {
 }
 
 
-function datasets_extension_check(f_name, ext) {
+function datasets_extension_check(f_name, exts) {
     //check the name: should have .csv extension
     let s_name = f_name.split('.');
-    if (s_name[s_name.length - 1].toLowerCase() != ext.toLowerCase()) {
-        datasets_alert("File Extension Issue", "The extension of this file is not .csv !!\nPlease be sure it is a csv file, and rename it with extension.");
-        return false;
-    }
-    return true;
+    ext = s_name[s_name.length - 1].toLowerCase();
 
+    function diff(e, i, arr) {
+        return (e.toLowerCase() == ext);
+    }
+    return exts.some(diff);
 }
 
 function close_other_accordions(acc_id) {
@@ -281,7 +281,11 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                         datasets_send_file_ended(date, modal);
                     }
                 }).catch( function(error_msg){
+                    console.log('Error in adding rows !!!', error_msg);
                     pop_request('tables_add_rows');
+                    datasets_alert('Error in adding rows into the dataset', error_msg);
+                    datasets_send_file_ended(date, modal);
+
                     //We delete the freshly created table
                     push_request('tables_delete');
                     sakura.apis.hub.tables[dataset_id].delete().then( function(result) {
@@ -330,10 +334,9 @@ function datasets_send_file(dataset_id, f, dates, modal, from_what) {
                             datasets_alert('Error in adding rows into the dataset',error_msg);
                         }
                         return false;
-                    }).catch(
-                    function (error_msg) {
+                    }).catch( function (error_msg) {
                         pop_request('tables_delete');
-                        console.log('Error in deleting Table !!!');
+                        console.log('Error in deleting Table !!!', error_msg);
                     });
                 });
             }

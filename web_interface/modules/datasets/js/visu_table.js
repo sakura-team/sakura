@@ -62,6 +62,7 @@ function datasets_visu_dataset(dataset_id, row_in_table) {
             open_accordion(row_in_table);
 
         }).catch( function(error_msg) {
+            pop_request('tables_get_rows');
             console.log('Error reading the table');
         });
     }

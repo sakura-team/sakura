@@ -62,7 +62,10 @@ function datasets_creation_change_pan(new_pan) {
 }
 
 function datasets_creation_check_name(input) {
-    if (input.val().replace(/^\s+|\s+$/g, '').length != 0) {
+    let exists = database_infos.tables.some(function (t, i, arr) {
+          return ( input.val().replace(/^\s+|\s+$/g, '') == t.name);
+    });
+    if (input.val().replace(/^\s+|\s+$/g, '').length != 0 && !exists) {
         $(input[0].parentElement).removeClass('has-error');
         $(input[0].parentElement).addClass('has-success');
         errors.name = false;
@@ -187,7 +190,8 @@ function datasets_send_new(database_id) {
 
 function datasets_on_file_selected(f) {
 
-    if (!datasets_extension_check(f.value, 'csv')) {
+    if (! datasets_extension_check(f.value, ['csv', 'tsv'])) {
+        datasets_alert("File Extension Issue", "We only read .csv and .tsv files");
         return;
     }
     // emptying variable

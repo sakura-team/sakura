@@ -55,7 +55,7 @@ function datasets_open_upload_modal(dataset_id) {
 }
 
 function datasets_upload_on_file_selected(f, dataset_id) {
-    if (!datasets_extension_check(f.value, 'csv')) {
+    if (!datasets_extension_check(f.value, ['csv', 'tsv'])) {
         return;
     }
 
