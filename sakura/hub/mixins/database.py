@@ -136,6 +136,6 @@ class DatabaseMixin(BaseMixin):
         db_col_tags = {}
         for tbl in self.tables:
             tbl_col_tags = tbl.describe_col_tags()
-            if max(map(len, tbl_col_tags)) > 0:
+            if len(tbl_col_tags) > 0 and max(map(len, tbl_col_tags)) > 0:
                 db_col_tags[tbl.name] = tbl_col_tags
         return db_col_tags
