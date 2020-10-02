@@ -4,6 +4,7 @@ from sakura.client.apiobject.links import APILink
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client.apiobject.grants import APIGrants
 from sakura.common.streams import LOCAL_STREAMS
+from sakura.common.tools import create_names_dict, snakecase
 
 class APIDataflowOperatorsDict:
     def __new__(cls, remote_api, dataflow_id, d):
@@ -39,8 +40,11 @@ class APIDataflow:
                 info = self.__buffered_get_info__()
                 if 'operators' not in info:
                     raise APIObjectDeniedError('access denied')
-                d = { op_info['op_id']: APIOperator(remote_api, op_info) \
-                      for op_info in info['operators'] }
+                d = create_names_dict(
+                    ((op_info['cls_name'], APIOperator(remote_api, op_info)) \
+                     for op_info in info['operators']),
+                    name_format = snakecase
+                )
                 return APIDataflowOperatorsDict(remote_api, self.dataflow_id, d)
             @property
             def links(self):
@@ -77,6 +81,9 @@ class APIDataflowDict:
         return APIDataflowDictImpl()
 
 def get_dataflows(remote_api):
-    d = { remote_dataflow_info['dataflow_id']: APIDataflow(remote_api, remote_dataflow_info) \
-                for remote_dataflow_info in remote_api.dataflows.list() }
+    d = create_names_dict(
+        ((remote_dataflow_info['name'], APIDataflow(remote_api, remote_dataflow_info)) \
+         for remote_dataflow_info in remote_api.dataflows.list()),
+        name_format = snakecase
+    )
     return APIDataflowDict(remote_api, d)

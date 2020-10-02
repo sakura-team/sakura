@@ -1,6 +1,7 @@
 from sakura.client.apiobject.operators import APIOperator
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client.apiobject.grants import APIGrants
+from sakura.common.tools import create_names_dict, camelcase
 
 class APIOpClass:
     _deleted = set()
@@ -64,6 +65,9 @@ class APIOpClassDict:
         return APIOpClassDictImpl()
 
 def get_op_classes(remote_api):
-    d = { remote_op_cls_info['id']: APIOpClass(remote_api, remote_op_cls_info) \
-                for remote_op_cls_info in remote_api.op_classes.list() }
+    d = create_names_dict(
+        ((remote_op_cls_info['name'], APIOpClass(remote_api, remote_op_cls_info)) \
+         for remote_op_cls_info in remote_api.op_classes.list()),
+        name_format = camelcase
+    )
     return APIOpClassDict(remote_api, d)

@@ -2,6 +2,7 @@ from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.client.apiobject.tables import APITable
 from sakura.client.apiobject.grants import APIGrants
+from sakura.common.tools import create_names_dict, snakecase
 
 class APIDatabase:
     def __new__(cls, remote_api, db_info):
@@ -14,8 +15,11 @@ class APIDatabase:
                 info = self.__buffered_get_info__()
                 if 'tables' not in info:
                     raise APIObjectDeniedError('access denied')
-                d = { table_info['table_id']: APITable(remote_api, table_info) \
-                      for table_info in info['tables'] }
+                d = create_names_dict(
+                    ((table_info['name'], APITable(remote_api, table_info)) \
+                     for table_info in info['tables']),
+                    name_format = snakecase
+                )
                 return APIObjectRegistry(d, 'Sakura tables registry for this database')
             @property
             def grants(self):
@@ -25,6 +29,9 @@ class APIDatabase:
         return APIDatabaseImpl()
 
 def get_databases(remote_api):
-    d = { remote_db_info['database_id']: APIDatabase(remote_api, remote_db_info) \
-                for remote_db_info in remote_api.databases.list() }
+    d = create_names_dict(
+        ((remote_db_info['name'], APIDatabase(remote_api, remote_db_info)) \
+         for remote_db_info in remote_api.databases.list()),
+        name_format = snakecase
+    )
     return APIObjectRegistry(d, 'Sakura databases registry')

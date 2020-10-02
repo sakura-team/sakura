@@ -58,12 +58,18 @@ def get_preview_desc(obj):
     else:
         return ''
 
+def get_subitem_accessor(k):
+    if isinstance(k, str):
+        return 'self.' + k
+    else:
+        return 'self[' + repr(k) + ']'
+
 def get_subitems_desc(obj):
     items = list(obj.__doc_subitems__())
     if len(items) == 0:
         return ''
     return '\n  sub-items:\n' + '\n'.join(
-        '  - self[' + repr(k) + ']: ' + short_repr(v) for k, v in sorted(items)) + '\n'
+        '  - ' + get_subitem_accessor(k) + ': ' + short_repr(v) for k, v in sorted(items)) + '\n'
 
 class APIObjectBase:
     def __init__(self):
@@ -133,6 +139,8 @@ class LazyObject:
         return self.__getattr__('__len__')()
     def __getitem__(self, i):
         return self.__getattr__('__getitem__')(i)
+    def __iter__(self):
+        return self.__getattr__('__iter__')()
 
 def APIObjectRegistryClass(d, doc=None, show_size=True):
     class APIObjectRegistryImpl(APIObjectBase):
@@ -165,6 +173,15 @@ def APIObjectRegistryClass(d, doc=None, show_size=True):
             if show_size:
                 doc += ' (%d items)' % len(self)
             return doc
+        def __getattr__(self, attr):
+            if attr in d:
+                return d[attr]
+            else:
+                return super().__getattr__(attr)
+        def __dir__(self):
+            l = super().__dir__()
+            l += [ k for k in d if isinstance(k, str) ]
+            return l
     return APIObjectRegistryImpl
 
 def APIObjectRegistry(*args):

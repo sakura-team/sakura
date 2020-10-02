@@ -2,6 +2,7 @@ from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.client.apiobject.databases import APIDatabase
 from sakura.client.apiobject.grants import APIGrants
+from sakura.common.tools import create_names_dict, snakecase
 
 class APIDatastore:
     def __new__(cls, remote_api, info):
@@ -14,8 +15,11 @@ class APIDatastore:
                 info = self.__buffered_get_info__()
                 if 'databases' not in info:
                     raise APIObjectDeniedError('access denied')
-                d = { database_info['database_id']: APIDatabase(remote_api, database_info) \
-                      for database_info in info['databases'] }
+                d = create_names_dict(
+                    ((database_info['name'], APIDatabase(remote_api, database_info)) \
+                     for database_info in info['databases']),
+                    name_format = snakecase
+                )
                 return APIObjectRegistry(d, "Sakura databases registry for this datastore")
             @property
             def grants(self):
@@ -25,6 +29,9 @@ class APIDatastore:
         return APIDatastoreImpl()
 
 def get_datastores(remote_api):
-    d = { remote_ds_info['datastore_id']: APIDatastore(remote_api, remote_ds_info) \
-                for remote_ds_info in remote_api.datastores.list() }
+    d = create_names_dict(
+        ((ds_info['driver_label'] + '_' + ds_info['host'], APIDatastore(remote_api, ds_info)) \
+         for ds_info in remote_api.datastores.list()),
+        name_format = snakecase
+    )
     return APIObjectRegistry(d, 'Sakura datastores registry')

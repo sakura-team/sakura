@@ -4,6 +4,7 @@ from sakura.client.apiobject.observable import APIObservableEvent
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistry
 from sakura.client.events import set_event_callback
 from sakura.common.errors import APIRequestError
+from sakura.common.tools import create_names_dict, snakecase
 
 class APIOperator:
     _known = {}
@@ -38,6 +39,11 @@ class APIOperator:
                         get_remote_obj().monitor(events_obj_id)
                         set_event_callback(remote_api, events_obj_id, self._events_cb)
                         self._events_activated = True
+                def _get_sub_object(self, objset, idx):
+                    obj_info = tuple(self._getattr_or_raise(objset))[idx]
+                    for subobj in getattr(self, objset).values():
+                        if subobj.label == obj_info['label']:
+                            return subobj
                 def _events_cb(self, evt_name, *evt_args, **evt_kwargs):
                     observable = None
                     if evt_name == 'enabled':
@@ -46,13 +52,13 @@ class APIOperator:
                         observable = self.on_disabled
                     elif evt_name == 'altered_parameter':
                         idx = evt_args[0]
-                        observable = self.parameters[idx].on_change
+                        observable = self._get_sub_object('parameters', idx).on_change
                     elif evt_name == 'altered_input':
                         idx = evt_args[0]
-                        observable = self.inputs[idx].on_change
+                        observable = self._get_sub_object('inputs', idx).on_change
                     elif evt_name == 'altered_output':
                         idx = evt_args[0]
-                        observable = self.outputs[idx].on_change
+                        observable = self._get_sub_object('outputs', idx).on_change
                     # note: other events are ignored
                     if observable is not None:
                         observable.notify()
@@ -70,22 +76,25 @@ class APIOperator:
                     return self._on_disabled
                 @property
                 def inputs(self):
-                    return APIObjectRegistry({
-                            in_id: APIOperatorInput(remote_api, self._activate_events, op_id, in_id, in_info) \
-                            for in_id, in_info in enumerate(self._getattr_or_raise('inputs'))
-                    }, "operator inputs")
+                    return APIObjectRegistry(create_names_dict(
+                        ((in_info['label'], APIOperatorInput(remote_api, self._activate_events, op_id, in_id, in_info)) \
+                         for in_id, in_info in enumerate(self._getattr_or_raise('inputs'))),
+                        name_format = snakecase
+                    ), "operator inputs")
                 @property
                 def outputs(self):
-                    return APIObjectRegistry({
-                            out_id: APIOperatorOutput(remote_api, self._activate_events, op_id, out_id, out_info) \
-                            for out_id, out_info in enumerate(self._getattr_or_raise('outputs'))
-                    }, "operator outputs")
+                    return APIObjectRegistry(create_names_dict(
+                        ((out_info['label'], APIOperatorOutput(remote_api, self._activate_events, op_id, out_id, out_info)) \
+                         for out_id, out_info in enumerate(self._getattr_or_raise('outputs'))),
+                        name_format = snakecase
+                    ), "operator outputs")
                 @property
                 def parameters(self):
-                    return APIObjectRegistry({
-                            param_id: APIOperatorParameter(remote_api, self._activate_events, op_id, param_id, param_info) \
-                            for param_id, param_info in enumerate(self._getattr_or_raise('parameters'))
-                    }, "operator parameters")
+                    return APIObjectRegistry(create_names_dict(
+                        ((param_info['label'], APIOperatorParameter(remote_api, self._activate_events, op_id, param_id, param_info)) \
+                         for param_id, param_info in enumerate(self._getattr_or_raise('parameters'))),
+                        name_format = snakecase
+                    ), "operator parameters")
                 def delete(self):
                     """Delete this operator"""
                     self._check_online()

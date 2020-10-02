@@ -1,4 +1,5 @@
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass, LazyObject
+from sakura.common.tools import create_names_dict
 
 class APIUserGrant:
     def __new__(cls, remote_obj, login, grant_info):
@@ -10,8 +11,10 @@ class APIUserGrant:
 
 class APIGrants:
     def __new__(cls, remote_obj):
-        d = LazyObject(lambda: { login: APIUserGrant(remote_obj, login, grant_info) \
-              for login, grant_info in remote_obj.info()['grants'].items() })
+        d = LazyObject(lambda: create_names_dict(
+            (login, APIUserGrant(remote_obj, login, grant_info)) \
+            for login, grant_info in remote_obj.info()['grants'].items()
+        ))
         class APIGrantsImpl(APIObjectRegistryClass(d, show_size=False)):
             """Grants registry"""
             def update(self, login, grant_name):

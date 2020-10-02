@@ -2,6 +2,7 @@ from sakura.common.errors import APIObjectDeniedError
 from sakura.client.apiobject.base import APIObjectBase, APIObjectRegistryClass
 from sakura.client.apiobject.grants import APIGrants
 from sakura.client.apiobject.pages import APIProjectPage
+from sakura.common.tools import create_names_dict, snakecase
 
 class APIProjectPagesDict:
     def __new__(cls, remote_api, project_id, d):
@@ -30,8 +31,11 @@ class APIProject:
                 info = self.__buffered_get_info__()
                 if 'pages' not in info:
                     raise APIObjectDeniedError('access denied')
-                d = { page_info['page_id']: APIProjectPage(remote_api, page_info['page_id']) \
-                      for page_info in info['pages'] }
+                d = create_names_dict(
+                    ((page_info['page_name'], APIProjectPage(remote_api, page_info['page_id'])) \
+                     for page_info in info['pages']),
+                    name_format = snakecase
+                )
                 return APIProjectPagesDict(remote_api, project_id, d)
             @property
             def grants(self):
@@ -56,6 +60,9 @@ class APIProjectDict:
         return APIProjectDictImpl()
 
 def get_projects(remote_api):
-    d = { remote_project_info['project_id']: APIProject(remote_api, remote_project_info) \
-                for remote_project_info in remote_api.projects.list() }
+    d = create_names_dict(
+        ((project_info['name'], APIProject(remote_api, project_info)) \
+         for project_info in remote_api.projects.list()),
+        name_format = snakecase
+    )
     return APIProjectDict(remote_api, d)
