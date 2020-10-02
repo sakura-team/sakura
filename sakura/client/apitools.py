@@ -125,7 +125,7 @@ class WSManager:
         self.connecting_message = ProgressMessage()
         self.connect_timeout = None
         self.connect_attempt = 0
-        self.endpoint = APIEndpoint(self, PROTOCOLS[PROTO_NAME], None, silent_disconnect=True)
+        self.endpoint = APIEndpoint(self, PROTOCOLS[PROTO_NAME], None)
         self.endpoint_greenlet = None
         self.proxy = self.endpoint.proxy
         self.waiting_greenlets = {}
