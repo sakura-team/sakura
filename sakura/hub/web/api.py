@@ -321,6 +321,10 @@ class GuiToHubAPI:
     def get_rows_from_table(self, table_id, row_start, row_end):
         return pack(self.context.tables[table_id].get_range(row_start, row_end))
 
+    @api.tables.__getitem__.chunks
+    def get_chunks_from_table(self, table_id, allow_approximate=False):
+        yield from self.context.tables[table_id].chunks(allow_approximate=allow_approximate)
+
     @api.tables.__getitem__.delete
     def delete_table(self, table_id):
         return self.context.tables[table_id].delete_table()

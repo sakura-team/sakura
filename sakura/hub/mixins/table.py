@@ -27,6 +27,7 @@ class TableMixin(BaseMixin):
             columns = tuple(c.pack() for c in self.ordered_columns),
             primary_key = self.primary_key,
             foreign_keys = tuple(self.foreign_keys),
+            dtype = self.get_dtype(),
             **self.metadata
         )
     def create_on_datastore(self):
@@ -62,6 +63,10 @@ class TableMixin(BaseMixin):
                 row_start,
                 row_end
         )
+    def chunks(self, allow_approximate=False):
+        yield from self.remote_instance.chunks(allow_approximate=allow_approximate)
+    def get_dtype(self):
+        return self.remote_instance.get_dtype()
     def add_rows(self, data):
         self.database.assert_grant_level(GRANT_LEVELS.write,
                     'You are not allowed to write data to this database.')

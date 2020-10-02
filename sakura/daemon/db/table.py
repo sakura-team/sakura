@@ -25,6 +25,10 @@ class DBTable:
                     count_estimate = self.count_estimate)
     def get_range(self, row_start, row_end):
         return self.source().get_range(row_start, row_end)
+    def chunks(self, allow_approximate = False):
+        return self.source().chunks(allow_approximate = allow_approximate)
+    def get_dtype(self):
+        return self.source().get_dtype()
     def add_rows(self, rows):
         with self.db.connect() as db_conn:
             self.db.dbms.driver.add_rows(db_conn, self.name, self.columns, rows)

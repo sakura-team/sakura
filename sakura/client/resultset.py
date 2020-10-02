@@ -27,14 +27,14 @@ class ResultSetBGThread:
         desc = ''
         if len(self) == 0:
             if self._ready is True:
-                desc += 'Fully computed, but empty.'
+                desc += 'Fully retrieved, but empty.'
             else:
                 desc += 'COMPUTING PREVIEW, empty for now.'
         else:
             if self._ready is True:
-                desc += 'Fully computed.'
+                desc += 'Fully retrieved.'
             else:
-                desc += 'PARTIALLY computed.'
+                desc += 'PARTIALLY retrieved.'
         if self._approximate_chunk is not None:
             if self._exact_len == 0:
                 desc += ' All computed rows '
@@ -103,7 +103,7 @@ class ResultSetBGThread:
         warnings = []
         if not self._ready:
             warnings.append(
-                'Warning: resultset is not complete (partially computed).')
+                'Warning: resultset is not complete (partially retrieved).')
         if self._approximate_chunk is not None:
             warnings.append(f'Warning: resultset is '
                             f'{Colors.RED}approximate{Colors.RESET} '
@@ -138,7 +138,7 @@ class ResultSetBGThread:
             evt_args = bg_queue.get()
             if evt_args[0] == 'SET_DATA_WAITER':
                 if not self._ready:
-                    print('Waiting for full dataset computation...')
+                    print('Waiting for full dataset computation/retrieval...')
                 data_waiter = evt_args[1]
             elif evt_args[0] == 'REMOVE_DATA_WAITER':
                 data_waiter = None
