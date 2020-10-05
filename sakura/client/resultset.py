@@ -6,7 +6,7 @@ from sakura.common.chunk import NumpyChunk
 from sakura.common.pprint import pp_display_dataframe
 from sakura.common.colors import Colors
 from sakura.common.exactness import EXACT, APPROXIMATE
-from sakura.client.term import TTYSettings
+from sakura.common.term import TTYSettings
 from sakura.client.shelltools import StdinMonitor, interruptible_queue_get
 from sakura.client.stream import StreamBgThread
 
@@ -46,8 +46,9 @@ class ResultSetBGThread:
         if len(self) == 0:
             self._current_repr = self.get_status()
         else:
+            tty = TTYSettings()
             self._current_repr = '\n\n'.join((
-                pp_display_dataframe(self, exact_len=self._exact_len),
+                pp_display_dataframe(self, exact_len=self._exact_len, max_width = tty.cols),
                 self.get_status()
             ))
     def compute_show_view(self):
