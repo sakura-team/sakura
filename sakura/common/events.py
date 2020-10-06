@@ -108,12 +108,13 @@ class EventsAggregator:
         info['listeners'].remove(listener_id)
         if len(info['listeners']) == 0:
             info['obj_events'].unsubscribe(info['callback'])
-        del self.monitored[obj_id]
+            del self.monitored[obj_id]
     def on_event(self, obj_id, evt_name, *args, **kwargs):
         self.esm.push_event(obj_id, evt_name, *args, **kwargs)
     def is_monitored(self, listener_id, event):
         obj_id = event[0][0]
-        return listener_id in self.monitored[obj_id]['listeners']
+        return obj_id in self.monitored and \
+               listener_id in self.monitored[obj_id]['listeners']
     def next_events(self, listener_id, timeout, max_events=None):
         deadline = time() + timeout
         while True:
