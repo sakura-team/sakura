@@ -82,7 +82,7 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
     value_wrapper = '%s'
     tags = ()
     if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json', 'jsonb'):
-        col_type = 'object'
+        col_type = 'opaque'
     elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
         col_type = 'date'
         select_clause_sql = 'extract(epoch from %(table_name)s.%(col_name)s) as %(col_name)s' % dict(
