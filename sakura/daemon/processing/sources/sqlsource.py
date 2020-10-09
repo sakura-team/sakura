@@ -172,15 +172,35 @@ class SQLDatabaseSource(SourceBase):
                 for subcol, db_subcol in zip(col.subcolumns, db_col.subcolumns):
                     subcol.data.db_col = db_subcol
     def all_chunks(self, chunk_size = None):
-        if len(self.sort_columns) > 0 and self._limit is None:
-            # Apply our method to skew the database engine towards quickly getting the
-            # first rows (see long comment above)
-            return sqlsource_skewed_iterator(self, chunk_size)
-        else:
-            # If no sort is requested, we cannot apply the same, because the requests
+        if self._limit is None:
+            # We want to apply our method to skew the database engine towards quickly getting the
+            # first rows (see long comment above).
+            # If no sort is applied, we cannot apply the same, because the requests
             # we would send could return data with a different ordering, so LIMIT
             # and OFFSET keywords are not enough to ensure stream integrity.
-            return SQLSourceIterator(self, chunk_size)
+            if len(self.sort_columns) > 0:
+                return sqlsource_skewed_iterator(self, chunk_size)
+            # The user did not request a sorted result, but selecting one would still be a valid
+            # response. Let's check if there is a primary key somewhere, which would prove
+            # we have an index. Sorting on a primary key will probably not hurt performance much.
+            for db_table in set(col.data.db_col.table for col in self.all_columns):
+                db_primary_key = db_table.primary_key
+                if len(db_primary_key) > 0:
+                    # yes we have a primary key!
+                    # let's convert its db col names to source columns
+                    primary_key = []
+                    for db_col_name in db_primary_key:
+                        for col in self.all_columns:
+                            if col.data.db_col.table == db_table and \
+                                    col.data.db_col.col_name == db_col_name:
+                                primary_key.append(col)
+                                break
+                    # add our selected ordering and apply our skewed algorithm.
+                    source = self.sort(*primary_key)
+                    return sqlsource_skewed_iterator(source, chunk_size)
+        # if the query already has a LIMIT, or as a last resort,
+        # iterate in a standard way
+        return SQLSourceIterator(self, chunk_size)
     def open_cursor(self, db_conn):
         sql_text, values = self.to_sql()
         if PRINT_SQL:
