@@ -120,10 +120,13 @@ class DatabaseMixin(BaseMixin):
         context.db.commit()
         return new_db.id
     def update_grant(self, login, grant_name):
+        # check if this is the initial setting of the owner
+        setting_owner = (grant_name == 'own' and self.owner is None)
         # update hub db
         super().update_grant(login, grant_name)
         # update remotely on datastore
-        self.datastore.remote_instance.update_database_grant(
+        if not setting_owner:
+            self.datastore.remote_instance.update_database_grant(
                     self.name, login, GRANT_LEVELS.value(grant_name))
     def delete_database(self):
         self.assert_grant_level(GRANT_LEVELS.own,
