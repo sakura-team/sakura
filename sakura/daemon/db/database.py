@@ -2,6 +2,7 @@ from collections import defaultdict
 from sakura.daemon.db.table import DBTable
 from sakura.daemon.db.grants import register_grant
 from sakura.common.io import pack
+from gevent.lock import Semaphore
 
 class DBProber:
     def __init__(self, db):
@@ -52,14 +53,16 @@ class Database:
         self.grants = {}
         self._tables = None
         self.metadata = metadata
+        self.probing_lock = Semaphore()
     def unique_id(self):
         return ('Database', self.db_name, self.dbms.unique_id())
     def register_grant(self, db_user, grant):
         register_grant(self.grants, db_user, grant)
     @property
     def tables(self):
-        if self._tables is None:
-            self.refresh_tables()
+        with self.probing_lock:
+            if self._tables is None:
+                self.refresh_tables()
         return self._tables
     def connect(self):
         return self.dbms.admin_connect(db_name = self.db_name)
