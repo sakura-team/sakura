@@ -1,5 +1,6 @@
 from sakura.daemon.db import drivers
 from sakura.daemon.db import adapters
+from sakura.daemon.db import CURSOR_MODE
 from sakura.daemon.db.grants import register_grant
 from sakura.daemon.db.database import Database
 from sakura.daemon.db.pool import ConnectionPool
@@ -48,12 +49,13 @@ class DataStore:
         self.conn_pools = {}
     def unique_id(self):
         return ('Datastore', self.host, self.driver_label)
-    def admin_connect(self, db_name = None):
+    def admin_connect(self, db_name = None, cursor_mode = CURSOR_MODE.CLIENT,
+                            reuse_conn = None):
         pool = self.conn_pools.get(db_name)
         if pool is None:
-            pool = ConnectionPool(lambda: self.do_admin_connect(db_name))
+            pool = ConnectionPool(self.driver, lambda: self.do_admin_connect(db_name))
             self.conn_pools[db_name] = pool
-        return pool.connect()
+        return pool.connect(cursor_mode = cursor_mode, reuse_conn = reuse_conn)
     def do_admin_connect(self, db_name):
         info = dict(
             host = self.host,

@@ -71,7 +71,10 @@ class HardTimerIterator:
             self._spawn()
         if self._out_queue.qsize() == 0:
             if self._in_queue.qsize() == 0:
+                # we enqueue two tokens to be able to check
+                # background greenlet status
                 self._in_queue.put(1)
+                self._in_queue.put(1)   # second token
         try:
             res = self._out_queue.get(timeout = self._timeout)
         except Empty:
@@ -83,21 +86,35 @@ class HardTimerIterator:
         self._greenlet = gevent.spawn(self._run)
     def release(self):
         if self._greenlet is not None:
-            self._in_queue.put(0)
-        else:
-            del self._it
+            if self._in_queue.qsize() == 0:
+                self._in_queue.put(0)   # gentle stop request
+            else:
+                # greenlet is blocked in next(it)
+                self._greenlet.kill()   # kill
+            self._in_queue = None
+            self._out_queue = None
+            self._greenlet = None
+            self._it = None
     def _run(self):
+        in_queue = self._in_queue
+        out_queue = self._out_queue
+        it = self._it
         while True:
-            action = self._in_queue.get()
+            action = in_queue.get()
             if action == 0:
-                del self._it
                 break   # end
             else:
                 try:
-                    chunk = next(self._it)
-                    self._out_queue.put(chunk)
+                    chunk = next(it)
+                    # retrieve the second token
+                    # (let the main greenlet know we are not blocked on next(it) any more)
+                    in_queue.get()  # second token
+                    out_queue.put(chunk)
+                except gevent.GreenletExit:
+                    break   # end
                 except Exception as e:
-                    self._out_queue.put(e)
+                    in_queue.get()  # second token
+                    out_queue.put(e)
 
 # if delay between two chunks reaches timeout,
 # yield a None value.

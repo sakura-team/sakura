@@ -1,4 +1,4 @@
-import psycopg2, uuid, numpy as np
+import psycopg2, uuid, numpy as np, gevent
 from gevent.socket import wait_read, wait_write
 from collections import defaultdict
 from psycopg2.extras import DictCursor
@@ -12,12 +12,17 @@ def wait_callback(conn, timeout=None):
         state = conn.poll()
         if state == POLL_OK:
             break
-        elif state == POLL_READ:
-            wait_read(conn.fileno(), timeout=timeout)
-        elif state == POLL_WRITE:
-            wait_write(conn.fileno(), timeout=timeout)
-        else:
-            raise psycopg2.OperationalError("Bad result from poll: %r" % state)
+        try:
+            if state == POLL_READ:
+                wait_read(conn.fileno(), timeout=timeout)
+            elif state == POLL_WRITE:
+                wait_write(conn.fileno(), timeout=timeout)
+            else:
+                raise psycopg2.OperationalError("Bad result from poll: %r" % state)
+        except gevent.GreenletExit:
+            # if greenlet is interrupted, cancel the db connection
+            conn.cancel()
+            raise
 
 set_wait_callback(wait_callback)
 
@@ -261,23 +266,14 @@ DEFAULT_CONNECT_TIMEOUT = 4     # seconds
 def identifier_list_to_sql(l):
     return "(" + ', '.join(esc(name) for name in l) + ")"
 
-class PostgreSQLServerCursor(psycopg2.extensions.cursor):
+class PostgreSQLCursor(DictCursor):
     def close(self):
-        psycopg2.extensions.cursor.close(self)
-        # server-side cursors, even closed, may still lock
-        # the tables that were fetched. committing ensures
-        # tables are no longer locked.
-        self.connection.commit()
+        if self.closed:
+            return
+        self.connection.cancel()
+        super().close()
         if DEBUG_CURSORS:
-            print('cursor ' + self.name + ' released')
-    def __del__(self):
-        # ensures cursor is closed when deleting
-        if not self.closed:
-            self.close()
-        # let's ensure possible evolutions of psycopg2 will
-        # not break this.
-        if hasattr(psycopg2.extensions.cursor, '__del__'):
-            psycopg2.extensions.cursor.__del__(self)
+            print('cursor ' + self.name + ' closed')
 
 class PostgreSQLDBDriver:
     NAME = 'postgresql'
@@ -288,20 +284,20 @@ class PostgreSQLDBDriver:
             kwargs['dbname'] = 'postgres'
         if 'connect_timeout' not in kwargs:
             kwargs['connect_timeout'] = DEFAULT_CONNECT_TIMEOUT
+        kwargs['cursor_factory'] = PostgreSQLCursor
         conn = psycopg2.connect(**kwargs)
-        conn.cursor_factory = DictCursor
         return conn
     @staticmethod
     def open_server_cursor(db_conn):
         cursor_name = str(uuid.uuid4()) # unique name
         if DEBUG_CURSORS:
             print("opening server cursor", cursor_name)
-        cursor = db_conn.cursor(name = cursor_name,
-                                cursor_factory=PostgreSQLServerCursor)
+        cursor = db_conn.cursor(name = cursor_name)
         # arraysize: default number of rows when using fetchmany()
         # itersize: default number of rows fetched from the backend
         #           at each network roundtrip (psycopg2-specific)
         cursor.arraysize = cursor.itersize
+        #return CursorWrapper(cursor)
         return cursor
     @staticmethod
     def get_current_db_name(db_conn):

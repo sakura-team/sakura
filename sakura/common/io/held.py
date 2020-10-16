@@ -5,12 +5,6 @@ from sakura.common.io.origin import ORIGIN_ID
 from sakura.common.io.tools import traverse
 
 class HeldObjectsStore:
-    instance = None
-    @staticmethod
-    def get():
-        if HeldObjectsStore.instance is None:
-            HeldObjectsStore.instance = HeldObjectsStore()
-        return HeldObjectsStore.instance
     def __init__(self):
         self.__objects_per_id__ = {}
         self.__ids_per_object__ = {}

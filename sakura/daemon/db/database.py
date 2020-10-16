@@ -2,6 +2,7 @@ from collections import defaultdict
 from sakura.daemon.db.table import DBTable
 from sakura.daemon.db.grants import register_grant
 from sakura.common.io import pack
+from sakura.daemon.db import CURSOR_MODE
 from gevent.lock import Semaphore
 
 class DBProber:
@@ -10,18 +11,20 @@ class DBProber:
         self.driver = db.dbms.driver
     def probe(self):
         print("DB probing startup: %s" % self.db.db_name)
-        self.db_conn = self.db.connect()
+        db_conn = self.db.connect()
         self.tables = {}
-        self.driver.collect_database_tables(self.db_conn, self)
-        self.db_conn.close()
+        self.driver.collect_database_tables(db_conn, self)
+        db_conn.close()
         return self.tables
     def register_table(self, table_name, **metadata):
         #print("DB probing: found table %s" % table_name)
         self.tables[table_name] = DBTable(self.db, table_name, **metadata)
-        self.driver.collect_table_columns(self.db_conn, self, table_name)
-        self.driver.collect_table_primary_key(self.db_conn, self, table_name)
-        self.driver.collect_table_foreign_keys(self.db_conn, self, table_name)
-        self.driver.collect_table_count_estimate(self.db_conn, self, table_name)
+        db_conn = self.db.connect()
+        self.driver.collect_table_columns(db_conn, self, table_name)
+        self.driver.collect_table_primary_key(db_conn, self, table_name)
+        self.driver.collect_table_foreign_keys(db_conn, self, table_name)
+        self.driver.collect_table_count_estimate(db_conn, self, table_name)
+        db_conn.close()
     def register_column(self, table_name, *col_info, subcolumn_of=None, **params):
         #print("----------- found column " + str(col_info))
         if subcolumn_of is None:
@@ -64,8 +67,10 @@ class Database:
             if self._tables is None:
                 self.refresh_tables()
         return self._tables
-    def connect(self):
-        return self.dbms.admin_connect(db_name = self.db_name)
+    def connect(self, cursor_mode=CURSOR_MODE.CLIENT, reuse_conn = None):
+        return self.dbms.admin_connect(db_name = self.db_name,
+                                       cursor_mode = cursor_mode,
+                                       reuse_conn = reuse_conn)
     def refresh_tables(self):
         prober = DBProber(self)
         self._tables = prober.probe()

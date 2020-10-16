@@ -69,6 +69,8 @@ class Cache:
     def cleanup_oldest(self):
         expiry_time, key = self.per_date[0]
         self.per_date = self.per_date[1:]
+        if DEBUG:
+            print(id(self), time(), 'cache.cleanup_oldest', key)
         del self.per_key[key]
     def __del__(self):
         while len(self.per_date) > 0:

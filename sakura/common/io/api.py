@@ -25,7 +25,7 @@ class APIEndpoint:
         self.local_api = local_api
         self.session_wrapper = session_wrapper
         self.pool = gevent.pool.Group()
-        self.held_objects = HeldObjectsStore.get()
+        self.held_objects = HeldObjectsStore()
         self.proxy = Proxy(self, ('local_api',))
         self.reqs = {}
         self.req_ids = itertools.count()
