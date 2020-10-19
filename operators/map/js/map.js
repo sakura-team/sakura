@@ -2,8 +2,12 @@
 HEATMAP_RADIUS = 15;
 HEATMAP_REFRESH_DELAY = 0.3;
 
-function update_heatmap_callback(result) {
+function update_heatmap_callback(result, local_map_serial) {
     var icon;
+    if (local_map_serial < map_serial) {
+        // obsolete callback, map has moved since it was called
+        return;
+    }
     if ('issue' in result)
     {
         infobox.update({ 'icon': 'alert', 'text': result.issue });
@@ -19,7 +23,9 @@ function update_heatmap_callback(result) {
         // while we refresh the screen
         sakura.apis.operator.fire_event(
                 "map_continue", HEATMAP_REFRESH_DELAY).then(
-                update_heatmap_callback);
+                function(result) {
+                    update_heatmap_callback(result, local_map_serial);
+                });
     }
     // expand compressed data
     heatmap_values = expand_heatmap_values(result.heatmap);
@@ -82,10 +88,16 @@ function request_heatmap() {
     }
     console.log(info);
 
+    // update our serial number
+    map_serial += 1;
+    let local_map_serial = map_serial;
+
     // send event, then update map
     sakura.apis.operator.fire_event(
             "map_move", HEATMAP_REFRESH_DELAY, info).then(
-            update_heatmap_callback);
+            function(result) {
+                update_heatmap_callback(result, local_map_serial);
+            });
 }
 
 /* In order to lower network usage, heatmap data is transfered in
@@ -112,6 +124,7 @@ function init_map() {
     //map.on('load', request_heatmap); // update on first load
     markers_layer = null;
     heatmap_layer = null;
+    map_serial = 0;
 
     var layer = L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
         maxZoom: 18,
