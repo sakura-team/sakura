@@ -38,7 +38,7 @@ class HeatMap:
         # prepare computation parameters
         self.bins = edgelng, edgelat
         self.range = (westlng, eastlng), (southlat, northlat)
-        self.iterator = lnglat.chunks()
+        self.iterator = lnglat.chunks(hard_timer = 0.2)
         self.heatmap = None
         # prepare compression parameters
         scalelat = (edgelat[1:] - edgelat[:-1]).min() / 2
@@ -56,12 +56,14 @@ class HeatMap:
         deadline = time() + time_credit
         deadline_reached = False
         for chunk in self.iterator:
-            lng, lat = chunk.columns
-            chunk_heatmap = np.histogram2d(lng, lat, bins=self.bins, range=self.range)[0]
-            if self.heatmap is None:
-                self.heatmap = chunk_heatmap.T
-            else:
-                self.heatmap += chunk_heatmap.T
+            # since we applied a hard_timer value, we may get chunk = None sometimes
+            if chunk is not None:
+                lng, lat = chunk.columns
+                chunk_heatmap = np.histogram2d(lng, lat, bins=self.bins, range=self.range)[0]
+                if self.heatmap is None:
+                    self.heatmap = chunk_heatmap.T
+                else:
+                    self.heatmap += chunk_heatmap.T
             if time() > deadline:
                 deadline_reached = True
                 break
@@ -74,7 +76,10 @@ class HeatMap:
     # together with a scaling factor and an offset to be applied.
     def compressed_form(self):
         # count number of points
-        count = int(self.heatmap.sum())
+        if self.heatmap is None:
+            count = 0
+        else:
+            count = int(self.heatmap.sum())
         if count == 0:
             # if no points, return empty data
             data = dict(lat = [], lng = [], val = [])
