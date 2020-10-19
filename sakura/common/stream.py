@@ -1,4 +1,6 @@
-import numpy as np
+import numpy as np, gevent
+from gevent.queue import Queue, Empty
+from sakura.common.release import auto_release
 from sakura.common.chunk import NumpyChunk
 from sakura.common.exactness import EXACT, APPROXIMATE, UNDEFINED, Exactness
 
@@ -53,3 +55,51 @@ def normalize_value_stream(it):
             yield val   # val is already a tuple (<row>, <exactness>)
         else:
             yield val, EXACT
+
+@auto_release
+class HardTimerIterator:
+    def __init__(self, it, timeout):
+        self._it = it
+        self._timeout = timeout
+        self._greenlet = None
+        self._in_queue = Queue()
+        self._out_queue = Queue()
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self._greenlet is None:
+            self._spawn()
+        if self._out_queue.qsize() == 0:
+            if self._in_queue.qsize() == 0:
+                self._in_queue.put(1)
+        try:
+            res = self._out_queue.get(timeout = self._timeout)
+        except Empty:
+            return None
+        if isinstance(res, Exception):
+            raise res
+        return res
+    def _spawn(self):
+        self._greenlet = gevent.spawn(self._run)
+    def release(self):
+        if self._greenlet is not None:
+            self._in_queue.put(0)
+        else:
+            del self._it
+    def _run(self):
+        while True:
+            action = self._in_queue.get()
+            if action == 0:
+                del self._it
+                break   # end
+            else:
+                try:
+                    chunk = next(self._it)
+                    self._out_queue.put(chunk)
+                except Exception as e:
+                    self._out_queue.put(e)
+
+# if delay between two chunks reaches timeout,
+# yield a None value.
+def apply_hard_timer_to_stream(it, timeout):
+    return HardTimerIterator(it, timeout)

@@ -5,6 +5,7 @@ from sakura.common.cache import Cache
 from sakura.common.chunk import NumpyChunk
 from sakura.common.errors import APIRequestError
 from sakura.common.exactness import EXACT
+from sakura.common.stream import apply_hard_timer_to_stream
 from sakura.daemon.processing.column import Column, GeoColumn, BoundColumn
 from sakura.daemon.processing.sources.types import SourceTypes
 from sakura.daemon.csvtools import stream_csv
@@ -189,15 +190,23 @@ class SourceBase:
             return chunk
         # if we are here, stream has ended, return empty chunk
         return NumpyChunk.empty(0, self.get_dtype(), EXACT)
-    def chunks(self, chunk_size = None, allow_approximate = False):
-        if allow_approximate:
-            yield from self.all_chunks(chunk_size)
+    def chunks(self, chunk_size = None, allow_approximate = False, hard_timer = None):
+        if hard_timer is None:
+            if allow_approximate:
+                yield from self.all_chunks(chunk_size)
+            else:
+                for chunk in self.all_chunks(chunk_size):
+                    if chunk.exact():
+                        yield chunk
+                    else:
+                        print('Ignored approximate chunk:', chunk)
         else:
-            for chunk in self.all_chunks(chunk_size):
-                if chunk.exact():
-                    yield chunk
-                else:
-                    print('Ignored approximate chunk:', chunk)
+            # Apply a hard timer: ensure that delay between two chunks
+            # does not exceed <hard_timer> seconds. If this delay is
+            # reached, yield None and then continue iteration.
+            it = self.chunks(chunk_size, allow_approximate, None)
+            it = apply_hard_timer_to_stream(it, hard_timer)
+            yield from it
     def get_dtype(self, columns = None):
         if columns is None:
             columns = self.columns
