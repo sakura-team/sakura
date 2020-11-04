@@ -31,16 +31,20 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                 });
             }
             break;
+
         case 'enabled':
             if (LOG_OPERATORS_EVENTS) { console.log('ENABLED OP', args, hub_inst_id); }
 
             let inst_index = -1;
+
             for (let i=0; i< instances_waiting_for_creation.length; i++) {
                 if  (instances_waiting_for_creation[i].id == hub_inst_id) {
                     inst_index = i;
                 }
             };
-            console.log('INST', instances_waiting_for_creation[inst_index]);
+
+            //console.log('INST', instances_waiting_for_creation[inst_index]);
+
             if ( inst_index != -1) {
                 let proxy = sakura.apis.hub.operators[hub_inst_id];
                 let g = { x: instances_waiting_for_creation[inst_index].gui.x,
@@ -69,16 +73,54 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                 instances_waiting_for_creation.pop(inst_index);
             }
             else {
-                console.log('SHOULD NOT CREATE OP');
+                let proxy = sakura.apis.hub.operators[hub_inst_id];
+                push_request('operators_info');
+                proxy.info().then( function (opi) {
+                    pop_request('operators_info');
+                    update_operator_instance_from_hub(opi.cls_id, opi);
+
+                    push_request('dataflows_info');
+                    sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
+                        for (let i=0; i< df_info.links.length; i++) {
+                            if (opi.op_id == df_info.links[i].src_id ||
+                                opi.op_id == df_info.links[i].dst_id) {
+                                let found = false;
+                                for (let l=0; l<global_links.length;l++) {
+                                    if (global_links[l].src ==  df_info.links[i].src_id &&
+                                        global_links[l].dst ==  df_info.links[i].dst_id ) {
+                                        found = true;
+                                    }
+                                }
+                                if (!found) {
+                                    create_dataflow_links([df_info.links[i]], true);
+                                }
+                            }
+                        }
+                        pop_request('dataflows_info');
+                    }).catch(function(error) {
+                        pop_request('dataflows_info');
+                    });
+                    check_operator(opi);
+                }).catch ( function (error) {
+                    pop_request('operators_info');
+                    console.log('OPERATORS.js: error 5', error);
+                });
             }
             break;
 
         case 'disabled':
             if (LOG_OPERATORS_EVENTS) { console.log('DISABLED OP', args, proxy, hub_inst_id);}
+            push_request('operators_info');
+            sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                pop_request('operators_info');
+                check_operator(op);
+            }).catch ( function (error) {
+                pop_request('operators_info');
+                console.log('OPERATORS.js: error 4, event: ', evt_name, ', ', error);
+            });
             break;
 
         default:
-            let en = evt_name;
             if (LOG_OPERATORS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
             push_request('operators_info');
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
@@ -86,7 +128,7 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                 check_operator(op);
             }).catch ( function (error) {
                 pop_request('operators_info');
-                console.log('OPERATORS.js: error 4, event: ', en, ', ', error);
+                console.log('OPERATORS.js: error 4, event: ', evt_name, ', ', error);
             });
     }
 }
@@ -105,7 +147,7 @@ function create_operator_instance_on_hub(drop_x, drop_y, id) {
 
 
 function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
-    var ndiv = select_op_new_operator(id, false );
+    let ndiv = select_op_new_operator(id, false );
 
     ndiv.id = "op_" + id + "_" + info.op_id;
     ndiv.classList.add("sakura_dynamic_operator");
@@ -134,21 +176,19 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
                             ep          : {in: e_in, out: e_out},
                             gui         : {x: drop_x, y: drop_y}
                             });
-
+    //creating outputs and inputs
     if (info.enabled) {
-        create_op_outputs(info, ndiv);
+        create_op_plugs(info, ndiv);
         create_op_modal(ndiv.id, info);
     }
 
+    //subscribing events
     let proxy = sakura.apis.hub.operators[info.op_id];
     if (proxy) {
         op_events.forEach( function(e) {
           proxy.subscribe_event(e, function(evt_name, args) {
                 operators_deal_with_events(evt_name, args, proxy, info.op_id);
           });
-          // .catch ( function (error) {
-          //     console.log('OPERATORS.js: error 5', error);
-          // });
       });
     }
     else {
@@ -156,24 +196,52 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     }
 }
 
+function update_operator_instance_from_hub(id, info) {
+    let ndiv_id = "op_" + id + "_" + info.op_id;
+    let ndiv = document.getElementById(ndiv_id);
 
-function create_op_outputs(info, ndiv) {
+    console.log('UPDATING OP', "modal_"+ndiv.id);
+
+    create_op_plugs(info, ndiv);
+    let m = document.getElementById("modal_"+ndiv.id);
+    if (!m) {
+        create_op_modal(ndiv.id, info);
+    }
+    ndiv.ondblclick     = open_op_modal;
+}
+
+function endpoint_exists(id) {
+    let eps = $('.jsplumb-endpoint');
+    for (let i=0; i< eps.length; i++) {
+        if (eps[i]._jsPlumb.id == id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function create_op_plugs(info, ndiv) {
     let inst = instance_from_id(info.op_id);
+
     inst.ep.in = null;
     inst.ep.out = null;
-    if ( info.inputs.length > 0) {
+    let id_i = "ep_"+ndiv.id+"_in";
+    let id_o = "ep_"+ndiv.id+"_out";
+    if ( info.inputs.length > 0 && !endpoint_exists(id_i)) {
         inst.ep.in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
                                                 isTarget:true,
-                                                uuid:"ep_"+ndiv.id+"_in",
+                                                uuid:id_i,
+                                                id: id_i,
                                                 cssClass:"sakura_endPoint",
                                                 paintStyle:{fillStyle:"black", radius:6},
                                                 hoverPaintStyle:{ fillStyle:"black", radius:10}
                                                 });
     }
-    if (info.outputs.length > 0)
+    if (info.outputs.length > 0 && !endpoint_exists(id_o))
         inst.ep.out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
                                                 isSource:true,
                                                 uuid:"ep_"+ndiv.id+"_out",
+                                                id:"ep_"+ndiv.id+"_out",
                                                 cssClass:"sakura_endPoint",
                                                 isSource: false,
                                                 paintStyle:{fillStyle:transparent_grey, radius:6},
@@ -182,12 +250,19 @@ function create_op_outputs(info, ndiv) {
 }
 
 function check_operator(op) {
-    var disabled  = false;
-    var warning   = false;
-    var d_message = '';
-    var w_message = '';
+    let disabled  = false;
+    let warning   = false;
+    let d_message = '';
+    let w_message = '';
 
     if (op.enabled) {
+
+        let svg = class_from_id(op.cls_id).svg;
+        let elts = $( ".op_svg_"+op.cls_id);
+
+        for (let i=0; i< elts.length; i++) {
+            elts[i].children[0].outerHTML = svg;
+        }
 
         function check_elt(elt) {
           if (!elt.enabled) {
@@ -205,7 +280,7 @@ function check_operator(op) {
 
         let inst = instance_from_id(op.op_id);
         if (inst) {
-            var id = 'op_'+inst.cl.id+'_'+inst.hub_id;
+            let id = 'op_'+inst.cl.id+'_'+inst.hub_id;
             w_div = document.getElementById(id+"_warning");
 
             if (disabled) {
@@ -225,6 +300,25 @@ function check_operator(op) {
                 check_output(op);
             }
         }
+    }
+    else {
+        let dis_svg = disable_op_svg(class_from_id(op.cls_id).svg);
+        let elts = $( ".op_svg_"+op.cls_id);
+
+        for (let i=0; i< elts.length; i++) {
+            let p = get_parent(elts[i], 5);
+            if (p.id) {
+                elts[i].children[0].outerHTML = dis_svg;
+            }
+        }
+
+        let inst = instance_from_id(op.op_id);
+        if (inst) {
+            let id = 'op_'+inst.cl.id+'_'+inst.hub_id;
+            w_div = document.getElementById(id+"_warning");
+            w_div.style.visibility  = "hidden";
+        }
+        check_output(op);
     }
 }
 
@@ -390,37 +484,41 @@ function instance_index_from_id(hid) {
 }
 
 function output_enable(inst) {
-    inst.ep.out.isSource = true;
-    inst.ep.out.setPaintStyle({fillStyle: 'black', radius: 6});
-    inst.ep.out.setHoverPaintStyle({fillStyle: 'black', radius: 10});
+    if (inst.ep.out) {
+        inst.ep.out.isSource = true;
+        inst.ep.out.setPaintStyle({fillStyle: 'black', radius: 6});
+        inst.ep.out.setHoverPaintStyle({fillStyle: 'black', radius: 10});
 
-    for (let i=0;i<global_links.length;i++) {
-        if (global_links[i].src == inst.hub_id) {
-            global_links[i].jsP.setPaintStyle({strokeStyle: 'black',
-                                              lineWidth: 3});
-            global_links[i].jsP.setHoverPaintStyle({strokeStyle: 'black',
-                                                    lineWidth: 7});
+        for (let i=0;i<global_links.length;i++) {
+            if (global_links[i].src == inst.hub_id) {
+                global_links[i].jsP.setPaintStyle({strokeStyle: 'black',
+                                                  lineWidth: 3});
+                global_links[i].jsP.setHoverPaintStyle({strokeStyle: 'black',
+                                                        lineWidth: 7});
+            }
         }
-    }
 
-    jsPlumb.repaintEverything();
+        jsPlumb.repaintEverything();
+    }
 }
 
 function output_disable(inst) {
-    inst.ep.out.isSource = false;
-    inst.ep.out.setPaintStyle({fillStyle: transparent_grey, radius: 6});
-    inst.ep.out.setHoverPaintStyle({fillStyle: transparent_grey, radius: 6});
+    if (inst.ep.out) {
+        inst.ep.out.isSource = false;
+        inst.ep.out.setPaintStyle({fillStyle: transparent_grey, radius: 6});
+        inst.ep.out.setHoverPaintStyle({fillStyle: transparent_grey, radius: 6});
 
-    for (let i=0;i<global_links.length;i++) {
-        if (global_links[i].src == inst.hub_id) {
-            global_links[i].jsP.setPaintStyle({strokeStyle: transparent_grey,
-                                              lineWidth: 3});
-            global_links[i].jsP.setHoverPaintStyle({strokeStyle: transparent_grey,
-                                                    lineWidth: 4});
+        for (let i=0;i<global_links.length;i++) {
+            if (global_links[i].src == inst.hub_id) {
+                global_links[i].jsP.setPaintStyle({strokeStyle: transparent_grey,
+                                                  lineWidth: 3});
+                global_links[i].jsP.setHoverPaintStyle({strokeStyle: transparent_grey,
+                                                        lineWidth: 4});
+            }
         }
-    }
 
-    jsPlumb.repaintEverything();
+        jsPlumb.repaintEverything();
+    }
 }
 
 function check_output(op) {
@@ -428,9 +526,10 @@ function check_output(op) {
         let enable = false;
         let inst = instance_from_id(op.op_id);
 
-        op.outputs.forEach( function (o) {
-            if (o.enabled) enable = true;
-        });
+        for (let i=0; i< op.outputs.length; i++) {
+            if (op.outputs[i].enabled) enable = true;
+        };
+
         (inst && enable) ? output_enable(inst) : output_disable(inst);
         return true;
     }

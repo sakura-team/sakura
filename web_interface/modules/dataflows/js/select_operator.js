@@ -211,22 +211,9 @@ function select_op_new_operator(id, removable) {
     let s = '';
     let svg = cl.svg;
 
-    if (!cl.enabled) {
-        let v0 = cl.svg.indexOf('<svg');
-        if (v0 == -1)
-            v0 = cl.svg.indexOf('< svg');
-        let v1 = cl.svg.indexOf('>', v0);
-        let v2 = cl.svg.lastIndexOf('</');
-        let v3 = cl.svg.lastIndexOf('>');
-        let head  = cl.svg.substring(0, v1+1);
-        let end   = cl.svg.substring( v2, v3+1);
-        let middle= cl.svg.substring(v1+1, v2);
-
-        let new_layer = '<rect x="-500" y="-500" fill-opacity="0.4" fill="white" width="1000" height="1000"/> \
-                        <rect x="-500" y="0" fill="white" width="1000" height="15"/> \
-                        <text x="0" y="13" font-size="10"> disabled</text>';
-        svg = head+middle+new_layer+end;
-    }
+    // if (!cl.enabled) {
+    //     svg = disable_op_svg(svg);
+    // }
 
     ndiv.id = "select_op_selected_"+cl.id+"_static";
     if (removable) {
@@ -238,6 +225,7 @@ function select_op_new_operator(id, removable) {
     let table = $('<table>');
     let tr    = $('<tr>');
     if (removable) {
+        console.log('Here');
         let td1 = $('<td>', {align: "center"});
         let td2 = $('<td>', {valign: "top"});
         let td_span = $('<span>', {class: "glyphicon glyphicon-remove", onclick: "select_op_delete_op(\'"+cl.id+"\');", style: "cursor: pointer;"});
@@ -246,7 +234,8 @@ function select_op_new_operator(id, removable) {
     }
     else {
       let td = $('<td>');
-      let svg_div = $('<div>', {height: "38px",
+      let svg_div = $('<div>', {class: 'op_svg_'+cl.id,
+                                height: "38px",
                                 draggable:"true",
                                 ondragstart:"dragging_svg(event,\'"+ndiv.id+"\')"});
       svg_div.html(svg);

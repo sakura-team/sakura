@@ -11,7 +11,7 @@ var instances_waiting_for_creation = [];
 var waiting_gui = null;
 
 var LOG_INTERACTION_EVENT   = false;
-var LOG_DATAFLOW_EVENTS     = false;
+var LOG_DATAFLOW_EVENTS     = true;
 var LOG_LINKS_EVENTS        = false;
 var LOG_OPERATORS_EVENTS    = true;
 
@@ -134,4 +134,29 @@ function dataflows_download_start_transfert(id_in_out, in_out, gzip) {
         element.click();
         document.body.removeChild(element);
     });
+}
+
+function disable_op_svg(svg) {
+    let v0 = svg.indexOf('<svg');
+    if (v0 == -1)
+        v0 = svg.indexOf('< svg');
+    let v1 = svg.indexOf('>', v0);
+    let v2 = svg.lastIndexOf('</');
+    let v3 = svg.lastIndexOf('>');
+    let head  = svg.substring(0, v1+1);
+    let end   = svg.substring( v2, v3+1);
+    let middle= svg.substring(v1+1, v2);
+
+    let new_layer = '<rect x="0" y="0" fill-opacity="0.4" fill="white" width="38" height="38"/> \
+                    <rect x="0" y="0" fill="white" width="38" height="15"/> \
+                    <text x="0" y="13" font-size="10"> disabled</text>';
+    return head+middle+new_layer+end;
+}
+
+function get_parent(elt, nb) {
+    let p = elt;
+    for (let i =0; i< nb; i++){
+        p = p.parentElement;
+    }
+    return p;
 }

@@ -96,12 +96,13 @@ function create_dataflow_links(df_links, from_shell=false) {
             let src_inst = instance_from_id(link.src_id);
             let dst_inst = instance_from_id(link.dst_id);
 
-            global_dataflow_jsFlag = false;
-            js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
-                                                dst_inst.ep.in.getUuid()]});
-            global_dataflow_jsFlag = true;
-
-            create_link_from_hub( js_link, link, lgui, from_shell);
+            if ( src_inst.ep.out && dst_inst.ep.in) {
+                global_dataflow_jsFlag = false;
+                js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
+                                                    dst_inst.ep.in.getUuid()]});
+                global_dataflow_jsFlag = true;
+                create_link_from_hub( js_link, link, lgui, from_shell);
+            }
         }
         else {
             llink = link_from_instances(link.src_id, link.dst_id);
@@ -153,7 +154,6 @@ function current_dataflow() {
         current_op_classes_list = JSON.parse(JSON.stringify(result));
 
         //Then we ask for the instance ids
-
         push_request('dataflows_info');
         sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
             pop_request('dataflows_info');
