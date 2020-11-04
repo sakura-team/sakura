@@ -69,6 +69,7 @@ function create_link(js, src_id, dst_id) {
             });
         }
     }).catch( function(error) {
+        pop_request('links_list_possible');
         if (LOG_LINKS_EVENTS) console.log('CL 1', error);
     });
     js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});

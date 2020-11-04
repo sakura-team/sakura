@@ -72,9 +72,11 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                 console.log('SHOULD NOT CREATE OP');
             }
             break;
+
         case 'disabled':
             if (LOG_OPERATORS_EVENTS) { console.log('DISABLED OP', args, proxy, hub_inst_id);}
             break;
+
         default:
             let en = evt_name;
             if (LOG_OPERATORS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}

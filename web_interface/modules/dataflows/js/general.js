@@ -13,7 +13,7 @@ var waiting_gui = null;
 var LOG_INTERACTION_EVENT   = false;
 var LOG_DATAFLOW_EVENTS     = false;
 var LOG_LINKS_EVENTS        = false;
-var LOG_OPERATORS_EVENTS    = false;
+var LOG_OPERATORS_EVENTS    = true;
 
 document.onmousemove = function(e){
     cursorX = e.pageX;

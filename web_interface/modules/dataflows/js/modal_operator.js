@@ -67,6 +67,7 @@ function set_tab_urls(id, url_formatter) {
             });
             resolve();
         }).catch( function (error){
+            pop_request('operators_info');
             alert('Tab display -- Failed to retrieve operator information:\n' + error);
         });
     });
@@ -226,6 +227,7 @@ function fill_params(id) {
             d.appendChild(tbl);
         }
     }).catch( function (error){
+        pop_request('operators_info');
         alert('Parameters init -- Failed to retrieve operator information:\n' + error);
     });
 }
@@ -271,6 +273,7 @@ function params_onChange(op_id, param_index, select) {
             fill_params(op_id);
         });
     }).catch( function (error){
+        pop_request('operators_info');
         alert('Parameter update -- Failed to retrieve operator information:\n' + error);
     });
 }
@@ -327,6 +330,7 @@ function fill_in_out(in_out, id) {
             fill_one_in_out(in_out, id, 0, 0, current_nb_rows, );
 
         }).catch( function (error){
+            pop_request('operators_info');
             console.log('Failed to retrieve operator information:\n' + error);
         });
     }
@@ -470,9 +474,11 @@ function fill_one_in_out(in_out, id, id_in_out, min, max, elt) {
             d.innerHTML = s;
 
         }).catch (function(error) {
+            pop_request('operators_plugs_get_range');
             alert('Failed to get ' + in_out + ' stream values:\n' + error);
         });
     }).catch (function(error) {
+        pop_request('operators_info');
         alert(in_out + ' retrieval -- Failed to retrieve operator information:\n' + error);
     });
 }
