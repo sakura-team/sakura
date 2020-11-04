@@ -388,7 +388,7 @@ function fill_profil_modal(user_infos) {
                 txt = '<b>'+txt+'</b>';
             }
             else {
-                let txt = $('<a name="short_desc" href="#" data-type="text" data-title="txt">'+txt+'</a>');
+                txt = $('<a name="short_desc" href="#" data-type="text" data-title="txt">'+txt+'</a>');
                 txt.editable({emptytext: txt,
                             url: function(params) {update_profile(item, txt, params);}});
             }
