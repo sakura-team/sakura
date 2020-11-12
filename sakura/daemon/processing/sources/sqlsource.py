@@ -1,4 +1,5 @@
 import numpy as np
+from time import time
 from sakura.common.chunk import NumpyChunk
 from sakura.common.exactness import EXACT
 from sakura.common.stream import reassemble_chunk_stream
@@ -27,13 +28,15 @@ PRINT_SQL=True
 DEBUG=False
 
 class SQLSourceIterator:
-    def __init__(self, db_conn, source, chunk_size):
+    def __init__(self, db_conn, source, min_chunk_size, max_chunk_size):
         self.db_conn = db_conn
-        self.chunk_size = chunk_size
         self.dtype = source.get_dtype()
         self.cursor = source.open_cursor(self.db_conn)
-        if self.chunk_size == None:
-            self.chunk_size = self.cursor.arraysize
+        self.chunk_size = self.cursor.arraysize
+        if min_chunk_size is not None and min_chunk_size > self.chunk_size:
+            self.chunk_size = min_chunk_size
+        if max_chunk_size is not None and max_chunk_size < self.chunk_size:
+            self.chunk_size = max_chunk_size
     @property
     def released(self):
         return self.cursor is None
@@ -76,23 +79,36 @@ class SQLSourceIterator:
 # engine towards quickly getting the first rows (e.g. cursor_tuple_fraction
 # in postgresql).
 
-# we propose here a more adaptive and portable method: we use LIMIT and
-# OFFSET directives in order to split the query into several subqueries.
+# we propose here a more adaptive and portable method: we use LIMIT directive
+# and an added WHERE condition in order to split the query into several subqueries.
 # The first subquery is limited to a small number of rows thanks to a
 # small LIMIT value, thus the database engine should optimize it appropriately
 # (choosing the second type of query plan in our example above) and return
 # these first rows shortly. If the client consumes all returned rows,
-# we issue a second query with appropriate OFFSET in order to avoid returning
-# twice the same rows, and a greater LIMIT. And so on.
+# we issue a second query with appropriate WHERE condition added in order to
+# avoid returning twice the same rows, and a greater LIMIT. And so on.
 
 # we have one remaining problem. if the case of equal values on the sort columns,
 # there is a risk that two consecutive subqueries may not order them the same
 # way (especiallly if they were executed using a different query plan), thus the
-# LIMIT and OFFSET trick may return duplicated rows and miss some of them.
+# LIMIT and WHERE trick may return duplicated rows and miss some of them.
 
-# thus we have to compute the LIMIT/OFFSET frontier appropriately: the last
+# thus we have to compute the WHERE condition appropriately: the last
 # row of a subquery and the first row of the next one should have different
-# values on the sort columns.
+# values on the sort columns (to make it simpler we use only the 1st sort column).
+
+# GUI often sends requests for 10 rows, so ensure we can
+# retrieve them with the first query (with limit at 11
+# cut_position will often be at 10)
+LIMIT_START = 11
+# a limit value of 1 would mean only one value in the
+# chunk, thus a cut position at 0 and an emitted_count
+# at 0, which would cause the limit to be increased
+# again to 2... So ensure limit is at least 2.
+LIMIT_MIN = 2
+LIMIT_MAX = 100000
+CHUNK_DELAY_LOW_LIMIT = 0.5
+CHUNK_DELAY_HIGH_LIMIT = 1.0
 
 class SQLSourceSkewedIterator:
     def __init__(self, source, chunk_size):
@@ -108,62 +124,80 @@ class SQLSourceSkewedIterator:
         return next(self._final_iter)
     def _skewed_iterator(self):
         # we will work on work_source where selected columns are
-        # self.source.sort_columns + self.source.columns
+        # self.source.sort_columns[0] + self.source.columns
         # this allows us to:
-        # - ensure sort_columns are selected (it may not be the case...)
+        # - ensure sort_columns[0] is selected (it may not be the case...)
         # - for a given chunk:
-        #   - quickly check the values of the sort_columns
+        #   - quickly check the value of the first sort_column
         #   - quickly retrieve values of self.source.columns
-        work_columns = list(self.source.sort_columns) + list(self.source.columns)
-        work_source = self.source.select(*work_columns)
-        sort_col_indexes = np.arange(len(self.source.sort_columns))
-        other_col_indexes = np.arange(len(self.source.columns)) + sort_col_indexes.size
+        first_sort_column = list(self.source.sort_columns)[0]
+        work_columns = [ first_sort_column ] + list(self.source.columns)
+        orig_work_source = self.source.select(*work_columns)
+        other_col_indexes = np.arange(len(self.source.columns)) + 1
         held_chunks = []
-        curr_sort_columns = None
-        emitted_offset = self.source._offset
-        offset = self.source._offset
-        limit = 1000
+        # the following variable keeps track of the value we must compare to,
+        # when adding the where clause condition.
+        # but on first loop, there is no such value yet (thus the 'False' flag)
+        sort_column_status = (False,)
+        limit = LIMIT_START
         db_conn = None
+        work_source = orig_work_source.limit(limit)
         while True:
             db_conn = self.source.connect(reuse_conn = db_conn)
-            source = work_source.offset(offset).limit(limit)
             if DEBUG:
-                print('QUERY OFFSET', offset, 'LIMIT', limit)
-            it = SQLSourceIterator(db_conn, source, self.chunk_size)
-            for chunk in it:
-                sort_cols_chunk = chunk[:,sort_col_indexes]
+                print('QUERY LIMIT', limit)
+            prev_time = time()
+            last_chunk_delay = None
+            it = SQLSourceIterator(db_conn, work_source, None, limit)
+            emitted_count = 0
+            for idx, chunk in enumerate(it):
+                last_chunk_delay = time() - prev_time
+                prev_time = time()
+                sort_col_vals = chunk.columns[0]
                 other_cols_chunk = chunk[:,other_col_indexes]
-                # if for all rows of new chunk sort columns equal the previous value,
+                # if for all rows of new chunk sort column equals the previous value,
                 # hold it as a whole (we check the last value only, since the chunk is ordered...)
-                if curr_sort_columns is not None and sort_cols_chunk[-1] == curr_sort_columns:
+                if sort_column_status[0] is True and sort_col_vals[-1] == sort_column_status[1]:
                     held_chunks.append(other_cols_chunk)
                     continue
                 # flush held chunks
                 for chunk in held_chunks:
-                    emitted_offset += chunk.size
+                    emitted_count += chunk.size
                     yield chunk
                 held_chunks = []
                 # check where we can cut new chunk
-                cut_pos = get_cut_position(sort_cols_chunk)
+                cut_pos = get_cut_position(sort_col_vals)
                 if cut_pos == 0:
                     held_chunks.append(other_cols_chunk)
                 else:
-                    emitted_offset += cut_pos
+                    emitted_count += cut_pos
                     yield other_cols_chunk[:cut_pos]
                     held_chunks.append(other_cols_chunk[cut_pos:])
-                curr_sort_columns = sort_cols_chunk[-1]
+                sort_column_status = (True, sort_col_vals[-1])
             # query iterator ended
             held_count = sum(chunk.size for chunk in held_chunks)
-            if emitted_offset + held_count < offset + limit:
+            if emitted_count + held_count < limit:
                 # the query returned less results than its <limit> parameter
                 # => we are at the end of the result stream
                 yield from held_chunks
                 break
             else:
                 # the query returned <limit> rows, continue with another one
-                limit *= 10
-                offset = emitted_offset
+                work_source = orig_work_source.where(first_sort_column >= sort_col_vals[-1].item())
                 held_chunks = []
+                if emitted_count == 0:
+                    # we HAVE TO increase the limit
+                    limit *= 2
+                else:
+                    # we may increase or decrease the limit depending on
+                    # observed performance
+                    if last_chunk_delay < CHUNK_DELAY_LOW_LIMIT:
+                        limit *= 2
+                        limit = min(limit, LIMIT_MAX)
+                    if last_chunk_delay > CHUNK_DELAY_HIGH_LIMIT:
+                        limit = limit // 2
+                        limit = max(limit, LIMIT_MIN)
+                work_source = work_source.limit(limit)
                 continue
 
 class SQLDatabaseSource(SourceBase):
@@ -183,12 +217,12 @@ class SQLDatabaseSource(SourceBase):
         return self.data.db.connect(cursor_mode = CURSOR_MODE.SERVER,
                                     reuse_conn = reuse_conn)
     def all_chunks(self, chunk_size = None):
-        if self._limit is None:
+        if self._limit is None and self._offset == 0:
             # We want to apply our method to skew the database engine towards quickly getting the
             # first rows (see long comment above).
             # If no sort is applied, we cannot apply the same, because the requests
             # we would send could return data with a different ordering, so LIMIT
-            # and OFFSET keywords are not enough to ensure stream integrity.
+            # and WHERE condition are not enough to ensure stream integrity.
             if len(self.sort_columns) > 0:
                 return SQLSourceSkewedIterator(self, chunk_size)
             # The user did not request a sorted result, but selecting one would still be a valid
@@ -209,9 +243,9 @@ class SQLDatabaseSource(SourceBase):
                     # add our selected ordering and apply our skewed algorithm.
                     source = self.sort(*primary_key)
                     return SQLSourceSkewedIterator(source, chunk_size)
-        # if the query already has a LIMIT, or as a last resort,
+        # if the query already has a LIMIT or OFFSET, or as a last resort,
         # iterate in a standard way
-        return SQLSourceIterator(self.connect(), self, chunk_size)
+        return SQLSourceIterator(self.connect(), self, chunk_size, chunk_size)
     def open_cursor(self, db_conn):
         sql_text, values = self.to_sql()
         if PRINT_SQL:
