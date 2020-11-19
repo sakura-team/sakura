@@ -42,7 +42,7 @@ class DBTable:
         return self.count_estimate
     def stream_csv(self, gzip_compression=False):
         header_labels = tuple(col.col_name for col in self.columns)
-        stream = self.source().chunks()
+        stream = self.source().chunks(profile = 'download')
         yield from stream_csv(
                     header_labels, stream, gzip_compression)
     @property

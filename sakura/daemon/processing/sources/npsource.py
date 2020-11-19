@@ -15,7 +15,7 @@ class NumpyArraySource(SourceBase):
                 col_dt = array.dtype[col_label]
                 col_type, col_type_params = np_dtype_to_sakura_type(col_dt)
                 self.add_column(col_label, col_type, **col_type_params)
-    def all_chunks(self, chunk_size = None):
+    def all_chunks(self, chunk_size = None, profile = 'interactive'):
         if chunk_size is None:
             chunk_size = DEFAULT_CHUNK_SIZE
         array = self.data.array

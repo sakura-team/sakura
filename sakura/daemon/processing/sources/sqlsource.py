@@ -216,13 +216,13 @@ class SQLDatabaseSource(SourceBase):
     def connect(self, reuse_conn = None):
         return self.data.db.connect(cursor_mode = CURSOR_MODE.SERVER,
                                     reuse_conn = reuse_conn)
-    def all_chunks(self, chunk_size = None):
-        if self._limit is None and self._offset == 0:
+    def all_chunks(self, chunk_size = None, profile = 'interactive'):
+        if profile == 'interactive' and self._limit is None and self._offset == 0:
             # We want to apply our method to skew the database engine towards quickly getting the
             # first rows (see long comment above).
             # If no sort is applied, we cannot apply the same, because the requests
             # we would send could return data with a different ordering, so LIMIT
-            # and WHERE condition are not enough to ensure stream integrity.
+            # and WHERE condition are not usable to ensure stream integrity.
             if len(self.sort_columns) > 0:
                 return SQLSourceSkewedIterator(self, chunk_size)
             # The user did not request a sorted result, but selecting one would still be a valid
@@ -243,8 +243,7 @@ class SQLDatabaseSource(SourceBase):
                     # add our selected ordering and apply our skewed algorithm.
                     source = self.sort(*primary_key)
                     return SQLSourceSkewedIterator(source, chunk_size)
-        # if the query already has a LIMIT or OFFSET, or as a last resort,
-        # iterate in a standard way
+        # In other conditions or as a fallback, iterate in a standard way
         return SQLSourceIterator(self.connect(), self, chunk_size, chunk_size)
     def open_cursor(self, db_conn):
         sql_text, values = self.to_sql()

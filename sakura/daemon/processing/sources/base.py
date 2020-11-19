@@ -190,12 +190,13 @@ class SourceBase:
             return chunk
         # if we are here, stream has ended, return empty chunk
         return NumpyChunk.empty(0, self.get_dtype(), EXACT)
-    def chunks(self, chunk_size = None, allow_approximate = False, hard_timer = None):
+    def chunks(self, chunk_size = None, allow_approximate = False,
+                     hard_timer = None, profile = 'interactive'):
         if hard_timer is None:
             if allow_approximate:
-                yield from self.all_chunks(chunk_size)
+                yield from self.all_chunks(chunk_size, profile)
             else:
-                for chunk in self.all_chunks(chunk_size):
+                for chunk in self.all_chunks(chunk_size, profile):
                     if chunk.exact():
                         yield chunk
                     else:
@@ -204,7 +205,7 @@ class SourceBase:
             # Apply a hard timer: ensure that delay between two chunks
             # does not exceed <hard_timer> seconds. If this delay is
             # reached, yield None and then continue iteration.
-            it = self.chunks(chunk_size, allow_approximate, None)
+            it = self.chunks(chunk_size, allow_approximate, None, profile)
             it = apply_hard_timer_to_stream(it, hard_timer)
             yield from it
     def get_dtype(self, columns = None):
@@ -229,7 +230,7 @@ class SourceBase:
         return self.filtered(self.columns[col_index], comp_op, other)
     def stream_csv(self, gzip_compression=False):
         header_labels = tuple(col._label for col in self.columns)
-        stream = self.chunks()
+        stream = self.chunks(profile = 'download')
         yield from stream_csv(
                     header_labels, stream, gzip_compression)
     def filtered(self, col, comp_op, other):

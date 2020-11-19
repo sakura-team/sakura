@@ -18,7 +18,7 @@ class ChunksComputedSource(SourceBase):
     def __init__(self, label, compute_cb=None):
         SourceBase.__init__(self, label)
         self.data.compute_cb = compute_cb
-    def all_chunks(self, chunk_size = None):
+    def all_chunks(self, chunk_size = None, profile = 'interactive'):
         if len(self.sort_columns) > 0:
             # if we must sort:
             # - reinstanciate the source with only the row_filters

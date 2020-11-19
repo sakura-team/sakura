@@ -77,6 +77,6 @@ class JoinSource(SourceBase):
     def sort(self, *columns):
         source = self.solve()
         return source.sort(*columns)
-    def all_chunks(self, chunk_size = None):
+    def all_chunks(self, chunk_size = None, profile = 'interactive'):
         source = self.solve()
-        return source.all_chunks(chunk_size)
+        return source.all_chunks(chunk_size, profile)
