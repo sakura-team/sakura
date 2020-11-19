@@ -50,7 +50,10 @@ class SQLSourceIterator:
             # less data than expected => end of stream
             if DEBUG:
                 print('SQLSourceIterator: releasing cursor', self.cursor, 'at', self.db_conn)
-            self.cursor.close()
+            try:
+                self.cursor.close()
+            except:
+                pass    # the connection will clean things up later anyway
             self.cursor = None
         if len(chunk_data) == 0:
             raise StopIteration
