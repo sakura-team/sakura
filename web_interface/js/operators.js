@@ -185,7 +185,6 @@ function operators_creation_new() {
     let url       = byID('operators_creation_url_input').value;
     let sub_dir   = byID('operators_creation_sub_dir').value;
     let access    = byID('operators_creation_access_scope').value.toLowerCase();
-    access = 'private';
     let revision  = opt.branch
 
 
