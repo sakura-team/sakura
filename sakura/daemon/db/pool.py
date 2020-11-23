@@ -103,6 +103,10 @@ class Connection:
             return 'connection <empty>'
         else:
             return 'connection<' + str(self.pooled_connection) + '>'
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        self.close()
 
 @auto_release
 class ConnectionPool:

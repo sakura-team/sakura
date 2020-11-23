@@ -80,6 +80,10 @@ class AutoReleaseProxy:
         return 'proxy<' + repr(self.obj) + '>'
     def __next__(self):
         return next(self.obj)
+    def __enter__(self):
+        return self.obj.__enter__()
+    def __exit__(self, *args):
+        self.obj.__exit__(*args)
 
 def auto_release(cls):
     class ARClass:
