@@ -258,7 +258,7 @@ CREATE TABLE %(table_name)s (%(columns_sql)s);
 SQL_DROP_TABLE = '''DROP TABLE %(table_name)s'''
 
 SQL_ESTIMATE_ROWS_COUNT = '''
-SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='%(table_name)s';
+select reltuples::BIGINT AS estimate FROM pg_class WHERE oid = '%(table_name)s'::regclass::oid;
 '''
 
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
@@ -376,13 +376,15 @@ class PostgreSQLDBDriver:
                         table_name, col_name + '.Y', 'latitude', {}, subcolumn_of=col_id)
     @staticmethod
     def collect_table_count_estimate(db_conn, metadata_collector, table_name):
-        sql = SQL_ESTIMATE_ROWS_COUNT % dict(table_name = table_name)
+        sql = SQL_ESTIMATE_ROWS_COUNT % dict(table_name = esc(table_name))
         with db_conn.cursor() as cursor:
             cursor.execute(sql)
-            count_estimate = cursor.fetchone()[0]
-            metadata_collector.register_count_estimate(
-                    table_name,
-                    count_estimate)
+            rows = cursor.fetchall()
+            if len(rows) > 0:
+                count_estimate = rows[0][0]
+                metadata_collector.register_count_estimate(
+                        table_name,
+                        count_estimate)
     @staticmethod
     def has_user(admin_db_conn, db_user):
         with admin_db_conn.cursor() as cursor:
