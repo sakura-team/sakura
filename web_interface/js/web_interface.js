@@ -235,7 +235,9 @@ function fill_head() {
 }
 
 function fill_metadata() {
+    push_request("object_info");
     current_remote_api_object().info().then(function(info) {
+        pop_request("object_info");
         web_interface_current_object_info = info;
         //General
         $('#web_interface_'+web_interface_current_object_type+'_metadata1').empty();
@@ -390,16 +392,22 @@ function fill_metadata() {
         }
 
         fill_collaborators_table_body(info, cb);
+    }).catch( function(error) {
+        pop_request("object_info");
+        alert(error);
     });
 }
 
 function web_interface_updating_metadata(a, params) {
     let jsn = JSON.parse('{"'+a.get(0).name+'": "'+params.value+'"}');
 
+    push_request("object_update");
     current_remote_api_object().update(jsn).then(
         function(result) {
+        pop_request("object_update");
         }).catch(
         function (error) {
+            pop_request("object_update");
             alert(error);
             if (DEBUG) console.log("E1", error);
             else console.log("TTTTT E1", error);
@@ -436,7 +444,9 @@ function fill_pages(dir) {
             this.remove();
     });
 
+    push_request("page_info");
     current_remote_api_object().info().then(function(info) {
+        pop_request("page_info");
         if (info.pages) {
             info.pages.forEach( function(page) {
                 let active_page = false;
@@ -499,6 +509,10 @@ function fill_pages(dir) {
             li_add.style.display = 'none';
         else
             li_add.style.display = 'inline';
+
+    }).catch( function(error) {
+        pop_request("page_info");
+        alert(error);
     });
 }
 
@@ -561,12 +575,22 @@ function web_interface_create_large_description_area(datatype, area_id, descript
 }
 
 function web_interface_save_large_description(id) {
-    if (web_interface_current_object_type != 'projects')
-        current_remote_api_object().update({'large_desc': current_simpleMDE.value()});
+    if (web_interface_current_object_type != 'projects') {
+        push_request("projects_update");
+        current_remote_api_object().update({'large_desc': current_simpleMDE.value()}).then (function(result){
+            pop_request("projects_update");
+        }).catch( function(error) {
+            pop_request("projects_update");
+            alert(error);
+        });
+    }
     else {
         push_request('pages_update');
         sakura.apis.hub.pages[current_page.page_id].update({'page_content': current_simpleMDE.value()}).then( function() {
             pop_request('pages_update');
+        }).catch( function(error) {
+            pop_request('pages_update');
+            alert(error);
         });
     }
 }
@@ -763,7 +787,9 @@ function showDiv(event, dir) {
         web_interface_current_object_type != "Home" &&
         tab.length > 1) {
 
+        push_request('object_info');
         current_remote_api_object().info().then( function(o_info) {
+            pop_request('object_info');
             if (o_info.grant_level != 'list') {
                 update_main_header(dir);
                 files_on_demand(dir, tab[1], function() {
@@ -776,6 +802,7 @@ function showDiv(event, dir) {
                 showDiv(event, "Home");
             }
         }).catch( function(error) {
+            push_request('object_info');
             main_alert('Access Issue', error);
             showDiv(event, "Home");
         });
@@ -824,19 +851,29 @@ function web_interface_asking_access_open_modal(o_name, o_type, grant, callback)
 
 function web_interface_asking_access(grant, callback) {
     let txt = $('#web_interface_asking_access_textarea').val();
+    push_request('grants_request');
     current_remote_api_object().grants.request(grant, txt).then(function(result) {
+        pop_request('grants_request');
         if (!result) {
             $('#web_interface_asking_access_modal').modal('hide');
             let header = 'Asking for Access';
             let body = '<h4 align="center" style="margin: 5px;"><font color="black"> Email sent !!</font></h4>';
             main_success_alert(header, body, null, 1);
+            push_request('object_info');
             current_remote_api_object().info().then(function(info) {
+                pop_request('object_info');
                 fill_collaborators_table_body(info);
+            }).catch( function(error) {
+                pop_request('object_info');
+                alert(error);
             });
         }
         else {
             console.log("SHIT");
         }
+    }).catch( function(error) {
+        pop_request('grants_request');
+        alert(error);
     });
 }
 
@@ -1001,32 +1038,68 @@ function update_access_exclamation(info) {
 }
 function access_requested(value, login, level){
     if (value) {
+        push_request('grants_update');
         current_remote_api_object().grants.update(login, level).then( function(result) {
+            pop_request('grants_update');
+            push_request('object_info');
             current_remote_api_object().info().then(function(info) {
+                pop_request('object_info');
                 update_access_exclamation(info);
                 fill_collaborators_table_body(info);
+            }).catch( function(error) {
+                pop_request('object_info');
+                alert(error);
             });
+        }).catch( function(error) {
+            pop_request('grants_update');
+            alert(error);
         });
     }
     else {
+        push_request('grants_deny');
         current_remote_api_object().grants.deny(login).then( function(result) {
+            pop_request('grants_deny');
+            push_request('object_info');
             current_remote_api_object().info().then(function(info) {
+                pop_request('object_info');
                 update_access_exclamation(info);
                 fill_collaborators_table_body(info);
+            }).catch( function(error) {
+                pop_request('object_info');
+                alert(error);
             });
+        }).catch( function(error) {
+            pop_request('grants_deny');
+            alert(error);
         });
     }
 }
 
 function change_collaborator_access(id, login, sel) {
-    current_remote_api_object().grants.update(login, sel[0].value.toLowerCase());
+    push_request('grants_update');
+    current_remote_api_object().grants.update(login, sel[0].value.toLowerCase()).then( function(error) {
+        pop_request('grants_update');
+    }).catch( function(error) {
+        pop_request('grants_update');
+        alert(error);
+    });
 }
 
 function delete_collaborator(id, login) {
+    push_request('grants_update');
     current_remote_api_object().grants.update(login, 'hide').then(function(result) {
+        pop_request('grants_update');
+        push_request('user_info');
         current_remote_api_object().info().then(function(info) {
+            pop_request('user_info');
             fill_collaborators_table_body(info);
+        }).catch( function(error) {
+            pop_request('user_info');
+            alert(error);
         });
+    }).catch (function(error) {
+        pop_request('grants_update');
+        alert(error);
     });
 }
 
@@ -1043,12 +1116,22 @@ function adding_collaborators() {
     opts.map( function (i, opt) {
         if (opt.selected) {
             index = index+1;
+            push_request('grants_update');
             current_remote_api_object().grants.update(opt.value, 'read').then(function(result) {
+                  pop_request('grants_update');
                   if (index == nbs) {
+                      push_request('user_info');
                       current_remote_api_object().info().then(function(info) {
+                          pop_request('user_info');
                           fill_collaborators_table_body(info);
+                      }).catch( function (error) {
+                          pop_request('user_info');
+                          alert(error);
                       });
                   }
+            }).catch( function(error) {
+                pop_request('grants_update');
+                alert(error);
             });
         }
     });
@@ -1096,8 +1179,14 @@ function web_interface_asking_change_access_scope() {
 
 function web_interface_change_access_scope() {
     console.log('access_scope', $('#web_interface_access_scope_select').val());
+    push_request('update_access_scope');
     current_remote_api_object().update({'access_scope': $('#web_interface_access_scope_select').val()}).then(function(result) {
+        pop_request('update_access_scope');
+
         $('#web_interface_yes_no_modal').modal('hide');
+    }).catch( function(error) {
+        pop_request('update_access_scope');
+        alert(error);
     });
 }
 
