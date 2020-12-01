@@ -1,7 +1,7 @@
 from gevent import Greenlet
 from gevent.queue import Queue, Empty
 from time import time
-import weakref, atexit, gc
+import weakref, atexit, gc, traceback
 
 VERIFY_INTERVAL = 5
 DEBUG = False
@@ -51,16 +51,29 @@ class ReleaserGreenlet:
         ReleaserGreenlet.instance.request_queue.put(obj)
     def run(self):
         verify_time = time() + VERIFY_INTERVAL
-        while True:
-            try:
-                obj = self.request_queue.get(block=True, timeout=verify_time-time())
-            except Empty:
+        try:
+            while True:
+                timeout = verify_time - time()
+                if timeout <= 0:
+                    timeout = 0.01
                 obj = None
-            if obj is not None:
-                obj.release()
-            if time() > verify_time:
-                REGISTRY.verify()
-                verify_time = time() + VERIFY_INTERVAL
+                try:
+                    obj = self.request_queue.get(block=True, timeout=timeout)
+                except Empty:
+                    pass
+                if obj is not None:
+                    obj_s = str(obj)
+                    if DEBUG:
+                        print("releaser: now releasing", obj_s)
+                    obj.release()
+                    if DEBUG:
+                        print("releaser:", obj_s, "released")
+                if time() > verify_time:
+                    REGISTRY.verify()
+                    verify_time = time() + VERIFY_INTERVAL
+        except:
+            print('Exception in Releaser Greenlet:')
+            traceback.print_exc()
     def spawn(self):
         return Greenlet.spawn(self.run)
 
@@ -73,7 +86,10 @@ class AutoReleaseProxy:
     def __getattr__(self, attr):
         return getattr(self.obj, attr)
     def __iter__(self):
-        return iter(self.obj)
+        it = iter(self.obj)
+        if it is self.obj:
+            return self
+        return it
     def __str__(self):
         return 'proxy<' + str(self.obj) + '>'
     def __repr__(self):
@@ -81,7 +97,10 @@ class AutoReleaseProxy:
     def __next__(self):
         return next(self.obj)
     def __enter__(self):
-        return self.obj.__enter__()
+        o = self.obj.__enter__()
+        if o is self.obj:
+            return self
+        return o
     def __exit__(self, *args):
         self.obj.__exit__(*args)
 

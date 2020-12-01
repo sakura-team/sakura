@@ -194,20 +194,22 @@ class SourceBase:
                      hard_timer = None, profile = 'interactive'):
         if hard_timer is None:
             if allow_approximate:
-                yield from self.all_chunks(chunk_size, profile)
+                return self.all_chunks(chunk_size, profile)
             else:
-                for chunk in self.all_chunks(chunk_size, profile):
-                    if chunk.exact():
-                        yield chunk
-                    else:
-                        print('Ignored approximate chunk:', chunk)
+                def exact_chunks():
+                    for chunk in self.all_chunks(chunk_size, profile):
+                        if chunk.exact():
+                            yield chunk
+                        else:
+                            print('Ignored approximate chunk:', chunk)
+                return exact_chunks()
         else:
             # Apply a hard timer: ensure that delay between two chunks
             # does not exceed <hard_timer> seconds. If this delay is
             # reached, yield None and then continue iteration.
             it = self.chunks(chunk_size, allow_approximate, None, profile)
             it = apply_hard_timer_to_stream(it, hard_timer)
-            yield from it
+            return it
     def get_dtype(self, columns = None):
         if columns is None:
             columns = self.columns

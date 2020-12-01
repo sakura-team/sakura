@@ -49,13 +49,12 @@ class DataStore:
         self.conn_pools = {}
     def unique_id(self):
         return ('Datastore', self.host, self.driver_label)
-    def admin_connect(self, db_name = None, cursor_mode = CURSOR_MODE.CLIENT,
-                            reuse_conn = None):
+    def admin_connect(self, db_name = None, reuse_conn = None):
         pool = self.conn_pools.get(db_name)
         if pool is None:
             pool = ConnectionPool(self.driver, lambda: self.do_admin_connect(db_name))
             self.conn_pools[db_name] = pool
-        return pool.connect(cursor_mode = cursor_mode, reuse_conn = reuse_conn)
+        return pool.connect(reuse_conn = reuse_conn)
     def do_admin_connect(self, db_name):
         info = dict(
             host = self.host,

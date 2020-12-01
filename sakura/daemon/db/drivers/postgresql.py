@@ -1,10 +1,18 @@
-import psycopg2, uuid, numpy as np, gevent
+import psycopg2, re, uuid, numpy as np, gevent
 from gevent.socket import wait_read, wait_write
 from collections import defaultdict
 from psycopg2.extras import DictCursor
-from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE, set_wait_callback
+from psycopg2.extensions import POLL_OK, POLL_READ, POLL_WRITE, set_wait_callback, connection
 from sakura.common.errors import APIRequestError
 from sakura.common.access import GRANT_LEVELS
+from sakura.daemon.db import CURSOR_MODE
+
+DEBUG=False
+
+# when in 'interactive' mode, we will tell the postgresql
+# engine that it should optimize the server cursor query
+# for quicky retrieval of this aproximate number of rows.
+OPTIMISER_FETCH_SIZE = 2000
 
 # psycopg should let gevent switch to other greenlets
 def wait_callback(conn, timeout=None):
@@ -21,13 +29,13 @@ def wait_callback(conn, timeout=None):
                 raise psycopg2.OperationalError("Bad result from poll: %r" % state)
         except gevent.GreenletExit:
             # if greenlet is interrupted, cancel the db connection
-            conn.cancel()
+            try:
+                conn.cancel()
+            except:
+                pass
             raise
 
 set_wait_callback(wait_callback)
-
-DEBUG_CURSORS=False
-#DEBUG_CURSORS=True
 
 TYPES_SAKURA_TO_PG = {
     'int8':     'smallint',
@@ -270,10 +278,86 @@ class PostgreSQLCursor(DictCursor):
     def close(self):
         if self.closed:
             return
-        self.connection.cancel()
         super().close()
-        if DEBUG_CURSORS:
+        if DEBUG and hasattr(self, 'name'):
             print('cursor ' + self.name + ' closed')
+
+# let's consider this query:
+# select * from t1, t2 where t1.a = t2.a order by t2.b
+# (and we have indexes on t1.a, t2.a and t2.b)
+
+# in many cases database engines generate this obvious query plan:
+# join(t1.a,t2.a), then sort on t2.b
+
+# the problem with this query plan, is that streaming output rows can
+# only start at the end of the query plan execution (after the sort()).
+
+# another possible query plan is the following:
+# sort on t2.b, then
+# for each output row r look for rows in t1 where t1.a = r.a,
+# and output these joint rows.
+
+# this query plan allows to start streaming rows very soon.
+# but this query plan is not often selected because computing the whole
+# resultset this way is slower than with the other query plan.
+
+# some database systems propose a parameter allowing to skew the query
+# engine towards quickly getting the first rows.
+# this is the case of postgresql which proposes parameter 'cursor_tuple_fraction'.
+# 'cursor_tuple_fraction' allows to indicate an estimation of the fraction of
+# rows which will be fetched from a server cursor.
+
+# the following connection subclass object makes use of this parameter
+# to skew the database engine:
+# - when profile is 'interactive', 'cursor_tuple_fraction' is set to a low
+#   value: the database engine will try to generate query plans able to
+#   quickly return first rows.
+# - when profile is 'download', 'cursor_tuple_fraction' is set to 1.0
+
+# in order to finely tune 'cursor_tuple_fraction' (when profile is 'interactive'),
+# an estimation of expected total number of rows is first computed by running
+# an EXPLAIN request.
+
+class PostgreSQLConnection(connection):
+    def cursor(self, cursor_mode = CURSOR_MODE.CLIENT,
+                     profile = 'interactive',
+                     profile_query = None,
+                     **kwargs):
+        if cursor_mode == CURSOR_MODE.CLIENT:
+            # just use method of base class
+            return super().cursor(cursor_factory = PostgreSQLCursor, **kwargs)
+        elif cursor_mode == CURSOR_MODE.SERVER:
+            if profile == 'interactive':
+                if profile_query is None:
+                    print("WARNING: unknown query when creating a cursor with 'interactive' profile.")
+                    cursor_tuple_fraction = 0.1     # default value
+                else:
+                    # tell postgresql we will only retrieve a small number of rows
+                    # from the cursor, by adjusting 'cursor_tuple_fraction' parameter
+                    num_rows_estimate = PostgreSQLDBDriver.get_query_rows_count_estimate(
+                                            self, *profile_query)
+                    if num_rows_estimate <= OPTIMISER_FETCH_SIZE:
+                        cursor_tuple_fraction = 1.0
+                    else:
+                        cursor_tuple_fraction = OPTIMISER_FETCH_SIZE / num_rows_estimate
+            else:   # profile = download
+                # tell postgresql we will retrieve all rows
+                cursor_tuple_fraction = 1.0
+            if DEBUG:
+                print('cursor_tuple_fraction:', cursor_tuple_fraction)
+            # set cursor_tuple_fraction
+            with self.cursor() as cursor:
+                cursor.execute('SET cursor_tuple_fraction TO %s', (cursor_tuple_fraction,))
+            # create a server cursor for the real query
+            cursor_name = str(uuid.uuid4()) # unique name
+            if DEBUG:
+                print("opening server cursor", cursor_name)
+            cursor = self.cursor(name = cursor_name)
+            # arraysize: default number of rows when using fetchmany()
+            # itersize: default number of rows fetched from the backend
+            #           at each network roundtrip (psycopg2-specific)
+            cursor.arraysize = cursor.itersize
+            return cursor
 
 class PostgreSQLDBDriver:
     NAME = 'postgresql'
@@ -284,21 +368,9 @@ class PostgreSQLDBDriver:
             kwargs['dbname'] = 'postgres'
         if 'connect_timeout' not in kwargs:
             kwargs['connect_timeout'] = DEFAULT_CONNECT_TIMEOUT
-        kwargs['cursor_factory'] = PostgreSQLCursor
+        kwargs['connection_factory'] = PostgreSQLConnection
         conn = psycopg2.connect(**kwargs)
         return conn
-    @staticmethod
-    def open_server_cursor(db_conn):
-        cursor_name = str(uuid.uuid4()) # unique name
-        if DEBUG_CURSORS:
-            print("opening server cursor", cursor_name)
-        cursor = db_conn.cursor(name = cursor_name)
-        # arraysize: default number of rows when using fetchmany()
-        # itersize: default number of rows fetched from the backend
-        #           at each network roundtrip (psycopg2-specific)
-        cursor.arraysize = cursor.itersize
-        #return CursorWrapper(cursor)
-        return cursor
     @staticmethod
     def get_current_db_name(db_conn):
         with db_conn.cursor() as cursor:
@@ -385,6 +457,13 @@ class PostgreSQLDBDriver:
                 metadata_collector.register_count_estimate(
                         table_name,
                         count_estimate)
+    @staticmethod
+    def get_query_rows_count_estimate(db_conn, sql_query, values):
+        with db_conn.cursor() as cursor:
+            cursor.execute('EXPLAIN ' + sql_query, values)
+            first_line = cursor.fetchone()[0]
+            rows_estimate = re.sub(r'.*rows=(\d+).*', r'\1', first_line)
+            return int(rows_estimate)
     @staticmethod
     def has_user(admin_db_conn, db_user):
         with admin_db_conn.cursor() as cursor:

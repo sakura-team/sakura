@@ -3,7 +3,7 @@ import os, weakref
 from sakura.common.release import auto_release
 from sakura.daemon.db import CURSOR_MODE
 # This is the minimum time we keep connections alive when idle.
-POOL_MIN_DELAY = 20.0   # seconds
+POOL_MIN_DELAY = 10.0   # seconds
 DEBUG = False
 
 class PooledConnection:
@@ -15,9 +15,6 @@ class PooledConnection:
         self.conn = conn
         self.idle_start = None
         self.current_cursor = None
-        self.cursor_mode = CURSOR_MODE.CLIENT   # default value
-    def set_cursor_mode(self, cursor_mode):
-        self.cursor_mode = cursor_mode
     def cancel(self):
         if self.conn is not None:
             self.conn.cancel()
@@ -28,13 +25,9 @@ class PooledConnection:
     def execute(self, sql, *values):
         self.cursor().execute(sql, *values)
         return self.current_cursor
-    def cursor(self):
+    def cursor(self, **kwargs):
         self.free_current_cursor()
-        if self.cursor_mode == CURSOR_MODE.CLIENT:
-            db_cursor = self.conn.cursor()
-        elif self.cursor_mode == CURSOR_MODE.SERVER:
-            db_cursor = self.driver.open_server_cursor(self.conn)
-        self.current_cursor = db_cursor
+        self.current_cursor = self.conn.cursor(**kwargs)
         return self.current_cursor
     def __enter__(self):
         return self
@@ -117,35 +110,47 @@ class ConnectionPool:
         self.free_conns = {}
         self.connect_func = connect_func
         ConnectionPool.instances.add(self)
-    def connect(self, cursor_mode=CURSOR_MODE.CLIENT, reuse_conn=None):
-        if reuse_conn != None and not reuse_conn.closed:
-            try:
-                reuse_conn.reset()
-                reuse_conn.set_cursor_mode(cursor_mode)
-                return reuse_conn
-            except:
-                # this connection is blocked, delete it
-                conn_id = reuse_conn.get_id()
-                del self.pooled_conns[conn_id]
-                reuse_conn.force_close()
-                # open a new connection instead
-                return self.connect(cursor_mode=cursor_mode)
-        while True:
-            if len(self.free_conns) == 0:
-                conn = self.connect_func()
-                conn = PooledConnection(self.driver, conn)
-                conn_id = conn.get_id()
-                if DEBUG:
-                    print('******* NEW', conn)
-                break
+    def connect(self, reuse_conn=None):
+        if reuse_conn is None:
+            candidate_conns = list(self.free_conns.values())
+        else:
+            candidate_conns = [ reuse_conn.pooled_connection ] + \
+                              list(self.free_conns.values())
+        valid_conn = None
+        for conn in candidate_conns:
+            # try to reuse this connection
+            conn_id = conn.get_id()
+            # in any case it will not be free anymore
+            if conn_id in self.free_conns:
+                del self.free_conns[conn_id]
+            # verify it is still connected
+            good = True
+            if conn.closed:
+                good = False
+            # try to re-init it
+            if good:
+                try:
+                    conn.reset()
+                except:
+                    good = False
+            # if all went well, stop the loop here
+            if good:
+                valid_conn = conn
+                break   # ok this one is fine
             else:
-                # reuse a free connection (verifying it is still connected)
-                conn_id, conn = self.free_conns.popitem()
                 if not conn.closed:
-                    break
-        conn.set_cursor_mode(cursor_mode)
-        self.pooled_conns[conn_id] = conn
-        c = Connection(self, conn)
+                    # this connection is blocked, force close it
+                    conn.force_close()
+                continue
+        # if no valid connection, open a new one
+        if valid_conn is None:
+            valid_conn = self.connect_func()
+            valid_conn = PooledConnection(self.driver, valid_conn)
+            if DEBUG:
+                print('******* NEW', valid_conn)
+        conn_id = valid_conn.get_id()
+        self.pooled_conns[conn_id] = valid_conn
+        c = Connection(self, valid_conn)
         if DEBUG:
             print('@@@@@@@@@@@@@@@@ connect() ->', c)
         return c

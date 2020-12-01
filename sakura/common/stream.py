@@ -1,4 +1,4 @@
-import numpy as np, gevent
+import numpy as np, gevent, traceback
 from gevent.queue import Queue, Empty
 from sakura.common.release import auto_release
 from sakura.common.chunk import NumpyChunk
@@ -61,20 +61,15 @@ class HardTimerIterator:
     def __init__(self, it, timeout):
         self._it = it
         self._timeout = timeout
-        self._greenlet = None
+        self._glet = None
         self._in_queue = Queue()
         self._out_queue = Queue()
     def __iter__(self):
         return self
     def __next__(self):
-        if self._greenlet is None:
+        if self._glet is None:
             self._spawn()
-        if self._out_queue.qsize() == 0:
-            if self._in_queue.qsize() == 0:
-                # we enqueue two tokens to be able to check
-                # background greenlet status
-                self._in_queue.put(1)
-                self._in_queue.put(1)   # second token
+        self._in_queue.put(1)   # send chunk request
         try:
             res = self._out_queue.get(timeout = self._timeout)
         except Empty:
@@ -83,38 +78,41 @@ class HardTimerIterator:
             raise res
         return res
     def _spawn(self):
-        self._greenlet = gevent.spawn(self._run)
+        self._glet = gevent.spawn(self._run)
+        self._out_queue.get() # wait for bg greenlet init
     def release(self):
-        if self._greenlet is not None:
-            if self._in_queue.qsize() == 0:
-                self._in_queue.put(0)   # gentle stop request
-            else:
-                # greenlet is blocked in next(it)
-                self._greenlet.kill()   # kill
+        if self._glet is not None:
+            self._glet.kill()   # kill
             self._in_queue = None
             self._out_queue = None
-            self._greenlet = None
+            self._glet = None
             self._it = None
     def _run(self):
         in_queue = self._in_queue
         out_queue = self._out_queue
         it = self._it
-        while True:
-            action = in_queue.get()
-            if action == 0:
-                break   # end
-            else:
+        try:
+            # notify caller we are now running
+            out_queue.put(1)
+            # run main loop
+            while True:
+                # wait for next chunk request
+                in_queue.get()
+                # get next chunk and pass it to requester
                 try:
                     chunk = next(it)
-                    # retrieve the second token
-                    # (let the main greenlet know we are not blocked on next(it) any more)
-                    in_queue.get()  # second token
                     out_queue.put(chunk)
                 except gevent.GreenletExit:
-                    break   # end
-                except Exception as e:
-                    in_queue.get()  # second token
+                    raise   # end
+                except StopIteration as e:
                     out_queue.put(e)
+                    return  # exit
+                except Exception as e:
+                    traceback.print_exc()
+                    out_queue.put(e)
+                    return  # exit
+        except gevent.GreenletExit:
+            raise   # end
 
 # if delay between two chunks reaches timeout,
 # yield a None value.

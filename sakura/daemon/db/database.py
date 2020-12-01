@@ -67,9 +67,8 @@ class Database:
             if self._tables is None:
                 self.refresh_tables()
         return self._tables
-    def connect(self, cursor_mode=CURSOR_MODE.CLIENT, reuse_conn = None):
+    def connect(self, reuse_conn = None):
         return self.dbms.admin_connect(db_name = self.db_name,
-                                       cursor_mode = cursor_mode,
                                        reuse_conn = reuse_conn)
     def refresh_tables(self):
         prober = DBProber(self)

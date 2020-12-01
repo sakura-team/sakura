@@ -1,2 +1,3 @@
 from enum import Enum
 CURSOR_MODE = Enum('CURSOR_MODE', 'CLIENT SERVER')
+DEFAULT_FIRST_FETCH = 10
