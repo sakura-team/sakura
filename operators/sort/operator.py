@@ -6,13 +6,13 @@ class SortOperator(Operator):
     TAGS = [ "sort" ]
     def construct(self):
         # inputs
-        self.input_plug = self.register_input('Input data')
+        self.input_plug = self.register_input('Input data', on_change = self.update_output)
         # outputs
         self.output_plug = self.register_output('Sorted data')
         # parameters
         self.column_param = self.register_parameter(
-                'ANY_COLUMN_SELECTION', 'input column', self.input_plug)
-        self.column_param.on_change.subscribe(self.update_output)
+                'ANY_COLUMN_SELECTION', 'input column', self.input_plug,
+                on_change = self.update_output)
 
     def update_output(self):
         input_column = self.column_param.column

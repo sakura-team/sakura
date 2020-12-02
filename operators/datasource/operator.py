@@ -10,15 +10,15 @@ class DataSourceOperator(Operator):
         self.database_param = self.register_parameter(
                 'COMBO',
                 label='Database',
-                get_possible_items=self.get_possible_database_items)
+                get_possible_items=self.get_possible_database_items,
+                on_change=self.on_db_change)
         self.table_param = self.register_parameter(
                 'COMBO',
                 label='Table',
-                get_possible_items=self.get_possible_table_items)
+                get_possible_items=self.get_possible_table_items,
+                on_change=self.on_tbl_change)
         self.output_plug = self.register_output('Database table data')
         self.api.subscribe_global_event('on_datastores_change', self.on_ds_change)
-        self.database_param.on_change.subscribe(self.on_db_change)
-        self.table_param.on_change.subscribe(self.on_tbl_change)
 
     def get_possible_database_items(self):
         # combo label is database name

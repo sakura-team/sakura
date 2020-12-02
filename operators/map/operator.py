@@ -8,17 +8,18 @@ class MapOperator(Operator):
     TAGS = [ "geo", "map", "selection" ]
     def construct(self):
         # inputs
-        self.input_plug = self.register_input('GPS data')
+        self.input_plug = self.register_input('GPS data',
+                                    on_change = self.update_map_and_output)
         # outputs
         self.output_plug = self.register_output('Filtered GPS data',
                                     explain_disabled = self.explain_disabled_output)
         # parameters
         self.lng_column_param = self.register_parameter(
-                'TAG_BASED_COLUMN_SELECTION', 'input longitude', self.input_plug, 'longitude')
-        self.lng_column_param.on_change.subscribe(self.update_map_and_output)
+                'TAG_BASED_COLUMN_SELECTION', 'input longitude', self.input_plug, 'longitude',
+                on_change = self.update_map_and_output)
         self.lat_column_param = self.register_parameter(
-                'TAG_BASED_COLUMN_SELECTION', 'input latitude', self.input_plug, 'latitude')
-        self.lat_column_param.on_change.subscribe(self.update_map_and_output)
+                'TAG_BASED_COLUMN_SELECTION', 'input latitude', self.input_plug, 'latitude',
+                on_change = self.update_map_and_output)
         # additional tabs
         self.register_tab('Map', 'map.html')
         # custom attributes

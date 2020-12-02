@@ -8,15 +8,16 @@ class MeanOperator(Operator):
     TAGS = [ "statistics", "aggregate" ]
     def construct(self):
         # inputs
-        self.input = self.register_input('Mean input data')
+        self.input = self.register_input('Mean input data',
+                        on_change = self.update_output)
 
         # outputs
         self.output = self.register_output(label = 'Mean result')
 
         # parameters
         self.input_column_param = self.register_parameter(
-                'NUMERIC_COLUMN_SELECTION', 'Input column', self.input)
-        self.input_column_param.on_change.subscribe(self.update_output)
+                'NUMERIC_COLUMN_SELECTION', 'Input column', self.input,
+                on_change = self.update_output)
 
     def update_output(self):
         if self.input_column_param.column is None:

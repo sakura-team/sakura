@@ -66,9 +66,9 @@ class Operator:
     def _trigger_env_affinity_update(self):
         return self._sources_origins != self._last_sources_origins
     # static properties
-    def register_input(self, input_plug_label, required = True):
+    def register_input(self, input_plug_label, required = True, on_change = None):
         return self.register(self.input_plugs,
-                             InputPlug(self, input_plug_label, required = required))
+                         InputPlug(self, input_plug_label, required = required, on_change = on_change))
     def register_output(self, *args, condition = None, **kwargs):
         if condition is None:
             condition = self.is_ready

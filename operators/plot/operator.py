@@ -12,18 +12,31 @@ class PlotOperator(Operator):
     TAGS = [ "visualisation"]
     def construct(self):
         # inputs
-        self.input = self.register_input('Table with X and Y column')
+        self.input = self.register_input('Table with X and Y column',
+                            on_change = self.update_iterator)
 
         # parameters
         self.input_column_param_x = self.register_parameter(
-                'NUMERIC_COLUMN_SELECTION', 'X (abscissa)', self.input)
+                'NUMERIC_COLUMN_SELECTION', 'X (abscissa)', self.input,
+                on_change = self.update_iterator)
         self.input_column_param_y = self.register_parameter(
-                'NUMERIC_COLUMN_SELECTION', 'Y (ordinate)', self.input)
+                'NUMERIC_COLUMN_SELECTION', 'Y (ordinate)', self.input,
+                on_change = self.update_iterator)
 
         # additional tabs
         self.register_tab('Plot', 'plot.html')
 
         self.iterator = None
+
+    def update_iterator(self):
+        column_x        = self.input_column_param_x.column
+        column_y        = self.input_column_param_y.column
+        if column_x is None or column_y is None:
+            self.iterator   = None
+        else:
+            source          = self.input.source
+            source          = source.select(column_x, column_y)
+            self.iterator   = source.chunks()
 
     def handle_event(self, ev_type, time_credit):
         print(time())
@@ -33,11 +46,7 @@ class PlotOperator(Operator):
             return { 'issue': 'NO DATA: Input is not connected.' }
 
         if ev_type == 'get_data': #first time data is asked
-            column_x        = self.input_column_param_x.column
-            column_y        = self.input_column_param_y.column
-            source          = self.input.source
-            source          = source.select(column_x, column_y)
-            self.iterator   = source.chunks()
+            self.update_iterator()  # re-init iterator
 
         big_chunk = None
         for chunk in self.iterator:

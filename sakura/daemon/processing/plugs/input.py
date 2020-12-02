@@ -2,13 +2,15 @@ from sakura.common.errors import APIRequestErrorOfflineDaemon, APIRequestError
 from sakura.daemon.processing.plugs.base import PlugBase
 
 class InputPlug(PlugBase):
-    def __init__(self, operator, label, required = True):
+    def __init__(self, operator, label, required = True, on_change = None):
         super().__init__()
         self.label = label
         self.source_plug = None
         self.required = required
         self.operator = operator
         self.on_change.subscribe(self.notify_to_operator)
+        if on_change is not None:
+            self.on_change.subscribe(on_change)
     def notify_to_operator(self):
         self.operator.notify_input_plug_change(self)
     def connect(self, output_plug):

@@ -291,8 +291,11 @@ PARAMETER_CLASSES = {
     'ANY_COLUMN_SELECTION': AnyColumnSelection
 }
 
-def instanciate_parameter(op, param_type, label, *args, **kwargs):
+def instanciate_parameter(op, param_type, label, *args, on_change = None, **kwargs):
     param_cls = PARAMETER_CLASSES.get(param_type)
     if param_cls is None:
         raise Exception('Allowed parameter types: ' + ', '.join(PARAMETER_CLASSES.keys()))
-    return param_cls(op, label, *args, **kwargs)
+    param = param_cls(op, label, *args, **kwargs)
+    if on_change is not None:
+        param.on_change.subscribe(on_change)
+    return param
