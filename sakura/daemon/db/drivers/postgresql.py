@@ -1,4 +1,4 @@
-import psycopg2, re, uuid, numpy as np, gevent
+import psycopg2, re, uuid, numpy as np, greenlet
 from gevent.socket import wait_read, wait_write
 from collections import defaultdict
 from psycopg2.extras import DictCursor
@@ -27,7 +27,7 @@ def wait_callback(conn, timeout=None):
                 wait_write(conn.fileno(), timeout=timeout)
             else:
                 raise psycopg2.OperationalError("Bad result from poll: %r" % state)
-        except gevent.GreenletExit:
+        except greenlet.GreenletExit:
             # if greenlet is interrupted, cancel the db connection
             try:
                 conn.cancel()
