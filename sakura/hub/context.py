@@ -147,3 +147,77 @@ class HubContext(EventSourceMixin):
     def login(self, login_or_email, password):
         self.session.user = self.users.from_credentials(login_or_email, password)
         return self.session.user.login
+    def other_login(self, type, ticket, service):
+        if type == 'cas':
+            import json
+            f = open('hub-authentification.conf', 'r')
+            auths = json.loads(f.read())
+
+            import requests
+            format = 'JSON'
+            url = auths['cas']['url']
+            print(ticket, service)
+            x = requests.get( url+'?ticket='+ticket+'&format='+format+'&service='+service)
+            succ = x.text.find('authenticationSuccess')
+            if succ != -1:
+                print('CAS AUTHENTICATION SUCCESS', x.text)
+                login = x.text.split('<cas:user>')[1].split('</cas:user>')[0]
+                print('\t Login:', l)
+                print()
+                found = None
+                all_u = tuple(u.pack() for u in self.users.select())
+                for u in all_u:
+                    if u['login'] == login:
+                        print('FOUND')
+                        found = u
+                if found != None:
+                    print('FOUND')
+                    return None
+                else:
+                    #We ask to LDAP
+                    import ldap3, ssl
+
+                    url = auths['ldap']['url']
+                    port = auths['ldap']['port']
+                    dn = auths['ldap']['dn']
+                    bdn = auths['ldap']['binddn']
+                    pw = auths['ldap']['password']
+                    if auths['ldap']['tls version'] == 'v1':
+                        tls = ldap3.Tls(version = ssl.PROTOCOL_TLSv1)
+                    # server = ldap3.Server(url+':'+port, tls=tls, get_info=ldap3.ALL)
+                    #
+                    # try:
+                    #     conn = ldap3.Connection(server, user=bdn, password=pw)
+                    # except Exception as e:
+                    #     print('CONNECTION to LDAP FAILED !!!')
+                    #     return None
+                    #
+                    # try:
+                    #     conn.bind()
+                    # except Exception as e:
+                    #     print('LDAP CONNECTION BINDING FAILED')
+                    #     return None
+                    #
+                    # entry = conn.search(dn, '(&(objectclass=person)(uid='+l+'))', attributes=['*'])
+                    # if not entry:
+                    #     print('USER NOT FOUND')
+                    #     return None
+                    # u = conn.entries[0]
+                    # print(u['mail'])
+                    # print(u['given name'])
+                    # print(u['sn'])
+                    u = {   'login': login,
+                            'mail': 'michael.ortega@imag.fr',
+                            'given name': 'michael',
+                            'sn': 'ortega'}
+
+                    return None
+
+                #log = self.context.login(l, '')
+                #print(log)
+                #return 'mike'
+            else:
+                print('CAS AUTHENTICATION FAILURE', x.text)
+                return 'cas authentication failure'
+        else:
+            return 'Unkown connection type'

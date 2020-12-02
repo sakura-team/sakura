@@ -453,7 +453,13 @@ class GuiToHubAPI:
 
     @api.login
     def login(self, login_or_email, password):
-        return self.context.login(login_or_email, password)
+        log = self.context.login(login_or_email, password)
+        return log
+
+    @api.other_login
+    def other_login(self, type, ticket, service):
+        log = self.context.other_login(type, ticket, service)
+        return log
 
     @api.logout
     def logout(self):

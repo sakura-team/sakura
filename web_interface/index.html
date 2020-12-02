@@ -43,11 +43,8 @@
             let urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('ticket')){
                 console.log('We have a ticket:', urlParams.get('ticket'));
+                cas_signIn(urlParams.get('ticket'), window.location.origin);
             }
-            else {
-                console.log('We don\'t have a ticket');
-            }
-
 
             let a = window.location.href.split("#");
             if (a.length>1) {

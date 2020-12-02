@@ -6,12 +6,12 @@
 
 var current_user = null;
 var users_list = null;
-var authentification_type = 'cas';
 
 function sign_in_with(auth) {
     if (auth == 'cas') {
-        let host = window.location.host;
-        window.open("https://cas-uga.grenet.fr/login?service=http://"+host, "_self");
+        let origin = window.location.origin;
+        let loc = window.location.toString();
+        window.open("https://cas-uga.grenet.fr/login?service="+origin, "_self");
     }
     else {
         $('#web_interface_login_choice_modal').modal('hide');
@@ -128,6 +128,18 @@ function registerUser(event = '') {
     } // end if click
 }
 
+function cas_signIn(ticket, service) {
+    push_request('cas_login');
+    sakura.apis.hub.other_login('cas', ticket, service).then(function (wsResult) {
+        pop_request('cas_login');
+        console.log(wsResult);
+        current_user = wsResult;
+    }).catch( function (error) {
+        pop_request('cas_login');
+        console.log('Cas login', error);
+    })
+}
+
 function signInSubmitControl(event, login, passw) {
     if (event.type === 'click' || event.keyCode == 13) {
         event.preventDefault();
@@ -162,6 +174,7 @@ function signInSubmitControl(event, login, passw) {
                                             'developer': 'granted'};
 
                 current_user = wsResult;
+                console.log(wsResult);
                 fill_profil_button();
 
                 //Back to the current div
@@ -203,10 +216,10 @@ function logOut(event) {
                     this.remove();
             });
 
-            if (authentification_type == 'cas') {
-              let host = window.location.host;
-              window.open("https://cas-uga.grenet.fr/logout?service=http://"+host, "_self");
-            }
+            // if (authentification_type == 'cas') {
+            //   let origin = window.location.origin;
+            //   window.open("https://cas-uga.grenet.fr/logout?service="+origin, "_self");
+            // }
 
             showDiv(event, 'Home');
         });
