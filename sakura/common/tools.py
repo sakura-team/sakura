@@ -169,21 +169,24 @@ class TransactionMixin:
 
 class ObservableEvent:
     def __init__(self):
-        self.observer_callbacks = []
+        self.observer_callbacks = {}
+        self.prev_id = -1
     def subscribe(self, cb):
         """Attach a callback to be called when event occurs"""
-        self.observer_callbacks.append(cb)
-    def unsubscribe(self, cb):
+        self.prev_id += 1
+        self.observer_callbacks[self.prev_id] = cb
+        return self.prev_id
+    def unsubscribe(self, cb_id):
         """Detach a callback"""
-        if cb in self.observer_callbacks:
-            self.observer_callbacks.remove(cb)
+        if cb_id in self.observer_callbacks:
+            del self.observer_callbacks[cb_id]
     def notify(self, *args, **kwargs):
         """Notify subscribers when the event occurs"""
         # we work on a copy because running a callback
         # might actually recursively call this method...
-        callbacks = set(self.observer_callbacks)
+        callbacks = dict(self.observer_callbacks)
         obsoletes = set()
-        for cb in callbacks:
+        for cb_id, cb in callbacks.items():
             try:
                 cb(*args, **kwargs)
             except Exception as e:
@@ -191,9 +194,9 @@ class ObservableEvent:
                 print_debug('Exception in event callback (can probably be ignored):')
                 print_debug(traceback.format_exc())
                 print_debug('Removing this obsolete event callback.')
-                obsoletes.add(cb)
-        for cb in obsoletes:
-            self.unsubscribe(cb)
+                obsoletes.add(cb_id)
+        for cb_id in obsoletes:
+            self.unsubscribe(cb_id)
 
 def debug_ending_greenlets():
     import gc, traceback, greenlet

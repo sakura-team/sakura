@@ -14,11 +14,11 @@ class HeldObjectsStore:
     def hold(self, obj):
         # hold obj locally then return id and origin.
         # check if this object is already held
-        held_id = self.__ids_per_object__.get(obj, None)
+        held_id = self.__ids_per_object__.get(id(obj), None)
         if held_id is None:
             held_id = self.__held_ids__.__next__()
             self.__objects_per_id__[held_id] = obj
-            self.__ids_per_object__[obj] = held_id
+            self.__ids_per_object__[id(obj)] = held_id
             self.__refcount_per_id__[held_id] = 1
         else:
             self.__refcount_per_id__[held_id] += 1
@@ -37,7 +37,7 @@ class HeldObjectsStore:
             self.__flushable_ids__.add(held_id)
     def flush(self):
         if len(self.__flushable_ids__) > 0:
-            to_be_flushed = self.__flushable_ids__.copy()
+            to_be_flushed = self.__flushable_ids__
             self.__flushable_ids__ = set()
             for held_id in to_be_flushed:
                 # verify that an async greenlet did not reuse the object
@@ -45,7 +45,7 @@ class HeldObjectsStore:
                     obj = self.__objects_per_id__[held_id]
                     print_debug('released:', held_id, obj)
                     self.__objects_per_id__.pop(held_id)
-                    self.__ids_per_object__.pop(obj)
+                    self.__ids_per_object__.pop(id(obj))
                     self.__refcount_per_id__.pop(held_id)
             gc.collect()
     @classmethod

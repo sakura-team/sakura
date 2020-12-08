@@ -89,16 +89,17 @@ class EventsAggregator:
         for obj_id, info in tuple(self.monitored.items()):
             info['listeners'].discard(listener_id)
             if len(info['listeners']) == 0:
-                info['obj_events'].unsubscribe(info['callback'])
+                info['obj_events'].unsubscribe(info['cb_id'])
             del self.monitored[obj_id]
     def monitor(self, listener_id, obj_events, obj_id):
         if obj_id not in self.monitored:
             def cb(evt_name, *args, **kwargs):
                 self.on_event(obj_id, evt_name, *args, **kwargs)
-            obj_events.subscribe(cb)
+            cb_id = obj_events.subscribe(cb)
             self.monitored[obj_id] = {
                 'listeners': set([listener_id]),
                 'obj_events': obj_events,
+                'cb_id': cb_id,
                 'callback': cb
             }
         else:
@@ -107,7 +108,7 @@ class EventsAggregator:
         info = self.monitored[obj_id]
         info['listeners'].remove(listener_id)
         if len(info['listeners']) == 0:
-            info['obj_events'].unsubscribe(info['callback'])
+            info['obj_events'].unsubscribe(info['cb_id'])
             del self.monitored[obj_id]
     def on_event(self, obj_id, evt_name, *args, **kwargs):
         self.esm.push_event(obj_id, evt_name, *args, **kwargs)

@@ -72,9 +72,6 @@ class Proxy:
         if self.__internals.delete_callback is not None:
             self.__internals.delete_callback()
     def __eq__(self, other):
-        if not isinstance(other, Proxy):
-            return False
-        return  self.__internals.path == other.__internals.path and \
-                self.__internals.origin == other.__internals.origin
+        return self.__internals.call_special('__eq__', other)
     def __hash__(self):
-        return hash((self.__internals.path, self.__internals.origin))
+        return self.__internals.call_special('__hash__')
