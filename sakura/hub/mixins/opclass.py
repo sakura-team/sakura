@@ -42,6 +42,9 @@ class OpClassMixin(BaseMixin):
             **self.pack_status_info()
         )
 
+    def has_custom_affinity(self):
+        return self.metadata.get('custom_affinity', False)
+
     def check_revision_handling(self):
         if self.repo['type'] != 'git':
             raise APIRequestError('No revision handling for this operator class (%s-type)' % self.repo['type'])

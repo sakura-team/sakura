@@ -1,12 +1,14 @@
 from sakura.hub.context import get_context
 from sakura.hub.mixins.bases import BaseMixin
 from sakura.common.errors import APIOperatorError
+from gevent.lock import Semaphore
 
 class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
     MOVING = set()
     RELOAD_NOT_COMPLETED = set()
     LOCAL_STREAMS = {}
+    LOCKS = {}
     @property
     def daemon_api(self):
         return self.daemon.api
@@ -30,6 +32,13 @@ class OpInstanceMixin(BaseMixin):
                 self.push_event('disabled')
                 OpInstanceMixin.INSTANCIATED.discard(self.id)
     @property
+    def lock(self):
+        op_lock = OpInstanceMixin.LOCKS.get(self.id, None)
+        if op_lock is None:
+            op_lock = Semaphore()
+            OpInstanceMixin.LOCKS[self.id] = op_lock
+        return op_lock
+    @property
     def moving(self):
         return self.id in OpInstanceMixin.MOVING
     @moving.setter
@@ -38,6 +47,10 @@ class OpInstanceMixin(BaseMixin):
             OpInstanceMixin.MOVING.add(self.id)
         else:
             OpInstanceMixin.MOVING.discard(self.id)
+    def push_event(self, *args, **kwargs):
+        # do not push events to GUI when moving
+        if not self.moving:
+            super().push_event(*args, **kwargs)
     @property
     def disabled_message(self):
         if self.op_class.enabled:
@@ -119,18 +132,19 @@ class OpInstanceMixin(BaseMixin):
         return info
 
     def pack(self):
-        res = dict(
-            op_id = self.id,
-            cls_id = self.op_class.id,
-            cls_name = self.op_class.metadata['name'],
-            gui_data = self.gui_data,
-            num_ops_of_cls = self.num_ops_of_cls,
-            **self.pack_repo_info(),
-            **self.pack_status_info()
-        )
-        if self.enabled:
-           res.update(**self.remote_instance.pack())
-        return res
+        with self.lock:
+            res = dict(
+                op_id = self.id,
+                cls_id = self.op_class.id,
+                cls_name = self.op_class.metadata['name'],
+                gui_data = self.gui_data,
+                num_ops_of_cls = self.num_ops_of_cls,
+                **self.pack_repo_info(),
+                **self.pack_status_info()
+            )
+            if self.enabled:
+               res.update(**self.remote_instance.pack())
+            return res
 
     @property
     def sorted_params(self):
@@ -172,8 +186,6 @@ class OpInstanceMixin(BaseMixin):
         # setup parameters with remote daemon
         for param in self.sorted_params:
             param.setup()
-        # discard any move request queued during the process
-        self.remote_instance.pop_pending_move_check()
     def delete_on_daemon(self):
         self.enabled = False
         self.daemon_api.delete_operator_instance(self.id)
@@ -206,7 +218,7 @@ class OpInstanceMixin(BaseMixin):
             # not running yet, create it on daemon
             self.daemon_api.create_operator_instance(
                 self.id,
-                event_recorder = self.on_daemon_event,
+                event_recorder = self.on_daemon_events,
                 local_streams = self.local_streams,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
@@ -215,26 +227,29 @@ class OpInstanceMixin(BaseMixin):
             self.enabled = False
             self.daemon_api.reload_operator_instance(
                 self.id,
-                event_recorder = self.on_daemon_event,
+                event_recorder = self.on_daemon_events,
                 local_streams = self.local_streams,
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         self.enabled = True
-    def on_daemon_event(self, *evt):
-        if evt[0] in ('input_now_none', 'input_no_longer_none'):
-            # translate these events to a callback on the
-            # appropriate link object.
-            dst_in_id = evt[1]
-            link = None
-            for link in tuple(self.uplinks):
-                if link.dst_in_id == dst_in_id:
-                    break
-            # if event was caused by link deletion, we might
-            # not find it!
-            if link is not None:
-                link.on_daemon_event(evt[0])
-        else:
-            self.push_event(*evt)    # just push other events to UI
+    def on_daemon_events(self, evts):
+        for evt in evts:
+            if evt[0] in ('hub:input_now_none', 'hub:input_no_longer_none'):
+                # translate these events to a callback on the
+                # appropriate link object.
+                dst_in_id = evt[1]
+                link = None
+                for link in tuple(self.uplinks):
+                    if link.dst_in_id == dst_in_id:
+                        break
+                # if event was caused by link deletion, we might
+                # not find it!
+                if link is not None:
+                    link.on_daemon_event(evt[0])
+            elif evt[0] == 'hub:check_move':
+                self.check_move()
+            else:
+                self.push_event(*evt)    # just push other events to UI
     def on_daemon_disconnect(self):
         # daemon stopped
         self.disable_links()
@@ -257,16 +272,17 @@ class OpInstanceMixin(BaseMixin):
         # refresh op id
         context.db.commit()
         op.local_streams = local_streams
-        # notify event listeners
-        dataflow.push_event('created_instance', op.id)
-        # run on most appropriate daemon
-        try:
-            op.move()
-        except:
-            op.delete()
-            raise
-        # auto-set params when possible
-        op.recheck_params()
+        with op.lock:
+            # run on an appropriate daemon
+            try:
+                op.move()
+            except:
+                op.delete()
+                raise
+            # auto-set params when possible
+            op.recheck_params()
+            # notify event listeners
+            dataflow.push_event('created_instance', op.id)
         return op
     def delete_instance(self):
         self.disable_links()
@@ -287,41 +303,38 @@ class OpInstanceMixin(BaseMixin):
     def check_move(self):
         if self.moving:     # discard if already moving
             return
-        if self.remote_instance.pop_pending_move_check():
+        with self.lock:
             self.move()
     def move(self):
-        print('MOVE')
-        self.moving = True
-        affinities = {}
         # list available daemons, current first
         # (if self.daemon already has a value)
         daemons = sorted(get_context().daemons.all_enabled(),
                          key = lambda daemon: daemon != self.daemon)
-        # try available daemons
-        for daemon in daemons:
-            if daemon != self.daemon:   # if not already current
-                self.move_out()
-                try:
-                    self.move_in(daemon)
-                except: # not compatible
-                    continue
-            affinities[daemon] = self.env_affinity()
+        if len(daemons) == 0:
+            raise APIOperatorError("No daemon is available")
+        self.moving = True
+        if self.op_class.has_custom_affinity():
+            affinities = self.custom_daemon_affinities(daemons)
+        else:
+            affinities = self.default_daemon_affinities(daemons)
         # check that we can move somewhere
         if len(affinities) == 0:
             self.moving = False
             raise APIOperatorError('This operator is not compatible with available daemons!')
         # check best affinity
         best = (None, -1)
-        for daemon, score in affinities.items():
+        for daemon in daemons:
+            score = affinities[daemon]
             if score > best[1]:
                 best = (daemon, score)
         # migrate to best match
-        if self.daemon != best[0]:
+        if self.daemon is None or affinities[self.daemon] < best[1]:
+            print('MOVE')
             daemon = best[0]
             self.move_out()
             self.move_in(daemon)
-        # discard any move request queued during the process
-        self.remote_instance.pop_pending_move_check()
+            print('MOVE END')
+        # ok done
         self.moving = False
     def move_out(self):
         if self.enabled:
@@ -356,3 +369,35 @@ class OpInstanceMixin(BaseMixin):
         self.reload_on_daemon()
         self.resync_params()
         self.restore_links()
+    def default_daemon_affinities(self, daemons):
+        daemon_info = { daemon.get_origin_id(): daemon for daemon in daemons }
+        affinity_points = { origin_id: 0 for origin_id in daemon_info.keys() }
+        # if the operator is just being instanciated, then it probably has no
+        # input or output source ready, so return affinity 0 for all daemons.
+        if self.enabled:
+            inputs_origins, outputs_origins = self.get_plug_origins()
+            # add 3 points per input source on a given daemon
+            for origin_id in inputs_origins:
+                if origin_id is not None:
+                    affinity_points[origin_id] += 3
+            # add 1 point per output source on a given daemon
+            for origin_id in outputs_origins:
+                if origin_id is not None:
+                    affinity_points[origin_id] += 1
+        return { daemon_info[origin_id]: points \
+                for origin_id, points in affinity_points.items() }
+    def custom_daemon_affinities(self, daemons):
+        affinities = {}
+        # try available daemons
+        for daemon in daemons:
+            if daemon != self.daemon:   # if not already current
+                self.move_out()
+                try:
+                    self.move_in(daemon)
+                except: # not compatible
+                    continue
+            affinities[daemon] = self.env_affinity()
+        return affinities
+    def sync_handle_event(self, *args, **kwargs):
+        with self.lock:
+            return self.remote_instance.sync_handle_event(*args, **kwargs)

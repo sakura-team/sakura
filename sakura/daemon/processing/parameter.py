@@ -34,12 +34,6 @@ class Parameter(StatusMixin):
     def selected(self):
         return self.value != None
 
-    def unset_value(self):
-        old_val = self.value
-        self.value = None
-        if old_val != None and not self.check_mode:
-            self.on_change.notify()
-
     def pack_base(self):
         info = dict(
             gui_type = self.gui_type,
@@ -219,9 +213,10 @@ class ColumnSelectionParameter(ComboParameter):
             if self.condition(*column_info):
                 yield (col_path,) + column_info + (str(column_info),)
     def get_possible_items(self):
-        if not self.plug.enabled:
+        source = self.plug.source
+        if source is None:
             return
-        source_label = self.plug.source.get_label()
+        source_label = source.get_label()
         for col_path, col_label, col_type, col_tags, col_info_str in self.matching_columns():
             value = col_info_str
             label = '%s (of %s)' % (col_label, source_label)

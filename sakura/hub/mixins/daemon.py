@@ -53,6 +53,9 @@ class DaemonMixin:
             **self.pack_status_info()
         )
 
+    def get_origin_id(self):
+        return self.api.get_origin_id()
+
     @classmethod
     def get_or_create(cls, name):
         daemon = cls.get(name = name)
