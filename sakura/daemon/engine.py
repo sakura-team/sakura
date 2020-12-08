@@ -30,6 +30,8 @@ class DaemonEngine(object):
         self.code_workdir = Path(conf.work_dir) / 'code'
         self.origin_id = ORIGIN_ID
         self.col_tags_info = {}
+    def get_origin_id(self):
+        return self.origin_id
     def fire_data_issue(self, issue, should_fail=True):
         if should_fail:
             raise Exception(issue)
@@ -88,7 +90,6 @@ class DaemonEngine(object):
     def disconnect_operators(self, src_op_id, src_out_id, dst_op_id, dst_in_id):
         dst_op = self.op_instances[dst_op_id]
         dst_input_plug = dst_op.input_plugs[dst_in_id]
-        dst_op.unselect_parameters(plug = dst_input_plug)
         dst_input_plug.disconnect()
         print("disconnected [...] -> %s op_id=%d in%d" % \
                 (dst_op.NAME, dst_op_id, dst_in_id))
@@ -146,7 +147,8 @@ class DaemonEngine(object):
                 name = op_cls.NAME,
                 tags = op_cls.TAGS,
                 short_desc = op_cls.SHORT_DESC,
-                svg = op_cls.ICON
+                svg = op_cls.ICON,
+                custom_affinity = hasattr(op_cls, 'env_affinity')
             )
             if hasattr(op_cls, 'COMMIT_INFO'):
                 metadata.update(

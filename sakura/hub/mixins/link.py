@@ -63,9 +63,9 @@ class LinkMixin(BaseMixin):
             else:
                 self.instanciated = False    # daemon is dead anyway
     def on_daemon_event(self, evt):
-        if evt == 'input_now_none':
+        if evt == 'hub:input_now_none':
             self.enabled = False
-        elif evt == 'input_no_longer_none':
+        elif evt == 'hub:input_no_longer_none':
             self.enabled = True
         else:
             raise Exception('Unexpected event')
