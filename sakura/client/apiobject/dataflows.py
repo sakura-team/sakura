@@ -12,7 +12,8 @@ class APIDataflowOperatorsDict:
             """Sakura operators registry for this dataflow"""
             def create(self, op_class):
                 """Create a new operator of specified class"""
-                op_info = remote_api.operators.create(dataflow_id, op_class.id, local_streams=LOCAL_STREAMS)
+                op_id = remote_api.operators.create(dataflow_id, op_class.id, local_streams=LOCAL_STREAMS)
+                op_info = remote_api.operators[op_id].info()
                 return APIOperator(remote_api, op_info)
         return APIDataflowOperatorsDictImpl()
 

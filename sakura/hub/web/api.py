@@ -71,9 +71,9 @@ class GuiToHubAPI:
 
     # instantiate an operator and return the instance info
     @api.operators.create
-    def create_operator_instance(self, dataflow_id, cls_id, local_streams=None):
-        op = self.dataflows[dataflow_id].create_operator_instance(cls_id, local_streams=local_streams)
-        return op.pack()
+    def create_operator_instance(self, dataflow_id, cls_id, gui_data = '', local_streams=None):
+        return self.dataflows[dataflow_id].create_operator_instance(
+                        cls_id, gui_data=gui_data, local_streams=local_streams)
 
     # delete operator instance and links involved
     @api.operators.__getitem__.delete
