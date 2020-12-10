@@ -265,10 +265,12 @@ class OpInstanceMixin(BaseMixin):
                 return False
         return True
     @classmethod
-    def create_instance(cls, dataflow, op_cls_id, local_streams = None, **revision_kwargs):
+    def create_instance(cls, dataflow, op_cls_id,
+                local_streams = None, gui_data = '', **revision_kwargs):
         context = get_context()
         # create in local db
-        op = cls(daemon = None, dataflow = dataflow, op_class = op_cls_id, **revision_kwargs)
+        op = cls(daemon = None, dataflow = dataflow, op_class = op_cls_id,
+                                gui_data = gui_data, **revision_kwargs)
         # refresh op id
         context.db.commit()
         op.local_streams = local_streams
@@ -283,7 +285,7 @@ class OpInstanceMixin(BaseMixin):
             op.recheck_params()
             # notify event listeners
             dataflow.push_event('created_instance', op.id)
-        return op
+        return op.id
     def delete_instance(self):
         self.disable_links()
         # remove 1-hop links (since these are connected to

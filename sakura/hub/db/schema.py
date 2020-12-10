@@ -67,7 +67,7 @@ def define_schema(db):
         dataflow = Required(Dataflow)
         revision = Optional(Json, default = {})
         op_class = Required(OpClass)
-        gui_data = Optional(str)
+        gui_data = Optional(str, default = '')
         uplinks = Set('Link')
         downlinks = Set('Link')
         params = Set('OpParam')

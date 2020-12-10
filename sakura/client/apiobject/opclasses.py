@@ -29,9 +29,9 @@ class APIOpClass:
                 APIOpClass._deleted.add(remote_obj)
             def create(self, dataflow):
                 """Create a new operator of this class in specified dataflow"""
-                op_info = remote_api.operators.create(dataflow.dataflow_id, cls_id)
-                op_id = op_info['op_id']
-                return APIOperator(remote_api, op_id)
+                op_id = remote_api.operators.create(dataflow.dataflow_id, cls_id)
+                op_info = remote_api.operators[op_id].info()
+                return APIOperator(remote_api, op_info)
         return APIOpClassImpl()
 
 class APIOpClassDict:
