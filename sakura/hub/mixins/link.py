@@ -2,19 +2,7 @@ from sakura.hub.mixins.bases import BaseMixin
 from sakura.hub.context import get_context
 
 class LinkMixin(BaseMixin):
-    INSTANCIATED = set()
     ENABLED = set()
-    @property
-    def instanciated(self):
-        return self.id in LinkMixin.INSTANCIATED
-    @instanciated.setter
-    def instanciated(self, boolean):
-        if boolean:
-            if not self.instanciated:
-                LinkMixin.INSTANCIATED.add(self.id)
-        else:
-            if self.instanciated:
-                LinkMixin.INSTANCIATED.discard(self.id)
     @property
     def enabled(self):
         return self.id in LinkMixin.ENABLED
@@ -32,7 +20,11 @@ class LinkMixin(BaseMixin):
     def disabled_message(self):
         if self.enabled:
             raise AttributeError
-        return 'Output of source operator is not ready.'
+        if not self.src_op.daemon.enabled:
+            return 'Daemon of source operator is down.'
+        if not self.dst_op.daemon.enabled:
+            return 'Daemon of dest operator is down.'
+        return 'Output of source operator is not ready or no longer compatible.'
     @property
     def dst_daemon(self):
         return self.dst_op.daemon
@@ -52,16 +44,14 @@ class LinkMixin(BaseMixin):
             **self.pack_status_info()
         )
     def instanciate(self):
-        if not self.instanciated:
-            self.instanciated = True
+        if not self.enabled:
             self.dst_daemon.api.connect_operators(*self.link_args)
     def deinstanciate(self):
-        if self.instanciated:
+        if self.enabled:
             if self.dst_daemon.enabled:
-                self.instanciated = False
                 self.dst_daemon.api.disconnect_operators(*self.link_args)
             else:
-                self.instanciated = False    # daemon is dead anyway
+                self.enabled = False    # daemon is dead anyway
     def on_daemon_event(self, evt):
         if evt == 'hub:input_now_none':
             self.enabled = False
@@ -82,7 +72,7 @@ class LinkMixin(BaseMixin):
         link.instanciate()
         return link
     def delete_link(self):
-        if self.instanciated:
+        if self.enabled:
             self.deinstanciate() # remotely
         self.src_op.dataflow.push_event('deleted_link', self.id)
         self.delete()           # in local db

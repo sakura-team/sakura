@@ -258,7 +258,7 @@ class OpInstanceMixin(BaseMixin):
         if not self.enabled:
             return False
         for link in self.uplinks:
-            if not link.instanciated:
+            if not link.enabled:
                 return False
         for param in self.params:
             if not param.is_valid:
@@ -357,13 +357,13 @@ class OpInstanceMixin(BaseMixin):
     def restore_links(self):
         # restore uplinks if src is ok
         for link in self.uplinks:
-            if link.instanciated:
+            if link.enabled:
                 continue    # nothing to do
             if link.src_op.enabled:
                 link.instanciate()
         # restore downlinks if dst is ok
         for link in self.downlinks:
-            if link.instanciated:
+            if link.enabled:
                 continue    # nothing to do
             if link.dst_op.enabled:
                 link.instanciate()
