@@ -7,8 +7,8 @@ var cursorX;
 var cursorY;
 
 
-var instances_waiting_for_creation = [];
-var waiting_gui = null;
+// var instances_waiting_for_creation = [];
+// var waiting_gui = null;
 
 var LOG_INTERACTION_EVENT   = false;
 var LOG_DATAFLOW_EVENTS     = true;

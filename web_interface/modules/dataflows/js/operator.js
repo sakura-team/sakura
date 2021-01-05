@@ -35,77 +35,37 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
         case 'enabled':
             if (LOG_OPERATORS_EVENTS) { console.log('ENABLED OP', args, hub_inst_id); }
 
-            let inst_index = -1;
+            push_request('operators_info');
+            proxy.info().then( function (opi) {
+                pop_request('operators_info');
+                update_operator_instance_from_hub(opi.cls_id, opi);
 
-            for (let i=0; i< instances_waiting_for_creation.length; i++) {
-                if  (instances_waiting_for_creation[i].id == hub_inst_id) {
-                    inst_index = i;
-                }
-            };
-
-            //console.log('INST', instances_waiting_for_creation[inst_index]);
-
-            if ( inst_index != -1) {
-                let proxy = sakura.apis.hub.operators[hub_inst_id];
-                let g = { x: instances_waiting_for_creation[inst_index].gui.x,
-                          y: instances_waiting_for_creation[inst_index].gui.y
-                        }
-                push_request('operators_set_gui_data');
-                proxy.set_gui_data(JSON.stringify(g)).then( function() {
-                    pop_request('operators_set_gui_data');
-                    push_request('operators_info');
-                    proxy.info().then( function (opi) {
-                        pop_request('operators_info');
-                        create_operator_instance_from_hub(g.x,
-                                                          g.y,
-                                                          opi.cls_id, opi);
-                        check_operator(opi);
-                    }).catch ( function (error) {
-                        pop_request('operators_info');
-                        console.log('OPERATORS.js: error 2', error);
-                    });
-                }).catch ( function (error) {
-                    pop_request('operators_set_gui_data');
-                    console.log('OPERATORS.js: error 3', error);
-                });
-
-                //remove from waiting list
-                instances_waiting_for_creation.pop(inst_index);
-            }
-            else {
-                let proxy = sakura.apis.hub.operators[hub_inst_id];
-                push_request('operators_info');
-                proxy.info().then( function (opi) {
-                    pop_request('operators_info');
-                    update_operator_instance_from_hub(opi.cls_id, opi);
-
-                    push_request('dataflows_info');
-                    sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
-                        for (let i=0; i< df_info.links.length; i++) {
-                            if (opi.op_id == df_info.links[i].src_id ||
-                                opi.op_id == df_info.links[i].dst_id) {
-                                let found = false;
-                                for (let l=0; l<global_links.length;l++) {
-                                    if (global_links[l].src ==  df_info.links[i].src_id &&
-                                        global_links[l].dst ==  df_info.links[i].dst_id ) {
-                                        found = true;
-                                    }
-                                }
-                                if (!found) {
-                                    create_dataflow_links([df_info.links[i]], true);
+                push_request('dataflows_info');
+                sakura.apis.hub.dataflows[web_interface_current_id].info().then(function (df_info) {
+                    for (let i=0; i< df_info.links.length; i++) {
+                        if (opi.op_id == df_info.links[i].src_id ||
+                            opi.op_id == df_info.links[i].dst_id) {
+                            let found = false;
+                            for (let l=0; l<global_links.length;l++) {
+                                if (global_links[l].src ==  df_info.links[i].src_id &&
+                                    global_links[l].dst ==  df_info.links[i].dst_id ) {
+                                    found = true;
                                 }
                             }
+                            if (!found) {
+                                create_dataflow_links([df_info.links[i]], true);
+                            }
                         }
-                        pop_request('dataflows_info');
-                    }).catch(function(error) {
-                        pop_request('dataflows_info');
-                    });
-                    check_operator(opi);
-                }).catch ( function (error) {
-                    pop_request('operators_info');
-                    console.log('OPERATORS.js: error 5', error);
+                    }
+                    pop_request('dataflows_info');
+                }).catch(function(error) {
+                    pop_request('dataflows_info');
                 });
-            }
+                check_operator(opi);
+            }).catch ( function (error) {
+                pop_request('operators_info');
+                console.log('OPERATORS.js: error 5', error);
+            });
             break;
 
         case 'disabled':
@@ -134,17 +94,18 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
 }
 
 function create_operator_instance_on_hub(drop_x, drop_y, id) {
-    waiting_gui = {x: drop_x, y: drop_y}
+    gui_data = {x: drop_x, y: drop_y}
     //We first send the creation command to the sakura hub
     push_request('operators_create');
-    sakura.apis.hub.operators.create(web_interface_current_id, parseInt(id)).then(function (result) {
+    sakura.apis.hub.operators.create( web_interface_current_id,
+                                      parseInt(id),
+                                      {'gui_data': JSON.stringify(gui_data)}).then(function (result) {
         pop_request('operators_create');
     }).catch( function (error){
         pop_request('operators_create');
         console.log('Error 7:', error)
     });
 }
-
 
 function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     let ndiv = select_op_new_operator(id, false );
