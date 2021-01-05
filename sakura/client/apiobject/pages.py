@@ -6,7 +6,7 @@ class APIProjectPage:
     def __new__(cls, remote_api, page_id):
         remote_obj = remote_api.pages[page_id]
         def get_remote_obj():
-            if remote_obj in APIProjectPage._deleted:
+            if page_id in APIProjectPage._deleted:
                 raise ReferenceError('Remote object was deleted!')
             else:
                 return remote_obj
@@ -15,7 +15,7 @@ class APIProjectPage:
             def delete(self):
                 """Delete this project page"""
                 get_remote_obj().delete()
-                APIProjectPage._deleted.add(remote_obj)
+                APIProjectPage._deleted.add(page_id)
             def update(self, page_name=None, page_content=None):
                 """Update page name or content"""
                 get_remote_obj().update(page_name=page_name, page_content=page_content)

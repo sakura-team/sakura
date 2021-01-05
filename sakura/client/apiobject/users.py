@@ -39,8 +39,8 @@ class APIUser:
         login = info['login']
         remote_obj = remote_api.users[login]
         def get_remote_obj():
-            if remote_obj in APIUser._deleted:
-                raise ReferenceError('This class is no longer valid! (was unregistered)')
+            if login in APIUser._deleted:
+                raise ReferenceError('This user is no longer valid! (was deleted)')
             else:
                 return remote_obj
         class APIUserImpl(APIObjectBase):

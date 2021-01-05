@@ -20,7 +20,7 @@ class APIProject:
         project_id = info['project_id']
         remote_obj = remote_api.projects[project_id]
         def get_remote_obj():
-            if remote_obj in APIProject._deleted:
+            if project_id in APIProject._deleted:
                 raise ReferenceError('This project is no longer valid! (was deleted)')
             else:
                 return remote_obj
@@ -43,7 +43,7 @@ class APIProject:
             def delete(self):
                 """Delete this project"""
                 get_remote_obj().delete()
-                APIProject._deleted.add(remote_obj)
+                APIProject._deleted.add(project_id)
             def __get_remote_info__(self):
                 return get_remote_obj().info()
         return APIProjectImpl()
