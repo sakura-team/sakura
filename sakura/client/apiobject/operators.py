@@ -15,7 +15,7 @@ class APIOperator:
             remote_obj = remote_api.operators[op_id]
             cls_name = op_info['cls_name']
             def get_remote_obj():
-                if remote_obj in APIOperator._deleted:
+                if op_id in APIOperator._deleted:
                     raise ReferenceError('Remote object was deleted!')
                 else:
                     return remote_obj
@@ -24,12 +24,11 @@ class APIOperator:
                 def _check_online(self):
                     if not self.enabled:
                         raise APIRequestError('Operator is offline!')
-                def _getattr_or_raise(self, attr):
+                def __getattr__(self, attr):
                     try:
-                        return self.__getattr__(attr)
+                        return super().__getattr__(attr)
                     except AttributeError:
-                        if not self.enabled:
-                            raise APIRequestError('Operator is offline!')
+                        self._check_online()
                         raise
                 def __get_remote_info__(self):
                     return get_remote_obj().info()
@@ -40,7 +39,7 @@ class APIOperator:
                         set_event_callback(remote_api, events_obj_id, self._events_cb)
                         self._events_activated = True
                 def _get_sub_object(self, objset, idx):
-                    obj_info = tuple(self._getattr_or_raise(objset))[idx]
+                    obj_info = tuple(getattr(self, objset))[idx]
                     for subobj in getattr(self, objset).values():
                         if subobj.label == obj_info['label']:
                             return subobj
@@ -78,28 +77,28 @@ class APIOperator:
                 def inputs(self):
                     return APIObjectRegistry(create_names_dict(
                         ((in_info['label'], APIOperatorInput(remote_api, self._activate_events, op_id, in_id, in_info)) \
-                         for in_id, in_info in enumerate(self._getattr_or_raise('inputs'))),
+                         for in_id, in_info in enumerate(self.__getattr__('inputs'))),
                         name_format = snakecase
                     ), "operator inputs")
                 @property
                 def outputs(self):
                     return APIObjectRegistry(create_names_dict(
                         ((out_info['label'], APIOperatorOutput(remote_api, self._activate_events, op_id, out_id, out_info)) \
-                         for out_id, out_info in enumerate(self._getattr_or_raise('outputs'))),
+                         for out_id, out_info in enumerate(self.__getattr__('outputs'))),
                         name_format = snakecase
                     ), "operator outputs")
                 @property
                 def parameters(self):
                     return APIObjectRegistry(create_names_dict(
                         ((param_info['label'], APIOperatorParameter(remote_api, self._activate_events, op_id, param_id, param_info)) \
-                         for param_id, param_info in enumerate(self._getattr_or_raise('parameters'))),
+                         for param_id, param_info in enumerate(self.__getattr__('parameters'))),
                         name_format = snakecase
                     ), "operator parameters")
                 def delete(self):
                     """Delete this operator"""
                     self._check_online()
                     get_remote_obj().delete()
-                    APIOperator._deleted.add(remote_obj)
+                    APIOperator._deleted.add(op_id)
                 def reload(self):
                     """Reload this operator"""
                     get_remote_obj().reload()

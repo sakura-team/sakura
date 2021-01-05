@@ -12,7 +12,7 @@ class APILink:
                 link_info['dst_cls_name'],
                 link_info['dst_in_id'])
         def get_remote_obj():
-            if remote_obj in APILink._deleted:
+            if link_id in APILink._deleted:
                 raise ReferenceError('This link was deleted!')
             else:
                 return remote_obj
@@ -23,5 +23,5 @@ class APILink:
             def delete(self):
                 """Delete this link"""
                 get_remote_obj().delete()
-                APILink._deleted.add(remote_obj)
+                APILink._deleted.add(link_id)
         return APILinkImpl()

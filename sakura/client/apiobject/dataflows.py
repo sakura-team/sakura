@@ -30,7 +30,7 @@ class APIDataflow:
         dataflow_id = info['dataflow_id']
         remote_obj = remote_api.dataflows[dataflow_id]
         def get_remote_obj():
-            if remote_obj in APIDataflow._deleted:
+            if dataflow_id in APIDataflow._deleted:
                 raise ReferenceError('This dataflow is no longer valid! (was deleted)')
             else:
                 return remote_obj
@@ -61,7 +61,7 @@ class APIDataflow:
             def delete(self):
                 """Delete this dataflow"""
                 get_remote_obj().delete()
-                APIDataflow._deleted.add(remote_obj)
+                APIDataflow._deleted.add(dataflow_id)
             def __get_remote_info__(self):
                 info = get_remote_obj().info()
                 if 'op_instances' in info:

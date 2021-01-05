@@ -9,7 +9,7 @@ class APIOpClass:
         cls_id = info['id']
         remote_obj = remote_api.op_classes[cls_id]
         def get_remote_obj():
-            if remote_obj in APIOpClass._deleted:
+            if cls_id in APIOpClass._deleted:
                 raise ReferenceError('This class is no longer valid! (was unregistered)')
             else:
                 return remote_obj
@@ -26,7 +26,7 @@ class APIOpClass:
             def unregister(self):
                 """Unregister this operator class"""
                 get_remote_obj().unregister()
-                APIOpClass._deleted.add(remote_obj)
+                APIOpClass._deleted.add(cls_id)
             def create(self, dataflow):
                 """Create a new operator of this class in specified dataflow"""
                 op_id = remote_api.operators.create(dataflow.dataflow_id, cls_id)
