@@ -49,22 +49,31 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
         case ('created_instance'):
             if (LOG_DATAFLOW_EVENTS) {  console.log('CREATED INSTANCE', args);  }
 
-            if (! waiting_gui) {
-                waiting_gui = { x: $('#sakura_main_div').width()/2,
-                                y: $('#sakura_main_div').height()/2};
-            }
-            instances_waiting_for_creation.push({id: args, gui: waiting_gui});
-            waiting_gui = null;
-
             let proxy = sakura.apis.hub.operators[args];
-            if (proxy) {
-                op_events.forEach( function(e) {
-                  proxy.subscribe_event(e, function(evt_name, argus) {
-                        operators_deal_with_events(evt_name, argus, proxy, args);
-                  });
-              });
-            }
-            else {  console.log('Cannot subscribe_event on op', args);  }
+            push_request('operators_info');
+            proxy.info().then( function (opi) {
+                pop_request('operators_info');
+
+                if (opi.gui_data) {
+                    let jgui = eval("("+opi.gui_data+")");
+                    create_operator_instance_from_hub(jgui.x, jgui.y, opi.cls_id, opi);
+                    check_operator(opi);
+                }
+                else {
+                    console.log('NO GUI for this op !!!!');
+                    let g = { x: $('#sakura_main_div').width()/2,
+                              y: $('#sakura_main_div').height()/2};
+                    push_request('operators_set_gui_data');
+                    sakura.apis.hub.operators[parseInt(opi.op_id)].set_gui_data(JSON.stringify(g)).then(  function(){
+                        pop_request('operators_set_gui_data');
+                        create_operator_instance_from_hub(g.x, g.y, opi.cls_id, opi);
+                        check_operator(opi);
+                    });
+                }
+            }).catch ( function (error) {
+                pop_request('operators_info');
+                console.log('DATAFLOWS.js: error 1', error);
+            });
 
             break;
 
