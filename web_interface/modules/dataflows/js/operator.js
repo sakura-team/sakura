@@ -17,6 +17,7 @@ var transparent_grey = 'rgba(200, 200, 200, 1)';
 var dataflows_operators_debug = false;
 
 function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
+    if (LOG_OPERATORS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
     switch (evt_name) {
         case 'altered_output':
             if (! op_reloading) {
@@ -33,8 +34,6 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
             break;
 
         case 'enabled':
-            if (LOG_OPERATORS_EVENTS) { console.log('ENABLED OP', args, hub_inst_id); }
-
             push_request('operators_info');
             proxy.info().then( function (opi) {
                 pop_request('operators_info');
@@ -64,12 +63,22 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                 check_operator(opi);
             }).catch ( function (error) {
                 pop_request('operators_info');
-                console.log('OPERATORS.js: error 5', error);
+                console.log('OPERATORS.js: error 2', error);
             });
             break;
 
         case 'disabled':
-            if (LOG_OPERATORS_EVENTS) { console.log('DISABLED OP', args, proxy, hub_inst_id);}
+            push_request('operators_info');
+            sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
+                pop_request('operators_info');
+                check_operator(op);
+            }).catch ( function (error) {
+                pop_request('operators_info');
+                console.log('OPERATORS.js: error 3, event: ', evt_name, ', ', error);
+            });
+            break;
+
+        case 'altered_parameter':
             push_request('operators_info');
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
                 pop_request('operators_info');
@@ -81,14 +90,14 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
             break;
 
         default:
-            if (LOG_OPERATORS_EVENTS) { console.log('OP EVENT', evt_name, args, proxy, hub_inst_id);}
+            if (LOG_OPERATORS_EVENTS) { console.log('--->UNMANAGED OP EVENT', evt_name );}
             push_request('operators_info');
             sakura.apis.hub.operators[hub_inst_id].info().then( function(op) {
                 pop_request('operators_info');
                 check_operator(op);
             }).catch ( function (error) {
                 pop_request('operators_info');
-                console.log('OPERATORS.js: error 4, event: ', evt_name, ', ', error);
+                console.log('OPERATORS.js: error 5, event: ', evt_name, ', ', error);
             });
     }
 }
@@ -195,7 +204,7 @@ function create_op_plugs(info, ndiv) {
                                                 id: id_i,
                                                 cssClass:"sakura_endPoint",
                                                 paintStyle:{fillStyle:"black", radius:6},
-                                                hoverPaintStyle:{ fillStyle:"black", radius:10}
+                                                hoverPaintStyle:{ fillStyle:"black", radius:6}
                                                 });
     }
     if (info.outputs.length > 0 && !endpoint_exists(id_o))
@@ -279,7 +288,9 @@ function check_operator(op) {
             w_div = document.getElementById(id+"_warning");
             w_div.style.visibility  = "hidden";
         }
-        check_output(op);
+        //check_output(op);
+        output_disable(inst);
+        input_disable(inst);
     }
 }
 
@@ -448,14 +459,11 @@ function output_enable(inst) {
     if (inst.ep.out) {
         inst.ep.out.isSource = true;
         inst.ep.out.setPaintStyle({fillStyle: 'black', radius: 6});
-        inst.ep.out.setHoverPaintStyle({fillStyle: 'black', radius: 10});
+        inst.ep.out.setHoverPaintStyle({fillStyle: 'black', radius: 6});
 
         for (let i=0;i<global_links.length;i++) {
             if (global_links[i].src == inst.hub_id) {
-                global_links[i].jsP.setPaintStyle({strokeStyle: 'black',
-                                                  lineWidth: 3});
-                global_links[i].jsP.setHoverPaintStyle({strokeStyle: 'black',
-                                                        lineWidth: 7});
+                enable_link(global_links[i]);
             }
         }
 
@@ -471,13 +479,23 @@ function output_disable(inst) {
 
         for (let i=0;i<global_links.length;i++) {
             if (global_links[i].src == inst.hub_id) {
-                global_links[i].jsP.setPaintStyle({strokeStyle: transparent_grey,
-                                                  lineWidth: 3});
-                global_links[i].jsP.setHoverPaintStyle({strokeStyle: transparent_grey,
-                                                        lineWidth: 4});
+                disable_link(global_links[i]);
             }
         }
+        jsPlumb.repaintEverything();
+    }
+}
 
+function input_disable(inst) {
+    if (inst.ep.in) {
+        inst.ep.in.setPaintStyle({fillStyle: transparent_grey, radius: 6});
+        inst.ep.in.setHoverPaintStyle({fillStyle: transparent_grey, radius: 6});
+
+        for (let i=0;i<global_links.length;i++) {
+            if (global_links[i].src == inst.hub_id) {
+                disable_link(global_links[i]);
+            }
+        }
         jsPlumb.repaintEverything();
     }
 }

@@ -9,6 +9,8 @@ var dataflow_events         = [ 'created_link',
                                 'deleted_instance'];
 
 function dataflows_deal_with_events(evt_name, args, proxy) {
+    if (LOG_DATAFLOW_EVENTS) { console.log('DATAFLOW EVENT', evt_name, args);}
+
     switch (evt_name) {
         case ('created_link'):
             push_request('links_info');
@@ -25,7 +27,6 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
             break;
 
         case ('deleted_link'):
-            if (LOG_DATAFLOW_EVENTS) { console.log('DELETED LINK', args);}
             global_links.some( function (link) {
                 link.params.some( function (param) {
                     if (param.hub_id == args) {
@@ -38,17 +39,11 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
                         return true;
                     }
                 });
-                // if (link.params[0].hub_id == args) {
-                //     remove_link(link, false);
-                //     return true;
-                // }
                 return false;
             });
             break;
 
         case ('created_instance'):
-            if (LOG_DATAFLOW_EVENTS) {  console.log('CREATED INSTANCE', args);  }
-
             let proxy = sakura.apis.hub.operators[args];
             push_request('operators_info');
             proxy.info().then( function (opi) {
@@ -78,13 +73,12 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
             break;
 
         case ('deleted_instance'):
-            if (LOG_DATAFLOW_EVENTS) {  console.log('DELETED INSTANCE', args);  }
             let inst = instance_from_id(args);
             remove_operator_instance('op_'+inst.cl.id+"_"+inst.hub_id, false);
             break;
 
         default:
-            if (LOG_DATAFLOW_EVENTS) {  console.log('Unknown Event', evt_name); }
+            if (LOG_DATAFLOW_EVENTS) { console.log('--->UNMANAGED DATAFLOW EVENT', evt_name, args);}
     }
 }
 

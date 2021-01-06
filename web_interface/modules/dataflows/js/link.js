@@ -4,23 +4,37 @@
 var link_events           = [ 'disabled', 'enabled'];
 
 
-function links_deal_with_events(evt_name, args, proxy) {
-    switch (evt_name) {
-        case 'disabled':
-            if (LOG_LINKS_EVENTS)
-                console.log(evt_name, args);
-            break;
-        case 'enabled':
-            if (LOG_LINKS_EVENTS)
-                console.log(evt_name, args);
-            break;
-        default:
-            if (LOG_LINKS_EVENTS) {
-                console.log('Unknown Event', evt_name);
-        }
-    }
+function enable_link(l) {
+    l.jsP.setPaintStyle({strokeStyle: 'black', lineWidth: 3});
+    l.jsP.setHoverPaintStyle({strokeStyle: 'black', lineWidth: 6});
 }
 
+function disable_link(l) {
+    l.jsP.setPaintStyle({strokeStyle: transparent_grey, lineWidth: 3});
+    l.jsP.setHoverPaintStyle({strokeStyle: transparent_grey, lineWidth: 3});
+}
+
+function links_deal_with_events(evt_name, args, proxy, hub_inst_id) {
+    if (LOG_LINKS_EVENTS) {console.log('LINK EVENT', evt_name, args, proxy, hub_inst_id);}
+    switch (evt_name) {
+        case 'disabled':
+            for (let i=0;i<global_links.length;i++) {
+                if (global_links[i].params[0].hub_id == hub_inst_id) {
+                    disable_link(global_links[i]);
+                }
+            }
+            break;
+        case 'enabled':
+            for (let i=0;i<global_links.length;i++) {
+                if (global_links[i].params[0].hub_id == hub_inst_id) {
+                    enable_link(global_links[i]);
+                }
+            }
+            break;
+        default:
+            if (LOG_LINKS_EVENTS) { console.log('--->UNMANAGED LINK EVENT', evt_name );}
+    }
+}
 
 function create_link(js, src_id, dst_id) {
     if (LOG_LINKS_EVENTS) {console.log('CREATE LINK', js, src_id, dst_id);}
@@ -87,8 +101,8 @@ function create_link_from_hub(js, link, gui, from_shell=false) {
                                 'jsP': js});
     //js.setDetachable(false);
     if (!link.enabled) {
-        js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});
-        js.setHoverPaintStyle({strokeStyle: transparent_grey, radius: 6});
+        js.setPaintStyle({strokeStyle: transparent_grey, radius: 3});
+        js.setHoverPaintStyle({strokeStyle: transparent_grey, radius: 3});
     }
 
     push_request('links_info');
@@ -239,6 +253,19 @@ function create_link_modal( p_links,  link,
             });
         }
     );
+
+    //subscribing events
+    let proxy = sakura.apis.hub.links[hub_id];
+    if (proxy) {
+        link_events.forEach( function(e) {
+          proxy.subscribe_event(e, function(evt_name, args) {
+                links_deal_with_events(evt_name, args, proxy, hub_id);
+          });
+      });
+    }
+    else {
+        console.log('Cannot subscribe_event on link', hub_id);
+    }
 }
 
 
