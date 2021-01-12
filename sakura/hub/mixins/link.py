@@ -44,14 +44,12 @@ class LinkMixin(BaseMixin):
             **self.pack_status_info()
         )
     def instanciate(self):
-        if not self.enabled:
-            self.dst_daemon.api.connect_operators(*self.link_args)
+        self.dst_daemon.api.connect_operators(*self.link_args)
     def deinstanciate(self):
-        if self.enabled:
-            if self.dst_daemon.enabled:
-                self.dst_daemon.api.disconnect_operators(*self.link_args)
-            else:
-                self.enabled = False    # daemon is dead anyway
+        if self.dst_daemon.enabled:
+            self.dst_daemon.api.disconnect_operators(*self.link_args)
+        else:
+            self.enabled = False    # daemon is dead anyway
     def on_daemon_event(self, evt):
         if evt == 'hub:input_now_none':
             self.enabled = False

@@ -1,9 +1,13 @@
 from sakura.hub.context import get_context
 from sakura.common.errors import APIRequestErrorOfflineDaemon
 from sakura.common.errors import APIOperatorError
+from sakura.hub.mixins.bases import BaseMixin
 
-class DaemonMixin:
+class DaemonMixin(BaseMixin):
     APIS = {}
+
+    def __str__(self):
+        return self.name
 
     @property
     def api(self):
