@@ -75,3 +75,5 @@ class Proxy:
         return self.__internals.call_special('__eq__', other)
     def __hash__(self):
         return self.__internals.call_special('__hash__')
+    def __contains__(self, obj):
+        return self.__internals.call_special('__contains__', obj)

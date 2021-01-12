@@ -1,4 +1,5 @@
 import numpy as np
+from sakura.common.errors import APIRequestError
 
 # Strings whose length is known to be lower than NUMPY_EMBEDDED_STR_MAX_LEN
 # will be encoded directly in numpy arrays.

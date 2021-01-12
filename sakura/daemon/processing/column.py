@@ -7,11 +7,18 @@ from sakura.daemon.processing.condition import SingleColumnFilter, JoinCondition
 class ColumnData:
     pass
 
+# Column objects are sometimes managed by a remote daemon,
+# and in this case their class is io.Proxy, so isinstance() cannot be used
 class ColumnObject:
-    pass
+    def __init__(self):
+        self._col_object = 1
+
+def is_column_object(val):
+    return hasattr(val, '_col_object')
 
 class ColumnBase(ColumnObject):
     def __init__(self, col_label, col_type, col_tags, **col_type_params):
+        ColumnObject.__init__(self)
         self._label = col_label
         self._tags = col_tags
         self.analyse_type(col_type, **col_type_params)
@@ -38,6 +45,10 @@ class ColumnBase(ColumnObject):
     def set_type(self, in_type):
         verify_sakura_type_conversion(self._type, in_type)
         self._type = in_type
+    def get_column(self):
+        raise NotImplementedError   # implement in subclass
+    def get_added_tags(self):
+        raise NotImplementedError   # implement in subclass
 
 class Column(ColumnBase):
     def __lt__(self, val):
@@ -49,12 +60,16 @@ class Column(ColumnBase):
     def __ge__(self, val):
         return SingleColumnFilter(self, GREATER_OR_EQUAL, val)
     def __eq__(self, val):
-        if isinstance(val, ColumnObject):
+        if is_column_object(val):
             return JoinCondition(self, EQUALS, val)
         else:
             return SingleColumnFilter(self, EQUALS, val)
     def __ne__(self, val):
         return SingleColumnFilter(self, NOT_EQUALS, val)
+    def get_column(self):
+        return self
+    def get_added_tags(self):
+        return ()
 
 class GeoSubColumn(ColumnBase):
     def __init__(self, parent_col, component_name, col_type, col_tags, **col_type_params):
@@ -74,6 +89,10 @@ class GeoSubColumn(ColumnBase):
         prefix = 'max_' if op_str in ('lt', 'le') else 'min_'
         bbox_kwargs = { (prefix + self.component): val }
         return GeoBoundingBox(**bbox_kwargs)
+    def get_column(self):
+        return self
+    def get_added_tags(self):
+        return ()
 
 class GeoColumn(ColumnBase):
     def __init__(self, *args, **kwargs):
@@ -82,16 +101,19 @@ class GeoColumn(ColumnBase):
         self.register_subcolumn(self.X)
         self.Y = GeoSubColumn(self, 'Y', 'float64', ('latitude',))
         self.register_subcolumn(self.Y)
+    def get_column(self):
+        return self
+    def get_added_tags(self):
+        return ()
 
 class BoundColumn(ColumnObject):
     def __init__(self, col, source):
-        # col may be a Column or a BoundColumn (if it was bound to another source)
-        if isinstance(col, BoundColumn):
-            self.column = col.column
-            self.added_tags = col.added_tags
-        else:
-            self.column = col
-            self.added_tags = ()
+        ColumnObject.__init__(self)
+        # caution:
+        # col may be a Column or another BoundColumn (if it was bound to another source)
+        # and may be a remote object managed by another daemon
+        self.column = col.get_column()
+        self.added_tags = col.get_added_tags()
         self.source = source
     def chunks(self, *args, **kwargs):
         for chunk in self.filtered_stream().chunks(*args, **kwargs):
@@ -123,3 +145,7 @@ class BoundColumn(ColumnObject):
         return self.column != val
     def __str__(self):
         return "%s (%s)" % (self.column._label, self.column._type)
+    def get_column(self):
+        return self.column
+    def get_added_tags(self):
+        return self.added_tags

@@ -9,6 +9,8 @@ class OpInstanceMixin(BaseMixin):
     RELOAD_NOT_COMPLETED = set()
     LOCAL_STREAMS = {}
     LOCKS = {}
+    def __str__(self):
+        return '%s op_id=%d' % (self.op_class.metadata['name'], self.id)
     @property
     def daemon_api(self):
         return self.daemon.api
@@ -331,11 +333,11 @@ class OpInstanceMixin(BaseMixin):
                 best = (daemon, score)
         # migrate to best match
         if self.daemon is None or affinities[self.daemon] < best[1]:
-            print('MOVE')
+            print('MOVE', self, self.daemon, '->', best[0])
             daemon = best[0]
             self.move_out()
             self.move_in(daemon)
-            print('MOVE END')
+            print('MOVE END', self)
         # ok done
         self.moving = False
     def move_out(self):
@@ -355,16 +357,12 @@ class OpInstanceMixin(BaseMixin):
                 return l.id
         return None     # not connected
     def restore_links(self):
-        # restore uplinks if src is ok
+        # restore uplinks if src daemon is ok
         for link in self.uplinks:
-            if link.enabled:
-                continue    # nothing to do
             if link.src_op.enabled:
                 link.instanciate()
-        # restore downlinks if dst is ok
+        # restore downlinks if dst daemon is ok
         for link in self.downlinks:
-            if link.enabled:
-                continue    # nothing to do
             if link.dst_op.enabled:
                 link.instanciate()
     def restore(self):

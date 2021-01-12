@@ -2,6 +2,7 @@ from sakura.daemon.processing.sources.base import SourceBase
 from sakura.daemon.processing.condition import JoinCondition
 from sakura.daemon.processing.join.native import native_join
 from sakura.daemon.processing.join.merge import merge_join
+from sakura.common.errors import APIRequestError
 from collections import defaultdict
 
 # try native join first, merge join as a fallback
@@ -41,10 +42,16 @@ class JoinSource(SourceBase):
         join_source.add_sub_source(other)
         return join_source
     def which_subsource(self, sub_sources, col):
+        other_sub_sources = ()
+        found_sub_s = None
         for sub_s in sub_sources:
             if col in sub_s:
-                return sub_s
-        raise APIRequestError('Column does not belong to this source.')
+                found_sub_s = sub_s
+            else:
+                other_sub_sources += (sub_s,)
+        if found_sub_s is None:
+            raise APIRequestError('Column does not belong to this source.')
+        return found_sub_s, other_sub_sources
     def solve(self):
         sub_sources = self.data.sub_sources
         join_conds = self.join_conds
@@ -61,17 +68,17 @@ class JoinSource(SourceBase):
         for join_cond in join_conds:
             # retrieve left and right source of join
             left_col, right_col = join_cond.left_col, join_cond.right_col
-            left_s = self.which_subsource(sub_sources, left_col)
-            right_s = self.which_subsource(sub_sources, right_col)
+            left_s, sub_sources = self.which_subsource(sub_sources, left_col)
+            right_s, sub_sources = self.which_subsource(sub_sources, right_col)
             # if algorithm allows it, compute joint source
             source = join_method(left_s, right_s, left_col, right_col)
             if source is None:
                 # this algorithm cannot join these sources
                 remaining_join_conds += (join_cond,)
+                sub_sources += (left_s, right_s)    # restore previous value
             else:
                 # ok, algorithm did it
                 # replace sources left_s and right_s with the new source
-                sub_sources = tuple(s for s in sub_sources if s not in (left_s, right_s))
                 sub_sources += (source,)
         return sub_sources, remaining_join_conds
     def sort(self, *columns):

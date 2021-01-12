@@ -151,7 +151,10 @@ class NumpyChunk(np.ma.MaskedArray):
             ordered_array.exactness = self.exactness
             return np.ma.MaskedArray.__reduce__(ordered_array)
     def __getitem__(self, idx):
-        if isinstance(idx, tuple) and len(idx) == 2:
+        if len(self.shape) == 0:
+            # self is a single row element, we want to get a column value
+            return self.view(np.ma.mvoid)[idx]
+        elif isinstance(idx, tuple) and len(idx) == 2:
             # allow notation: chunk[<rows>,<cols>]
             rows, col_indices = idx
             sub_chunk = self[rows]
