@@ -17,6 +17,8 @@ class ProjectPageMixin(BaseMixin):
     @property
     def access_scope(self):
         return self.project.access_scope
+    def get_grant_level(self):
+        return self.project.get_grant_level()
     def describe(self):
         return "'%(name)s' page" % dict(
             name = self.name

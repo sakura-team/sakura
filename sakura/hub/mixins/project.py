@@ -6,6 +6,13 @@ from sakura.hub.access import pack_gui_access_info, parse_gui_access_info
 from sakura.hub.mixins.bases import BaseMixin
 
 class ProjectMixin(BaseMixin):
+    def get_grant_level(self):
+        # Public projects and their pages should be visible even by anonymous users,
+        # so convert any 'list' grant to 'read'.
+        grant = super().get_grant_level()
+        if grant == GRANT_LEVELS.list:
+            grant = GRANT_LEVELS.read
+        return grant
     def pack(self):
         return dict(
             project_id = self.id,
