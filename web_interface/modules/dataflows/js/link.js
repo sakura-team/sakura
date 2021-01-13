@@ -39,6 +39,7 @@ function links_deal_with_events(evt_name, args, proxy, hub_inst_id) {
 function create_link(js, src_id, dst_id) {
     if (LOG_LINKS_EVENTS) {console.log('CREATE LINK', js, src_id, dst_id);}
     push_request('links_list_possible');
+
     sakura.apis.hub.links.list_possible(src_id, dst_id).then(function (possible_links) {
         pop_request('links_list_possible');
         if (LOG_LINKS_EVENTS) {console.log('POSS LINKS', possible_links.length, possible_links);}
@@ -52,6 +53,7 @@ function create_link(js, src_id, dst_id) {
         else
         {
             push_request('operators_info');
+
             sakura.apis.hub.operators[src_id].info().then(function (source_inst_info) {
                 pop_request('operators_info');
                 push_request('operators_info');
@@ -254,17 +256,19 @@ function create_link_modal( p_links,  link,
         }
     );
 
-    //subscribing events
-    let proxy = sakura.apis.hub.links[hub_id];
-    if (proxy) {
-        link_events.forEach( function(e) {
-          proxy.subscribe_event(e, function(evt_name, args) {
-                links_deal_with_events(evt_name, args, proxy, hub_id);
+    if (hub_id) {
+        //subscribing events
+        let proxy = sakura.apis.hub.links[hub_id];
+        if (proxy) {
+            link_events.forEach( function(e) {
+              proxy.subscribe_event(e, function(evt_name, args) {
+                    links_deal_with_events(evt_name, args, proxy, hub_id);
+              });
           });
-      });
-    }
-    else {
-        console.log('Cannot subscribe_event on link', hub_id);
+        }
+        else {
+            console.log('Cannot subscribe_event on link', hub_id);
+        }
     }
 }
 
