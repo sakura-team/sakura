@@ -28,6 +28,7 @@ function operators_deal_with_events(evt_name, args, proxy, hub_inst_id) {
                         fill_in_out('output', 'op_'+op.cls_id+'_'+hub_inst_id);
                     }
                 }).catch ( function (error) {
+                    pop_request('operators_info');
                     console.log('OPERATORS.js: error 1', error);
                 });
             }
