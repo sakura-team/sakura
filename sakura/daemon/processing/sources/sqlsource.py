@@ -130,6 +130,8 @@ class SQLDatabaseSource(SourceBase):
         select_clause = 'SELECT ' + ', '.join(db_col.to_sql_select_clause() for db_col in selected_db_cols)
         tables = set(db_col.table.name for db_col in selected_db_cols)
         tables |= set(f[0].table.name for f in db_row_filters)
+        tables |= set(left.table.name for left, right in db_join_conds)
+        tables |= set(right.table.name for left, right in db_join_conds)
         from_clause = 'FROM "' + '", "'.join(tables) + '"'
         where_clause, sort_clause, offset_clause, limit_clause, filter_vals = '', '', '', '', ()
         cond_texts, cond_vals = (), ()
