@@ -33,7 +33,7 @@ def iter_data_files(dirname):
 
 setup(
     name = 'sakura-py',
-    version = '0.9.4',
+    version = '0.9.5',
     packages = find_packages(),
     package_dir = {'sakura-py': 'sakura'},
     data_files = list(iter_data_files('web_interface')) + list(iter_data_files('operators')),
