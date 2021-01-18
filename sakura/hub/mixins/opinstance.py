@@ -236,10 +236,11 @@ class OpInstanceMixin(BaseMixin):
         self.enabled = True
     def on_daemon_events(self, evts):
         for evt in evts:
-            if evt[0] in ('hub:input_now_none', 'hub:input_no_longer_none'):
+            evt_name, evt_args, evt_kwargs = evt
+            if evt_name in ('hub:input_now_none', 'hub:input_no_longer_none'):
                 # translate these events to a callback on the
                 # appropriate link object.
-                dst_in_id = evt[1]
+                dst_in_id = evt_args[0]
                 link = None
                 for link in tuple(self.uplinks):
                     if link.dst_in_id == dst_in_id:
@@ -247,11 +248,11 @@ class OpInstanceMixin(BaseMixin):
                 # if event was caused by link deletion, we might
                 # not find it!
                 if link is not None:
-                    link.on_daemon_event(evt[0])
-            elif evt[0] == 'hub:check_move':
+                    link.on_daemon_event(evt_name)
+            elif evt_name == 'hub:check_move':
                 self.check_move()
             else:
-                self.push_event(*evt)    # just push other events to UI
+                self.push_event(evt_name, *evt_args, **evt_kwargs)    # just push other events to UI
     def on_daemon_disconnect(self):
         # daemon stopped
         self.disable_links()
