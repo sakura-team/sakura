@@ -1,6 +1,7 @@
 import bottle, json, time
 from gevent.socket import IPPROTO_TCP, TCP_NODELAY
 from gevent.pywsgi import WSGIServer
+from gevent.fileobject import FileObject as gevent_open
 from geventwebsocket.handler import WebSocketHandler
 from sakura.hub.web.manager import rpc_manager
 from sakura.hub.web.bottle import bottle_get_wsock
@@ -87,7 +88,7 @@ def web_greenlet(context, webapp_path):
         params = json.loads(
                     bottle.request.forms['params'],
                     object_hook = lambda d: to_namedtuple('Params', d))
-        with (Path(webapp_path) / 'modules' / 'dataflows' / 'templates' /filepath).open() as f:
+        with gevent_open(Path(webapp_path) / 'modules' / 'dataflows' / 'templates' /filepath) as f:
             return template(f.read(), **params._asdict())
 
     @app.route('/webcache/cdnjs/<filepath:path>')
@@ -99,6 +100,7 @@ def web_greenlet(context, webapp_path):
     @app.route('/<filepath:path>')
     def serve_static(filepath = 'index.html'):
         print('serving ' + filepath, end="")
+        open = gevent_open
         resp = bottle.static_file(filepath, root = webapp_path)
         print(' ->', resp.status_line)
         session_id_management_post(resp)

@@ -1,6 +1,7 @@
 import bottle, urllib.request, urllib.error
 from sakura.hub import conf
 from pathlib import Path
+from gevent.fileobject import FileObject as gevent_open
 import socket
 import gevent.socket
 saved_create_connection = socket.create_connection
@@ -38,13 +39,14 @@ def webcache_serve(cdn, filepath):
         print('webcache: fetching ' + url)
         try:
             with gevent_urlopen(url, None, EXT_CONNECTION_TIMEOUT) as web_f:
-                with cachepath.open(mode='wb') as cache_f:
+                with gevent_open(cachepath, mode='wb') as cache_f:
                     cache_f.write(web_f.read())
         except urllib.error.HTTPError as e:
             return bottle.abort(e.code, e.msg)
         except urllib.error.URLError as e:
             return bottle.abort(502, e.reason)
     # serve the file from the cache
+    open = gevent_open
     resp = bottle.static_file('/' + cachesubpath, root = webcache_dir)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     return resp
