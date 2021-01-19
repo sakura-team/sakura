@@ -1,5 +1,6 @@
 import pony.orm
 import numpy as np
+from time import time
 from sakura.common.errors import APIInvalidRequest
 
 def pack(obj):
@@ -104,7 +105,13 @@ class APIStructureBuilder:
         def patched_function(*args, **kwargs):
             args = [ api_table._item for api_table in instance_api_table_path ] + list(args)
             try:
-                return orig_function(instance, *args, **kwargs)
+                orig_time = time()
+                result = orig_function(instance, *args, **kwargs)
+                delay = time() - orig_time
+                if (delay > 0.1) and not 'next_event' in orig_function.__name__:
+                    print('WARNING slow API call:', orig_function.__name__,
+                            'delay', "%.02f" % (time() - orig_time), 'seconds')
+                return result
             except pony.orm.ObjectNotFound as e:
                 raise APIInvalidRequest('No such object: ' + str(e))
         return patched_function
