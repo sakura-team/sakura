@@ -202,7 +202,7 @@ class GuiToHubAPI:
     # Gui
     @api.operators.__getitem__.set_gui_data
     def set_operator_instance_gui_data(self, op_id, gui_data):
-        self.context.op_instances[op_id].gui_data = gui_data
+        self.context.op_instances[op_id].set_gui_data(gui_data)
 
     @api.operators.__getitem__.get_gui_data
     def get_operator_instance_gui_data(self, op_id):

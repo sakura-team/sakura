@@ -9,8 +9,15 @@ class OpInstanceMixin(BaseMixin):
     RELOAD_NOT_COMPLETED = set()
     LOCAL_STREAMS = {}
     LOCKS = {}
+    INFO_CACHE = {}
     def __str__(self):
         return '%s op_id=%d' % (self.op_class.metadata['name'], self.id)
+    def discard_info_cache(self):
+        if self.id in OpInstanceMixin.INFO_CACHE:
+            del OpInstanceMixin.INFO_CACHE[self.id]
+    def set_gui_data(self, gui_data):
+        self.gui_data = gui_data
+        self.discard_info_cache()
     @property
     def daemon_api(self):
         return self.daemon.api
@@ -29,10 +36,12 @@ class OpInstanceMixin(BaseMixin):
             if not self.enabled:
                 self.push_event('enabled')
                 OpInstanceMixin.INSTANCIATED.add(self.id)
+                self.discard_info_cache()
         else:
             if self.enabled:
                 self.push_event('disabled')
                 OpInstanceMixin.INSTANCIATED.discard(self.id)
+                self.discard_info_cache()
     @property
     def lock(self):
         op_lock = OpInstanceMixin.LOCKS.get(self.id, None)
@@ -135,18 +144,22 @@ class OpInstanceMixin(BaseMixin):
 
     def pack(self):
         with self.lock:
-            res = dict(
-                op_id = self.id,
-                cls_id = self.op_class.id,
-                cls_name = self.op_class.metadata['name'],
-                gui_data = self.gui_data,
-                num_ops_of_cls = self.num_ops_of_cls,
-                **self.pack_repo_info(),
-                **self.pack_status_info()
-            )
-            if self.enabled:
-               res.update(**self.remote_instance.pack())
-            return res
+            res = OpInstanceMixin.INFO_CACHE.get(self.id)
+            if res is None:
+                res = dict(
+                    op_id = self.id,
+                    cls_id = self.op_class.id,
+                    cls_name = self.op_class.metadata['name'],
+                    gui_data = self.gui_data,
+                    num_ops_of_cls = self.num_ops_of_cls,
+                    **self.pack_repo_info(),
+                    **self.pack_status_info()
+                )
+                if self.enabled:
+                   res.update(**self.remote_instance.pack())
+                OpInstanceMixin.INFO_CACHE[self.id] = res
+                print('info cache for instance', self.id, 'refreshed')
+        return res
 
     @property
     def sorted_params(self):
@@ -168,6 +181,7 @@ class OpInstanceMixin(BaseMixin):
             op.revision = dict(code_ref = code_ref, commit_hash = commit_hash)
             try:
                 op.reload()
+                op.discard_info_cache()
             except:
                 # failed, restore
                 op.revision = old_revision
@@ -191,11 +205,13 @@ class OpInstanceMixin(BaseMixin):
     def delete_on_daemon(self):
         self.enabled = False
         self.daemon_api.delete_operator_instance(self.id)
+        self.discard_info_cache()
     def disable_links(self):
         for link in self.downlinks:
             link.deinstanciate()
         for link in self.uplinks:
             link.deinstanciate()
+        self.discard_info_cache()
     def reload(self):
         if self.enabled:
             OpInstanceMixin.RELOAD_NOT_COMPLETED.add(self.id)
@@ -215,6 +231,7 @@ class OpInstanceMixin(BaseMixin):
                 link.delete_link()
         self.resync_params()
         self.restore_links()
+        self.discard_info_cache()
     def reload_on_daemon(self):
         if not self.enabled:
             # not running yet, create it on daemon
@@ -234,7 +251,9 @@ class OpInstanceMixin(BaseMixin):
                 **self.pack_repo_info(include_sandbox_attrs=True)
             )
         self.enabled = True
+        self.discard_info_cache()
     def on_daemon_events(self, evts):
+        self.discard_info_cache()
         for evt in evts:
             evt_name, evt_args, evt_kwargs = evt
             if evt_name in ('hub:input_now_none', 'hub:input_no_longer_none'):
@@ -254,6 +273,7 @@ class OpInstanceMixin(BaseMixin):
             else:
                 self.push_event(evt_name, *evt_args, **evt_kwargs)    # just push other events to UI
     def on_daemon_disconnect(self):
+        self.discard_info_cache()
         # daemon stopped
         self.disable_links()
         self.enabled = False
@@ -334,6 +354,7 @@ class OpInstanceMixin(BaseMixin):
                 best = (daemon, score)
         # migrate to best match
         if self.daemon is None or affinities[self.daemon] < best[1]:
+            self.discard_info_cache()
             print('MOVE', self, self.daemon, '->', best[0])
             daemon = best[0]
             self.move_out()
@@ -358,6 +379,7 @@ class OpInstanceMixin(BaseMixin):
                 return l.id
         return None     # not connected
     def restore_links(self):
+        self.discard_info_cache()
         # restore uplinks if src daemon is ok
         for link in self.uplinks:
             if link.src_op.enabled:
@@ -367,6 +389,7 @@ class OpInstanceMixin(BaseMixin):
             if link.dst_op.enabled:
                 link.instanciate()
     def restore(self):
+        self.discard_info_cache()
         self.reload_on_daemon()
         self.resync_params()
         self.restore_links()
