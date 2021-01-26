@@ -27,6 +27,10 @@ def gevent_urlopen(*args, **kwargs):
     return urllib.request.urlopen(*args, **kwargs)
 
 def webcache_serve(cdn, filepath):
+    # the following file does not exist, do not waste time
+    # with a request to cdnjs
+    if filepath.endswith('parsley.min.js.map'):
+        return bottle.abort(404)
     webcache_dir = conf.work_dir + '/webcache/'
     cachesubpath = cdn + '/' + filepath
     cachepath = Path(webcache_dir + cachesubpath)
