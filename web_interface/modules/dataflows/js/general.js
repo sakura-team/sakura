@@ -1,25 +1,6 @@
 //Code started by Michael Ortega for the LIG
 //November 14th, 2016
 
-//main
-var main_div = document.getElementById('sakura_main_div');
-var cursorX;
-var cursorY;
-
-
-// var instances_waiting_for_creation = [];
-// var waiting_gui = null;
-
-var LOG_INTERACTION_EVENT   = false;
-var LOG_DATAFLOW_EVENTS     = true;
-var LOG_LINKS_EVENTS        = true;
-var LOG_OPERATORS_EVENTS    = true;
-
-document.onmousemove = function(e){
-    cursorX = e.pageX;
-    cursorY = e.pageY;
-}
-
 function not_yet(s = '') {
     if (s == '')
         alert('Not implemented yet');

@@ -605,78 +605,115 @@ function web_interface_save_large_description(id) {
     }
 }
 
-function l_html(obj, event, dir, cb) {
+function cb_done_once(cb) {
+    cb.counter -= 1;
+    if (cb.counter == 0) {
+        cb();
+    }
+}
 
-    function get_html(obj) {
-        $('#main_div').append($('<div>').load("divs/"+obj+"/index.html", function () {
-         // $('#main_div').append($('<div>').load("divs/"+obj+"/meta.html", function() {
-           $('#main_div').append($('<div>').load("divs/"+obj+"/work.html", function() {
-            $('#main_div').append($('<div>').load("divs/"+obj+"/historic.html", function() {
-             $('#main_div').append($('<div>').load("divs/create/"+obj+".html", function() {
-                if (obj == 'databases')       loaded_databases_files  = 'done';
-                else if (obj == 'operators')  loaded_operators_files  = 'done';
-                else if (obj == 'dataflows')  loaded_dataflows_files  = 'done';
-                else if (obj == 'projects')   loaded_projects_files   = 'done';
-                cb();
-        }));}));}));}));//}));
+function load_all_snippets(urls, cb) {
+    cb.counter = urls.length;
+    let main_div = document.querySelector('#main_div');
+    for (url of urls) {
+        if (url.endsWith('.js')) {  // javascript
+            $.getScript(url).done( function() {
+                cb_done_once(cb);
+            });
+        }
+        else {                      // html
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    main_div.innerHTML += this.responseText;
+                    cb_done_once(cb);
+                }
+            };
+            xhttp.open("GET", url, true);
+            xhttp.send();
+        }
+    }
+}
+
+function get_module_snippets(obj) {
+
+    let js_obj_snippets = [ "js/"+obj+".js" ];
+    let html_obj_snippets = [
+                     "divs/"+obj+"/index.html",
+                     //"divs/"+obj+"/meta.html",
+                     "divs/"+obj+"/work.html",
+                     "divs/"+obj+"/historic.html",
+                     "divs/create/"+obj+".html"
+                   ];
+
+    if (obj == 'dataflows') {
+        js_obj_snippets = js_obj_snippets.concat([
+            "/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js",
+            "modules/dataflows/js/general.js",
+            "modules/dataflows/js/comment.js",
+            "modules/dataflows/js/operator.js",
+            "modules/dataflows/js/link.js",
+            "modules/dataflows/js/dataflow.js",
+            "modules/dataflows/js/select_operator.js",
+            "modules/dataflows/js/modal_operator.js",
+            "modules/dataflows/js/main.js",
+            "modules/dataflows/js/interaction.js"
+        ]);
+    }
+    else if (obj == 'databases') {
+        js_obj_snippets = js_obj_snippets.concat([
+            "/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js",
+            "modules/datasets/js/general.js",
+            "modules/datasets/js/visu_table.js",
+            "modules/datasets/js/creation.js",
+            "modules/datasets/js/upload.js"
+        ]);
     }
 
-    $.getScript("js/"+obj+".js", function(scp, status) {
-        if (loaded_generic_files != 'done') {
-            $('#main_div').append($('<div>').load("divs/generic/main.html", function () {
-                loaded_generic_files = 'done';
-                get_html(obj);
-            }));
-        }
-        else { get_html(obj); }
-    });
+    return js_obj_snippets.concat(html_obj_snippets);
 }
 
 function files_on_demand(dir, div_id, cb) {
+    let snippets = [];
+    let modules = [];
+
     if (dir.startsWith('Datas')) {
-        $.getScript("/webcache/cdnjs/PapaParse/4.3.6/papaparse.min.js").done( function() {
-            if (loaded_databases_files != 'done') {
-                l_html('databases', event, dir, cb);
-            }
-            else { cb(); }
-        });
+        modules = ['databases'];
     }
     else if (dir.startsWith('Dataflows')) {
         if (div_id) {
-            $.getScript("/webcache/cdnjs/ckeditor/4.7.3/ckeditor.js").done( function() {
-                function cb2() {
-                    if (loaded_dataflows_files != 'done') {
-                      l_html('dataflows', event, dir, cb);
-                    }
-                    else { cb(); }
-                };
-                if (loaded_operators_files != 'done') {
-                    l_html('operators', event, dir, cb2);
-                }
-                else { cb(); }
-            });
+            modules = ['operators', 'dataflows'];
         }
         else {
-            if (loaded_dataflows_files != 'done') {
-                l_html('dataflows', event, dir, cb);
-            }
-            else { cb(); }
+            modules = ['dataflows'];
         }
     }
     else if (dir.startsWith('Operators')) {
-        if (loaded_operators_files != 'done') {
-            l_html('operators', event, dir, cb);
-        }
-        else { cb(); }
+        modules = ['operators'];
     }
     else if (dir.startsWith('Projects')) {
-        if (loaded_projects_files != 'done') {
-            l_html('projects', event, dir, cb);
-        }
-        else { cb(); }
+        modules = ['projects'];
     }
     else if (dir.length && !dir.startsWith('Home'))
         console.log('Unexpected showDiv() on', dir);
+
+    for (let module of modules) {
+        if (!loaded_module_files.has(module)) {
+            snippets = snippets.concat(get_module_snippets(module));
+        }
+    }
+
+    if (snippets.length > 0) {
+        load_all_snippets(snippets, function() {
+            for (let module of modules) {
+                loaded_module_files.add(module);
+            }
+            cb();
+        });
+    }
+    else {
+        cb();
+    }
 }
 
 function update_navbar(obj) {
@@ -744,7 +781,7 @@ function update_main_div(dir, obj, id) {
 function update_main_header(dir) {
 
     //closing floating windows
-    if (loaded_projects_files != 'no')
+    if ('projects' in loaded_module_files)
         projects_close_add_object();
 
     function toggle(add_cl, rem_cl) {

@@ -116,32 +116,26 @@ function w3DisplayData(id, data) {
    we know give a callback as the 1st parameter, and this callback
    is called when all elements have been loaded. */
 function w3IncludeHTML(cb) {
-    var z, i, elmnt, file, xhttp;
-    if (!cb.hasOwnProperty('counter')) {
-        cb.counter = 0;
-    }
-    z = document.getElementsByTagName("*");
+    let z, i;
+    z = document.querySelectorAll("div[w3-include-html]");
+    cb.counter = z.length;
     for (i = 0; i < z.length; i++) {
-        elmnt = z[i];
-        file = elmnt.getAttribute("w3-include-html");
-        if (file) {
-            cb.counter += 1;
-            xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
-                    elmnt.innerHTML = this.responseText;
-                    elmnt.removeAttribute("w3-include-html");
-                    cb.counter -= 1;
-                    w3IncludeHTML(cb);
+        let elmnt = z[i];
+        let file = elmnt.getAttribute("w3-include-html");
+        let xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                elmnt.removeAttribute("w3-include-html");
+                elmnt.innerHTML = this.responseText;
+                cb.counter -= 1;
+                console.log('included:' + file);
+                if (cb.counter == 0) {
+                    cb();
                 }
             }
-            xhttp.open("GET", file, true);
-            xhttp.send();
-            return;
         }
-    }
-    if (cb.counter == 0) {
-        cb();
+        xhttp.open("GET", file, true);
+        xhttp.send();
     }
 }
 

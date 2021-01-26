@@ -135,21 +135,19 @@ function create_operator_instance_from_hub(drop_x, drop_y, id, info) {
     ndiv.onmouseenter   = op_mouse_enter;
     ndiv.onmouseleave   = op_mouse_leave;
 
-    main_div.appendChild(ndiv);
+    df_main_div().append(ndiv);
 
     //Plumbery: draggable + connections
-    jsPlumb.draggable(ndiv.id, {start: jsp_drag_start, stop: jsp_drag_stop});
+    df_jsplumb().draggable(ndiv.id, {start: jsp_drag_start, stop: jsp_drag_stop});
 
-    let e_in = null;
-    let e_out = null;
     global_ops_inst.push({  hub_id      : info.op_id,
                             cl          : class_from_id(parseInt(id)),
-                            ep          : {in: e_in, out: e_out},
+                            ep          : {in: null, out: null},
                             gui         : {x: drop_x, y: drop_y}
                             });
     //creating outputs and inputs
     if (info.enabled) {
-        create_op_plugs(info, ndiv);
+        update_op_plugs(info, ndiv);
         create_op_modal(ndiv.id, info);
     }
 
@@ -173,7 +171,7 @@ function update_operator_instance_from_hub(id, info) {
 
     console.log('UPDATING OP', "modal_"+ndiv.id);
 
-    create_op_plugs(info, ndiv);
+    update_op_plugs(info, ndiv);
     let m = document.getElementById("modal_"+ndiv.id);
     if (!m) {
         create_op_modal(ndiv.id, info);
@@ -181,25 +179,12 @@ function update_operator_instance_from_hub(id, info) {
     ndiv.ondblclick     = open_op_modal;
 }
 
-function endpoint_exists(id) {
-    let eps = $('.jsplumb-endpoint');
-    for (let i=0; i< eps.length; i++) {
-        if (eps[i]._jsPlumb.id == id) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function create_op_plugs(info, ndiv) {
+function update_op_plugs(info, ndiv) {
     let inst = instance_from_id(info.op_id);
 
-    inst.ep.in = null;
-    inst.ep.out = null;
-    let id_i = "ep_"+ndiv.id+"_in";
-    let id_o = "ep_"+ndiv.id+"_out";
-    if ( info.inputs.length > 0 && !endpoint_exists(id_i)) {
-        inst.ep.in = jsPlumb.addEndpoint(ndiv.id, {   anchor:[ "Left"],
+    if (info.inputs.length > 0 && !inst.ep.in) {
+        let id_i = "ep_"+ndiv.id+"_in";
+        inst.ep.in = df_jsplumb().addEndpoint(ndiv.id, {   anchor:[ "Left"],
                                                 isTarget:true,
                                                 uuid:id_i,
                                                 id: id_i,
@@ -208,8 +193,9 @@ function create_op_plugs(info, ndiv) {
                                                 hoverPaintStyle:{ fillStyle:"black", radius:6}
                                                 });
     }
-    if (info.outputs.length > 0 && !endpoint_exists(id_o))
-        inst.ep.out = jsPlumb.addEndpoint(ndiv.id, {  anchor:[ "Right"],
+    if (info.outputs.length > 0 && !inst.ep.out) {
+        let id_o = "ep_"+ndiv.id+"_out";
+        inst.ep.out = df_jsplumb().addEndpoint(ndiv.id, {  anchor:[ "Right"],
                                                 isSource:true,
                                                 uuid:"ep_"+ndiv.id+"_out",
                                                 id:"ep_"+ndiv.id+"_out",
@@ -218,6 +204,7 @@ function create_op_plugs(info, ndiv) {
                                                 paintStyle:{fillStyle:transparent_grey, radius:6},
                                                 hoverPaintStyle:{ fillStyle:transparent_grey, radius:6}
                                                 });
+    }
 }
 
 function check_operator(op) {
@@ -335,8 +322,8 @@ function remove_operator_instance(id, on_hub) {
         remove_connection(hub_id, on_hub);
 
         //remove from jsPlumb
-        jsPlumb.remove(id);
-        jsPlumb.repaintEverything();
+        df_jsplumb().remove(id);
+        df_jsplumb().repaintEverything();
 
         //remove modal
         var mod = document.getElementById("modal_"+id);
@@ -468,7 +455,7 @@ function output_enable(inst) {
             }
         }
 
-        jsPlumb.repaintEverything();
+        df_jsplumb().repaintEverything();
     }
 }
 
@@ -483,7 +470,7 @@ function output_disable(inst) {
                 disable_link(global_links[i]);
             }
         }
-        jsPlumb.repaintEverything();
+        df_jsplumb().repaintEverything();
     }
 }
 
@@ -497,7 +484,7 @@ function input_disable(inst) {
                 disable_link(global_links[i]);
             }
         }
-        jsPlumb.repaintEverything();
+        df_jsplumb().repaintEverything();
     }
 }
 

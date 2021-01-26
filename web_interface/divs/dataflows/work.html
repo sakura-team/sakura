@@ -2,17 +2,17 @@
     <!-- <br>
     <iframe id='iframe_dataflows' class="executeOnShow" src="" frameborder="0" style="margin-top:0px; margin-bottom:10px; width:100%; height:900px;"></iframe> -->
     <br>
-    <div class="container theme-showcase" role="main" style="padding: 0px; width:100%">
+    <div id="empty_dataflow" class="display:none dataflow-div container theme-showcase" role="main" style="padding: 0px; width:100%">
         <table width="100%">
             <tr>
                 <td width="250px">
-                    <div id="sakura_left_div" class="sakura_left_tab">
-                        <div class="panel-group" name="op_left_accordion" id="op_left_accordion">
-                        <button title="Create a new panel of operators" type="button" class="btn btn-primary btn-xs" style="width: 182px; margin-left: 1px; margin-top: 1px; padding: 5px;" id="select_op_add_button" onclick="select_op_new_modal();"><span class="glyphicon glyphicon-plus" style="cursor: pointer;"></span></button>
+                    <div class="sakura_left_tab">
+                        <div class="panel-group op_left_accordion" name="op_left_accordion">
+                        <button title="Create a new panel of operators" type="button" class="btn btn-primary btn-xs select_op_add_button" style="width: 182px; margin-left: 1px; margin-top: 1px; padding: 5px;" onclick="select_op_new_modal();"><span class="glyphicon glyphicon-plus" style="cursor: pointer;"></span></button>
                         </div>
                     </div>
                 <td width="100%">
-                    <div id="sakura_main_div" class="sakura_main" style="background-image: url(modules/dataflows/img/sakura_flower.jpg); background-repeat: no-repeat; background-position: center; "/>
+                    <div class="sakura_main" style="background-image: url(modules/dataflows/img/sakura_flower.jpg); background-repeat: no-repeat; background-position: center; "/>
                 </td>
             </tr>
         </table>
@@ -130,14 +130,4 @@
             </div>
         </div>
     </div>
-
-    <script src="modules/dataflows/js/general.js"></script>
-    <script src="modules/dataflows/js/comment.js"></script>
-    <script src="modules/dataflows/js/operator.js"></script>
-    <script src="modules/dataflows/js/link.js"></script>
-    <script src="modules/dataflows/js/dataflow.js"></script>
-    <script src="modules/dataflows/js/interaction.js"></script>
-    <script src="modules/dataflows/js/select_operator.js"></script>
-    <script src="modules/dataflows/js/modal_operator.js"></script>
-    <script src="modules/dataflows/js/main.js"></script>
 </div>

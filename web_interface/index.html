@@ -12,6 +12,7 @@
     <script src="/webcache/cdnjs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
     <script src="/webcache/cdnjs/simplemde/1.11.2/simplemde.min.js"></script>
     <script src="/webcache/cdnjs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+    <script src="js/sakura-common.js"></script>
 
     <link rel="icon" type="image/png" href="media/favicon.png">
     <link rel="stylesheet" href="css/web_interface.css">
@@ -25,19 +26,20 @@
     <link rel="stylesheet" type="text/css" href="/webcache/cdnjs/font-awesome/4.7.0/css/font-awesome.min.css">
 
     <script>
-        var loaded_generic_files    = 'no';
-        var loaded_databases_files  = 'no';
-        var loaded_operators_files  = 'no';
-        var loaded_dataflows_files  = 'no';
-        var loaded_projects_files   = 'no';
+        var loaded_module_files = new Set([]);
 
         window.onpopstate = function(event) {
             var evt = document.createEvent('Event');
             evt.initEvent('load', false, false);
             window.dispatchEvent(evt);
         }
-        window.onload = function(event) {
-            let a = window.location.href.split("#");
+        document.addEventListener("DOMContentLoaded", function(event) {
+            let a;
+            /* let jquery use browser cache when using ajax */
+            $.ajaxSetup({
+                cache: true
+            });
+            a = window.location.href.split("#");
             if (a.length>1) {
                 // permalink
                 cb = function() {
@@ -59,7 +61,7 @@
                     web_interface_deal_with_events(evt_name, args);
                 });
             });
-        }
+        });
     </script>
     </head>
     <body>
@@ -86,6 +88,7 @@
                             <span id="home_icon"
                                   class="glyphicon glyphicon-home"
                                   title="home" aria-hidden="true">
+                                <img src='media/favicon_home.png' width='17px' style="display: none;"/>
                             </span>
                         </a>
                     </li>
@@ -143,6 +146,7 @@
                 <div w3-include-html="divs/documentation/cgu.html"></div>
                 <div w3-include-html="divs/create/index.html"></div>
                 <div w3-include-html="divs/colSelect/index.html"></div>
+                <div w3-include-html="divs/generic/main.html"></div>
             </div>
 
             <!--<div class="container" id="divfooter" style="margin-top:50px">
@@ -331,7 +335,6 @@
         </div>
 
 
-        <script src="js/sakura-common.js"></script>
         <script src="js/sakura-gui_env.js"></script>
         <script>
             var DEBUG = true;

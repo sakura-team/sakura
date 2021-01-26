@@ -383,18 +383,19 @@ function change_chevron(a, panel_id) {
 
 function select_op_create_accordion(panel, ops) {
 
+    let df_id = "dataflow" + web_interface_current_id;
     let wrapper= document.createElement('div');
     load_from_template(
                     wrapper,
                     "panel.html",
                     {'id': panel.id, 'title': panel.title, 'title_escaped': panel.title.replace(' ', '_')},
                     function () {
-                        let modal = wrapper.firstChild;
-                        $(modal).find("#panel_"+panel.id+"_body").html(ops);
-                        let acc_div = document.getElementById('op_left_accordion');
-                        let butt = document.getElementById('select_op_add_button');
+                        let modal = $(wrapper.firstChild);
+                        modal.find("#panel_"+panel.id+"_body").html(ops);
+                        let acc_div = $("#" + df_id + " .op_left_accordion");
+                        let butt = $("#" + df_id + " .select_op_add_button");
 
-                        acc_div.insertBefore(wrapper.firstChild, butt);
+                        modal.insertBefore(butt);
 
                         if (!panel.gui.opened)
                             $('#panel_'+panel.title.replace(' ', '_')+'_chevron').trigger('click');
@@ -403,11 +404,9 @@ function select_op_create_accordion(panel, ops) {
 
 
 function select_op_delete_accordion(id) {
-    let panel = panel_from_id(id);
-    let acc = document.getElementById(panel.id);
-    document.getElementById('op_left_accordion').removeChild(acc);
+    $('#' + id).remove();
 
-    let index = panel_index_from_id(panel.id);
+    let index = panel_index_from_id(id);
     global_op_panels.splice(index,1);
 
     save_dataflow();

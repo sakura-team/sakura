@@ -21,7 +21,7 @@ function create_op_modal(op_id, info) {
                     function (r_text) {
                         let modal = wrapper.firstChild;
                         $(modal).find("#tdsvg").html(cl.svg);
-                        main_div.appendChild(modal);
+                        df_main_div().append(modal);
                         let select  = $('#modal_'+op_id+'_select_revision');
                         let cr      = info.code_ref;
                         let t       = cr.split(':');

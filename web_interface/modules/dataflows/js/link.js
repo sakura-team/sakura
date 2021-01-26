@@ -46,8 +46,8 @@ function create_link(js, src_id, dst_id) {
         if (possible_links.length == 0) {
             // alert("These two operators cannot be linked");
             main_alert("LINK", 'These two operators cannot be linked', null);
-            jsPlumb.detach(js);
-            jsPlumb.repaintEverything();
+            df_jsplumb().detach(js);
+            df_jsplumb().repaintEverything();
             return false;
         }
         else
@@ -89,7 +89,7 @@ function create_link(js, src_id, dst_id) {
         if (LOG_LINKS_EVENTS) console.log('CL 1', error);
     });
     js.setPaintStyle({strokeStyle: transparent_grey, radius: 6});
-    jsPlumb.repaintEverything();
+    df_jsplumb().repaintEverything();
 }
 
 
@@ -217,7 +217,7 @@ function create_link_modal( p_links,  link,
             });
 
             // append to main div
-            main_div.appendChild(modal);
+            df_main_div().append(modal);
             if (open_now) {
                 $(modal).modal();
             }
@@ -359,14 +359,14 @@ function remove_link(link, on_hub) {
     else {
         //Then to jsPlumb
         var jsPConn = null;
-        jsPlumb.getConnections().forEach (function (item) {
+        df_jsplumb().getConnections().forEach (function (item) {
             if (item.id == link.id)
                 jsPConn = item;
         });
 
         if (jsPConn) {
-            jsPlumb.detach(jsPConn);
-            jsPlumb.repaintEverything();
+            df_jsplumb().detach(jsPConn);
+            df_jsplumb().repaintEverything();
         }
 
         //remove modal

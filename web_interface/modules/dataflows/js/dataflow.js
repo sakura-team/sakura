@@ -56,8 +56,8 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
                 }
                 else {
                     console.log('NO GUI for this op !!!!');
-                    let g = { x: $('#sakura_main_div').width()/2,
-                              y: $('#sakura_main_div').height()/2};
+                    let g = { x: df_main_div().width()/2,
+                              y: df_main_div().height()/2};
                     push_request('operators_set_gui_data');
                     sakura.apis.hub.operators[parseInt(opi.op_id)].set_gui_data(JSON.stringify(g)).then(  function(){
                         pop_request('operators_set_gui_data');
@@ -101,7 +101,7 @@ function create_dataflow_links(df_links, from_shell=false) {
 
             if ( src_inst.ep.out && dst_inst.ep.in) {
                 global_dataflow_jsFlag = false;
-                js_link = jsPlumb.connect({ uuids:[ src_inst.ep.out.getUuid(),
+                js_link = df_jsplumb().connect({ uuids:[ src_inst.ep.out.getUuid(),
                                                     dst_inst.ep.in.getUuid()]});
                 global_dataflow_jsFlag = true;
                 create_link_from_hub( js_link, link, lgui, from_shell);
@@ -136,19 +136,39 @@ function create_dataflow_links(df_links, from_shell=false) {
     };
 }
 
+var jsplumbs = {};
+
+function df_jsplumb() {
+    return jsplumbs[web_interface_current_id];
+}
+
+function df_main_div() {
+    let df_id = "dataflow" + web_interface_current_id;
+    return $("#" + df_id + " .sakura_main");
+}
+
 function current_dataflow() {
+    let df_id = "dataflow" + web_interface_current_id;
+    let jsp_instance;
 
-    //Cleanings
-    remove_all_links(false);
-    remove_all_operators_instances(false);
-    remove_all_comments(false);
-    global_op_panels = [];
+    // hide all other dataflow divs
+    $(".dataflow-div").hide();
 
-    //Emptying current accordion
-    let acc_div = document.getElementById('op_left_accordion');
-    let butt = document.getElementById('select_op_add_button').cloneNode(true);
-    $(acc_div).empty();
-    acc_div.appendChild(butt);
+    if ($("#" + df_id).length == 0) {   // if df div does not exist yet
+        let df_div = $("#empty_dataflow").clone();
+        df_div.attr('id', df_id);
+        df_div.insertAfter("#empty_dataflow");
+        df_set_events(df_main_div());
+        jsp_instance = jsPlumb_init();
+        jsp_instance.setContainer(df_main_div()[0]);
+        jsplumbs[web_interface_current_id] = jsp_instance;
+        load_dataflow();
+    }
+
+    $("#" + df_id).show();
+}
+
+function load_dataflow() {
 
     //We first ask for the operator classes
     push_request('op_classes_list');
@@ -180,8 +200,8 @@ function current_dataflow() {
                 }
                 else {
                     console.log('NO GUI for this op !!!!');
-                    let g = { x: $('#sakura_main_div').width()/2,
-                              y: $('#sakura_main_div').height()/2};
+                    let g = { x: df_main_div().width()/2,
+                              y: df_main_div().height()/2};
                     push_request('operators_set_gui_data');
                     sakura.apis.hub.operators[parseInt(opi.op_id)].set_gui_data(JSON.stringify(g)).then(  function(){
                         pop_request('operators_set_gui_data');

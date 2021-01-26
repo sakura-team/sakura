@@ -26,10 +26,10 @@ function new_comment() {
                     {'id': id, 'title': "Comment "+id, 'body': "Edit your comment here"},
                     function () {
                         var com         = wrapper.firstChild;
-                        com.style.left  = ''+(cursorX - main_div.offsetLeft - 90)+'px';
-                        com.style.top   = ''+(cursorY - main_div.offsetTop)+'px';
+                        com.style.left  = ''+(cursorX - df_main_div().offset().left - 90)+'px';
+                        com.style.top   = ''+(cursorY - df_main_div().offset().top)+'px';
                         com.setAttribute("draggable", "true");
-                        main_div.appendChild(com);
+                        df_main_div().append(com);
 
                         $('#comment_'+id+'_title').blur( function (e) {
                             save_dataflow();
@@ -63,7 +63,7 @@ function comment_from(com) {
                         ncom.style.height    = com.height;
                         ncom.setAttribute("draggable", "true");
 
-                        main_div.appendChild(ncom);
+                        df_main_div().append(ncom);
 
                         $('#comment_'+com.id+'_title').blur( function (e) {
                             save_dataflow()
@@ -99,21 +99,10 @@ function get_comment_info(com) {
 
 
 function remove_comment(id) {
-    main_div.removeChild(comment_from_id(id).div);
+    $(comment_from_id(id).div).remove();
     global_coms.splice(index_from_comment_id(id), 1);
     save_dataflow();
 }
-
-function remove_all_comments(on_hub) {
-    if (!on_hub) {
-        global_coms.forEach( function(com) {
-            main_div.removeChild(comment_from_id(com.id).div);
-        });
-        global_coms = [];
-    } else
-        not_yet();
-}
-
 
 function index_from_comment_id(id) {
     return global_coms.findIndex( function (e) {
