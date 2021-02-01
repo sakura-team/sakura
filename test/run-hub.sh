@@ -102,8 +102,11 @@ cat > $TMPDIR/hub.conf << EOF
     "hub-port": 10432,
     "work-dir": "$HOME/.sakura",
     $hub_debug_conf
-$(cat test/hub-email.conf)
+$(cat test/hub-email.conf),
+$(cat test/hub-cas.conf),
+$(cat test/hub-ldap.conf)
 }
 EOF
 
 PYTHONPATH="$PWD" sakura/hub/hub.py -f $TMPDIR/hub.conf -d $WEBAPP
+cat $TMPDIR/hub.conf

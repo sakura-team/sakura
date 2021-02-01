@@ -7,6 +7,8 @@ from sakura.common.events import EventSourceMixin
 from sakura.hub.secrets import TemporarySecretsRegistry
 from sakura.hub.web.transfers import Transfer
 from sakura.common.errors import APIRequestError
+from sakura.hub import conf
+from sakura.common.password import decode_password
 
 # object storing greenlet-local data
 greenlet_env = local()
@@ -150,19 +152,14 @@ class HubContext(EventSourceMixin):
         return self.session.user.login
     def other_login(self, type, ticket, service):
         if type == 'cas':
-            import json
-            try:
-                f = open('hub-authentification.conf', 'r')
-            except Exception as e:
+            url = conf.cas.url
+            if not url:
                 raise APIRequestError('Hub error: Cannot find file <b>hub-authentification.conf</b> !')
                 return None
 
-            auths = json.loads(f.read())
-
             import requests
             format = 'JSON'
-            url = auths['cas']['url']
-            x = requests.get( url+'?ticket='+ticket+'&format='+format+'&service='+service)
+            x = requests.get( conf.cas.url+'?ticket='+ticket+'&format='+format+'&service='+service)
             succ = x.text.find('authenticationSuccess')
             if succ != -1:
                 print('CAS AUTHENTICATION SUCCESS')
@@ -183,15 +180,28 @@ class HubContext(EventSourceMixin):
                     import ldap3, ssl
 
                     try:
-                        url = auths['ldap']['url']
-                        port = auths['ldap']['port']
-                        dn = auths['ldap']['dn']
-                        bdn = auths['ldap']['binddn']
-                        pw = auths['ldap']['password']
-                        if auths['ldap']['tls version'] == 'v1':
-                            tls = ldap3.Tls(version = ssl.PROTOCOL_TLSv1)
+                        ldap = conf.ldap
                     except Exception as e:
-                        raise APIRequestError('LDAP description error in <b>hub-authentification.conf</b> !')
+                        raise APIRequestError('<b>LDAP description missing !</b><br> You cannot use CAS authentification!')
+
+                    try:
+                        url = conf.ldap.url
+                        port = conf.ldap.port
+                        dn = conf.ldap.dn
+                        bdn = conf.ldap.binddn
+                        encoded_password = conf.ldap.get('encoded_password', None)
+                        if encoded_password is not None:
+                            pw = decode_password(encoded_password)
+                        else:   # legacy clear-text password
+                            pw = conf.ldap.password
+
+                        tls = None
+                        if conf.ldap.get('tls_version', None) == 'v1':
+                            tls = ldap3.Tls(version = ssl.PROTOCOL_TLSv1)
+
+
+                    except Exception as e:
+                        raise APIRequestError('LDAP description error !', e)
                         return None
 
                     server = ldap3.Server(url+':'+port, tls=tls, get_info=ldap3.ALL, connect_timeout=3.0)
@@ -208,15 +218,15 @@ class HubContext(EventSourceMixin):
                         raise APIRequestError('LDAP Connection Timeout !<br><b>'+login+'</b> cannot login !')
                         return None
 
-                    entry = conn.search(dn, '(&(objectclass=person)(uid='+l+'))', attributes=['*'])
+                    entry = conn.search(dn, '(&(objectclass=person)(uid='+login+'))', attributes=['*'])
                     if not entry:
                         raise APIRequestError('<b>'+login+'</b> not found in LDAP server !')
                         return None
                     u = conn.entries[0]
 
-                    # print(u['mail'])
-                    # print(u['given name'])
-                    # print(u['sn'])
+                    print(u['mail'])
+                    print(u['given name'])
+                    print(u['sn'])
 
                     user_info = {   'login': login,
                                     'password': '__CAS__',
