@@ -313,13 +313,10 @@ function reload_operator_instance(id, hub_id) {
     });
 }
 
-function remove_operator_instance(id, on_hub) {
+function gui_remove_operator_instance(id) {
     if (id) {
         tab = id.split("_");
         hub_id = parseInt(tab[2]);
-
-        //First we remove the connections
-        remove_connection(hub_id, on_hub);
 
         //remove from jsPlumb
         df_jsplumb().remove(id);
@@ -335,24 +332,20 @@ function remove_operator_instance(id, on_hub) {
 
         //Remove from the list of instances
         global_ops_inst.splice(instance_index_from_id(hub_id), 1);
-
-        if (id && on_hub) {
-            //console.log(hub_id);
-            push_request('operators_delete');
-            sakura.apis.hub.operators[hub_id].delete().then( function (result) {
-                pop_request('operators_delete');
-            }).catch ( function (error) {
-                pop_request('operators_delete');
-                console.log('OPERATORS.js: error 8', error);
-            });
-        }
     }
 }
 
-function remove_all_operators_instances(on_hub) {
-    var list = global_ops_inst.slice();
+function hub_remove_all_operators_instances() {
+    let list = global_ops_inst.slice();
     list.forEach( function (item) {
-        remove_operator_instance("op_"+item.cl.id+"_"+item.hub_id, on_hub);
+        //console.log(item.hub_id);
+        push_request('operators_delete');
+        sakura.apis.hub.operators[item.hub_id].delete().then( function (result) {
+            pop_request('operators_delete');
+        }).catch ( function (error) {
+            pop_request('operators_delete');
+            console.log('OPERATORS.js: error 8', error);
+        });
     });
 }
 

@@ -74,7 +74,7 @@ function dataflows_deal_with_events(evt_name, args, proxy) {
 
         case ('deleted_instance'):
             let inst = instance_from_id(args);
-            remove_operator_instance('op_'+inst.cl.id+"_"+inst.hub_id, false);
+            gui_remove_operator_instance('op_'+inst.cl.id+"_"+inst.hub_id);
             break;
 
         default:
@@ -321,11 +321,8 @@ function clean_dataflow() {
     if (!res)
         return false;
 
-    //removing links
-    remove_all_links();
-
-    //removing operators instances
-    remove_all_operators_instances(true);
+    // removing operators instances (will also remove links)
+    hub_remove_all_operators_instances();
 };
 
 
