@@ -6,6 +6,7 @@ from gevent.lock import Semaphore
 class OpInstanceMixin(BaseMixin):
     INSTANCIATED = set()
     MOVING = set()
+    DELETING = set()
     RELOAD_NOT_COMPLETED = set()
     LOCAL_STREAMS = {}
     LOCKS = {}
@@ -58,9 +59,18 @@ class OpInstanceMixin(BaseMixin):
             OpInstanceMixin.MOVING.add(self.id)
         else:
             OpInstanceMixin.MOVING.discard(self.id)
+    @property
+    def deleting(self):
+        return self.id in OpInstanceMixin.DELETING
+    @deleting.setter
+    def deleting(self, boolean):
+        if boolean:
+            OpInstanceMixin.DELETING.add(self.id)
+        else:
+            OpInstanceMixin.DELETING.discard(self.id)
     def push_event(self, *args, **kwargs):
-        # do not push events to GUI when moving
-        if not self.moving:
+        # do not push events to GUI when moving or deleting
+        if not self.moving and not self.deleting:
             super().push_event(*args, **kwargs)
     @property
     def disabled_message(self):
@@ -310,6 +320,7 @@ class OpInstanceMixin(BaseMixin):
             dataflow.push_event('created_instance', op.id)
         return op.id
     def delete_instance(self):
+        self.deleting = True
         self.disable_links()
         # remove 1-hop links (since these are connected to
         # the operator instance we are removing)
@@ -320,6 +331,7 @@ class OpInstanceMixin(BaseMixin):
         # delete instance remotely
         if self.enabled:
             self.delete_on_daemon()
+        self.deleting = False   # done
         # notify event listeners
         self.dataflow.push_event('deleted_instance', self.id)
         # delete instance in local db
