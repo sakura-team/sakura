@@ -2,6 +2,7 @@ import time
 from enum import Enum
 from sakura.common.access import ACCESS_SCOPES, GRANT_LEVELS
 from sakura.common.cache import cache_result
+from sakura.common.errors import APIObjectDeniedError
 from sakura.hub.exceptions import DaemonDataExceptionIgnoreObject
 from sakura.hub.context import get_context
 from sakura.hub.access import pack_gui_access_info, parse_gui_access_info, \
