@@ -1,5 +1,6 @@
 import collections, itertools, io, sys, traceback, builtins, random
 import gevent.pool
+from time import time
 from os import getpid
 from gevent.queue import Queue
 from gevent.event import AsyncResult
@@ -215,7 +216,12 @@ class APIEndpoint:
         self.protocol.dump((req_id,) + req, self.f)
         self.f.flush()
         self.debug_prefix += '  '
+        orig_time = time()
         res = async_res.get()
+        delay = time() - orig_time
+        if (delay > 0.1):
+            print('WARNING long API request:', (req_id,) + req,
+                    'delay', "%.02f" % delay, 'seconds')
         if isinstance(res, BaseException):
             raise APIRemoteError(str(res))
         return res
