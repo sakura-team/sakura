@@ -173,8 +173,8 @@ FROM
 WHERE dbpriv.privilege_type IN ('CREATE', 'CONNECT', 'OWNER');
 '''
 
-SQL_GET_DB_TABLES = '''\
-SELECT c.relname as "Name"
+SQL_GET_DB_TABLE_OIDS = '''\
+SELECT c.oid
 FROM pg_catalog.pg_class c
      LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
 WHERE c.relkind = 'r'
@@ -182,53 +182,64 @@ WHERE c.relkind = 'r'
       AND n.nspname <> 'information_schema'
       AND n.nspname !~ '^pg_toast'
       AND pg_catalog.pg_table_is_visible(c.oid)
-      AND c.relname !~ '^_';
+      AND c.relname !~ '^_'
 '''
 
-SQL_GET_TABLE_COLUMNS = '''
-    SELECT  a.attname,
-            format_type(a.atttypid, a.atttypmod) AS type,
-            col_description(a.attrelid, a.attnum) AS comment
-    FROM   pg_attribute a
-    WHERE  a.attrelid = '%(table_name)s'::regclass::oid
-    AND    a.attnum > 0
-    AND    NOT a.attisdropped
-    ORDER  BY a.attnum;
+SQL_GET_ALL_DB_COLUMNS = '''
+SELECT  t.relname, a.attname,
+        format_type(a.atttypid, a.atttypmod) AS type,
+        d.description AS comment
+FROM   pg_attribute a
+LEFT JOIN pg_description d ON (a.attrelid = d.objoid
+                                AND a.attnum = d.objsubid)
+JOIN pg_class t ON (a.attrelid = t.oid)
+AND    a.attnum > 0
+AND    NOT a.attisdropped
+AND    t.relkind = 'r'
+AND    t.oid IN (''' + SQL_GET_DB_TABLE_OIDS + ''')
+ORDER  BY t.oid, a.attnum;
 '''
 
-SQL_GET_TABLE_FOREIGN_KEYS = '''
-    WITH fk_info AS (
-        SELECT  unnest(r.conkey) as attnum,
+SQL_GET_ALL_DB_FOREIGN_KEYS = '''
+WITH fk_info AS (
+    SELECT      r.oid as oid,
+                unnest(r.conkey) as attnum,
                 unnest(r.confkey) as fk_attnum,
-                r.oid,
-                fk_table.relname as fk_table,
-                fk_table.oid as fk_table_oid
-        FROM    pg_catalog.pg_constraint r,
-                pg_catalog.pg_class fk_table
-        WHERE   r.conrelid = '%(table_name)s'::regclass
-          AND   r.contype = 'f'
-          AND   r.confrelid = fk_table.oid)
-    SELECT  json_agg(a.attname) as attnames,
-            json_agg(fk_a.attname) as fk_attnames,
-            fk.fk_table
-    FROM    pg_attribute a, pg_attribute fk_a, fk_info fk
-    WHERE   a.attrelid = '%(table_name)s'::regclass
-      AND   a.attnum = fk.attnum
-      AND   fk_a.attrelid = fk.fk_table_oid
-      AND   fk_a.attnum = fk.fk_attnum
-    GROUP BY fk.oid, fk.fk_table;
+                r.conrelid as table_oid,
+                r.confrelid as fk_table_oid
+        FROM    pg_catalog.pg_constraint r
+        WHERE   r.contype = 'f'
+)
+SELECT  t.relname as table_name,
+        json_agg(a.attname) as attnames,
+        fk_t.relname as fk_table_name,
+        json_agg(fk_a.attname) as fk_attnames
+FROM    pg_attribute a, pg_attribute fk_a,
+	fk_info fk,
+	pg_class t, pg_class fk_t
+WHERE   a.attrelid = fk.table_oid
+AND     a.attnum = fk.attnum
+AND     fk_a.attrelid = fk.fk_table_oid
+AND     fk_a.attnum = fk.fk_attnum
+AND	t.oid = fk.table_oid
+AND	fk_t.oid = fk.fk_table_oid
+AND     t.oid in (''' + SQL_GET_DB_TABLE_OIDS + ''')
+GROUP BY fk.oid, t.relname, fk_t.relname;
 '''
 
-SQL_GET_TABLE_PRIMARY_KEY = '''
+SQL_GET_ALL_DB_PRIMARY_KEYS = '''
     WITH pk_info AS (
-        SELECT  unnest(indkey) as attnum
+        SELECT  unnest(indkey) as attnum, indrelid as table_oid
         FROM    pg_index
-        WHERE   pg_index.indrelid = '%(table_name)s'::regclass::oid
-        AND     indisprimary)
-    SELECT  COALESCE(json_agg(a.attname), '[]') as attnames
-    FROM pg_attribute a, pk_info pk
-    WHERE a.attrelid = '%(table_name)s'::regclass
-      AND a.attnum = pk.attnum;
+        WHERE   indisprimary)
+    SELECT  t.relname,
+            COALESCE(json_agg(a.attname), '[]') as attnames
+    FROM pg_attribute a, pk_info pk, pg_class t
+    WHERE a.attrelid = pk.table_oid
+      AND a.attrelid = t.oid
+      AND t.oid in (''' + SQL_GET_DB_TABLE_OIDS + ''')
+      AND a.attnum = pk.attnum
+    GROUP BY t.relname;
 '''
 
 SQL_CREATE_USER = '''
@@ -265,8 +276,11 @@ CREATE TABLE %(table_name)s (%(columns_sql)s);
 
 SQL_DROP_TABLE = '''DROP TABLE %(table_name)s'''
 
-SQL_ESTIMATE_ROWS_COUNT = '''
-select reltuples::BIGINT AS estimate FROM pg_class WHERE oid = '%(table_name)s'::regclass::oid;
+SQL_ESTIMATE_ALL_ROWS_COUNTS = '''
+SELECT relname as table_name, reltuples::BIGINT AS estimate
+FROM pg_class
+WHERE reltuples is not NULL
+  AND oid IN (''' + SQL_GET_DB_TABLE_OIDS + ''');
 '''
 
 DEFAULT_CONNECT_TIMEOUT = 4     # seconds
@@ -406,38 +420,22 @@ class PostgreSQLDBDriver:
                 if dbname not in IGNORED_DATABASES:
                     metadata_collector.register_database_grant(dbuser, dbname, grant)
     @staticmethod
-    def collect_database_tables(db_conn, metadata_collector):
+    def probe_database(db_conn, metadata_collector):
         # db_conn must be connected to the targeted database
-        with db_conn.cursor() as cursor:
-            cursor.execute(SQL_GET_DB_TABLES)
-            for row in cursor:
-                tablename = row[0]
-                metadata_collector.register_table(tablename)
+        PostgreSQLDBDriver.collect_tables_and_columns(db_conn, metadata_collector)
+        PostgreSQLDBDriver.collect_primary_keys(db_conn, metadata_collector)
+        PostgreSQLDBDriver.collect_foreign_keys(db_conn, metadata_collector)
+        PostgreSQLDBDriver.collect_table_count_estimates(db_conn, metadata_collector)
     @staticmethod
-    def collect_table_primary_key(db_conn, metadata_collector, table_name):
+    def collect_tables_and_columns(db_conn, metadata_collector):
+        prev_table_name = None
         with db_conn.cursor() as cursor:
-            cursor.execute(SQL_GET_TABLE_PRIMARY_KEY % dict(table_name = esc(table_name)), ())
-            for row in cursor:
-                pk_col_names = row[0]
-                metadata_collector.register_primary_key(table_name, pk_col_names)
-    @staticmethod
-    def collect_table_foreign_keys(db_conn, metadata_collector, table_name):
-        with db_conn.cursor() as cursor:
-            cursor.execute(SQL_GET_TABLE_FOREIGN_KEYS % dict(table_name = esc(table_name)), ())
-            for row in cursor:
-                pk_col_names = row[0]
-                metadata_collector.register_foreign_key(
-                        table_name,
-                        local_columns = row['attnames'],
-                        remote_table = row['fk_table'],
-                        remote_columns = row['fk_attnames'])
-    @staticmethod
-    def collect_table_columns(db_conn, metadata_collector, table_name):
-        sql = SQL_GET_TABLE_COLUMNS % dict(table_name = esc(table_name))
-        with db_conn.cursor() as cursor:
-            cursor.execute(sql, ())
+            cursor.execute(SQL_GET_ALL_DB_COLUMNS, ())
             rows = cursor.fetchall()
-            for col_name, col_pgtype, col_comment in rows:
+            for table_name, col_name, col_pgtype, col_comment in rows:
+                if table_name != prev_table_name:
+                    metadata_collector.register_table(table_name)
+                    prev_table_name = table_name
                 col_meta = analyse_col_meta(col_comment)
                 col_id = register_column(metadata_collector,
                     table_name, col_name, col_pgtype, col_meta)
@@ -447,16 +445,32 @@ class PostgreSQLDBDriver:
                     register_column(metadata_collector,
                         table_name, col_name + '.Y', 'latitude', {}, subcolumn_of=col_id)
     @staticmethod
-    def collect_table_count_estimate(db_conn, metadata_collector, table_name):
-        sql = SQL_ESTIMATE_ROWS_COUNT % dict(table_name = esc(table_name))
+    def collect_primary_keys(db_conn, metadata_collector):
         with db_conn.cursor() as cursor:
-            cursor.execute(sql)
+            cursor.execute(SQL_GET_ALL_DB_PRIMARY_KEYS, ())
             rows = cursor.fetchall()
-            if len(rows) > 0:
-                count_estimate = rows[0][0]
+            for table_name, pk_col_names in rows:
+                metadata_collector.register_primary_key(table_name, pk_col_names)
+    @staticmethod
+    def collect_foreign_keys(db_conn, metadata_collector):
+        with db_conn.cursor() as cursor:
+            cursor.execute(SQL_GET_ALL_DB_FOREIGN_KEYS, ())
+            rows = cursor.fetchall()
+            for table_name, attnames, fk_table_name, fk_attnames in rows:
+                metadata_collector.register_foreign_key(
+                        table_name,
+                        local_columns = attnames,
+                        remote_table = fk_table_name,
+                        remote_columns = fk_attnames)
+    @staticmethod
+    def collect_table_count_estimates(db_conn, metadata_collector):
+        with db_conn.cursor() as cursor:
+            cursor.execute(SQL_ESTIMATE_ALL_ROWS_COUNTS)
+            rows = cursor.fetchall()
+            for table_name, estimate in rows:
                 metadata_collector.register_count_estimate(
                         table_name,
-                        count_estimate)
+                        estimate)
     @staticmethod
     def get_query_rows_count_estimate(db_conn, sql_query, values):
         with db_conn.cursor() as cursor:

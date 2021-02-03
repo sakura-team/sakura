@@ -13,18 +13,12 @@ class DBProber:
         print("DB probing startup: %s" % self.db.db_name)
         db_conn = self.db.connect()
         self.tables = {}
-        self.driver.collect_database_tables(db_conn, self)
+        self.driver.probe_database(db_conn, self)
         db_conn.close()
         return self.tables
     def register_table(self, table_name, **metadata):
         #print("DB probing: found table %s" % table_name)
         self.tables[table_name] = DBTable(self.db, table_name, **metadata)
-        db_conn = self.db.connect()
-        self.driver.collect_table_columns(db_conn, self, table_name)
-        self.driver.collect_table_primary_key(db_conn, self, table_name)
-        self.driver.collect_table_foreign_keys(db_conn, self, table_name)
-        self.driver.collect_table_count_estimate(db_conn, self, table_name)
-        db_conn.close()
     def register_column(self, table_name, *col_info, subcolumn_of=None, **params):
         #print("----------- found column " + str(col_info))
         if subcolumn_of is None:
