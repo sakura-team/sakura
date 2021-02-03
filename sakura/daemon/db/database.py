@@ -12,36 +12,11 @@ class DBProber:
     def probe(self):
         print("DB probing startup: %s" % self.db.db_name)
         db_conn = self.db.connect()
-        self.tables = {}
-        self.driver.probe_database(db_conn, self)
+        tables_metadata = self.driver.probe_database(db_conn)
         db_conn.close()
+        self.tables = { table_name: DBTable(self.db, table_name, **tb_metadata) \
+                        for table_name, tb_metadata in tables_metadata.items() }
         return self.tables
-    def register_table(self, table_name, **metadata):
-        #print("DB probing: found table %s" % table_name)
-        self.tables[table_name] = DBTable(self.db, table_name, **metadata)
-    def register_column(self, table_name, *col_info, subcolumn_of=None, **params):
-        #print("----------- found column " + str(col_info))
-        if subcolumn_of is None:
-            parent_col_path = ()
-        else:
-            parent_col_path = subcolumn_of
-        cols_set = self.tables[table_name].columns
-        col_add_func = self.tables[table_name].add_column
-        col_path = parent_col_path
-        while len(col_path) > 0:
-            col = cols_set[col_path[0]]
-            col_path = col_path[1:]
-            cols_set = col.subcolumns
-            col_add_func = col.add_subcolumn
-        col_add_func(*col_info, **params)
-        col_id = len(cols_set) -1
-        return parent_col_path + (col_id,)
-    def register_primary_key(self, table_name, pk_col_names):
-        self.tables[table_name].register_primary_key(pk_col_names)
-    def register_foreign_key(self, table_name, **fk_info):
-        self.tables[table_name].register_foreign_key(**fk_info)
-    def register_count_estimate(self, table_name, count_estimate):
-        self.tables[table_name].register_count_estimate(count_estimate)
 
 class Database:
     def __init__(self, dbms, db_name, **metadata):

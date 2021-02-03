@@ -35,3 +35,4 @@ class DBColumn:
     def add_subcolumn(self, *col_info, **params):
         col = DBColumn(self.table, *col_info, **params)
         self.subcolumns += (col,)
+        return col

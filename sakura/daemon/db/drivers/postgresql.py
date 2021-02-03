@@ -68,7 +68,10 @@ TYPES_PG_TO_SAKURA = {
     'real':                     'float32',
     'double precision':         'float64',
     'text':                     'string',
-    'boolean':                  'bool'
+    'boolean':                  'bool',
+    'hstore':                   'opaque',
+    'json':                     'opaque',
+    'jsonb':                    'opaque'
 }
 
 IGNORED_DATABASES = ('template0', 'template1', 'postgres')
@@ -88,21 +91,16 @@ def esc(name):
     """ function to escape object names (database, table, column names) """
     return '"' + name.replace('%', '%%') + '"'
 
-def register_column(metadata_collector, table_name, col_name, col_pgtype, col_meta, **params):
+def get_column_metadata(table_name, col_name, col_pgtype, col_meta, **params):
     select_clause_sql = esc(table_name) + "." + esc(col_name)
     where_clause_sql = select_clause_sql
     sort_clause_sql = select_clause_sql
     value_wrapper = '%s'
     tags = ()
-    if col_pgtype.endswith('[]') or col_pgtype in ('hstore', 'json', 'jsonb'):
+    if col_pgtype in TYPES_PG_TO_SAKURA.keys():
+        col_type = TYPES_PG_TO_SAKURA[col_pgtype]
+    elif col_pgtype.endswith('[]'):
         col_type = 'opaque'
-    elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
-        col_type = 'date'
-        select_clause_sql = 'extract(epoch from %(table_name)s.%(col_name)s) as %(col_name)s' % dict(
-                                table_name = esc(table_name),
-                                col_name = esc(col_name))
-        value_wrapper = 'to_timestamp(%s)'
-        tags = ('timestamp',)
     elif col_pgtype.startswith('character') or col_pgtype.startswith('text'):
         col_type = 'string'
         tokens = col_pgtype.split('(')
@@ -110,6 +108,13 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
             params.update(max_length = col_meta.get('max_text_chars', None))
         else:
             params.update(max_length = int(tokens[1][:-1]))
+    elif col_pgtype in ('timestamp with time zone', 'timestamp without time zone', 'date'):
+        col_type = 'date'
+        select_clause_sql = 'extract(epoch from %(table_name)s.%(col_name)s) as %(col_name)s' % dict(
+                                table_name = esc(table_name),
+                                col_name = esc(col_name))
+        value_wrapper = 'to_timestamp(%s)'
+        tags = ('timestamp',)
     elif col_pgtype.startswith('geometry'):
         col_type = 'geometry'
         params.update(max_length = col_meta.get('max_geojson_chars', None))
@@ -130,14 +135,11 @@ def register_column(metadata_collector, table_name, col_name, col_pgtype, col_me
         select_clause_sql = unaliased_sql + ' as ' + esc(col_name)
         sort_clause_sql = unaliased_sql
         tags = (col_pgtype,)    # 'latitude' or 'longitude'
-    elif col_pgtype in TYPES_PG_TO_SAKURA.keys():
-        col_type = TYPES_PG_TO_SAKURA[col_pgtype]
     else:
         raise RuntimeError('Unknown postgresql type: %s' % col_pgtype)
-    return metadata_collector.register_column(
-            table_name, col_name, col_type,
-            select_clause_sql, where_clause_sql, sort_clause_sql, value_wrapper,
-            tags, **params)
+    return ((col_name, col_type, select_clause_sql, where_clause_sql,
+             sort_clause_sql, value_wrapper, tags),
+            params)
 
 SQL_GET_DS_GRANTS = '''\
 SELECT  usename, usecreatedb FROM pg_user;
@@ -420,57 +422,71 @@ class PostgreSQLDBDriver:
                 if dbname not in IGNORED_DATABASES:
                     metadata_collector.register_database_grant(dbuser, dbname, grant)
     @staticmethod
-    def probe_database(db_conn, metadata_collector):
+    def probe_database(db_conn):
         # db_conn must be connected to the targeted database
-        PostgreSQLDBDriver.collect_tables_and_columns(db_conn, metadata_collector)
-        PostgreSQLDBDriver.collect_primary_keys(db_conn, metadata_collector)
-        PostgreSQLDBDriver.collect_foreign_keys(db_conn, metadata_collector)
-        PostgreSQLDBDriver.collect_table_count_estimates(db_conn, metadata_collector)
+        tables_metadata = {}
+        PostgreSQLDBDriver.collect_tables_and_columns(db_conn, tables_metadata)
+        PostgreSQLDBDriver.collect_primary_keys(db_conn, tables_metadata)
+        PostgreSQLDBDriver.collect_foreign_keys(db_conn, tables_metadata)
+        PostgreSQLDBDriver.collect_table_count_estimates(db_conn, tables_metadata)
+        return tables_metadata
     @staticmethod
-    def collect_tables_and_columns(db_conn, metadata_collector):
+    def collect_tables_and_columns(db_conn, tables_metadata):
         prev_table_name = None
         with db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_ALL_DB_COLUMNS, ())
             rows = cursor.fetchall()
             for table_name, col_name, col_pgtype, col_comment in rows:
                 if table_name != prev_table_name:
-                    metadata_collector.register_table(table_name)
+                    tables_metadata[table_name] = {
+                        'columns': [],
+                        'primary_key': (),
+                        'foreign_keys': [],
+                        'count_estimate': 0
+                    }
                     prev_table_name = table_name
                 col_meta = analyse_col_meta(col_comment)
-                col_id = register_column(metadata_collector,
+                col_args, col_kwargs = get_column_metadata(
                     table_name, col_name, col_pgtype, col_meta)
                 if col_pgtype.startswith('geometry(Point'):
-                    register_column(metadata_collector,
-                        table_name, col_name + '.X', 'longitude', {}, subcolumn_of=col_id)
-                    register_column(metadata_collector,
-                        table_name, col_name + '.Y', 'latitude', {}, subcolumn_of=col_id)
+                    sub_x_args, sub_x_kwargs = get_column_metadata(
+                        table_name, col_name + '.X', 'longitude', {})
+                    sub_y_args, sub_y_kwargs = get_column_metadata(
+                        table_name, col_name + '.Y', 'latitude', {})
+                    col_subcolumns = (
+                        (sub_x_args, sub_x_kwargs, ()),
+                        (sub_y_args, sub_y_kwargs, ())
+                    )
+                else:
+                    col_subcolumns = ()
+                tables_metadata[table_name]['columns'].append(
+                    (col_args, col_kwargs, col_subcolumns)
+                )
     @staticmethod
-    def collect_primary_keys(db_conn, metadata_collector):
+    def collect_primary_keys(db_conn, tables_metadata):
         with db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_ALL_DB_PRIMARY_KEYS, ())
             rows = cursor.fetchall()
             for table_name, pk_col_names in rows:
-                metadata_collector.register_primary_key(table_name, pk_col_names)
+                tables_metadata[table_name]['primary_key'] = pk_col_names
     @staticmethod
-    def collect_foreign_keys(db_conn, metadata_collector):
+    def collect_foreign_keys(db_conn, tables_metadata):
         with db_conn.cursor() as cursor:
             cursor.execute(SQL_GET_ALL_DB_FOREIGN_KEYS, ())
             rows = cursor.fetchall()
             for table_name, attnames, fk_table_name, fk_attnames in rows:
-                metadata_collector.register_foreign_key(
-                        table_name,
-                        local_columns = attnames,
-                        remote_table = fk_table_name,
-                        remote_columns = fk_attnames)
+                tables_metadata[table_name]['foreign_keys'].append(
+                    dict(local_columns = attnames,
+                         remote_table = fk_table_name,
+                         remote_columns = fk_attnames)
+                )
     @staticmethod
-    def collect_table_count_estimates(db_conn, metadata_collector):
+    def collect_table_count_estimates(db_conn, tables_metadata):
         with db_conn.cursor() as cursor:
             cursor.execute(SQL_ESTIMATE_ALL_ROWS_COUNTS)
             rows = cursor.fetchall()
             for table_name, estimate in rows:
-                metadata_collector.register_count_estimate(
-                        table_name,
-                        estimate)
+                tables_metadata[table_name]['count_estimate'] = estimate
     @staticmethod
     def get_query_rows_count_estimate(db_conn, sql_query, values):
         with db_conn.cursor() as cursor:
