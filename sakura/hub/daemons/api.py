@@ -1,9 +1,12 @@
+import gevent
 from contextlib import contextmanager
 from sakura.hub.db import db_session_wrapper
 from sakura.hub.context import greenlet_env
 from sakura.common.io import pack
 from sakura.common.access import GRANT_LEVELS
 
+# We must associate the op_id with each started greenlet in
+# order to apply the access grants of the owner of the dataflow
 def get_operator_session_wrapper(op_id):
     @contextmanager
     def operator_session_wrapper():
@@ -13,6 +16,13 @@ def get_operator_session_wrapper(op_id):
         with db_session_wrapper():
             yield
     return operator_session_wrapper
+
+def spawn(f, *args):
+    op_id = greenlet_env.op_id
+    def wrap_f(*args):
+        greenlet_env.op_id = op_id
+        f(*args)
+    return gevent.spawn(wrap_f, *args)
 
 class OperatorToHubAPI:
     def __init__(self, context):
@@ -27,11 +37,18 @@ class OperatorToHubAPI:
         return self.context.tables.filter_for_current_user()
     def list_readable_databases(self):
         result = []
+        greenlets = []
+        # this can be quite long if communication with the datastore
+        # takes time, so do it in parallel
+        def append_db_info(db):
+            db.update_tables_from_daemon()
+            if len(db.tables) > 0:
+                result.append(db.pack())
         for db in self.databases:
             if db.readable:
-                db.update_tables_from_daemon()
-                if len(db.tables) > 0:
-                    result.append(db.pack())
+                g = spawn(append_db_info, db)
+                greenlets.append(g)
+        gevent.joinall(greenlets)
         return result
     def list_readable_tables(self, database_id):
         db = self.databases[database_id]
