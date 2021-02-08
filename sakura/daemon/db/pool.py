@@ -168,15 +168,16 @@ class ConnectionPool:
                 conn_id for conn_id, conn in self.free_conns.items() \
                 if (conn.idle_start + POOL_MIN_DELAY) < cur_time)
         for conn_id in obsolete_conn_ids:
-            self.free_conns[conn_id].release()
+            conn = self.free_conns.get(conn_id)
             del self.free_conns[conn_id]
+            conn.release()
     def release(self):
-        for conn in self.pooled_conns.values():
-            conn.release()
+        conns = list(self.pooled_conns.values()) + \
+                list(self.free_conns.values())
         self.pooled_conns = {}
-        for conn in self.free_conns.values():
-            conn.release()
         self.free_conns = {}
+        for conn in conns:
+            conn.release()
     @staticmethod
     def cleanup_all():
         for pool in ConnectionPool.instances:
