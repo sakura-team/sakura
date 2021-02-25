@@ -382,7 +382,7 @@ function fill_profil_button(fill_modal) {
 
         }
         else {
-            let butt = $('<button>', {'onclick': "$('#web_interface_login_choice_modal').modal();",
+            let butt = $('<button>', {'onclick': "web_interface_open_login_choice_modal();",
                                       'class': "btn btn-info btn-xs"
                                     });
             let span = $('<span>', {'class': "glyphicon glyphicon-user",
@@ -394,6 +394,49 @@ function fill_profil_button(fill_modal) {
             $('#idSignInWidget').append(butt);
             current_user = null;
         }
+    });
+}
+
+function web_interface_open_login_choice_modal() {
+
+    let bod = $('#web_interface_asking_login_choice_body');
+    let table = $('<table width=100% class="hovered_table" style="cursor: pointer;">');
+
+    let td0 = $('<td>', { 'align': "center",
+                          'width': "50%",
+                          'onclick': "sign_in_with('sakura');",
+                          'onMouseOver': "this.className='back_grey'",
+                          'onMouseout': "this.className=''",
+                          'style': "padding-top: 10px;",
+                          'html': "<img src='media/favicon.png' style='height: 80px;' /><br><h2>SAKURA</h2>"
+                        });
+    let tr = $('<tr>');
+    tr.append(td0);
+
+    push_request('login_options');
+    sakura.apis.hub.login_options().then( function(log_options) {
+        pop_request('login_options');
+
+        for (let i=0; i<log_options.length; i++) {
+            let opt = log_options[i];
+            let td = $('<td>', { 'align': "center",
+                                  'width': "50%",
+                                  'onclick': "sign_in_with('"+opt.id+"');",
+                                  'onMouseOver': "this.className='back_grey'",
+                                  'onMouseout': "this.className=''",
+                                  'style': "padding-top: 10px;",
+                                  'html': "<img src='"+opt.icon+"' style='height: 80px;' /><br><h2>"+opt.name+"</h2>"
+                                });
+            tr.append(td);
+        }
+
+        table.append(tr);
+        bod.empty();
+        bod.append(table);
+
+        $('#web_interface_login_choice_modal').modal();
+    }).catch( function(error) {
+        pop_request('login_options');
     });
 }
 

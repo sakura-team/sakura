@@ -462,6 +462,11 @@ class GuiToHubAPI:
         log = self.context.other_login(type, ticket, service)
         return log
 
+    @api.login_options
+    def login_options(self):
+        opts = self.context.login_options()
+        return opts
+
     @api.logout
     def logout(self):
         self.context.session.user = None

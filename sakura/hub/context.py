@@ -150,6 +150,11 @@ class HubContext(EventSourceMixin):
     def login(self, login_or_email, password):
         self.session.user = self.users.from_credentials(login_or_email, password)
         return self.session.user.login
+    def login_options(self):
+        opts = [];
+        if conf.cas:
+            opts.append({'id': 'cas', 'name': 'CAS', 'icon': conf.cas.icon})
+        return opts
     def other_login(self, type, ticket, service):
         if type == 'cas':
             url = conf.cas.url
