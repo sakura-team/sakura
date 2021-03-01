@@ -87,24 +87,45 @@ EOF
     echo 'Email config saved in test/hub-email.conf.'
 fi
 
+hub_options="$(cat << EOF
+    "web-port": 8081,
+    "hub-port": 10432,
+    "work-dir": "$HOME/.sakura",
+    $(cat test/hub-email.conf)
+EOF
+)"
+
 if [ -f test/hub-debug.conf ]
 then
-    hub_debug_conf="$(cat << EOF
+    hub_options="$(cat << EOF
+$hub_options,
 "mode": "debug",
-$(cat test/hub-debug.conf),
+$(cat test/hub-debug.conf)
+EOF
+)"
+fi
+
+if [ -f test/hub-cas.conf ]
+then
+    hub_options="$(cat << EOF
+$hub_options,
+$(cat test/hub-cas.conf)
+EOF
+)"
+fi
+
+if [ -f test/hub-ldap.conf ]
+then
+    hub_options="$(cat << EOF
+$hub_options,
+$(cat test/hub-ldap.conf)
 EOF
 )"
 fi
 
 cat > $TMPDIR/hub.conf << EOF
 {
-    "web-port": 8081,
-    "hub-port": 10432,
-    "work-dir": "$HOME/.sakura",
-    $hub_debug_conf
-$(cat test/hub-email.conf),
-$(cat test/hub-cas.conf),
-$(cat test/hub-ldap.conf)
+$hub_options
 }
 EOF
 
