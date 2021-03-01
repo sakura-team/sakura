@@ -40,7 +40,7 @@ setup(
     setup_requires = [ 'wheel' ],
     install_requires = [ 'wheel', 'gevent', 'bottle', 'numpy', 'websocket-client', 'geojson' ],
     extras_require = {
-        'hub': [ 'pony==0.7.6', 'gevent-websocket' ],
+        'hub': [ 'pony==0.7.6', 'gevent-websocket', 'ldap3' ],
         'daemon': [ 'cffi', 'psycopg2-binary', 'pillow-simd', 'cython', 'pyopengl', 'pyopengl-accelerate', 'requests' ]
     },
     author = 'Etienne Duble',
