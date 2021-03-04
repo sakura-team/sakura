@@ -45,14 +45,18 @@ def login(context, ticket, service):
             except Exception as e:
                 raise APIRequestError('LDAP description error!', e)
                 return None
-            server = ldap3.Server(url+':'+port, tls=tls, get_info=ldap3.ALL, connect_timeout=30.0)
+
+            server = ldap3.Server(url+':'+port, tls=tls, get_info=ldap3.ALL, connect_timeout=10.0)
+            conn = None
             try:
                 conn = ldap3.Connection(server, user=bdn, password=pw)
             except Exception as e:
                 raise APIRequestError('LDAP Connection Failed!')
                 return None
             try:
-                conn.bind()
+                if not conn.bind():
+                    raise APIRequestError('LDAP Connection Error! '+conn.result)
+                    return None
             except Exception as e:
                 raise APIRequestError('LDAP Connection Timeout!<br><b>'+login+'</b> cannot login!')
                 return None
@@ -61,14 +65,12 @@ def login(context, ticket, service):
                 raise APIRequestError('<b>'+login+'</b> not found in LDAP server!')
                 return None
             u = conn.entries[0]
-            print(u['mail'])
-            print(u['given name'])
-            print(u['sn'])
             user_info = {   'login': login,
                             'password': '__CAS__',
-                            'email': u['mail'],
-                            'first_name': u['given name'],
-                            'last_name': u['sn'] }
+                            'email': str(u['mail']),
+                            'first_name': str(u['given name']),
+                            'last_name': str(u['sn']) }
+
             if context.users.new_user(**user_info):
                 context.session.user = context.users.from_login_or_email(login)
                 return context.session.user.login
