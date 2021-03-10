@@ -1229,7 +1229,7 @@ function web_interface_change_access_scope() {
     push_request('update_access_scope');
     current_remote_api_object().update({'access_scope': $('#web_interface_access_scope_select').val()}).then(function(result) {
         pop_request('update_access_scope');
-
+        web_interface_current_object_info.access_scope = $('#web_interface_access_scope_select').val();
         $('#web_interface_yes_no_modal').modal('hide');
     }).catch( function(error) {
         pop_request('update_access_scope');
