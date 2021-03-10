@@ -190,7 +190,8 @@ function signInSubmitControl(event, login, passw) {
             }).catch(
   	        function (error_message) {
                 pop_request('login');
-  	    	      alert(error_message);
+                error_message = error_message.replace('APIRequestError: ', '');
+  	    	      main_alert('SIGN IN ISSUE', error_message);
                 if (DEBUG) console.log("E4", error_message);
             });
         } // end checking empty fields

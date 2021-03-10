@@ -181,7 +181,11 @@ class UserMixin:
         # recalculate the hash from this password to match it agains the db entry
         salt, hashed_password = self.hash_password(password, self.password_salt)
         if self.password_hash != hashed_password:
-            raise APIRequestError(err_msg)
+            salt, hashed_password = self.hash_password('__CAS__', self.password_salt)
+            if self.password_hash != hashed_password:
+                raise APIRequestError(err_msg)
+            else:
+                raise APIRequestError('This login has been created from CAS authentification.<br>Please, use this way to sign in again.')
 
     @classmethod
     def recover_password(cls, login_or_email):
