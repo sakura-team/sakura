@@ -14,7 +14,8 @@ sakura = {
     tools: {
     },
     apis: {
-    }
+    },
+    'should_refresh': false
 }
 
 // debugging
@@ -206,6 +207,11 @@ sakura.internal.create = function (cb) {
     let cb_called = false;
     ws.onmessage = sakura.internal.onmessage;
     ws.onopen = function() {
+        document.getElementById("overlay").style.display = 'none';
+        if (sakura.should_refresh) {
+            location.reload();
+        }
+        sakura.should_refresh = false;
         sakura.internal.debug('ws.onopen called');
         sakura.internal.free_ws.push(ws);
         sakura.internal.debug('+1 (ws just created!!) *** ' + sakura.internal.free_ws.length);
@@ -216,9 +222,12 @@ sakura.internal.create = function (cb) {
     }
     ws.onerror = function() {
         console.error("ws error!");
+        document.getElementById("overlay").style.display = 'none';
         ws.close();
     }
     ws.onclose = function() {
+        document.getElementById("overlay").style.display = 'block';
+        sakura.should_refresh = true;
         sakura.internal.debug("ws closed!");
         // remove from free websockets
         sakura.internal.free_ws = sakura.internal.free_ws.filter(function(free_ws) {
