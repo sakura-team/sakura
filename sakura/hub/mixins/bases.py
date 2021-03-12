@@ -51,12 +51,16 @@ class BaseMixin(StatusMixin, EventSourceMixin):
     @owner.setter
     def owner(self, login):
         self.update_grant(login, 'own')
+    def get_row_for_update(self):
+        # lock the row in hubdb for update (up to next commit)
+        self.__class__.get_for_update(id = self.id)
     def parse_and_update_attributes(self, **kwargs):
         self.assert_grant_level(GRANT_LEVELS.own,
                         'Only owner can change attributes.')
         kwargs = parse_gui_access_info(**kwargs)
         self.update_attributes(**kwargs)
     def update_attributes(self, **kwargs):
+        self.get_row_for_update()
         metadata = dict(self.metadata)
         for attr, value in kwargs.items():
             if hasattr(self, attr):
@@ -64,6 +68,7 @@ class BaseMixin(StatusMixin, EventSourceMixin):
             else:
                 metadata[attr] = value
         self.metadata = metadata
+        self.commit()
     def get_grant_level(self):
         user_type = get_user_type(self, get_context().user)
         grant_level = ACCESS_TABLE[user_type, self.access_scope]
@@ -79,9 +84,11 @@ class BaseMixin(StatusMixin, EventSourceMixin):
                         'Only owner can change grants.')
         grant_level = GRANT_LEVELS.value(grant_name)
         if grant_level == GRANT_LEVELS.hide:
+            self.get_row_for_update()
             if login in self.grants:
                 # drop the grant
                 del self.grants[login]
+            self.commit()
         elif grant_level not in (GRANT_LEVELS.own, GRANT_LEVELS.read, GRANT_LEVELS.write):
             raise APIRequestError("Only 'read' and 'write' grant levels can be set.")
         else:
@@ -98,11 +105,13 @@ class BaseMixin(StatusMixin, EventSourceMixin):
                 )
                 sendmail(requester.email, GRANT_ACCEPTED_MAIL_SUBJECT, content)
             # update
+            self.get_row_for_update()
             self.grants[login] = dict(
                 level = grant_level
             )
-        self.commit()
+            self.commit()
     def record_grant_request(self, login, level):
+        self.get_row_for_update()
         grant = self.grants.get(login, {})
         grant.update(
             requested_level = level
@@ -135,6 +144,7 @@ class BaseMixin(StatusMixin, EventSourceMixin):
                         'Only owner can deny grant requests.')
         if login not in self.grants or 'requested_level' not in self.grants[login]:
             raise APIRequestError('No such grant request.')
+        self.get_row_for_update()
         requested_level = self.grants[login]['requested_level']
         del self.grants[login]['requested_level']
         requester = get_context().users[login]
